@@ -39,10 +39,7 @@ function resolveUrl(path: string, baseUrl?: string) {
   if (/^https?:\/\//i.test(path)) return path;
 
   const base =
-    baseUrl ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    process.env.NEXT_PUBLIC_API_BASE_URL ??
-    '';
+    baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
   if (!base) return path;
 
   return `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;

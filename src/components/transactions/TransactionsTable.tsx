@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useApi } from "@/lib/useApi";
+import { useApi } from '@/lib/useApi';
+import { useEffect, useState } from 'react';
 
 type TransactionRow = {
   id: string | number;
@@ -16,7 +16,7 @@ export default function TransactionsTable() {
   const [rows, setRows] = useState<TransactionRow[]>([]);
 
   useEffect(() => {
-    apiFetch<TransactionRow[]>("/transactions").then(setRows);
+    apiFetch<TransactionRow[]>('/transactions').then(setRows);
   }, [apiFetch]);
 
   return (

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import InsightCards from "@/components/dashboard/InsightCards";
+import InsightCards from '@/components/dashboard/InsightCards';
 
 export default function DashboardPage() {
   return (

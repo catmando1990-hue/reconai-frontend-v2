@@ -10,7 +10,7 @@ export function useApi() {
 
   const api = useMemo(() => {
     return {
-      apiFetch: <T = unknown>(path: string, options: ApiFetchOptions = {}) => {
+      apiFetch: <T = unknown,>(path: string, options: ApiFetchOptions = {}) => {
         const headers = new Headers(options.headers);
 
         if (org_id && !headers.has('x-organization-id')) {

@@ -12,7 +12,10 @@ export default function OrgOnboardingPage() {
 
   const { isLoaded, userId, orgId } = useAuth();
 
-  const canContinue = useMemo(() => Boolean(isLoaded && userId && orgId), [isLoaded, userId, orgId]);
+  const canContinue = useMemo(
+    () => Boolean(isLoaded && userId && orgId),
+    [isLoaded, userId, orgId]
+  );
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">

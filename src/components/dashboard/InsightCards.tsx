@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useApi } from "@/lib/useApi";
+import { useApi } from '@/lib/useApi';
+import { useEffect, useState } from 'react';
 
 type Insights = {
   monthly_spend: string | number;
@@ -14,7 +14,7 @@ export default function InsightCards() {
   const [data, setData] = useState<Insights | null>(null);
 
   useEffect(() => {
-    apiFetch<Insights>("/insights").then(setData);
+    apiFetch<Insights>('/insights').then(setData);
   }, [apiFetch]);
 
   if (!data) return null;

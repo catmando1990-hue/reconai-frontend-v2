@@ -50,7 +50,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
   const value = useMemo<UserProfileContextValue>(
     () => ({ profile, isLoading, error, refetch }),
-    [profile, isLoading, error, refetch],
+    [profile, isLoading, error, refetch]
   );
 
   return <UserProfileContext.Provider value={value}>{children}</UserProfileContext.Provider>;

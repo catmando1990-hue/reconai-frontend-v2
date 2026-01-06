@@ -38,7 +38,11 @@ function isObject(value: unknown): value is Record<string, unknown> {
 function resolveUrl(path: string, baseUrl?: string) {
   if (/^https?:\/\//i.test(path)) return path;
 
-  const base = baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+  const base =
+    baseUrl ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    '';
   if (!base) return path;
 
   return `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
@@ -76,6 +80,21 @@ async function getClerkJwt(tokenTemplate?: string): Promise<string | null> {
   }
 }
 
+async function getClerkOrgIdServer(): Promise<string | null> {
+  if (typeof window !== 'undefined') return null;
+
+  try {
+    const mod = await import('@clerk/nextjs/server');
+    const { auth } = mod;
+    const authState = await auth();
+    // `orgId` is available when using Clerk organizations.
+    const orgId = 'orgId' in authState ? (authState.orgId as string | null | undefined) : null;
+    return orgId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function defaultUnauthorizedHandler() {
   if (typeof window !== 'undefined') {
     // Default to Clerk's conventional route; adjust if your app uses a different URL.
@@ -106,6 +125,12 @@ export async function apiFetch<T = unknown>(
   const token = await getClerkJwt(tokenTemplate);
   if (token && !headers.has('authorization')) {
     headers.set('authorization', `Bearer ${token}`);
+  }
+
+  // Automatically add org header on the server (client uses `useApi()` for this).
+  if (!headers.has('x-organization-id')) {
+    const orgId = await getClerkOrgIdServer();
+    if (orgId) headers.set('x-organization-id', orgId);
   }
 
   const response = await fetch(url, {

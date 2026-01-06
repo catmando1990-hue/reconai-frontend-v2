@@ -32,7 +32,7 @@ const OrgProviderClerkLazy = React.lazy(async () => {
         role: orgRole ?? null,
         isLoaded: authLoaded && orgLoaded,
       }),
-      [authLoaded, orgLoaded, orgId, orgRole, organization?.name],
+      [authLoaded, orgLoaded, orgId, orgRole, organization?.name]
     );
 
     return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;

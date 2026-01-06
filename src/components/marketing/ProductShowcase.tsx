@@ -1,0 +1,44 @@
+'use client';
+
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+
+export default function ProductShowcase() {
+  return (
+    <section id="demo" className="bg-zinc-50">
+      <div className="mx-auto max-w-6xl px-6 py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight">A product people can feel</h2>
+            <p className="mt-3 text-zinc-600">
+              Use real screenshots, subtle motion, and short demo loops to show value instantly.
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-zinc-700">
+              <li>• Clear financial summaries and trends</li>
+              <li>• Feature callouts that match the UI</li>
+              <li>• Fast navigation and enterprise-ready structure</li>
+            </ul>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+          >
+            <div className="relative aspect-[16/10]">
+              <Image
+                src="/images/dashboard.webp"
+                alt="ReconAI dashboard preview"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -32,6 +32,7 @@ export default function ProductShowcase() {
                 src="/images/dashboard.webp"
                 alt="ReconAI dashboard preview"
                 fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
                 priority
               />

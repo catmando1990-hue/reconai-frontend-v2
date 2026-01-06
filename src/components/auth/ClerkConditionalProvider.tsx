@@ -7,11 +7,7 @@ const ClerkProviderLazy = React.lazy(async () => {
   return { default: mod.ClerkProvider };
 });
 
-export function ClerkConditionalProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function ClerkConditionalProvider({ children }: { children: React.ReactNode }) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   if (!publishableKey) {

@@ -2,6 +2,7 @@ import { ClerkConditionalProvider } from '@/components/auth/ClerkConditionalProv
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { ThemeProvider } from '@/components/theme-provider';
+import { OrgProvider } from '@/lib/org-context';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
@@ -26,13 +27,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClerkConditionalProvider>
-          <ThemeProvider>
-            <div className="min-h-screen">
-              <Header />
-              {children}
-              <Footer />
-            </div>
-          </ThemeProvider>
+          <OrgProvider>
+            <ThemeProvider>
+              <div className="min-h-screen">
+                <Header />
+                {children}
+                <Footer />
+              </div>
+            </ThemeProvider>
+          </OrgProvider>
         </ClerkConditionalProvider>
       </body>
     </html>

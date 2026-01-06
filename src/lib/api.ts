@@ -53,7 +53,7 @@ async function getClerkJwt(tokenTemplate?: string): Promise<string | null> {
     if (session?.getToken) {
       try {
         const token = await session.getToken(
-          tokenTemplate ? { template: tokenTemplate } : undefined,
+          tokenTemplate ? { template: tokenTemplate } : undefined
         );
         return token ?? null;
       } catch {
@@ -69,9 +69,7 @@ async function getClerkJwt(tokenTemplate?: string): Promise<string | null> {
     const mod = await import('@clerk/nextjs/server');
     const { auth } = mod;
     const authState = await auth();
-    const token = await authState.getToken(
-      tokenTemplate ? { template: tokenTemplate } : undefined,
-    );
+    const token = await authState.getToken(tokenTemplate ? { template: tokenTemplate } : undefined);
     return token ?? null;
   } catch {
     return null;
@@ -90,15 +88,9 @@ function defaultUnauthorizedHandler() {
 
 export async function apiFetch<T = unknown>(
   path: string,
-  options: ApiFetchOptions = {},
+  options: ApiFetchOptions = {}
 ): Promise<T> {
-  const {
-    tokenTemplate,
-    baseUrl,
-    rawResponse,
-    onUnauthorized,
-    ...requestInit
-  } = options;
+  const { tokenTemplate, baseUrl, rawResponse, onUnauthorized, ...requestInit } = options;
 
   const url = resolveUrl(path, baseUrl);
 
@@ -143,8 +135,8 @@ export async function apiFetch<T = unknown>(
       typeof errorBody === 'string'
         ? errorBody
         : isObject(errorBody) && typeof errorBody.message === 'string'
-          ? errorBody.message
-          : `Request failed (${response.status})`;
+        ? errorBody.message
+        : `Request failed (${response.status})`;
 
     throw new Error(message);
   }

@@ -27,7 +27,7 @@ export default function ProductShowcase() {
             transition={{ duration: 0.5 }}
             className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm"
           >
-            <div className="relative aspect-[16/10]">
+            <div className="relative aspect-16/10">
               <Image
                 src="/images/dashboard.webp"
                 alt="ReconAI dashboard preview"

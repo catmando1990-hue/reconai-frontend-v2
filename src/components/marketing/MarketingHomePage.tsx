@@ -101,9 +101,9 @@ export function MarketingHomePage() {
           />
 
           {/* Theme-safe overlays */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/70 to-background/90 dark:from-background/70 dark:via-background/50 dark:to-background/80" />
-          <div className="absolute -top-40 right-[-10%] h-[520px] w-[520px] rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
-          <div className="absolute -bottom-40 left-[-10%] h-[520px] w-[520px] rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
+          <div className="absolute inset-0 bg-linear-to-b from-background/85 via-background/70 to-background/90 dark:from-background/70 dark:via-background/50 dark:to-background/80" />
+          <div className="absolute -top-40 right-[-10%] h-130 w-130 rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
+          <div className="absolute -bottom-40 left-[-10%] h-130 w-130 rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
 
           <div className="relative z-10 mx-auto max-w-5xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">

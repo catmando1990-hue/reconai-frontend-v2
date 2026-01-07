@@ -3,8 +3,8 @@ import Image from "next/image";
 import FeatureGrid from '@/components/marketing/FeatureGrid';
 import ProductShowcase from '@/components/marketing/ProductShowcase';
 
-export default function MarketingHome() {
-  const { userId } = auth();
+export default async function MarketingHome() {
+  const { userId } = await auth();
 
   const primaryHref = userId ? "/dashboard" : "/sign-in";
   const primaryText = userId ? "Go to Dashboard" : "Sign In";
@@ -16,7 +16,7 @@ export default function MarketingHome() {
       {/* HERO */}
       <section className="relative isolate overflow-hidden">
         <Image
-          src="/hero.jpg"
+          src="/images/hero.jpg"
           alt="ReconAI financial intelligence"
           fill
           className="absolute inset-0 -z-20 object-cover"

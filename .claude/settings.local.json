@@ -4,7 +4,8 @@
       "Bash(tree:*)",
       "Bash(xargs ls:*)",
       "Bash(powershell -command:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

@@ -1,10 +1,23 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 /**
- * Next.js 16: proxy.ts replaces middleware.ts.
- * Clerk middleware MUST run for routes that call `auth()` / `currentUser()` or use Clerk components.
+ * Next.js 16 uses `src/proxy.ts` instead of middleware.ts.
+ *
+ * IMPORTANT:
+ * - Public routes should NOT redirect to /sign-in.
+ * - Only protect dashboard + API routes.
  */
-export default clerkMiddleware();
+
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/api(.*)",
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [

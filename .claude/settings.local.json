@@ -12,7 +12,8 @@
       "Bash(dir c:devreconai-frontend-v2*.ts /b)",
       "Bash(git update-index:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(unzip:*)"
     ]
   }
 }

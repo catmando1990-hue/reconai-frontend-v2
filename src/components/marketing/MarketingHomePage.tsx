@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SignedIn, SignedOut } from '@clerk/nextjs';
@@ -12,17 +12,62 @@ import {
   Sparkles,
   LineChart,
   FileText,
+  Users,
+  Building2,
+  Briefcase,
 } from 'lucide-react';
 
-/**
- * Phase 6 Notes:
- * - Uses semantic tokens (bg-background, text-foreground, etc.) for light/dark compatibility.
- * - Uses user-provided Adobe images from /public.
- * - Subtle hero motion is throttled with requestAnimationFrame and respects prefers-reduced-motion.
- */
+type UseCase = 'solo' | 'smb' | 'enterprise';
+
+const USE_CASES: Array<{
+  id: UseCase;
+  title: string;
+  subtitle: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  headline: string;
+  subheadline: string;
+}> = [
+  {
+    id: 'solo',
+    title: 'Solo',
+    subtitle: 'Operator-first clarity',
+    Icon: Briefcase,
+    headline: 'Run tighter. Move faster.',
+    subheadline:
+      'Get clean categorization, defensible reports, and a clear financial story—without living in spreadsheets.',
+  },
+  {
+    id: 'smb',
+    title: 'Small Business',
+    subtitle: 'Systems that scale',
+    Icon: Users,
+    headline: 'Make decisions with confidence.',
+    subheadline:
+      'Standardize how money moves through your business and keep outputs consistent across time, teams, and reviews.',
+  },
+  {
+    id: 'enterprise',
+    title: 'Enterprise',
+    subtitle: 'Audit-ready operations',
+    Icon: Building2,
+    headline: 'Built for scrutiny.',
+    subheadline:
+      'Controls, traceability, and defensible outputs—designed for higher-stakes finance and compliance environments.',
+  },
+];
+
+function cx(...parts: Array<string | false | undefined | null>) {
+  return parts.filter(Boolean).join(' ');
+}
+
 export function MarketingHomePage() {
   const heroRef = useRef<HTMLDivElement | null>(null);
+  const [useCase, setUseCase] = useState<UseCase>('smb');
+  const [showSticky, setShowSticky] = useState(false);
 
+  const uc = USE_CASES.find((u) => u.id === useCase)!;
+
+  // Subtle hero motion: rAF-throttled + respects Reduce Motion
   useEffect(() => {
     const el = heroRef.current;
     if (!el) return;
@@ -39,8 +84,8 @@ export function MarketingHomePage() {
 
     const onMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;  // -0.5..0.5
-      const y = (e.clientY - rect.top) / rect.height - 0.5;  // -0.5..0.5
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
       targetX = Math.max(-0.5, Math.min(0.5, x));
       targetY = Math.max(-0.5, Math.min(0.5, y));
       if (!raf) raf = requestAnimationFrame(tick);
@@ -48,11 +93,8 @@ export function MarketingHomePage() {
 
     const tick = () => {
       raf = 0;
-      // Smooth follow
       curX += (targetX - curX) * 0.08;
       curY += (targetY - curY) * 0.08;
-
-      // Write to CSS vars (small, tasteful)
       el.style.setProperty('--mx', String(curX));
       el.style.setProperty('--my', String(curY));
     };
@@ -71,15 +113,24 @@ export function MarketingHomePage() {
     };
   }, []);
 
+  // Sticky CTA: show after scroll
+  useEffect(() => {
+    const onScroll = () => {
+      setShowSticky(window.scrollY > 520);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <main className="bg-background text-foreground">
-      {/* HERO (C: image + gradient + subtle motion) */}
+      {/* HERO (image + gradient + subtle motion) */}
       <section className="relative overflow-hidden">
         <div
           ref={heroRef}
           className="relative min-h-[92vh] flex items-center justify-center px-6 py-24"
         >
-          {/* Background image (boardroom / enterprise) */}
           <Image
             src="/hero-boardroom.jpg"
             alt="Enterprise team collaborating with financial intelligence dashboards"
@@ -87,8 +138,6 @@ export function MarketingHomePage() {
             className="object-cover opacity-25 dark:opacity-35"
             priority
           />
-
-          {/* Optional secondary layer image for depth (very subtle) */}
           <Image
             src="/hero-team-mountain.jpg"
             alt="Leadership team alignment"
@@ -108,7 +157,7 @@ export function MarketingHomePage() {
           <div className="relative z-10 mx-auto max-w-5xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
               <Sparkles className="h-4 w-4 text-primary" />
-              ReconAI turns financial noise into defensible decisions
+              {uc.subtitle}
             </div>
 
             <h1 className="mt-6 text-5xl md:text-6xl font-extrabold tracking-tight">
@@ -117,9 +166,36 @@ export function MarketingHomePage() {
             </h1>
 
             <p className="mt-6 text-lg md:text-xl text-muted-foreground">
-              Replace spreadsheets, guesswork, and fragmented tools with clear, auditable insight—built for operators
-              who need clarity and confidence.
+              {uc.subheadline}
             </p>
+
+            <div className="mt-8 flex items-center justify-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-3xl">
+                {USE_CASES.map(({ id, title, subtitle, Icon }) => {
+                  const active = id === useCase;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setUseCase(id)}
+                      className={cx(
+                        'group flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm transition',
+                        active
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border bg-card/60 hover:bg-accent'
+                      )}
+                      aria-pressed={active}
+                    >
+                      <Icon className={cx('h-4 w-4', active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+                      <span className={cx('font-medium', active ? 'text-foreground' : 'text-foreground')}>
+                        {title}
+                      </span>
+                      <span className="hidden md:inline text-muted-foreground">&bull; {subtitle}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <SignedOut>
@@ -148,7 +224,24 @@ export function MarketingHomePage() {
               </Link>
             </div>
 
+            {/* Proof strip */}
             <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              {[
+                { k: '95%+', v: 'Target classification accuracy' },
+                { k: '<24h', v: 'Time-to-first-value for most teams' },
+                { k: 'Audit', v: 'Traceable, defensible outputs' },
+              ].map((m) => (
+                <div
+                  key={m.k}
+                  className="rounded-2xl border border-border bg-card/70 p-5 backdrop-blur"
+                >
+                  <div className="text-2xl font-bold tracking-tight">{m.k}</div>
+                  <div className="mt-1 text-muted-foreground">{m.v}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               {[
                 'Audit-ready architecture',
                 'Security and controls by default',
@@ -206,8 +299,39 @@ export function MarketingHomePage() {
         </div>
       </section>
 
-      {/* PRODUCT PROOF */}
+      {/* WHY / HOW IT WORKS */}
       <section className="mx-auto max-w-6xl px-6 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {[
+            {
+              title: 'Ingest',
+              desc: 'Connect your accounts and pull clean transaction streams.',
+              icon: FileText,
+            },
+            {
+              title: 'Classify',
+              desc: 'Rules + AI create consistent categorization you can review and trust.',
+              icon: CheckCircle2,
+            },
+            {
+              title: 'Defend',
+              desc: 'Generate reports and outputs that hold up under scrutiny.',
+              icon: ShieldCheck,
+            },
+          ].map(({ title, desc, icon: Icon }) => (
+            <div key={title} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2 font-semibold">
+                <Icon className="h-5 w-5 text-primary" />
+                {title}
+              </div>
+              <div className="mt-2 text-muted-foreground">{desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PRODUCT PROOF */}
+      <section className="mx-auto max-w-6xl px-6 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -274,101 +398,101 @@ export function MarketingHomePage() {
         </div>
       </section>
 
-      {/* OPERATIONS / TAX CLARITY */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-6xl px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div className="rounded-2xl overflow-hidden border border-border bg-background">
-            <Image
-              src="/finance-tax-desk.jpg"
-              alt="Organized finance and tax workspace"
-              width={800}
-              height={288}
-              className="h-72 w-full object-cover"
-            />
-          </div>
-          <div>
-            <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-              From messy inputs to clean, reviewable outputs
-            </h3>
-            <p className="mt-4 text-muted-foreground">
-              Whether it&apos;s tax time, compliance, or a lender review—ReconAI helps your financial story stay consistent,
-              organized, and easy to defend.
-            </p>
-            <ul className="mt-6 space-y-3 text-sm">
-              {[
-                'Reduce manual cleanup and recategorization.',
-                'Keep a consistent ledger narrative over time.',
-                'Export-ready insights for stakeholders.',
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">{t}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
       {/* FINAL CTA */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center rounded-3xl border border-border bg-card p-8 md:p-12 overflow-hidden">
-          <div>
-            <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-              Built for founders, operators, and teams that take finance seriously
-            </h3>
-            <p className="mt-4 text-muted-foreground">
-              If your decisions need to stand up to scrutiny, ReconAI is built for you.
-            </p>
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center rounded-3xl border border-border bg-background p-8 md:p-12 overflow-hidden">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
+                Built for founders, operators, and teams that take finance seriously
+              </h3>
+              <p className="mt-4 text-muted-foreground">
+                If your decisions need to stand up to scrutiny, ReconAI is built for you.
+              </p>
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <SignedOut>
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <SignedOut>
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
+                  >
+                    Start Now <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </SignedOut>
+                <SignedIn>
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
+                  >
+                    Open Dashboard <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </SignedIn>
                 <Link
-                  href="/sign-in"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-                >
-                  Start Now <ArrowRight className="h-4 w-4" />
-                </Link>
-              </SignedOut>
-              <SignedIn>
-                <Link
-                  href="/dashboard"
+                  href="/support"
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
                 >
-                  Open Dashboard <ArrowRight className="h-4 w-4" />
+                  Talk to Us <ArrowRight className="h-4 w-4" />
                 </Link>
-              </SignedIn>
-              <Link
-                href="/support"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-              >
-                Talk to Us <ArrowRight className="h-4 w-4" />
-              </Link>
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <div className="rounded-2xl overflow-hidden border border-border bg-background">
-              <Image
-                src="/user-owner-laptop.jpg"
-                alt="Founder working with confidence"
-                width={600}
-                height={176}
-                className="h-44 w-full object-cover"
-              />
-            </div>
-            <div className="rounded-2xl overflow-hidden border border-border bg-background">
-              <Image
-                src="/user-success.jpg"
-                alt="Positive financial outcomes for small business owners"
-                width={600}
-                height={176}
-                className="h-44 w-full object-cover"
-              />
+            <div className="grid grid-cols-1 gap-4">
+              <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                <Image
+                  src="/user-owner-laptop.jpg"
+                  alt="Founder working with confidence"
+                  width={600}
+                  height={176}
+                  className="h-44 w-full object-cover"
+                />
+              </div>
+              <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                <Image
+                  src="/user-success.jpg"
+                  alt="Positive financial outcomes for small business owners"
+                  width={600}
+                  height={176}
+                  className="h-44 w-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* STICKY CTA (tasteful) */}
+      <div
+        className={cx(
+          'fixed inset-x-0 bottom-4 z-50 mx-auto max-w-3xl px-4 transition-all',
+          showSticky ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        )}
+        aria-hidden={!showSticky}
+      >
+        <div className="rounded-2xl border border-border bg-card/80 backdrop-blur p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+          <div className="text-sm">
+            <div className="font-medium">Ready to see ReconAI in action?</div>
+            <div className="text-muted-foreground">Sign in and open your dashboard in seconds.</div>
+          </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <SignedOut>
+              <Link
+                href="/sign-in"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-primary-foreground hover:opacity-90 transition"
+              >
+                Get Started <ArrowRight className="h-4 w-4" />
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 hover:bg-accent transition"
+              >
+                Open Dashboard <ArrowRight className="h-4 w-4" />
+              </Link>
+            </SignedIn>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

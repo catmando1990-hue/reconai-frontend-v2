@@ -3,7 +3,8 @@
     "allow": [
       "Bash(tree:*)",
       "Bash(xargs ls:*)",
-      "Bash(powershell -command:*)"
+      "Bash(powershell -command:*)",
+      "Bash(npm run lint)"
     ]
   }
 }

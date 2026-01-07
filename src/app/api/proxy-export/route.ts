@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   const BACKEND_URL = requireBackendUrl();
 
   // IMPORTANT: This requires Clerk middleware to be running.
-  const authData: any = auth();
+  const authData = auth() as { getToken?: () => Promise<string | null> };
 
   // Some Clerk versions expose getToken on the returned object.
   const getTokenFn = authData?.getToken;

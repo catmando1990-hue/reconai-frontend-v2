@@ -4,10 +4,13 @@ import { NextResponse } from "next/server";
 /**
  * Next.js 16 uses `src/proxy.ts` instead of middleware.ts.
  *
- * Phase 7 Fix:
- * - Never redirect the marketing landing page (`/`).
- * - Protect dashboard + onboarding routes only.
- * - Only gate onboarding when a signed-in user enters the dashboard and is not marked onboarded.
+ * Phase 15:
+ * - Keep marketing landing `/` public and untouched.
+ * - Protect `/dashboard/*`, `/onboarding/*`, `/api/*`.
+ * - Onboarding gate only applies to `/dashboard/*`.
+ * - Treat user as onboarded if either:
+ *    publicMetadata.onboarded === true
+ *    OR unsafeMetadata.onboardingComplete === true (legacy)
  */
 
 const isProtectedRoute = createRouteMatcher([
@@ -16,39 +19,53 @@ const isProtectedRoute = createRouteMatcher([
   "/api(.*)",
 ]);
 
+function isTruthy(v: unknown): boolean {
+  return v === true || v === "true" || v === 1 || v === "1";
+}
+
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
 
-  // Always allow marketing landing (and other public marketing pages) through untouched.
+  // Marketing landing is always public.
   if (pathname === "/") return NextResponse.next();
 
-  // If this is not a protected route, do nothing.
+  // Non-protected route: no-op.
   if (!isProtectedRoute(req)) return NextResponse.next();
 
   // Require authentication on protected routes.
   await auth.protect();
 
-  // Onboarding gate: only for dashboard entry (never for marketing routes)
   const isDashboard = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
   const isOnboarding = pathname === "/onboarding" || pathname.startsWith("/onboarding/");
 
+  // Only gate onboarding when entering dashboard routes.
   if (isDashboard && !isOnboarding) {
     const session = await auth();
     const claims = session.sessionClaims as Record<string, unknown> | null;
 
-    // Convention: user is onboarded when publicMetadata.onboarded === true
     const publicMetadata = claims?.publicMetadata as Record<string, unknown> | undefined;
     const metadata = claims?.metadata as Record<string, unknown> | undefined;
+    const unsafeMetadata = claims?.unsafeMetadata as Record<string, unknown> | undefined;
+    const user = claims?.user as Record<string, unknown> | undefined;
+    const userUnsafeMetadata = user?.unsafeMetadata as Record<string, unknown> | undefined;
 
-    const onboarded =
-      publicMetadata?.onboarded === true ||
-      publicMetadata?.onboarded === "true" ||
-      metadata?.onboarded === true ||
-      metadata?.onboarded === "true";
+    // Preferred: publicMetadata.onboarded
+    const publicOnboarded = isTruthy(publicMetadata?.onboarded) || isTruthy(metadata?.onboarded);
+
+    // Legacy: unsafeMetadata.onboardingComplete (client-settable)
+    const legacyOnboardingComplete =
+      isTruthy(unsafeMetadata?.onboardingComplete) ||
+      isTruthy(unsafeMetadata?.onboarded) ||
+      isTruthy(userUnsafeMetadata?.onboardingComplete);
+
+    // Cookie fallback (unsafeMetadata isn't in JWT by default)
+    const cookieOnboarded = req.cookies.get("onboarding_complete")?.value === "true";
+
+    const onboarded = publicOnboarded || legacyOnboardingComplete || cookieOnboarded;
 
     if (!onboarded) {
       const url = req.nextUrl.clone();
-      url.pathname = "/onboarding/org";
+      url.pathname = "/onboarding";
       return NextResponse.redirect(url);
     }
   }

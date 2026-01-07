@@ -32,7 +32,12 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     setError(null);
 
     try {
-      const data = await apiFetch<UserProfile>('/api/auth/me');
+      // Pass a custom onUnauthorized handler to prevent redirect on public pages
+      const data = await apiFetch<UserProfile>('/api/auth/me', {
+        onUnauthorized: () => {
+          // Don't redirect - just treat as no profile (user not signed in)
+        },
+      });
       setProfile(data ?? null);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to load profile';

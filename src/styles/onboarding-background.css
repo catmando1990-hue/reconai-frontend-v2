@@ -1,0 +1,22 @@
+.onboarding-bg {
+  background: linear-gradient(
+    to bottom right,
+    hsl(var(--background)),
+    hsl(var(--muted))
+  );
+}
+
+.onboarding-visual {
+  background-image: url('/security-lock.jpg');
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: 60%;
+  opacity: 0.08;
+  filter: blur(2px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .onboarding-visual {
+    opacity: 0.12;
+  }
+}

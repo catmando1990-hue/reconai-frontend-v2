@@ -23,8 +23,9 @@ export default async function MarketingHome() {
           priority
         />
 
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background/95 via-background/85 to-background/40" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-background via-transparent to-transparent" />
+        <div className="absolute inset-0 -z-10 
+         from-background/95 via-background/85 to-background/40" />
+        <div className="absolute inset-0 -z-10 bg-linear-to-t from-background via-transparent to-transparent" />
 
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="max-w-3xl space-y-6">

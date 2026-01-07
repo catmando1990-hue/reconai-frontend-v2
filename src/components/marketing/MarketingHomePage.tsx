@@ -15,6 +15,7 @@ import {
   Users,
   Building2,
   Briefcase,
+  Layers,
 } from 'lucide-react';
 
 type UseCase = 'solo' | 'smb' | 'enterprise';
@@ -220,6 +221,18 @@ export function MarketingHomePage() {
               </Link>
             </div>
 
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm">
+              <Link href="/how-it-works" className="text-primary hover:underline">
+                How it works
+              </Link>
+              <Link href="/packages" className="text-primary hover:underline">
+                Packages
+              </Link>
+              <Link href="/security" className="text-primary hover:underline">
+                Security
+              </Link>
+            </div>
+
             {/* Proof strip */}
             <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               {[
@@ -295,26 +308,30 @@ export function MarketingHomePage() {
         </div>
       </section>
 
-      {/* WHY / HOW IT WORKS */}
+      {/* PACKAGES SECTION (Phase 14) */}
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex items-end justify-between gap-6 flex-wrap">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
+              <Layers className="h-4 w-4 text-primary" />
+              Packaging (no pricing)
+            </div>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">Start with Core. Add Intelligence. Unlock CFO Mode.</h2>
+            <p className="mt-2 text-muted-foreground max-w-2xl">
+              ReconAI is built in layers to keep the story clear, scalable, and defensible.
+            </p>
+          </div>
+          <Link href="/packages" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+            View packages <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
           {[
-            {
-              title: 'Ingest',
-              desc: 'Connect your accounts and pull clean transaction streams.',
-              icon: FileText,
-            },
-            {
-              title: 'Classify',
-              desc: 'Rules + AI create consistent categorization you can review and trust.',
-              icon: CheckCircle2,
-            },
-            {
-              title: 'Defend',
-              desc: 'Generate reports and outputs that hold up under scrutiny.',
-              icon: ShieldCheck,
-            },
-          ].map(({ title, desc, icon: Icon }) => (
+            { title: 'Core', icon: FileText, desc: 'Accounts, transactions, reporting foundations.' },
+            { title: 'Intelligence', icon: Sparkles, desc: 'AI Worker, alerts, patterns, decision context.' },
+            { title: 'CFO Mode', icon: LineChart, desc: 'Executive views and review-ready outputs.' },
+          ].map(({ title, icon: Icon, desc }) => (
             <div key={title} className="rounded-2xl border border-border bg-card p-6">
               <div className="flex items-center gap-2 font-semibold">
                 <Icon className="h-5 w-5 text-primary" />

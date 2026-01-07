@@ -70,11 +70,23 @@ export default function PlatformPage() {
                 Get Started <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/"
+                href="/how-it-works"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
               >
-                Back to Home <ArrowRight className="h-4 w-4" />
+                How it works <ArrowRight className="h-4 w-4" />
               </Link>
+              <Link
+                href="/packages"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
+              >
+                Packages <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-4 text-sm text-primary">
+              <Link href="/" className="hover:underline">Home</Link>
+              <Link href="/security" className="hover:underline">Security</Link>
+              <Link href="/support" className="hover:underline">Talk to Us</Link>
             </div>
           </div>
         </div>
@@ -185,10 +197,10 @@ export default function PlatformPage() {
                   Get Started <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="/support"
+                  href="/packages"
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
                 >
-                  Talk to Us <ArrowRight className="h-4 w-4" />
+                  View packages <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>

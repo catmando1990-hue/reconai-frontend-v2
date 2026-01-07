@@ -9,7 +9,7 @@ export function HeaderClerkControls() {
   return (
     <>
       <SignedIn>
-        <Link href="/dashboard" className="text-sm text-zinc-700 hover:text-zinc-900">
+        <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
           Dashboard
         </Link>
         <UserButton afterSignOutUrl="/" />

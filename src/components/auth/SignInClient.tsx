@@ -1,12 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 const SignIn = dynamic(() => import("@clerk/nextjs").then((m) => m.SignIn), { ssr: false });
 
-export default function SignInClient() {
+function SignInContent() {
   const searchParams = useSearchParams();
 
   const redirectUrl = useMemo(() => {
@@ -19,14 +19,22 @@ export default function SignInClient() {
   const afterSignInUrl = redirectUrl ?? "/dashboard";
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6" suppressHydrationWarning>
-      <SignIn
-        routing="path"
-        path="/sign-in"
-        redirectUrl={redirectUrl}
-        afterSignInUrl={afterSignInUrl}
-        afterSignUpUrl="/dashboard"
-      />
+    <SignIn
+      routing="path"
+      path="/sign-in"
+      redirectUrl={redirectUrl}
+      afterSignInUrl={afterSignInUrl}
+      afterSignUpUrl="/dashboard"
+    />
+  );
+}
+
+export default function SignInClient() {
+  return (
+    <div className="flex min-h-screen items-center justify-center p-6 bg-background">
+      <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+        <SignInContent />
+      </Suspense>
     </div>
   );
 }

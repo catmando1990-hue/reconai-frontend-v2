@@ -7,7 +7,12 @@
       "Bash(npm run lint)",
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(findstr:*)",
+      "Bash(dir c:devreconai-frontend-v2*.ts /b)",
+      "Bash(git update-index:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

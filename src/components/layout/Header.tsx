@@ -12,7 +12,7 @@ export function Header() {
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
-    <header className="w-full border-b border-zinc-200 bg-white text-zinc-900">
+    <header className="w-full border-b border-border bg-background text-foreground">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="text-sm font-semibold">
           ReconAI
@@ -22,7 +22,7 @@ export function Header() {
           {clerkEnabled ? (
             <Suspense
               fallback={
-                <Link href="/dashboard" className="text-sm text-zinc-700 hover:text-zinc-900">
+                <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
                   Dashboard
                 </Link>
               }
@@ -30,7 +30,7 @@ export function Header() {
               <HeaderClerkControlsLazy />
             </Suspense>
           ) : (
-            <Link href="/dashboard" className="text-sm text-zinc-700 hover:text-zinc-900">
+            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
               Dashboard
             </Link>
           )}

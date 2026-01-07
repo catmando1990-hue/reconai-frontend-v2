@@ -24,7 +24,6 @@ const USE_CASES: Array<{
   title: string;
   subtitle: string;
   Icon: React.ComponentType<{ className?: string }>;
-  headline: string;
   subheadline: string;
 }> = [
   {
@@ -32,7 +31,6 @@ const USE_CASES: Array<{
     title: 'Solo',
     subtitle: 'Operator-first clarity',
     Icon: Briefcase,
-    headline: 'Run tighter. Move faster.',
     subheadline:
       'Get clean categorization, defensible reports, and a clear financial story—without living in spreadsheets.',
   },
@@ -41,7 +39,6 @@ const USE_CASES: Array<{
     title: 'Small Business',
     subtitle: 'Systems that scale',
     Icon: Users,
-    headline: 'Make decisions with confidence.',
     subheadline:
       'Standardize how money moves through your business and keep outputs consistent across time, teams, and reviews.',
   },
@@ -50,7 +47,6 @@ const USE_CASES: Array<{
     title: 'Enterprise',
     subtitle: 'Audit-ready operations',
     Icon: Building2,
-    headline: 'Built for scrutiny.',
     subheadline:
       'Controls, traceability, and defensible outputs—designed for higher-stakes finance and compliance environments.',
   },

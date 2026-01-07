@@ -95,44 +95,20 @@ export default function PlatformPage() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 rounded-2xl overflow-hidden border border-border bg-card">
-            <Image
-              src="/product-dashboard-wide.jpg"
-              alt="Dashboard overview"
-              width={800}
-              height={288}
-              className="h-72 w-full object-cover"
-            />
+          <div className="lg:col-span-2 rounded-2xl overflow-hidden border border-border bg-card relative h-72">
+            <Image src="/product-dashboard-wide.jpg" alt="Dashboard overview" fill sizes="(min-width: 1024px) 760px, 100vw" className="object-cover" />
           </div>
-          <div className="rounded-2xl overflow-hidden border border-border bg-card">
-            <Image
-              src="/security-lock.jpg"
-              alt="Security"
-              width={400}
-              height={288}
-              className="h-72 w-full object-cover opacity-90 dark:opacity-85"
-            />
+          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-72">
+            <Image src="/security-lock.jpg" alt="Security" fill sizes="(min-width: 1024px) 360px, 100vw" className="object-cover opacity-90 dark:opacity-85" />
           </div>
         </div>
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-2xl overflow-hidden border border-border bg-card">
-            <Image
-              src="/product-dashboard-ui.jpg"
-              alt="UI detail"
-              width={600}
-              height={224}
-              className="h-56 w-full object-cover"
-            />
+          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-56">
+            <Image src="/product-dashboard-ui.jpg" alt="UI detail" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
           </div>
-          <div className="rounded-2xl overflow-hidden border border-border bg-card">
-            <Image
-              src="/product-charts-close.jpg"
-              alt="Charts and trends"
-              width={600}
-              height={224}
-              className="h-56 w-full object-cover"
-            />
+          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-56">
+            <Image src="/product-charts-close.jpg" alt="Charts and trends" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
           </div>
         </div>
       </section>
@@ -217,14 +193,8 @@ export default function PlatformPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl overflow-hidden border border-border bg-card">
-              <Image
-                src="/finance-tax-desk.jpg"
-                alt="Clean, reviewable financial operations"
-                width={800}
-                height={288}
-                className="h-72 w-full object-cover"
-              />
+            <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-72">
+              <Image src="/finance-tax-desk.jpg" alt="Clean, reviewable financial operations" fill sizes="(min-width: 1024px) 520px, 100vw" className="object-cover" />
             </div>
           </div>
         </div>

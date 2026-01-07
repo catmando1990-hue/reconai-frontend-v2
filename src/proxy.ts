@@ -48,7 +48,7 @@ export default clerkMiddleware(async (auth, req) => {
 
     if (!onboarded) {
       const url = req.nextUrl.clone();
-      url.pathname = "/onboarding";
+      url.pathname = "/onboarding/org";
       return NextResponse.redirect(url);
     }
   }

@@ -1,5 +1,5 @@
 import Providers from '@/app/providers';
-import { ClerkConditionalProvider } from '@/components/auth/ClerkConditionalProvider';
+import { ClerkProvider } from '@clerk/nextjs';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -24,9 +24,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ClerkConditionalProvider>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <ThemeProvider>
             <Providers>
               <div className="min-h-screen">
@@ -36,8 +36,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </Providers>
           </ThemeProvider>
-        </ClerkConditionalProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

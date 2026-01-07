@@ -1,6 +1,8 @@
 // src/app/api/proxy-export/route.ts
 // Proxies backend /export for browser download. Forwards auth + org header.
-// NOTE: Clerk auth() may be async depending on SDK version — we await it.
+//
+// IMPORTANT: In many Clerk versions, auth() is synchronous in Route Handlers.
+// Do NOT `await auth()` unless your installed Clerk types/docs explicitly say so.
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
@@ -8,8 +10,9 @@ import { auth } from "@clerk/nextjs/server";
 function requireBackendUrl() {
   const url = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!url) {
-    // Fail loudly so misconfig doesn't look like an auth bug
-    throw new Error("Missing NEXT_PUBLIC_API_BASE_URL. Set it in .env.local / hosting env.");
+    throw new Error(
+      "Missing NEXT_PUBLIC_API_BASE_URL. Set it in .env.local / hosting env."
+    );
   }
   return url.replace(/\/$/, "");
 }
@@ -17,10 +20,9 @@ function requireBackendUrl() {
 export async function GET(req: Request) {
   const BACKEND_URL = requireBackendUrl();
 
-  // Clerk token
-  // In newer Clerk SDK versions, auth() returns a Promise
-  const a = await auth();
-  const token = await a.getToken();
+  // Clerk token (auth() is sync in your version)
+  const { getToken } = auth();
+  const token = await getToken();
 
   // Forward org header from client request
   const orgId = req.headers.get("x-organization-id") || "";

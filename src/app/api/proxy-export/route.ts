@@ -1,31 +1,50 @@
-// app/api/proxy-export/route.ts
-// Proxies backend /export so browser download works cleanly with auth cookies/tokens.
+// src/app/api/proxy-export/route.ts
+// Proxies backend /export for browser download. Forwards auth + org header.
+// NOTE: Clerk auth() may be async depending on SDK version — we await it.
+
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+function requireBackendUrl() {
+  const url = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!url) {
+    // Fail loudly so misconfig doesn't look like an auth bug
+    throw new Error("Missing NEXT_PUBLIC_API_BASE_URL. Set it in .env.local / hosting env.");
+  }
+  return url.replace(/\/$/, "");
+}
 
 export async function GET(req: Request) {
-  const { getToken } = await auth();
-  const token = await getToken();
+  const BACKEND_URL = requireBackendUrl();
 
+  // Clerk token
+  // In newer Clerk SDK versions, auth() returns a Promise
+  const a = await auth();
+  const token = await a.getToken();
+
+  // Forward org header from client request
   const orgId = req.headers.get("x-organization-id") || "";
 
-  const res = await fetch(`${BACKEND_URL}/export`, {
+  const upstream = await fetch(`${BACKEND_URL}/export`, {
     method: "GET",
     headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "X-Organization-ID": orgId,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(orgId ? { "X-Organization-ID": orgId } : {}),
     },
   });
 
-  const body = await res.arrayBuffer();
+  const body = await upstream.arrayBuffer();
+
+  // Preserve upstream headers where useful
+  const contentType = upstream.headers.get("content-type") || "text/csv";
+  const contentDisposition =
+    upstream.headers.get("content-disposition") || "attachment; filename=export.csv";
 
   return new NextResponse(body, {
-    status: res.status,
+    status: upstream.status,
     headers: {
-      "Content-Type": res.headers.get("content-type") || "text/csv",
-      "Content-Disposition": res.headers.get("content-disposition") || "attachment; filename=export.csv",
+      "Content-Type": contentType,
+      "Content-Disposition": contentDisposition,
     },
   });
 }

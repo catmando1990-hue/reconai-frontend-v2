@@ -23,7 +23,7 @@ export default async function MarketingHome() {
           priority
         />
 
-        <div className="absolute inset-0 -z-10 
+        <div className="absolute inset-0 -z-10
          from-background/95 via-background/85 to-background/40" />
         <div className="absolute inset-0 -z-10 bg-linear-to-t from-background via-transparent to-transparent" />
 

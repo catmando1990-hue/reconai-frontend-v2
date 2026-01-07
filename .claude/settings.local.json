@@ -5,7 +5,9 @@
       "Bash(xargs ls:*)",
       "Bash(powershell -command:*)",
       "Bash(npm run lint)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)"
     ]
   }
 }

@@ -1,15 +1,15 @@
-import { auth } from "@clerk/nextjs/server";
-import Image from "next/image";
 import FeatureGrid from '@/components/marketing/FeatureGrid';
 import ProductShowcase from '@/components/marketing/ProductShowcase';
+import { auth } from '@clerk/nextjs/server';
+import Image from 'next/image';
 
 export default async function MarketingHome() {
   const { userId } = await auth();
 
-  const primaryHref = userId ? "/dashboard" : "/sign-in";
-  const primaryText = userId ? "Go to Dashboard" : "Sign In";
-  const secondaryHref = userId ? "/dashboard/connect-bank" : "/sign-up";
-  const secondaryText = userId ? "Connect a Bank" : "Create Account";
+  const primaryHref = userId ? '/dashboard' : '/sign-in';
+  const primaryText = userId ? 'Go to Dashboard' : 'Sign In';
+  const secondaryHref = userId ? '/dashboard/connect-bank' : '/sign-up';
+  const secondaryText = userId ? 'Connect a Bank' : 'Create Account';
 
   return (
     <main className="w-full">
@@ -33,13 +33,13 @@ export default async function MarketingHome() {
             </span>
 
             <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
-              Financial intelligence you can{" "}
+              Financial intelligence you can{' '}
               <span className="underline decoration-foreground/30 underline-offset-8">defend</span>.
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-              ReconAI transforms raw bank data into structured, auditable financial outputs —
-              giving individuals, businesses, and enterprises confidence in every decision.
+              ReconAI transforms raw bank data into structured, auditable financial outputs — giving
+              individuals, businesses, and enterprises confidence in every decision.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">

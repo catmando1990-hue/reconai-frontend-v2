@@ -23,7 +23,8 @@
       "Bash(timeout:*)",
       "Bash(ping:*)",
       "Bash(taskkill /PID 24800 /F)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)"
     ]
   }
 }

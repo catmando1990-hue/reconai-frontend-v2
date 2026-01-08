@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { getVideoUrl } from "@/config/video-urls";
 
 export function ComplianceShieldLoop() {
   const ref = useRef<HTMLVideoElement>(null);
+  const videoUrl = getVideoUrl("complianceShield", "/videos/compliance-shield-loop.mp4");
 
   useEffect(() => {
     const video = ref.current;
@@ -33,7 +35,7 @@ export function ComplianceShieldLoop() {
     <div className="w-full max-w-sm rounded-xl overflow-hidden border border-border bg-card">
       <video
         ref={ref}
-        src="/videos/compliance-shield-loop.mp4"
+        src={videoUrl}
         muted
         loop
         playsInline

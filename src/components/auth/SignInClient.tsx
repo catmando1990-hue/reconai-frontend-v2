@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
+import { dark } from "@clerk/themes";
 
 const SignIn = dynamic(() => import("@clerk/nextjs").then((m) => m.SignIn), {
   ssr: false,
@@ -10,6 +12,8 @@ const SignIn = dynamic(() => import("@clerk/nextjs").then((m) => m.SignIn), {
 
 function SignInContent() {
   const searchParams = useSearchParams();
+  const { resolvedTheme } = useTheme();
+  const clerkAppearance = resolvedTheme === "dark" ? { baseTheme: dark } : {};
 
   const redirectUrl = useMemo(() => {
     const v =
@@ -38,6 +42,7 @@ function SignInContent() {
       path="/sign-in"
       fallbackRedirectUrl={afterSignInUrl}
       forceRedirectUrl={redirectUrl}
+      appearance={clerkAppearance}
     />
   );
 }

@@ -4,12 +4,29 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
+// Strict validation for organization IDs to prevent header injection
+const ORG_ID_REGEX = /^[a-zA-Z0-9_-]{1,128}$/;
+
+function validateOrgId(orgId: string | null): string | null {
+  if (!orgId) return null;
+  // Prevent header injection: no newlines, carriage returns, or special chars
+  if (!ORG_ID_REGEX.test(orgId)) {
+    return null;
+  }
+  return orgId;
+}
+
 function requireBackendUrl() {
   const url = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!url) {
     throw new Error(
       "Missing NEXT_PUBLIC_API_BASE_URL. Set it in .env.local / hosting env.",
     );
+  }
+  // Validate URL format to prevent SSRF
+  const parsed = new URL(url);
+  if (!["https:", "http:"].includes(parsed.protocol)) {
+    throw new Error("Invalid backend URL protocol");
   }
   return url.replace(/\/$/, "");
 }
@@ -36,8 +53,9 @@ export async function GET(req: Request) {
 
   const token: string | null = await getTokenFn.call(authData);
 
-  // Forward org header from client request
-  const orgId = req.headers.get("x-organization-id") || "";
+  // Forward org header from client request with strict validation
+  const rawOrgId = req.headers.get("x-organization-id");
+  const orgId = validateOrgId(rawOrgId);
 
   const upstream = await fetch(`${BACKEND_URL}/export`, {
     method: "GET",

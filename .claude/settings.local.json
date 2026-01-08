@@ -34,7 +34,15 @@
       "Bash(find:*)",
       "Bash(ls:*)",
       "Bash(npm view:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git clone:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(git rm:*)",
+      "Bash(du:*)",
+      "Bash(git lfs:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(curl:*)"
     ]
   }
 }

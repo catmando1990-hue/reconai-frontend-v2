@@ -7,7 +7,7 @@
 }
 
 .onboarding-visual {
-  background-image: url('/security-lock.jpg');
+  background-image: url("/security-lock.jpg");
   background-repeat: no-repeat;
   background-position: right bottom;
   background-size: 60%;

@@ -24,7 +24,12 @@
       "Bash(ping:*)",
       "Bash(taskkill /PID 24800 /F)",
       "Bash(taskkill:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(for file in ai-worker alerts cash-flow certifications compliance dcaa financial-reports leases maintenance properties rent-collection tenants units cfo__overview)",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(npm run format:*)"
     ]
   }
 }

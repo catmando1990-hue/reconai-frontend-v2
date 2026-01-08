@@ -3,6 +3,7 @@
 // Keeps routes consistent across components/pages.
 
 export const API_ENDPOINTS = {
+  cfoSnapshot: "/cfo/snapshot",
   upload: "/upload",
   transactions: "/transactions",
   insights: "/insights",

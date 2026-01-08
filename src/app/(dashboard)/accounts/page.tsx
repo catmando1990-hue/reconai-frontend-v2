@@ -1,10 +1,10 @@
 import { RouteShell } from "@/components/dashboard/RouteShell";
 
-export default function CfoOverviewPage() {
+export default function AccountsPage() {
   return (
     <RouteShell
-      title="CFO Overview"
-      subtitle="Executive surfaces across financial posture and risk."
+      title="Accounts"
+      subtitle="Linked accounts, balances, and connection health."
     >
       <p className="text-sm text-muted-foreground">
         This section is wired and ready for logic phases.

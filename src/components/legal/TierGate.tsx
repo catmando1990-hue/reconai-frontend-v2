@@ -6,6 +6,7 @@ import React from "react";
 import { hasAccess, type AccessTier } from "@/lib/access";
 import { useOrg } from "@/lib/org-context";
 import { RouteShell } from "@/components/dashboard/RouteShell";
+import { UpgradeCTA } from "@/components/legal/UpgradeCTA";
 
 export function TierGate({
   tier,
@@ -36,6 +37,7 @@ export function TierGate({
             Role detected: {role ?? "unknown"}.
           </p>
         </div>
+        <UpgradeCTA />
       </RouteShell>
     );
   }

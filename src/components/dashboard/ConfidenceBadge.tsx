@@ -1,0 +1,6 @@
+export function ConfidenceBadge({ value }: { value: number }) {
+  const pct = Math.round(value * 100);
+  return (
+    <span className="rounded px-2 py-1 text-xs border">{pct}% confidence</span>
+  );
+}

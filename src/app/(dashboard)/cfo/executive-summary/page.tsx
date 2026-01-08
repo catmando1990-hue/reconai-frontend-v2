@@ -4,8 +4,9 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { useCfoSnapshot } from "@/lib/hooks/useCfoSnapshot";
-import { useOrg } from "@/lib/org-context";
-import { hasAccess } from "@/lib/access";
+import { TierGate } from "@/components/legal/TierGate";
+import { AI_DISCLAIMER, REGULATORY_DISCLAIMER } from "@/lib/legal/disclaimers";
+import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
@@ -16,10 +17,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function CfoExecutiveSummaryPage() {
-  const { role } = useOrg();
-  const allowed = hasAccess(role, "cfo");
-
+function ExecutiveSummaryBody() {
   const { data, isLoading, error, refetch } = useCfoSnapshot();
 
   return (
@@ -30,23 +28,20 @@ export default function CfoExecutiveSummaryPage() {
         <Button
           variant="outline"
           onClick={() => void refetch()}
-          disabled={isLoading || !allowed}
+          disabled={isLoading}
         >
           Refresh
         </Button>
       }
     >
-      {!allowed ? (
-        <div className="space-y-2">
-          <p className="text-sm">
-            This page is part of the CFO tier. Request access or upgrade your
-            plan to unlock CFO tools.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Role detected: {role ?? "unknown"}.
-          </p>
-        </div>
-      ) : isLoading ? (
+      <div className="space-y-2">
+        <DisclaimerNotice>{AI_DISCLAIMER}</DisclaimerNotice>
+        <DisclaimerNotice>{REGULATORY_DISCLAIMER}</DisclaimerNotice>
+      </div>
+
+      <div className="h-6" />
+
+      {isLoading ? (
         <p className="text-sm text-muted-foreground">
           Loading executive summary…
         </p>
@@ -128,5 +123,17 @@ export default function CfoExecutiveSummaryPage() {
         </p>
       )}
     </RouteShell>
+  );
+}
+
+export default function CfoExecutiveSummaryPage() {
+  return (
+    <TierGate
+      tier="cfo"
+      title="Executive Summary"
+      subtitle="Upgrade or request access to unlock CFO tools."
+    >
+      <ExecutiveSummaryBody />
+    </TierGate>
   );
 }

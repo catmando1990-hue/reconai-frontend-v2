@@ -42,7 +42,8 @@
       "Bash(du:*)",
       "Bash(git lfs:*)",
       "Bash(git ls-tree:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(python3:*)"
     ]
   }
 }

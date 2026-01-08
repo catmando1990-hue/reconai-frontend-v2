@@ -44,7 +44,11 @@
       "Bash(git ls-tree:*)",
       "Bash(curl:*)",
       "Bash(python3:*)",
-      "Bash(git fsck:*)"
+      "Bash(git fsck:*)",
+      "Bash(git fetch:*)",
+      "Bash(git ls-files:*)",
+      "Bash(npx vercel link:*)",
+      "Bash(./node_modules/.bin/vercel link:*)"
     ]
   }
 }

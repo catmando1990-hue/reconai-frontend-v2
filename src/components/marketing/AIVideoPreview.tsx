@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { getVideoUrl } from "@/config/video-urls";
 
 export function AIVideoPreview() {
   const ref = useRef<HTMLVideoElement>(null);
+  const previewVideoUrl = getVideoUrl("reconaiPreview", "/videos/reconai-preview.mp4");
 
   useEffect(() => {
     const video = ref.current;
@@ -28,7 +30,7 @@ export function AIVideoPreview() {
     <div className="mt-6 max-w-2xl rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       <video
         ref={ref}
-        src="/videos/reconai-preview.mp4"
+        src={previewVideoUrl}
         muted
         loop
         playsInline

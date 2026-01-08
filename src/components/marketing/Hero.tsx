@@ -3,8 +3,11 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { getVideoUrl } from "@/config/video-urls";
 
 export default function Hero() {
+  const heroVideoUrl = getVideoUrl("heroLoop", "/videos/hero-loop.mp4");
+  const heroPosterUrl = getVideoUrl("heroPoster", "/videos/hero-poster.webp");
   const reduceMotion = useReducedMotion();
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -70,10 +73,10 @@ export default function Hero() {
           loop
           playsInline
           preload="auto"
-          poster="/videos/hero-poster.webp"
+          poster={heroPosterUrl}
           className="absolute inset-0 z-0 h-full w-full object-cover"
         >
-          <source src="/videos/hero-loop.mp4" type="video/mp4" />
+          <source src={heroVideoUrl} type="video/mp4" />
         </video>
 
         {/* Soft gradient mask for text contrast (works in light + dark) */}

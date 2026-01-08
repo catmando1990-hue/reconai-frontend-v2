@@ -264,9 +264,9 @@ export function MarketingHomePage() {
               <ComplianceShieldLoop />
             </div>
 
-            <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="h-5 w-5 text-primary" />
+            <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card/90 backdrop-blur p-4">
+                <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
                 <div>
                   <div className="font-medium">Compliance-minded</div>
                   <div className="text-muted-foreground">
@@ -274,8 +274,8 @@ export function MarketingHomePage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Lock className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card/90 backdrop-blur p-4">
+                <Lock className="h-5 w-5 text-primary shrink-0" />
                 <div>
                   <div className="font-medium">Secure by default</div>
                   <div className="text-muted-foreground">
@@ -283,8 +283,8 @@ export function MarketingHomePage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card/90 backdrop-blur p-4">
+                <FileText className="h-5 w-5 text-primary shrink-0" />
                 <div>
                   <div className="font-medium">Defensible outputs</div>
                   <div className="text-muted-foreground">

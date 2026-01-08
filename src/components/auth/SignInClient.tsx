@@ -25,9 +25,8 @@ function SignInContent() {
     <SignIn
       routing="path"
       path="/sign-in"
-      redirectUrl={redirectUrl}
-      afterSignInUrl={afterSignInUrl}
-      afterSignUpUrl="/dashboard"
+      fallbackRedirectUrl={afterSignInUrl}
+      forceRedirectUrl={redirectUrl}
     />
   );
 }

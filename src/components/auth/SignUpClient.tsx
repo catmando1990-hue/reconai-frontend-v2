@@ -25,9 +25,8 @@ function SignUpContent() {
     <SignUp
       routing="path"
       path="/sign-up"
-      redirectUrl={redirectUrl}
-      afterSignUpUrl={afterSignUpUrl}
-      afterSignInUrl="/dashboard"
+      fallbackRedirectUrl={afterSignUpUrl}
+      forceRedirectUrl={redirectUrl}
     />
   );
 }

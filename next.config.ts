@@ -1,5 +1,36 @@
 import type { NextConfig } from "next";
 
+// Content Security Policy directives
+const cspDirectives = [
+  "default-src 'self'",
+  // Scripts: self + inline for Next.js + Clerk + Vercel analytics
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://challenges.cloudflare.com https://vercel.live",
+  // Styles: self + inline for Tailwind and component libraries
+  "style-src 'self' 'unsafe-inline'",
+  // Images: self + data URIs + blob + trusted CDNs
+  "img-src 'self' data: blob: https://*.clerk.dev https://*.clerk.accounts.dev https://img.clerk.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
+  // Fonts: self + data URIs
+  "font-src 'self' data:",
+  // Connect: API endpoints + Clerk + analytics
+  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev",
+  // Media: self + Vercel Blob storage
+  "media-src 'self' https://*.vercel-storage.com https://*.public.blob.vercel-storage.com blob:",
+  // Frame: self + Clerk for auth flows
+  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+  // Frame ancestors: prevent clickjacking
+  "frame-ancestors 'self'",
+  // Form actions: self only
+  "form-action 'self'",
+  // Base URI: self only
+  "base-uri 'self'",
+  // Object: none (block plugins)
+  "object-src 'none'",
+  // Upgrade insecure requests in production
+  "upgrade-insecure-requests",
+];
+
+const cspHeader = cspDirectives.join("; ");
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
   async headers() {
@@ -14,6 +45,10 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: cspHeader,
           },
         ],
       },

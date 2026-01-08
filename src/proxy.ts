@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { get } from "@vercel/edge-config";
+import { has, get } from "@vercel/edge-config";
 
 /**
  * Next.js 16 uses `src/proxy.ts` instead of middleware.ts.
@@ -32,8 +32,11 @@ function isTruthy(v: unknown): boolean {
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
 
-  // Check maintenance mode from Edge Config
-  const maintenance = await get<boolean>("maintenance_mode");
+  // Check maintenance mode from Edge Config (only if key exists)
+  const hasMaintenanceKey = await has("maintenance_mode");
+  const maintenance = hasMaintenanceKey
+    ? await get<boolean>("maintenance_mode")
+    : false;
 
   if (maintenance) {
     const session = await auth();

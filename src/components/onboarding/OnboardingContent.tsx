@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
@@ -18,16 +17,7 @@ function setCookie(name: string, value: string, days: number) {
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
 }
 
-/**
- * Phase 15:
- * - Light/Dark compatible (semantic tokens)
- * - Writes BOTH:
- *   publicMetadata.onboarded = true (preferred)
- *   unsafeMetadata.onboardingComplete = true (fallback/legacy)
- * - Redirects cleanly to /dashboard after completion
- */
-
-export default function OnboardingPage() {
+export function OnboardingContent() {
   const { user, isLoaded } = useUser();
 
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -51,8 +41,6 @@ export default function OnboardingPage() {
     try {
       const now = new Date().toISOString();
 
-      // Write unsafeMetadata (client-settable). publicMetadata requires server-side API.
-      // The middleware checks both publicMetadata.onboarded AND unsafeMetadata.onboardingComplete.
       await user.update({
         unsafeMetadata: {
           ...(user.unsafeMetadata ?? {}),
@@ -65,12 +53,10 @@ export default function OnboardingPage() {
 
       await user.reload();
 
-      // Set cookie as fallback for middleware (unsafeMetadata isn't in JWT by default)
       setCookie("onboarding_complete", "true", 365);
 
       setCompleted(true);
 
-      // Hard redirect to force fresh session check by middleware.
       setTimeout(() => {
         window.location.href = "/dashboard";
       }, 650);
@@ -86,7 +72,7 @@ export default function OnboardingPage() {
 
   if (!isLoaded) {
     return (
-      <main className="min-h-[80vh] flex items-center justify-center bg-background text-foreground px-6">
+      <main className="min-h-[80vh] flex items-center justify-center text-foreground px-6">
         <div className="flex items-center gap-3 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
           Loading...
@@ -96,19 +82,8 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="relative min-h-[92vh] overflow-hidden text-foreground px-6 py-16">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/hero/onboarding-hero.png"
-          alt="ReconAI onboarding background"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-40 dark:opacity-30"
-        />
-        <div className="absolute inset-0 bg-background/80 dark:bg-background/75" />
-      </div>
-      <div className="relative z-10 mx-auto max-w-3xl">
+    <main className="min-h-[92vh] text-foreground px-6 py-16">
+      <div className="mx-auto max-w-3xl">
         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
           <Sparkles className="h-4 w-4 text-primary" />
           One-time setup

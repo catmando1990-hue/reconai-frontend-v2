@@ -4,19 +4,19 @@ import type { NextConfig } from "next";
 const cspDirectives = [
   "default-src 'self'",
   // Scripts: self + inline for Next.js + Clerk + Vercel analytics
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://challenges.cloudflare.com https://vercel.live",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://vercel.live",
   // Styles: self + inline for Tailwind and component libraries
   "style-src 'self' 'unsafe-inline'",
   // Images: self + data URIs + blob + trusted CDNs
-  "img-src 'self' data: blob: https://*.clerk.dev https://*.clerk.accounts.dev https://img.clerk.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
+  "img-src 'self' data: blob: https://*.clerk.dev https://*.clerk.accounts.dev https://img.clerk.com https://clerk.reconaitechnology.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
   // Fonts: self + data URIs
   "font-src 'self' data:",
   // Connect: API endpoints + Clerk + analytics
-  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev",
+  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev wss://clerk.reconaitechnology.com",
   // Media: self + Vercel Blob storage
   "media-src 'self' https://*.vercel-storage.com https://*.public.blob.vercel-storage.com blob:",
   // Frame: self + Clerk for auth flows
-  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com",
   // Frame ancestors: prevent clickjacking
   "frame-ancestors 'self'",
   // Form actions: self only

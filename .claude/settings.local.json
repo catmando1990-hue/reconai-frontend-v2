@@ -51,7 +51,8 @@
       "Bash(./node_modules/.bin/vercel link:*)",
       "Bash(npm audit:*)",
       "Bash(pip-audit:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(git log:*)"
     ]
   }
 }

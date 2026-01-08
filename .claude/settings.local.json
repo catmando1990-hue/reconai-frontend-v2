@@ -29,7 +29,8 @@
       "Bash(do)",
       "Bash(echo:*)",
       "Bash(done)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "Bash(git push)"
     ]
   }
 }

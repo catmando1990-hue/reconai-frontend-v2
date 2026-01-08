@@ -242,58 +242,61 @@ export function MarketingHomePage() {
         </div>
       </section>
 
-      {/* TRUST STRIP */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-6xl px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-          <div className="md:col-span-1">
-            <ComplianceShieldLoop />
-          </div>
+      {/* TRUST STRIP + PACKAGES SECTION - Combined with shared background */}
+      <section className="relative overflow-hidden">
+        {/* Background image covering both sections */}
+        <Image
+          src="/packages-hero-bg.jpg"
+          alt=""
+          fill
+          className="object-cover object-center opacity-15 dark:opacity-25"
+          aria-hidden="true"
+        />
+        {/* Smooth gradient transition from hero above + text readability */}
+        <div className="absolute inset-0 bg-linear-to-b from-background via-background/85 via-15% to-background/90 dark:from-background dark:via-background/75 dark:via-15% dark:to-background/85" />
+        {/* Subtle top fade for seamless hero transition */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-background to-transparent" />
 
-          <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <div>
-                <div className="font-medium">Compliance-minded</div>
-                <div className="text-muted-foreground">
-                  Controls + auditability baked in
+        {/* TRUST STRIP */}
+        <div className="relative z-10 border-t border-border/50">
+          <div className="mx-auto max-w-6xl px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+            <div className="md:col-span-1">
+              <ComplianceShieldLoop />
+            </div>
+
+            <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="font-medium">Compliance-minded</div>
+                  <div className="text-muted-foreground">
+                    Controls + auditability baked in
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Lock className="h-5 w-5 text-primary" />
-              <div>
-                <div className="font-medium">Secure by default</div>
-                <div className="text-muted-foreground">
-                  Designed for sensitive financial data
+              <div className="flex items-center gap-3">
+                <Lock className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="font-medium">Secure by default</div>
+                  <div className="text-muted-foreground">
+                    Designed for sensitive financial data
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <FileText className="h-5 w-5 text-primary" />
-              <div>
-                <div className="font-medium">Defensible outputs</div>
-                <div className="text-muted-foreground">
-                  Evidence you can stand behind
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="font-medium">Defensible outputs</div>
+                  <div className="text-muted-foreground">
+                    Evidence you can stand behind
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* PACKAGES SECTION (Phase 14) */}
-      <section className="relative overflow-hidden">
-        {/* Background image */}
-        <Image
-          src="/packages-hero-bg.jpg"
-          alt=""
-          fill
-          className="object-cover opacity-20 dark:opacity-30"
-          aria-hidden="true"
-        />
-        {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/70 to-background/90 dark:from-background/70 dark:via-background/60 dark:to-background/85" />
-
+        {/* PACKAGES SECTION */}
         <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
           <div className="flex items-end justify-between gap-6 flex-wrap">
             <div>

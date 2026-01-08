@@ -249,13 +249,13 @@ export function MarketingHomePage() {
           src="/packages-hero-bg.jpg"
           alt=""
           fill
-          className="object-cover object-center opacity-15 dark:opacity-25"
+          className="object-cover object-center opacity-40 dark:opacity-50"
           aria-hidden="true"
         />
         {/* Smooth gradient transition from hero above + text readability */}
-        <div className="absolute inset-0 bg-linear-to-b from-background via-background/85 via-15% to-background/90 dark:from-background dark:via-background/75 dark:via-15% dark:to-background/85" />
+        <div className="absolute inset-0 bg-linear-to-b from-background/90 via-background/60 to-background/70 dark:from-background/85 dark:via-background/50 dark:to-background/60" />
         {/* Subtle top fade for seamless hero transition */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-background to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-background via-background/80 to-transparent" />
 
         {/* TRUST STRIP */}
         <div className="relative z-10 border-t border-border/50">

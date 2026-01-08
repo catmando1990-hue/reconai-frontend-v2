@@ -353,133 +353,149 @@ export function MarketingHomePage() {
         </div>
       </section>
 
-      {/* PRODUCT PROOF */}
-      <section className="mx-auto max-w-6xl px-6 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              See your business like a CFO—without becoming one
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              ReconAI organizes transactions, highlights patterns, and delivers
-              insight that&apos;s clear, consistent, and ready for serious
-              review.
-            </p>
+      {/* PRODUCT PROOF + FINAL CTA - Combined with shared background */}
+      <section className="relative overflow-hidden">
+        {/* Background image covering both sections */}
+        <Image
+          src="/cta-hero-bg.jpg"
+          alt=""
+          fill
+          className="object-cover object-center opacity-30 dark:opacity-40"
+          aria-hidden="true"
+        />
+        {/* Smooth gradient transition from packages section above */}
+        <div className="absolute inset-0 bg-linear-to-b from-background via-background/70 to-background/80 dark:from-background dark:via-background/60 dark:to-background/70" />
+        {/* Top fade for seamless transition */}
+        <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-background via-background/80 to-transparent" />
 
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div className="rounded-xl border border-border bg-card p-4">
-                <div className="flex items-center gap-2 font-medium">
-                  <LineChart className="h-4 w-4 text-primary" />
-                  Clear reporting
-                </div>
-                <div className="mt-1 text-muted-foreground">
-                  Cash flow, performance, and risk signals in one place.
-                </div>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <div className="flex items-center gap-2 font-medium">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Audit-ready trails
-                </div>
-                <div className="mt-1 text-muted-foreground">
-                  Consistent classification and defensible records.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            <div className="rounded-2xl overflow-hidden border border-border bg-card">
-              <Image
-                src="/product-dashboard-wide.jpg"
-                alt="Modern financial intelligence dashboard"
-                width={800}
-                height={256}
-                className="h-64 w-full object-cover"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-2xl overflow-hidden border border-border bg-card">
-                <Image
-                  src="/product-dashboard-ui.jpg"
-                  alt="Financial reporting interface"
-                  width={400}
-                  height={176}
-                  className="h-44 w-full object-cover"
-                />
-              </div>
-              <div className="rounded-2xl overflow-hidden border border-border bg-card">
-                <Image
-                  src="/product-charts-close.jpg"
-                  alt="Charts and trend analysis"
-                  width={400}
-                  height={176}
-                  className="h-44 w-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center rounded-3xl border border-border bg-background p-8 md:p-12 overflow-hidden">
+        {/* PRODUCT PROOF */}
+        <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div>
-              <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-                Built for founders, operators, and teams that take finance
-                seriously
-              </h3>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                See your business like a CFO—without becoming one
+              </h2>
               <p className="mt-4 text-muted-foreground">
-                If your decisions need to stand up to scrutiny, ReconAI is built
-                for you.
+                ReconAI organizes transactions, highlights patterns, and
+                delivers insight that&apos;s clear, consistent, and ready for
+                serious review.
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <SignedOut>
-                  <Link
-                    href="/sign-in"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-                  >
-                    Start Now <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </SignedOut>
-                <SignedIn>
-                  <Link
-                    href="/dashboard"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-                  >
-                    Open Dashboard <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </SignedIn>
-                <Link
-                  href="/support"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-                >
-                  Talk to Us <ArrowRight className="h-4 w-4" />
-                </Link>
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4">
+                  <div className="flex items-center gap-2 font-medium">
+                    <LineChart className="h-4 w-4 text-primary" />
+                    Clear reporting
+                  </div>
+                  <div className="mt-1 text-muted-foreground">
+                    Cash flow, performance, and risk signals in one place.
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4">
+                  <div className="flex items-center gap-2 font-medium">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Audit-ready trails
+                  </div>
+                  <div className="mt-1 text-muted-foreground">
+                    Consistent classification and defensible records.
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               <div className="rounded-2xl overflow-hidden border border-border bg-card">
                 <Image
-                  src="/user-owner-laptop.jpg"
-                  alt="Founder working with confidence"
-                  width={600}
-                  height={176}
-                  className="h-44 w-full object-cover"
+                  src="/product-dashboard-wide.jpg"
+                  alt="Modern financial intelligence dashboard"
+                  width={800}
+                  height={256}
+                  className="h-64 w-full object-cover"
                 />
               </div>
-              <div className="rounded-2xl overflow-hidden border border-border bg-card">
-                <Image
-                  src="/user-success.jpg"
-                  alt="Positive financial outcomes for small business owners"
-                  width={600}
-                  height={176}
-                  className="h-44 w-full object-cover"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                  <Image
+                    src="/product-dashboard-ui.jpg"
+                    alt="Financial reporting interface"
+                    width={400}
+                    height={176}
+                    className="h-44 w-full object-cover"
+                  />
+                </div>
+                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                  <Image
+                    src="/product-charts-close.jpg"
+                    alt="Charts and trend analysis"
+                    width={400}
+                    height={176}
+                    className="h-44 w-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* FINAL CTA */}
+        <div className="relative z-10 border-t border-border/50">
+          <div className="mx-auto max-w-6xl px-6 py-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center rounded-3xl border border-border bg-card/90 backdrop-blur p-8 md:p-12 overflow-hidden">
+              <div>
+                <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
+                  Built for founders, operators, and teams that take finance
+                  seriously
+                </h3>
+                <p className="mt-4 text-muted-foreground">
+                  If your decisions need to stand up to scrutiny, ReconAI is
+                  built for you.
+                </p>
+
+                <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                  <SignedOut>
+                    <Link
+                      href="/sign-in"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
+                    >
+                      Start Now <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </SignedOut>
+                  <SignedIn>
+                    <Link
+                      href="/dashboard"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
+                    >
+                      Open Dashboard <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </SignedIn>
+                  <Link
+                    href="/support"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
+                  >
+                    Talk to Us <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                  <Image
+                    src="/user-owner-laptop.jpg"
+                    alt="Founder working with confidence"
+                    width={600}
+                    height={176}
+                    className="h-44 w-full object-cover"
+                  />
+                </div>
+                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                  <Image
+                    src="/user-success.jpg"
+                    alt="Positive financial outcomes for small business owners"
+                    width={600}
+                    height={176}
+                    className="h-44 w-full object-cover"
+                  />
+                </div>
               </div>
             </div>
           </div>

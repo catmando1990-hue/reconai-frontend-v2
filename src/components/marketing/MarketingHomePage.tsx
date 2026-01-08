@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SignedIn, SignedOut } from '@clerk/nextjs';
@@ -17,6 +17,7 @@ import {
   Briefcase,
   Layers,
 } from 'lucide-react';
+import { AIVideoPreview } from './AIVideoPreview';
 
 type UseCase = 'solo' | 'smb' | 'enterprise';
 
@@ -58,57 +59,11 @@ function cx(...parts: Array<string | false | undefined | null>) {
 }
 
 export function MarketingHomePage() {
-  const heroRef = useRef<HTMLDivElement | null>(null);
   const [useCase, setUseCase] = useState<UseCase>('smb');
   const [showSticky, setShowSticky] = useState(false);
 
   const uc = USE_CASES.find((u) => u.id === useCase)!;
 
-  // Subtle hero motion: rAF-throttled + respects Reduce Motion
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-
-    // Check motion preference on client only
-    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
-    if (prefersReduced) return;
-
-    let raf = 0;
-    let targetX = 0;
-    let targetY = 0;
-    let curX = 0;
-    let curY = 0;
-
-    const onMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      targetX = Math.max(-0.5, Math.min(0.5, x));
-      targetY = Math.max(-0.5, Math.min(0.5, y));
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-
-    const tick = () => {
-      raf = 0;
-      curX += (targetX - curX) * 0.08;
-      curY += (targetY - curY) * 0.08;
-      el.style.setProperty('--mx', String(curX));
-      el.style.setProperty('--my', String(curY));
-    };
-
-    // Apply transform styles only on client after hydration
-    el.style.transform = 'translate3d(calc(var(--mx, 0) * 10px), calc(var(--my, 0) * 10px), 0)';
-    const secondaryImg = el.querySelector('[data-parallax-secondary]') as HTMLElement | null;
-    if (secondaryImg) {
-      secondaryImg.style.transform = 'translate3d(calc(var(--mx, 0) * -14px), calc(var(--my, 0) * -14px), 0)';
-    }
-
-    window.addEventListener('mousemove', onMove, { passive: true });
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
 
   // Sticky CTA: show after scroll
   useEffect(() => {
@@ -122,12 +77,9 @@ export function MarketingHomePage() {
 
   return (
     <main className="bg-background text-foreground">
-      {/* HERO (image + gradient + subtle motion) */}
+      {/* HERO */}
       <section className="relative overflow-hidden">
-        <div
-          ref={heroRef}
-          className="relative min-h-[92vh] flex items-center justify-center px-6 py-24"
-        >
+        <div className="relative min-h-[92vh] flex items-center justify-center px-6 py-24">
           <Image
             src="/hero-boardroom.jpg"
             alt="Enterprise team collaborating with financial intelligence dashboards"
@@ -140,7 +92,6 @@ export function MarketingHomePage() {
             alt="Leadership team alignment"
             fill
             className="object-cover opacity-0 dark:opacity-10"
-            data-parallax-secondary=""
             style={{
               filter: 'blur(1px)',
             }}
@@ -231,6 +182,11 @@ export function MarketingHomePage() {
               <Link href="/security" className="text-primary hover:underline">
                 Security
               </Link>
+            </div>
+
+            {/* AI Video Preview */}
+            <div className="mt-8 flex justify-center">
+              <AIVideoPreview />
             </div>
 
             {/* Proof strip */}

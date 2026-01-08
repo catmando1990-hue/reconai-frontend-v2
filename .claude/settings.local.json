@@ -13,7 +13,9 @@
       "Bash(git update-index:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(git -C c:/dev/reconai-frontend-v2 status --short public/videos/)",
+      "Bash(git -C c:/dev/reconai-frontend-v2 status)"
     ]
   }
 }

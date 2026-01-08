@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { get } from "@vercel/edge-config";
 
 /**
  * Next.js 16 uses `src/proxy.ts` instead of middleware.ts.
@@ -11,6 +12,11 @@ import { NextResponse } from "next/server";
  * - Treat user as onboarded if either:
  *    publicMetadata.onboarded === true
  *    OR unsafeMetadata.onboardingComplete === true (legacy)
+ *
+ * Phase 16 (Maintenance Mode):
+ * - Admin-only bypass using Clerk role: `admin`
+ * - Edge Config toggles maintenance_mode
+ * - Non-admin users redirected to /maintenance
  */
 
 const isProtectedRoute = createRouteMatcher([
@@ -25,6 +31,29 @@ function isTruthy(v: unknown): boolean {
 
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
+
+  // Check maintenance mode from Edge Config
+  const maintenance = await get<boolean>("maintenance_mode");
+
+  if (maintenance) {
+    const session = await auth();
+    const claims = session.sessionClaims as Record<string, unknown> | null;
+    const publicMetadata = claims?.publicMetadata as
+      | Record<string, unknown>
+      | undefined;
+    const role = publicMetadata?.role as string | undefined;
+    const isAdmin = role === "admin";
+    const isMaintenancePage =
+      pathname === "/maintenance" || pathname.startsWith("/maintenance/");
+    const isAdminRoute = pathname.startsWith("/admin");
+
+    // Redirect non-admins to maintenance page (except admin routes and maintenance page itself)
+    if (!isAdmin && !isMaintenancePage && !isAdminRoute) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/maintenance";
+      return NextResponse.redirect(url);
+    }
+  }
 
   // Marketing landing is always public.
   if (pathname === "/") return NextResponse.next();

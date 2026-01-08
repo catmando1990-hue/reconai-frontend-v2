@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { Suspense, createContext, useContext, useMemo } from 'react';
+import React, { Suspense, createContext, useContext, useMemo } from "react";
 
 export type OrgContextValue = {
   org_id: string | null;
@@ -19,7 +19,7 @@ const DEFAULT_ORG_CONTEXT: OrgContextValue = {
 const OrgContext = createContext<OrgContextValue>(DEFAULT_ORG_CONTEXT);
 
 const OrgProviderClerkLazy = React.lazy(async () => {
-  const { useAuth, useOrganization } = await import('@clerk/nextjs');
+  const { useAuth, useOrganization } = await import("@clerk/nextjs");
 
   function OrgProviderClerk({ children }: { children: React.ReactNode }) {
     const { isLoaded: authLoaded, orgId, orgRole } = useAuth();
@@ -32,7 +32,7 @@ const OrgProviderClerkLazy = React.lazy(async () => {
         role: orgRole ?? null,
         isLoaded: authLoaded && orgLoaded,
       }),
-      [authLoaded, orgLoaded, orgId, orgRole, organization?.name]
+      [authLoaded, orgLoaded, orgId, orgRole, organization?.name],
     );
 
     return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
@@ -45,14 +45,20 @@ export function OrgProvider({ children }: { children: React.ReactNode }) {
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   if (!clerkEnabled) {
-    return <OrgContext.Provider value={DEFAULT_ORG_CONTEXT}>{children}</OrgContext.Provider>;
+    return (
+      <OrgContext.Provider value={DEFAULT_ORG_CONTEXT}>
+        {children}
+      </OrgContext.Provider>
+    );
   }
 
   // While the Clerk hooks chunk loads, expose a stable “not loaded yet” state.
   return (
     <Suspense
       fallback={
-        <OrgContext.Provider value={{ ...DEFAULT_ORG_CONTEXT, isLoaded: false }}>
+        <OrgContext.Provider
+          value={{ ...DEFAULT_ORG_CONTEXT, isLoaded: false }}
+        >
           {children}
         </OrgContext.Provider>
       }

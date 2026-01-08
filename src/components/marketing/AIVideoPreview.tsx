@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 export function AIVideoPreview() {
   const ref = useRef<HTMLVideoElement>(null);
@@ -17,7 +17,7 @@ export function AIVideoPreview() {
           video.pause();
         }
       },
-      { threshold: 0.25 }
+      { threshold: 0.25 },
     );
 
     observer.observe(video);
@@ -28,7 +28,7 @@ export function AIVideoPreview() {
     <div className="mt-6 max-w-2xl rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       <video
         ref={ref}
-        src="/video/reconai-preview.mp4"
+        src="/videos/reconai-preview.mp4"
         muted
         loop
         playsInline

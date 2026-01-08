@@ -1,10 +1,24 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, Layers, Sparkles, ShieldCheck, LineChart, FileText, CheckCircle2 } from 'lucide-react';
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Layers,
+  Sparkles,
+  ShieldCheck,
+  LineChart,
+  FileText,
+  CheckCircle2,
+} from "lucide-react";
 
-function Pill({ icon: Icon, text }: { icon: React.ComponentType<{ className?: string }>; text: string }) {
+function Pill({
+  icon: Icon,
+  text,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  text: string;
+}) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
       <Icon className="h-4 w-4 text-primary" />
@@ -33,9 +47,9 @@ function Card({
   return (
     <div
       className={[
-        'rounded-3xl border bg-card p-7',
-        featured ? 'border-primary/60 shadow-sm' : 'border-border',
-      ].join(' ')}
+        "rounded-3xl border bg-card p-7",
+        featured ? "border-primary/60 shadow-sm" : "border-border",
+      ].join(" ")}
     >
       <div className="flex items-center gap-2 font-semibold">
         <Icon className="h-5 w-5 text-primary" />
@@ -56,11 +70,11 @@ function Card({
         <Link
           href={ctaHref}
           className={[
-            'inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 transition',
+            "inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 transition",
             featured
-              ? 'bg-primary text-primary-foreground hover:opacity-90'
-              : 'border border-border hover:bg-accent',
-          ].join(' ')}
+              ? "bg-primary text-primary-foreground hover:opacity-90"
+              : "border border-border hover:bg-accent",
+          ].join(" ")}
         >
           {ctaLabel} <ArrowRight className="h-4 w-4" />
         </Link>
@@ -93,8 +107,10 @@ export default function PackagesPage() {
               Choose the layer of ReconAI you need
             </h1>
             <p className="mt-4 max-w-3xl text-muted-foreground text-lg">
-              ReconAI is built in layers. Start with Core, add Intelligence for signals and support, and unlock CFO Mode
-              for executive-level clarity. Compliance is implied by design—defensibility is foundational.
+              ReconAI is built in layers. Start with Core, add Intelligence for
+              signals and support, and unlock CFO Mode for executive-level
+              clarity. Compliance is implied by design—defensibility is
+              foundational.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -120,12 +136,18 @@ export default function PackagesPage() {
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
             <Pill icon={Sparkles} text="Public packages" />
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">Core → Intelligence → CFO Mode</h2>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">
+              Core → Intelligence → CFO Mode
+            </h2>
             <p className="mt-2 text-muted-foreground max-w-2xl">
-              These packages describe capability layers—not price tiers. We keep the story simple and defensible.
+              These packages describe capability layers—not price tiers. We keep
+              the story simple and defensible.
             </p>
           </div>
-          <Link href="/sign-in" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+          <Link
+            href="/sign-in"
+            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+          >
             Get started <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -136,9 +158,9 @@ export default function PackagesPage() {
             icon={FileText}
             desc="Structured financial reality. Clean inputs and consistent outputs."
             bullets={[
-              'Accounts + transaction organization',
-              'Bills, invoices, customers, vendors',
-              'Reporting foundation (cash flow, aging, summaries)',
+              "Accounts + transaction organization",
+              "Bills, invoices, customers, vendors",
+              "Reporting foundation (cash flow, aging, summaries)",
             ]}
             ctaHref="/sign-in"
             ctaLabel="Start with Core"
@@ -149,8 +171,8 @@ export default function PackagesPage() {
             icon={Sparkles}
             desc="Signals, patterns, and an AI Worker that helps you move faster with confidence."
             bullets={[
-              'AI Worker + workflow support',
-              'Alerts, patterns, anomaly signals',
+              "AI Worker + workflow support",
+              "Alerts, patterns, anomaly signals",
               'Decision context without "AI magic"',
             ]}
             ctaHref="/platform"
@@ -163,9 +185,9 @@ export default function PackagesPage() {
             icon={LineChart}
             desc="Executive-level clarity for decisions and review environments."
             bullets={[
-              'Executive summaries + performance signals',
-              'Lender / stakeholder-ready narratives',
-              'Outputs designed to be reviewed and defended',
+              "Executive summaries + performance signals",
+              "Lender / stakeholder-ready narratives",
+              "Outputs designed to be reviewed and defended",
             ]}
             ctaHref="/how-it-works"
             ctaLabel="See the system flow"
@@ -182,9 +204,11 @@ export default function PackagesPage() {
               Defensibility is foundational—not an add-on
             </h3>
             <p className="mt-4 text-muted-foreground">
-              We avoid loud compliance marketing. Instead, we build outputs meant to survive scrutiny through traceability,
-              consistency, and review-friendly reporting. For enterprise or government environments, we&apos;ll walk you through
-              the posture and intended controls.
+              We avoid loud compliance marketing. Instead, we build outputs
+              meant to survive scrutiny through traceability, consistency, and
+              review-friendly reporting. For enterprise or government
+              environments, we&apos;ll walk you through the posture and intended
+              controls.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link
@@ -218,12 +242,22 @@ export default function PackagesPage() {
       {/* NAV */}
       <section className="border-t border-border bg-background">
         <div className="mx-auto max-w-6xl px-6 py-10 text-sm flex flex-wrap gap-4 items-center justify-between">
-          <div className="text-muted-foreground">ReconAI packaging (no pricing). Built for clarity and defensibility.</div>
+          <div className="text-muted-foreground">
+            ReconAI packaging (no pricing). Built for clarity and defensibility.
+          </div>
           <div className="flex flex-wrap gap-4">
-            <Link href="/" className="hover:underline">Home</Link>
-            <Link href="/platform" className="hover:underline">Platform</Link>
-            <Link href="/how-it-works" className="hover:underline">How it works</Link>
-            <Link href="/security" className="hover:underline">Security</Link>
+            <Link href="/" className="hover:underline">
+              Home
+            </Link>
+            <Link href="/platform" className="hover:underline">
+              Platform
+            </Link>
+            <Link href="/how-it-works" className="hover:underline">
+              How it works
+            </Link>
+            <Link href="/security" className="hover:underline">
+              Security
+            </Link>
           </div>
         </div>
       </section>

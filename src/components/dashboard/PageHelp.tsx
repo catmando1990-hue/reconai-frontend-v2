@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, X, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { HelpCircle, X, Lightbulb, CheckCircle2 } from "lucide-react";
 
 interface PageHelpProps {
   title: string;
@@ -11,7 +11,12 @@ interface PageHelpProps {
   tips?: string[];
 }
 
-export default function PageHelp({ title, description, features = [], tips = [] }: PageHelpProps) {
+export default function PageHelp({
+  title,
+  description,
+  features = [],
+  tips = [],
+}: PageHelpProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -37,7 +42,7 @@ export default function PageHelp({ title, description, features = [], tips = [] 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', duration: 0.5 }}
+              transition={{ type: "spring", duration: 0.5 }}
               className="border-border max-h-[85vh] w-full max-w-lg overflow-hidden rounded-2xl border bg-card/90 shadow-2xl backdrop-blur-sm"
               onClick={(e) => e.stopPropagation()}
             >
@@ -48,8 +53,12 @@ export default function PageHelp({ title, description, features = [], tips = [] 
                     <HelpCircle className="text-primary h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-primary font-mono text-xs tracking-[0.2em] uppercase">Help</p>
-                    <h2 className="text-foreground text-lg font-medium">{title}</h2>
+                    <p className="text-primary font-mono text-xs tracking-[0.2em] uppercase">
+                      Help
+                    </p>
+                    <h2 className="text-foreground text-lg font-medium">
+                      {title}
+                    </h2>
                   </div>
                 </div>
                 <button
@@ -62,7 +71,9 @@ export default function PageHelp({ title, description, features = [], tips = [] 
 
               {/* Content */}
               <div className="max-h-[calc(85vh-140px)] overflow-y-auto p-6">
-                <p className="text-foreground mb-6 leading-relaxed">{description}</p>
+                <p className="text-foreground mb-6 leading-relaxed">
+                  {description}
+                </p>
 
                 {features.length > 0 && (
                   <div className="mb-6">

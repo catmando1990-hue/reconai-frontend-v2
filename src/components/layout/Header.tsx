@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import React, { Suspense } from 'react';
+import Link from "next/link";
+import React, { Suspense } from "react";
 
 const HeaderClerkControlsLazy = React.lazy(async () => {
-  const mod = await import('@/components/layout/HeaderClerkControls');
+  const mod = await import("@/components/layout/HeaderClerkControls");
   return { default: mod.HeaderClerkControls };
 });
 
@@ -22,7 +22,10 @@ export function Header() {
           {clerkEnabled ? (
             <Suspense
               fallback={
-                <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   Dashboard
                 </Link>
               }
@@ -30,7 +33,10 @@ export function Header() {
               <HeaderClerkControlsLazy />
             </Suspense>
           ) : (
-            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/dashboard"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
               Dashboard
             </Link>
           )}

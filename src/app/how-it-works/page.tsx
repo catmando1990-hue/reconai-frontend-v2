@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight,
   Layers,
@@ -11,16 +11,26 @@ import {
   CheckCircle2,
   Lock,
   FileText,
-} from 'lucide-react';
+} from "lucide-react";
 
-function SectionTitle({ kicker, title, desc }: { kicker: string; title: string; desc: string }) {
+function SectionTitle({
+  kicker,
+  title,
+  desc,
+}: {
+  kicker: string;
+  title: string;
+  desc: string;
+}) {
   return (
     <div className="max-w-3xl">
       <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
         <Sparkles className="h-4 w-4 text-primary" />
         {kicker}
       </div>
-      <h2 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight">{title}</h2>
+      <h2 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight">
+        {title}
+      </h2>
       <p className="mt-3 text-muted-foreground text-lg">{desc}</p>
     </div>
   );
@@ -66,8 +76,17 @@ function ImgBlock({
   height?: number;
 }) {
   return (
-    <div className="rounded-3xl overflow-hidden border border-border bg-card relative" style={{ height }}>
-      <Image src={src} alt={alt} fill sizes="(min-width: 1024px) 520px, 100vw" className="object-cover" />
+    <div
+      className="rounded-3xl overflow-hidden border border-border bg-card relative"
+      style={{ height }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(min-width: 1024px) 520px, 100vw"
+        className="object-cover"
+      />
       <div className="absolute inset-0 bg-linear-to-t from-background/35 via-transparent to-transparent" />
     </div>
   );
@@ -101,8 +120,9 @@ export default function HowItWorksPage() {
               A system built for defensible financial intelligence
             </h1>
             <p className="mt-4 max-w-3xl text-muted-foreground text-lg">
-              ReconAI is not &quot;AI bookkeeping.&quot; It&apos;s an integrated system designed to turn messy financial inputs into
-              clean, reviewable outputs—so decisions hold up under scrutiny.
+              ReconAI is not &quot;AI bookkeeping.&quot; It&apos;s an integrated
+              system designed to turn messy financial inputs into clean,
+              reviewable outputs—so decisions hold up under scrutiny.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -137,9 +157,9 @@ export default function HowItWorksPage() {
             title="ReconAI Core"
             desc="Structured financial reality. Clean inputs. Consistent outputs."
             items={[
-              'Accounts, transactions, vendors, customers',
-              'Bills, invoices, aging and cash flow',
-              'Consistent reporting you can review',
+              "Accounts, transactions, vendors, customers",
+              "Bills, invoices, aging and cash flow",
+              "Consistent reporting you can review",
             ]}
           />
           <Card
@@ -147,8 +167,8 @@ export default function HowItWorksPage() {
             title="ReconAI Intelligence"
             desc="Signals and support that reduce noise and surface what matters."
             items={[
-              'AI Worker + alerting',
-              'Patterns, anomalies, and trend signals',
+              "AI Worker + alerting",
+              "Patterns, anomalies, and trend signals",
               'Decision context (not "AI magic")',
             ]}
           />
@@ -157,9 +177,9 @@ export default function HowItWorksPage() {
             title="ReconAI CFO Mode"
             desc="Executive-level clarity for decisions and review environments."
             items={[
-              'Executive summaries and performance views',
-              'Lender / stakeholder-ready narratives',
-              'Defensible outputs built to be checked',
+              "Executive summaries and performance views",
+              "Lender / stakeholder-ready narratives",
+              "Defensible outputs built to be checked",
             ]}
           />
         </div>
@@ -170,8 +190,9 @@ export default function HowItWorksPage() {
             Compliance is implied—by design
           </div>
           <p className="mt-2 text-muted-foreground">
-            We don&apos;t bolt compliance on at the end. Defensibility is built into the way outputs are formed: traceability,
-            consistency, and review-friendly reporting are foundational.
+            We don&apos;t bolt compliance on at the end. Defensibility is built
+            into the way outputs are formed: traceability, consistency, and
+            review-friendly reporting are foundational.
           </p>
         </div>
       </section>
@@ -188,10 +209,21 @@ export default function HowItWorksPage() {
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               {[
-                { title: 'Traceability', icon: ShieldCheck, desc: 'Clear relationships between inputs and outputs.' },
-                { title: 'Control', icon: Lock, desc: 'Designed for sensitive financial contexts.' },
+                {
+                  title: "Traceability",
+                  icon: ShieldCheck,
+                  desc: "Clear relationships between inputs and outputs.",
+                },
+                {
+                  title: "Control",
+                  icon: Lock,
+                  desc: "Designed for sensitive financial contexts.",
+                },
               ].map(({ title, icon: Icon, desc }) => (
-                <div key={title} className="rounded-2xl border border-border bg-background p-5">
+                <div
+                  key={title}
+                  className="rounded-2xl border border-border bg-background p-5"
+                >
                   <div className="flex items-center gap-2 font-semibold">
                     <Icon className="h-4 w-4 text-primary" />
                     {title}
@@ -203,10 +235,22 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            <ImgBlock src="/product-dashboard-wide.jpg" alt="Dashboard overview" height={260} />
+            <ImgBlock
+              src="/product-dashboard-wide.jpg"
+              alt="Dashboard overview"
+              height={260}
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <ImgBlock src="/product-charts-close.jpg" alt="Trends and reporting" height={210} />
-              <ImgBlock src="/security-lock.jpg" alt="Security posture" height={210} />
+              <ImgBlock
+                src="/product-charts-close.jpg"
+                alt="Trends and reporting"
+                height={210}
+              />
+              <ImgBlock
+                src="/security-lock.jpg"
+                alt="Security posture"
+                height={210}
+              />
             </div>
           </div>
         </div>
@@ -221,7 +265,8 @@ export default function HowItWorksPage() {
                 Want to see ReconAI in action?
               </h3>
               <p className="mt-4 text-muted-foreground">
-                Open the platform, explore the dashboards, and see how clarity builds from Core to CFO Mode.
+                Open the platform, explore the dashboards, and see how clarity
+                builds from Core to CFO Mode.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link

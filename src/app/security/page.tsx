@@ -1,8 +1,16 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Lock, FileText, Eye, KeyRound, CheckCircle2 } from 'lucide-react';
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  ShieldCheck,
+  Lock,
+  FileText,
+  Eye,
+  KeyRound,
+  CheckCircle2,
+} from "lucide-react";
 
 /**
  * Phase 11:
@@ -39,7 +47,9 @@ export default function SecurityPage() {
               Built for defensibility, not vibes
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground text-lg">
-              ReconAI is designed to produce clean, reviewable outputs with traceability and controls—so your financial story can stand up to scrutiny.
+              ReconAI is designed to produce clean, reviewable outputs with
+              traceability and controls—so your financial story can stand up to
+              scrutiny.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -62,9 +72,12 @@ export default function SecurityPage() {
 
       {/* PRINCIPLES */}
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-3xl font-bold tracking-tight">Security principles</h2>
+        <h2 className="text-3xl font-bold tracking-tight">
+          Security principles
+        </h2>
         <p className="mt-2 text-muted-foreground max-w-2xl">
-          We focus on controls, auditability, and clear boundaries around how sensitive data is handled.
+          We focus on controls, auditability, and clear boundaries around how
+          sensitive data is handled.
         </p>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
@@ -73,21 +86,30 @@ export default function SecurityPage() {
               <KeyRound className="h-5 w-5 text-primary" />
               Least privilege
             </div>
-            <div className="mt-2 text-muted-foreground">Access is scoped to what&apos;s needed. Privilege should be earned, not assumed.</div>
+            <div className="mt-2 text-muted-foreground">
+              Access is scoped to what&apos;s needed. Privilege should be
+              earned, not assumed.
+            </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
             <div className="flex items-center gap-2 font-semibold">
               <Eye className="h-5 w-5 text-primary" />
               Traceability
             </div>
-            <div className="mt-2 text-muted-foreground">Outputs are designed to be explainable and reviewable—so decisions are defensible.</div>
+            <div className="mt-2 text-muted-foreground">
+              Outputs are designed to be explainable and reviewable—so decisions
+              are defensible.
+            </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
             <div className="flex items-center gap-2 font-semibold">
               <Lock className="h-5 w-5 text-primary" />
               Secure by default
             </div>
-            <div className="mt-2 text-muted-foreground">We design for sensitive financial contexts with controlled surfaces and intentional data handling.</div>
+            <div className="mt-2 text-muted-foreground">
+              We design for sensitive financial contexts with controlled
+              surfaces and intentional data handling.
+            </div>
           </div>
         </div>
       </section>
@@ -96,17 +118,20 @@ export default function SecurityPage() {
       <section className="border-t border-border bg-card">
         <div className="mx-auto max-w-6xl px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Auditability as a product feature</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Auditability as a product feature
+            </h2>
             <p className="mt-4 text-muted-foreground">
-              We design outputs to be consistent, reviewable, and explainable. That means clear categorization logic, predictable reporting,
-              and a financial narrative you can stand behind.
+              We design outputs to be consistent, reviewable, and explainable.
+              That means clear categorization logic, predictable reporting, and
+              a financial narrative you can stand behind.
             </p>
 
             <ul className="mt-6 space-y-3 text-sm">
               {[
-                'Consistent classification patterns over time.',
-                'Defensible outputs aligned to policy and review.',
-                'Clear inputs → outputs relationships for stakeholders.',
+                "Consistent classification patterns over time.",
+                "Defensible outputs aligned to policy and review.",
+                "Clear inputs → outputs relationships for stakeholders.",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
@@ -130,18 +155,37 @@ export default function SecurityPage() {
 
       {/* POLICY & DATA */}
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-3xl font-bold tracking-tight">Policy-minded outputs</h2>
+        <h2 className="text-3xl font-bold tracking-tight">
+          Policy-minded outputs
+        </h2>
         <p className="mt-2 text-muted-foreground max-w-3xl">
-          ReconAI is built to support organizations that care about policy, process, and consistency. We avoid vague &quot;AI magic&quot; and focus on repeatable logic you can review.
+          ReconAI is built to support organizations that care about policy,
+          process, and consistency. We avoid vague &quot;AI magic&quot; and
+          focus on repeatable logic you can review.
         </p>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
           {[
-            { title: 'Controlled workflows', icon: FileText, desc: 'Structured categorization and reporting designed for repeatability.' },
-            { title: 'Clear boundaries', icon: Lock, desc: 'We treat sensitive financial data as sensitive. No casual handling.' },
-            { title: 'Reviewable decisions', icon: Eye, desc: 'Reports are meant to be checked, not blindly trusted.' },
+            {
+              title: "Controlled workflows",
+              icon: FileText,
+              desc: "Structured categorization and reporting designed for repeatability.",
+            },
+            {
+              title: "Clear boundaries",
+              icon: Lock,
+              desc: "We treat sensitive financial data as sensitive. No casual handling.",
+            },
+            {
+              title: "Reviewable decisions",
+              icon: Eye,
+              desc: "Reports are meant to be checked, not blindly trusted.",
+            },
           ].map(({ title, icon: Icon, desc }) => (
-            <div key={title} className="rounded-2xl border border-border bg-card p-6">
+            <div
+              key={title}
+              className="rounded-2xl border border-border bg-card p-6"
+            >
               <div className="flex items-center gap-2 font-semibold">
                 <Icon className="h-5 w-5 text-primary" />
                 {title}
@@ -157,9 +201,12 @@ export default function SecurityPage() {
         <div className="mx-auto max-w-6xl px-6 py-16">
           <div className="rounded-3xl border border-border bg-background p-8 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center overflow-hidden">
             <div>
-              <h3 className="text-2xl md:text-3xl font-bold tracking-tight">Want a security briefing view?</h3>
+              <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
+                Want a security briefing view?
+              </h3>
               <p className="mt-4 text-muted-foreground">
-                If you&apos;re evaluating ReconAI for a serious environment, we can walk through the platform and intended controls.
+                If you&apos;re evaluating ReconAI for a serious environment, we
+                can walk through the platform and intended controls.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link

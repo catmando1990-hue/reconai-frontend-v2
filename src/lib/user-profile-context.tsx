@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-import { useApi } from '@/lib/useApi';
+import { useApi } from "@/lib/useApi";
 
 export type UserProfile = {
   id?: string;
@@ -20,7 +27,11 @@ export type UserProfileContextValue = {
 
 const UserProfileContext = createContext<UserProfileContextValue | null>(null);
 
-export function UserProfileProvider({ children }: { children: React.ReactNode }) {
+export function UserProfileProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { apiFetch } = useApi();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -33,14 +44,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
     try {
       // Pass a custom onUnauthorized handler to prevent redirect on public pages
-      const data = await apiFetch<UserProfile>('/api/auth/me', {
+      const data = await apiFetch<UserProfile>("/api/auth/me", {
         onUnauthorized: () => {
           // Don't redirect - just treat as no profile (user not signed in)
         },
       });
       setProfile(data ?? null);
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Failed to load profile';
+      const message = e instanceof Error ? e.message : "Failed to load profile";
       setError(message);
       setProfile(null);
     } finally {
@@ -55,14 +66,19 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
   const value = useMemo<UserProfileContextValue>(
     () => ({ profile, isLoading, error, refetch }),
-    [profile, isLoading, error, refetch]
+    [profile, isLoading, error, refetch],
   );
 
-  return <UserProfileContext.Provider value={value}>{children}</UserProfileContext.Provider>;
+  return (
+    <UserProfileContext.Provider value={value}>
+      {children}
+    </UserProfileContext.Provider>
+  );
 }
 
 export function useUserProfile() {
   const ctx = useContext(UserProfileContext);
-  if (!ctx) throw new Error('useUserProfile must be used within <UserProfileProvider>');
+  if (!ctx)
+    throw new Error("useUserProfile must be used within <UserProfileProvider>");
   return ctx;
 }

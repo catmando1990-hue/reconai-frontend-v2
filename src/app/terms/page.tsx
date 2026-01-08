@@ -1,9 +1,9 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: 'Terms of Service | ReconAI',
-  description: 'ReconAI Terms of Service - Agreement for using our platform',
+  title: "Terms of Service | ReconAI",
+  description: "ReconAI Terms of Service - Agreement for using our platform",
 };
 
 export default function TermsPage() {
@@ -21,84 +21,93 @@ export default function TermsPage() {
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
           Terms of Service
         </h1>
-        <p className="mt-4 text-muted-foreground">
-          Last updated: January 2026
-        </p>
+        <p className="mt-4 text-muted-foreground">Last updated: January 2026</p>
 
         <div className="mt-10 space-y-8 text-foreground/90">
           <section>
-            <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
+            <h2 className="text-xl font-semibold mb-3">
+              1. Acceptance of Terms
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
-              By accessing or using ReconAI, you agree to be bound by these Terms of Service.
-              If you do not agree to these terms, please do not use our services.
+              By accessing or using ReconAI, you agree to be bound by these
+              Terms of Service. If you do not agree to these terms, please do
+              not use our services.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">2. Description of Service</h2>
+            <h2 className="text-xl font-semibold mb-3">
+              2. Description of Service
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
-              ReconAI provides AI-powered financial reconciliation and analysis tools
-              designed for finance professionals. Our platform helps automate matching,
-              exception handling, and reporting workflows.
+              ReconAI provides AI-powered financial reconciliation and analysis
+              tools designed for finance professionals. Our platform helps
+              automate matching, exception handling, and reporting workflows.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">3. User Responsibilities</h2>
+            <h2 className="text-xl font-semibold mb-3">
+              3. User Responsibilities
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
-              You are responsible for maintaining the confidentiality of your account credentials,
-              ensuring the accuracy of data you upload, and using the service in compliance with
-              applicable laws and regulations.
+              You are responsible for maintaining the confidentiality of your
+              account credentials, ensuring the accuracy of data you upload, and
+              using the service in compliance with applicable laws and
+              regulations.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-3">4. Data Ownership</h2>
             <p className="text-muted-foreground leading-relaxed">
-              You retain ownership of all data you upload to ReconAI. We do not claim any
-              ownership rights to your financial data or reconciliation outputs.
+              You retain ownership of all data you upload to ReconAI. We do not
+              claim any ownership rights to your financial data or
+              reconciliation outputs.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">5. Service Availability</h2>
+            <h2 className="text-xl font-semibold mb-3">
+              5. Service Availability
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
-              We strive to maintain high availability but do not guarantee uninterrupted service.
-              Scheduled maintenance and updates may occasionally affect access.
+              We strive to maintain high availability but do not guarantee
+              uninterrupted service. Scheduled maintenance and updates may
+              occasionally affect access.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">6. Limitation of Liability</h2>
+            <h2 className="text-xl font-semibold mb-3">
+              6. Limitation of Liability
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
-              ReconAI provides tools to assist with financial reconciliation but does not
-              replace professional judgment. Users are responsible for verifying outputs
-              and making final decisions on financial matters.
+              ReconAI provides tools to assist with financial reconciliation but
+              does not replace professional judgment. Users are responsible for
+              verifying outputs and making final decisions on financial matters.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-3">7. Termination</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Either party may terminate this agreement at any time. Upon termination,
-              you may request export of your data within 30 days.
+              Either party may terminate this agreement at any time. Upon
+              termination, you may request export of your data within 30 days.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold mb-3">8. Changes to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We may update these terms from time to time. Continued use of the service
-              after changes constitutes acceptance of the updated terms.
+              We may update these terms from time to time. Continued use of the
+              service after changes constitutes acceptance of the updated terms.
             </p>
           </section>
         </div>
 
         <div className="mt-12 pt-8 border-t border-border">
-          <Link
-            href="/privacy"
-            className="text-primary hover:underline"
-          >
+          <Link href="/privacy" className="text-primary hover:underline">
             View Privacy Policy →
           </Link>
         </div>

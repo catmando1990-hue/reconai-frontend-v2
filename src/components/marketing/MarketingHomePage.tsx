@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { SignedIn, SignedOut } from '@clerk/nextjs';
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import {
   ArrowRight,
   CheckCircle2,
@@ -16,10 +16,10 @@ import {
   Building2,
   Briefcase,
   Layers,
-} from 'lucide-react';
-import { AIVideoPreview } from './AIVideoPreview';
+} from "lucide-react";
+import { AIVideoPreview } from "./AIVideoPreview";
 
-type UseCase = 'solo' | 'smb' | 'enterprise';
+type UseCase = "solo" | "smb" | "enterprise";
 
 const USE_CASES: Array<{
   id: UseCase;
@@ -29,41 +29,40 @@ const USE_CASES: Array<{
   subheadline: string;
 }> = [
   {
-    id: 'solo',
-    title: 'Solo',
-    subtitle: 'Operator-first clarity',
+    id: "solo",
+    title: "Solo",
+    subtitle: "Operator-first clarity",
     Icon: Briefcase,
     subheadline:
-      'Get clean categorization, defensible reports, and a clear financial story—without living in spreadsheets.',
+      "Get clean categorization, defensible reports, and a clear financial story—without living in spreadsheets.",
   },
   {
-    id: 'smb',
-    title: 'Small Business',
-    subtitle: 'Systems that scale',
+    id: "smb",
+    title: "Small Business",
+    subtitle: "Systems that scale",
     Icon: Users,
     subheadline:
-      'Standardize how money moves through your business and keep outputs consistent across time, teams, and reviews.',
+      "Standardize how money moves through your business and keep outputs consistent across time, teams, and reviews.",
   },
   {
-    id: 'enterprise',
-    title: 'Enterprise',
-    subtitle: 'Audit-ready operations',
+    id: "enterprise",
+    title: "Enterprise",
+    subtitle: "Audit-ready operations",
     Icon: Building2,
     subheadline:
-      'Controls, traceability, and defensible outputs—designed for higher-stakes finance and compliance environments.',
+      "Controls, traceability, and defensible outputs—designed for higher-stakes finance and compliance environments.",
   },
 ];
 
 function cx(...parts: Array<string | false | undefined | null>) {
-  return parts.filter(Boolean).join(' ');
+  return parts.filter(Boolean).join(" ");
 }
 
 export function MarketingHomePage() {
-  const [useCase, setUseCase] = useState<UseCase>('smb');
+  const [useCase, setUseCase] = useState<UseCase>("smb");
   const [showSticky, setShowSticky] = useState(false);
 
   const uc = USE_CASES.find((u) => u.id === useCase)!;
-
 
   // Sticky CTA: show after scroll
   useEffect(() => {
@@ -71,8 +70,8 @@ export function MarketingHomePage() {
       setShowSticky(window.scrollY > 520);
     };
     onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
@@ -93,7 +92,7 @@ export function MarketingHomePage() {
             fill
             className="object-cover opacity-0 dark:opacity-10"
             style={{
-              filter: 'blur(1px)',
+              filter: "blur(1px)",
             }}
           />
 
@@ -127,18 +126,32 @@ export function MarketingHomePage() {
                       type="button"
                       onClick={() => setUseCase(id)}
                       className={cx(
-                        'group flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm transition',
+                        "group flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm transition",
                         active
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border bg-card/60 hover:bg-accent'
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card/60 hover:bg-accent",
                       )}
                       aria-pressed={active}
                     >
-                      <Icon className={cx('h-4 w-4', active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
-                      <span className={cx('font-medium', active ? 'text-foreground' : 'text-foreground')}>
+                      <Icon
+                        className={cx(
+                          "h-4 w-4",
+                          active
+                            ? "text-primary"
+                            : "text-muted-foreground group-hover:text-foreground",
+                        )}
+                      />
+                      <span
+                        className={cx(
+                          "font-medium",
+                          active ? "text-foreground" : "text-foreground",
+                        )}
+                      >
                         {title}
                       </span>
-                      <span className="hidden md:inline text-muted-foreground">&bull; {subtitle}</span>
+                      <span className="hidden md:inline text-muted-foreground">
+                        &bull; {subtitle}
+                      </span>
                     </button>
                   );
                 })}
@@ -173,7 +186,10 @@ export function MarketingHomePage() {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm">
-              <Link href="/how-it-works" className="text-primary hover:underline">
+              <Link
+                href="/how-it-works"
+                className="text-primary hover:underline"
+              >
                 How it works
               </Link>
               <Link href="/packages" className="text-primary hover:underline">
@@ -192,9 +208,9 @@ export function MarketingHomePage() {
             {/* Proof strip */}
             <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               {[
-                { k: '95%+', v: 'Target classification accuracy' },
-                { k: '<24h', v: 'Time-to-first-value for most teams' },
-                { k: 'Audit', v: 'Traceable, defensible outputs' },
+                { k: "95%+", v: "Target classification accuracy" },
+                { k: "<24h", v: "Time-to-first-value for most teams" },
+                { k: "Audit", v: "Traceable, defensible outputs" },
               ].map((m) => (
                 <div
                   key={m.k}
@@ -208,9 +224,9 @@ export function MarketingHomePage() {
 
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               {[
-                'Audit-ready architecture',
-                'Security and controls by default',
-                'Built to scale from solo to enterprise',
+                "Audit-ready architecture",
+                "Security and controls by default",
+                "Built to scale from solo to enterprise",
               ].map((t) => (
                 <div
                   key={t}
@@ -243,21 +259,27 @@ export function MarketingHomePage() {
               <ShieldCheck className="h-5 w-5 text-primary" />
               <div>
                 <div className="font-medium">Compliance-minded</div>
-                <div className="text-muted-foreground">Controls + auditability baked in</div>
+                <div className="text-muted-foreground">
+                  Controls + auditability baked in
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Lock className="h-5 w-5 text-primary" />
               <div>
                 <div className="font-medium">Secure by default</div>
-                <div className="text-muted-foreground">Designed for sensitive financial data</div>
+                <div className="text-muted-foreground">
+                  Designed for sensitive financial data
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
               <div>
                 <div className="font-medium">Defensible outputs</div>
-                <div className="text-muted-foreground">Evidence you can stand behind</div>
+                <div className="text-muted-foreground">
+                  Evidence you can stand behind
+                </div>
               </div>
             </div>
           </div>
@@ -272,23 +294,44 @@ export function MarketingHomePage() {
               <Layers className="h-4 w-4 text-primary" />
               Packaging (no pricing)
             </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">Start with Core. Add Intelligence. Unlock CFO Mode.</h2>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">
+              Start with Core. Add Intelligence. Unlock CFO Mode.
+            </h2>
             <p className="mt-2 text-muted-foreground max-w-2xl">
-              ReconAI is built in layers to keep the story clear, scalable, and defensible.
+              ReconAI is built in layers to keep the story clear, scalable, and
+              defensible.
             </p>
           </div>
-          <Link href="/packages" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+          <Link
+            href="/packages"
+            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+          >
             View packages <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
           {[
-            { title: 'Core', icon: FileText, desc: 'Accounts, transactions, reporting foundations.' },
-            { title: 'Intelligence', icon: Sparkles, desc: 'AI Worker, alerts, patterns, decision context.' },
-            { title: 'CFO Mode', icon: LineChart, desc: 'Executive views and review-ready outputs.' },
+            {
+              title: "Core",
+              icon: FileText,
+              desc: "Accounts, transactions, reporting foundations.",
+            },
+            {
+              title: "Intelligence",
+              icon: Sparkles,
+              desc: "AI Worker, alerts, patterns, decision context.",
+            },
+            {
+              title: "CFO Mode",
+              icon: LineChart,
+              desc: "Executive views and review-ready outputs.",
+            },
           ].map(({ title, icon: Icon, desc }) => (
-            <div key={title} className="rounded-2xl border border-border bg-card p-6">
+            <div
+              key={title}
+              className="rounded-2xl border border-border bg-card p-6"
+            >
               <div className="flex items-center gap-2 font-semibold">
                 <Icon className="h-5 w-5 text-primary" />
                 {title}
@@ -307,8 +350,9 @@ export function MarketingHomePage() {
               See your business like a CFO—without becoming one
             </h2>
             <p className="mt-4 text-muted-foreground">
-              ReconAI organizes transactions, highlights patterns, and delivers insight that&apos;s clear, consistent,
-              and ready for serious review.
+              ReconAI organizes transactions, highlights patterns, and delivers
+              insight that&apos;s clear, consistent, and ready for serious
+              review.
             </p>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -373,10 +417,12 @@ export function MarketingHomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center rounded-3xl border border-border bg-background p-8 md:p-12 overflow-hidden">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-                Built for founders, operators, and teams that take finance seriously
+                Built for founders, operators, and teams that take finance
+                seriously
               </h3>
               <p className="mt-4 text-muted-foreground">
-                If your decisions need to stand up to scrutiny, ReconAI is built for you.
+                If your decisions need to stand up to scrutiny, ReconAI is built
+                for you.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -432,15 +478,19 @@ export function MarketingHomePage() {
       {/* STICKY CTA (tasteful) */}
       <div
         className={cx(
-          'fixed inset-x-0 bottom-4 z-50 mx-auto max-w-3xl px-4 transition-all',
-          showSticky ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+          "fixed inset-x-0 bottom-4 z-50 mx-auto max-w-3xl px-4 transition-all",
+          showSticky
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4 pointer-events-none",
         )}
         aria-hidden={!showSticky}
       >
         <div className="rounded-2xl border border-border bg-card/80 backdrop-blur p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
           <div className="text-sm">
             <div className="font-medium">Ready to see ReconAI in action?</div>
-            <div className="text-muted-foreground">Sign in and open your dashboard in seconds.</div>
+            <div className="text-muted-foreground">
+              Sign in and open your dashboard in seconds.
+            </div>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <SignedOut>

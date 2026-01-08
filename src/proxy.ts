@@ -35,22 +35,31 @@ export default clerkMiddleware(async (auth, req) => {
   // Require authentication on protected routes.
   await auth.protect();
 
-  const isDashboard = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
-  const isOnboarding = pathname === "/onboarding" || pathname.startsWith("/onboarding/");
+  const isDashboard =
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  const isOnboarding =
+    pathname === "/onboarding" || pathname.startsWith("/onboarding/");
 
   // Only gate onboarding when entering dashboard routes.
   if (isDashboard && !isOnboarding) {
     const session = await auth();
     const claims = session.sessionClaims as Record<string, unknown> | null;
 
-    const publicMetadata = claims?.publicMetadata as Record<string, unknown> | undefined;
+    const publicMetadata = claims?.publicMetadata as
+      | Record<string, unknown>
+      | undefined;
     const metadata = claims?.metadata as Record<string, unknown> | undefined;
-    const unsafeMetadata = claims?.unsafeMetadata as Record<string, unknown> | undefined;
+    const unsafeMetadata = claims?.unsafeMetadata as
+      | Record<string, unknown>
+      | undefined;
     const user = claims?.user as Record<string, unknown> | undefined;
-    const userUnsafeMetadata = user?.unsafeMetadata as Record<string, unknown> | undefined;
+    const userUnsafeMetadata = user?.unsafeMetadata as
+      | Record<string, unknown>
+      | undefined;
 
     // Preferred: publicMetadata.onboarded
-    const publicOnboarded = isTruthy(publicMetadata?.onboarded) || isTruthy(metadata?.onboarded);
+    const publicOnboarded =
+      isTruthy(publicMetadata?.onboarded) || isTruthy(metadata?.onboarded);
 
     // Legacy: unsafeMetadata.onboardingComplete (client-settable)
     const legacyOnboardingComplete =
@@ -59,9 +68,11 @@ export default clerkMiddleware(async (auth, req) => {
       isTruthy(userUnsafeMetadata?.onboardingComplete);
 
     // Cookie fallback (unsafeMetadata isn't in JWT by default)
-    const cookieOnboarded = req.cookies.get("onboarding_complete")?.value === "true";
+    const cookieOnboarded =
+      req.cookies.get("onboarding_complete")?.value === "true";
 
-    const onboarded = publicOnboarded || legacyOnboardingComplete || cookieOnboarded;
+    const onboarded =
+      publicOnboarded || legacyOnboardingComplete || cookieOnboarded;
 
     if (!onboarded) {
       const url = req.nextUrl.clone();

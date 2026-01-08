@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
-import { motion } from 'framer-motion';
-import { ArrowRight, CheckCircle2, Loader2, ShieldCheck, Sparkles } from 'lucide-react';
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 function setCookie(name: string, value: string, days: number) {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -29,7 +35,10 @@ export default function OnboardingPage() {
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canContinue = useMemo(() => termsAccepted && privacyAccepted && !saving, [termsAccepted, privacyAccepted, saving]);
+  const canContinue = useMemo(
+    () => termsAccepted && privacyAccepted && !saving,
+    [termsAccepted, privacyAccepted, saving],
+  );
 
   const completeOnboarding = async () => {
     if (!user) return;
@@ -56,16 +65,19 @@ export default function OnboardingPage() {
       await user.reload();
 
       // Set cookie as fallback for middleware (unsafeMetadata isn't in JWT by default)
-      setCookie('onboarding_complete', 'true', 365);
+      setCookie("onboarding_complete", "true", 365);
 
       setCompleted(true);
 
       // Hard redirect to force fresh session check by middleware.
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = "/dashboard";
       }, 650);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to complete onboarding. Please try again.';
+      const message =
+        e instanceof Error
+          ? e.message
+          : "Failed to complete onboarding. Please try again.";
       setError(message);
       setSaving(false);
     }
@@ -94,7 +106,8 @@ export default function OnboardingPage() {
           Welcome to ReconAI
         </h1>
         <p className="mt-4 text-muted-foreground text-lg max-w-2xl">
-          Before you enter the dashboard, confirm a few basics so your outputs remain defensible and review-ready.
+          Before you enter the dashboard, confirm a few basics so your outputs
+          remain defensible and review-ready.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-6">
@@ -109,7 +122,8 @@ export default function OnboardingPage() {
               <div className="flex-1">
                 <div className="font-semibold">Terms and privacy</div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  ReconAI is designed for serious finance. These confirmations help keep data handling and reporting consistent.
+                  ReconAI is designed for serious finance. These confirmations
+                  help keep data handling and reporting consistent.
                 </p>
 
                 <div className="mt-5 space-y-3">
@@ -123,7 +137,14 @@ export default function OnboardingPage() {
                     <div className="text-sm">
                       <div className="font-medium">I agree to the Terms</div>
                       <div className="text-muted-foreground">
-                        Read: <Link className="text-primary hover:underline" href="/terms" target="_blank">Terms of Service</Link>
+                        Read:{" "}
+                        <Link
+                          className="text-primary hover:underline"
+                          href="/terms"
+                          target="_blank"
+                        >
+                          Terms of Service
+                        </Link>
                       </div>
                     </div>
                   </label>
@@ -136,9 +157,18 @@ export default function OnboardingPage() {
                       onChange={(e) => setPrivacyAccepted(e.target.checked)}
                     />
                     <div className="text-sm">
-                      <div className="font-medium">I agree to the Privacy Policy</div>
+                      <div className="font-medium">
+                        I agree to the Privacy Policy
+                      </div>
                       <div className="text-muted-foreground">
-                        Read: <Link className="text-primary hover:underline" href="/privacy" target="_blank">Privacy Policy</Link>
+                        Read:{" "}
+                        <Link
+                          className="text-primary hover:underline"
+                          href="/privacy"
+                          target="_blank"
+                        >
+                          Privacy Policy
+                        </Link>
                       </div>
                     </div>
                   </label>
@@ -164,17 +194,28 @@ export default function OnboardingPage() {
               <div className="flex-1">
                 <div className="font-semibold">What happens next</div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  You&apos;ll land in the dashboard. From there, you can explore Core, Intelligence, and CFO Mode—without losing the narrative thread.
+                  You&apos;ll land in the dashboard. From there, you can explore
+                  Core, Intelligence, and CFO Mode—without losing the narrative
+                  thread.
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-3 text-sm">
-                  <Link href="/how-it-works" className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition">
+                  <Link
+                    href="/how-it-works"
+                    className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition"
+                  >
                     How it works
                   </Link>
-                  <Link href="/packages" className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition">
+                  <Link
+                    href="/packages"
+                    className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition"
+                  >
                     Packages
                   </Link>
-                  <Link href="/security" className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition">
+                  <Link
+                    href="/security"
+                    className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition"
+                  >
                     Security
                   </Link>
                 </div>
@@ -189,14 +230,18 @@ export default function OnboardingPage() {
             onClick={completeOnboarding}
             disabled={!canContinue || completed}
             className={[
-              'inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 transition',
+              "inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 transition",
               canContinue && !completed
-                ? 'bg-primary text-primary-foreground hover:opacity-90'
-                : 'bg-muted text-muted-foreground cursor-not-allowed',
-            ].join(' ')}
+                ? "bg-primary text-primary-foreground hover:opacity-90"
+                : "bg-muted text-muted-foreground cursor-not-allowed",
+            ].join(" ")}
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-            {completed ? 'Completed' : 'Continue to dashboard'}
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
+            {completed ? "Completed" : "Continue to dashboard"}
           </button>
 
           <Link

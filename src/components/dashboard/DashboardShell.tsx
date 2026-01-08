@@ -1,14 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Sidebar from '@/components/dashboard/Sidebar';
+import { useState } from "react";
+import Sidebar from "@/components/dashboard/Sidebar";
 
 /**
  * Phase 17:
  * - Makes dashboard shell theme-safe (no hardcoded light background)
  * - Uses new 3-tier Sidebar with collapse functionality
  */
-export default function DashboardShell({ children }: { children: React.ReactNode }) {
+export default function DashboardShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (

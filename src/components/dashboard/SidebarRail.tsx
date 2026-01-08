@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Layers,
   Sparkles,
   LineChart,
   Settings,
-} from 'lucide-react';
+} from "lucide-react";
 
 const ITEMS = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/core', icon: Layers, label: 'Core' },
-  { href: '/dashboard/intelligence', icon: Sparkles, label: 'Intelligence' },
-  { href: '/dashboard/cfo', icon: LineChart, label: 'CFO Mode' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/dashboard/core", icon: Layers, label: "Core" },
+  { href: "/dashboard/intelligence", icon: Sparkles, label: "Intelligence" },
+  { href: "/dashboard/cfo", icon: LineChart, label: "CFO Mode" },
+  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
 export function SidebarRail() {
@@ -30,9 +30,11 @@ export function SidebarRail() {
             key={href}
             href={href}
             className={[
-              'h-10 w-10 flex items-center justify-center rounded-xl transition',
-              active ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-accent',
-            ].join(' ')}
+              "h-10 w-10 flex items-center justify-center rounded-xl transition",
+              active
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-accent",
+            ].join(" ")}
             title={label}
           >
             <Icon className="h-5 w-5" />

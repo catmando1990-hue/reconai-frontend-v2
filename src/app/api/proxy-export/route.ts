@@ -8,7 +8,7 @@ function requireBackendUrl() {
   const url = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!url) {
     throw new Error(
-      "Missing NEXT_PUBLIC_API_BASE_URL. Set it in .env.local / hosting env."
+      "Missing NEXT_PUBLIC_API_BASE_URL. Set it in .env.local / hosting env.",
     );
   }
   return url.replace(/\/$/, "");
@@ -28,10 +28,9 @@ export async function GET(req: Request) {
       {
         error:
           "Clerk auth token helper unavailable. Ensure Clerk middleware is running at src/middleware.ts and restart dev server.",
-        hint:
-          "If you just added src/middleware.ts, stop and restart `npm run dev`.",
+        hint: "If you just added src/middleware.ts, stop and restart `npm run dev`.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

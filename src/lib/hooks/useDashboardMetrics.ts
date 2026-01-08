@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface DashboardMetrics {
   counts: {
@@ -80,7 +80,9 @@ export function useDashboardMetrics() {
 
         setMetrics(mockMetrics);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch metrics'));
+        setError(
+          err instanceof Error ? err : new Error("Failed to fetch metrics"),
+        );
       } finally {
         setIsLoading(false);
       }

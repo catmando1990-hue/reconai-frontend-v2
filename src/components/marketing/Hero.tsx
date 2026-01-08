@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Hero() {
   const reduceMotion = useReducedMotion();
@@ -41,7 +41,7 @@ export default function Hero() {
         if (v.readyState < 3) {
           await new Promise<void>((resolve) => {
             const onCanPlay = () => resolve();
-            v.addEventListener('canplay', onCanPlay, { once: true });
+            v.addEventListener("canplay", onCanPlay, { once: true });
           });
         }
 
@@ -70,10 +70,10 @@ export default function Hero() {
           loop
           playsInline
           preload="auto"
-          poster="/video/hero-poster.webp"
+          poster="/videos/hero-poster.webp"
           className="absolute inset-0 z-0 h-full w-full object-cover"
         >
-          <source src="/video/hero-loop.mp4" type="video/mp4" />
+          <source src="/videos/hero-loop.mp4" type="video/mp4" />
         </video>
 
         {/* Soft gradient mask for text contrast (works in light + dark) */}
@@ -98,7 +98,7 @@ export default function Hero() {
         <motion.h1
           initial={mounted && !reduceMotion ? { opacity: 0, y: 16 } : false}
           animate={mounted && !reduceMotion ? { opacity: 1, y: 0 } : undefined}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-balance text-4xl font-semibold tracking-tight text-white md:text-6xl"
         >
           ReconAI turns financial noise into clarity.
@@ -107,18 +107,18 @@ export default function Hero() {
         <motion.p
           initial={mounted && !reduceMotion ? { opacity: 0, y: 16 } : false}
           animate={mounted && !reduceMotion ? { opacity: 1, y: 0 } : undefined}
-          transition={{ duration: 0.6, delay: 0.08, ease: 'easeOut' }}
+          transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
           className="mt-6 max-w-2xl text-pretty text-lg text-white/85"
         >
-          Built for individuals, small businesses, and enterprise teams—ReconAI analyzes
-          transactions, operational activity, and financial patterns to support better decisions
-          with explainable insight.
+          Built for individuals, small businesses, and enterprise teams—ReconAI
+          analyzes transactions, operational activity, and financial patterns to
+          support better decisions with explainable insight.
         </motion.p>
 
         <motion.div
           initial={mounted && !reduceMotion ? { opacity: 0, y: 16 } : false}
           animate={mounted && !reduceMotion ? { opacity: 1, y: 0 } : undefined}
-          transition={{ duration: 0.6, delay: 0.16, ease: 'easeOut' }}
+          transition={{ duration: 0.6, delay: 0.16, ease: "easeOut" }}
           className="mt-10 flex flex-wrap gap-3"
         >
           <a

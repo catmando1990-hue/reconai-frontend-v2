@@ -10,7 +10,11 @@ import { SidebarContext } from "@/components/dashboard/SidebarContext";
  * - Tier 2: Context sidebar (changes by product section)
  * - Tier 3: Main content
  */
-export default async function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardGroupLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { userId } = await auth();
 
   if (!userId) {

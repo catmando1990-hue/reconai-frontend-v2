@@ -48,7 +48,10 @@
       "Bash(git fetch:*)",
       "Bash(git ls-files:*)",
       "Bash(npx vercel link:*)",
-      "Bash(./node_modules/.bin/vercel link:*)"
+      "Bash(./node_modules/.bin/vercel link:*)",
+      "Bash(npm audit:*)",
+      "Bash(pip-audit:*)",
+      "Bash(pip install:*)"
     ]
   }
 }

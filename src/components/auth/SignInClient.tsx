@@ -15,7 +15,18 @@ function SignInContent() {
     const v =
       searchParams.get("redirect_url") || searchParams.get("redirectUrl");
     if (!v) return undefined;
-    if (v.startsWith("/") && !v.startsWith("//")) return v;
+    // Security: Only allow safe relative paths to prevent open redirects
+    // Must start with "/" but not "//" or "/\" and contain no protocol
+    if (
+      v.startsWith("/") &&
+      !v.startsWith("//") &&
+      !v.startsWith("/\\") &&
+      !v.includes(":") &&
+      !v.includes("%2f%2f") &&
+      !v.includes("%5c")
+    ) {
+      return v;
+    }
     return undefined;
   }, [searchParams]);
 

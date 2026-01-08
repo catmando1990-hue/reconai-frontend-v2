@@ -552,9 +552,9 @@ export default function DashboardPage() {
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 left-1/2 h-72 w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-primary/25 via-purple-500/10 to-cyan-500/15 blur-3xl dark:from-primary/20 dark:via-purple-500/10 dark:to-cyan-500/10" />
-        <div className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-gradient-to-tr from-cyan-500/15 via-primary/10 to-transparent blur-3xl dark:from-cyan-500/10 dark:via-primary/10" />
-        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-gradient-to-tr from-purple-500/15 via-primary/10 to-transparent blur-3xl dark:from-purple-500/10 dark:via-primary/10" />
+        <div className="absolute -top-24 left-1/2 h-72 w-3xl -translate-x-1/2 rounded-full bg-linear-to-r from-primary/25 via-purple-500/10 to-cyan-500/15 blur-3xl dark:from-primary/20 dark:via-purple-500/10 dark:to-cyan-500/10" />
+        <div className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-linear-to-tr from-cyan-500/15 via-primary/10 to-transparent blur-3xl dark:from-cyan-500/10 dark:via-primary/10" />
+        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-linear-to-tr from-purple-500/15 via-primary/10 to-transparent blur-3xl dark:from-purple-500/10 dark:via-primary/10" />
       </div>
 
       <div className="relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
@@ -625,7 +625,7 @@ export default function DashboardPage() {
                   onClick={
                     isNetWorth ? () => setShowNetWorthModal(true) : undefined
                   }
-                  className={`group hover:border-primary/20 hover:shadow-lg rounded-xl border border-white/5 bg-card/70 p-5 backdrop-blur-sm transition-all duration-300 hover:shadow-lg ${
+                  className={`group hover:border-primary/20 hover:shadow-lg rounded-xl border border-white/5 bg-card/70 p-5 backdrop-blur-sm transition-all duration-300 ${
                     isNetWorth ? "cursor-pointer" : ""
                   }`}
                   whileHover={isNetWorth ? { scale: 1.02 } : undefined}
@@ -1500,7 +1500,7 @@ export default function DashboardPage() {
                             width: `${selectedInsight.detailedInfo.progress}%`,
                           }}
                           transition={{ duration: 1, ease: "easeOut" }}
-                          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60"
+                          className="h-full rounded-full bg-linear-to-r from-primary to-primary/60"
                         />
                       </div>
                       {selectedInsight.detailedInfo.currentAmount &&

@@ -24,12 +24,15 @@ for (const r in routes) {
 }
 
 if (!fs.existsSync("middleware.ts") && !fs.existsSync("src/proxy.ts")) {
-  issues.push({ severity: "HIGH", message: "Missing global middleware.ts or src/proxy.ts" });
+  issues.push({
+    severity: "HIGH",
+    message: "Missing global middleware.ts or src/proxy.ts",
+  });
 }
 
 if (issues.length) {
   console.error("SECURITY AI FINDINGS");
-  issues.forEach(i => console.error(i.severity, i.message));
+  issues.forEach((i) => console.error(i.severity, i.message));
   process.exit(1);
 }
 

@@ -4,7 +4,7 @@ import path from "path";
 const required = [
   "src/app/maintenance/page.tsx",
   "src/app/sign-in/[[...sign-in]]/page.tsx",
-  "src/app/(dashboard)/layout.tsx"
+  "src/app/(dashboard)/layout.tsx",
 ];
 
 let failed = false;

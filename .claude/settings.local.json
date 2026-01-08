@@ -52,7 +52,8 @@
       "Bash(npm audit:*)",
       "Bash(pip-audit:*)",
       "Bash(pip install:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(npx vercel env pull)"
     ]
   }
 }

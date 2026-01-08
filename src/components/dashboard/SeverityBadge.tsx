@@ -1,18 +1,16 @@
-// src/components/dashboard/SeverityBadge.tsx
-// Phase 35: Severity badge using existing component styling (no hardcoded colors).
-// Uses text semantics only; avoids custom color tokens to maintain light/dark safety.
+// Phase 42 — Severity badge (neutral styling, no hardcoded colors)
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import type { InsightSeverity } from "@/lib/api/types";
+import type { Severity } from "@/lib/scoring";
 
-const LABEL: Record<InsightSeverity, string> = {
+const LABEL: Record<Severity, string> = {
   low: "Low",
   medium: "Medium",
   high: "High",
 };
 
-export function SeverityBadge({ severity }: { severity: InsightSeverity }) {
-  // Keep to neutral styling; severity emphasis is conveyed by label and placement.
+export function SeverityBadge({ severity }: { severity: Severity }) {
+  // Neutral variant: communicates severity without color dependence.
   return <Badge variant="secondary">{LABEL[severity]}</Badge>;
 }

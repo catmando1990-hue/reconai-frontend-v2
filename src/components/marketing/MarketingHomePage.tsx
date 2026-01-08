@@ -282,58 +282,71 @@ export function MarketingHomePage() {
       </section>
 
       {/* PACKAGES SECTION (Phase 14) */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="flex items-end justify-between gap-6 flex-wrap">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
-              <Layers className="h-4 w-4 text-primary" />
-              Packaging (no pricing)
-            </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">
-              Start with Core. Add Intelligence. Unlock CFO Mode.
-            </h2>
-            <p className="mt-2 text-muted-foreground max-w-2xl">
-              ReconAI is built in layers to keep the story clear, scalable, and
-              defensible.
-            </p>
-          </div>
-          <Link
-            href="/packages"
-            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-          >
-            View packages <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+      <section className="relative overflow-hidden">
+        {/* Background image */}
+        <Image
+          src="/packages-hero-bg.jpg"
+          alt=""
+          fill
+          className="object-cover opacity-20 dark:opacity-30"
+          aria-hidden="true"
+        />
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/70 to-background/90 dark:from-background/70 dark:via-background/60 dark:to-background/85" />
 
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-          {[
-            {
-              title: "Core",
-              icon: FileText,
-              desc: "Accounts, transactions, reporting foundations.",
-            },
-            {
-              title: "Intelligence",
-              icon: Sparkles,
-              desc: "AI Worker, alerts, patterns, decision context.",
-            },
-            {
-              title: "CFO Mode",
-              icon: LineChart,
-              desc: "Executive views and review-ready outputs.",
-            },
-          ].map(({ title, icon: Icon, desc }) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-border bg-card p-6"
-            >
-              <div className="flex items-center gap-2 font-semibold">
-                <Icon className="h-5 w-5 text-primary" />
-                {title}
+        <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
+          <div className="flex items-end justify-between gap-6 flex-wrap">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
+                <Layers className="h-4 w-4 text-primary" />
+                Packaging (no pricing)
               </div>
-              <div className="mt-2 text-muted-foreground">{desc}</div>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight">
+                Start with Core. Add Intelligence. Unlock CFO Mode.
+              </h2>
+              <p className="mt-2 text-muted-foreground max-w-2xl">
+                ReconAI is built in layers to keep the story clear, scalable,
+                and defensible.
+              </p>
             </div>
-          ))}
+            <Link
+              href="/packages"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+            >
+              View packages <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+            {[
+              {
+                title: "Core",
+                icon: FileText,
+                desc: "Accounts, transactions, reporting foundations.",
+              },
+              {
+                title: "Intelligence",
+                icon: Sparkles,
+                desc: "AI Worker, alerts, patterns, decision context.",
+              },
+              {
+                title: "CFO Mode",
+                icon: LineChart,
+                desc: "Executive views and review-ready outputs.",
+              },
+            ].map(({ title, icon: Icon, desc }) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-border bg-card/90 backdrop-blur p-6"
+              >
+                <div className="flex items-center gap-2 font-semibold">
+                  <Icon className="h-5 w-5 text-primary" />
+                  {title}
+                </div>
+                <div className="mt-2 text-muted-foreground">{desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

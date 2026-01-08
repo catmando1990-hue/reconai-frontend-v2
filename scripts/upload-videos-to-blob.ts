@@ -1,6 +1,10 @@
+import { config } from "dotenv";
 import { put } from "@vercel/blob";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
+
+// Load environment variables from .env.local
+config({ path: ".env.local" });
 
 const VIDEOS_DIR = join(process.cwd(), "public", "videos");
 

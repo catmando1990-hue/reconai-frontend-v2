@@ -1,5 +1,6 @@
 // ReconAI — Clerk route protection middleware (production-ready)
 // Enterprise-first: no disruptive layout changes; contract-first architecture unaffected.
+// v1.0.1 - Cache bust for Vercel deployment
 
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 

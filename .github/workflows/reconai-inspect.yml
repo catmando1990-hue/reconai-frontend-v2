@@ -1,0 +1,50 @@
+name: ReconAI Site Inspection
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  PROD_URL: https://www.reconaitechnology.com
+  ENABLE_SENTRY: "true"
+
+jobs:
+  playwright_smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npm run reconai:test
+        env:
+          BASE_URL: ${{ env.PROD_URL }}
+
+  lighthouse_ci:
+    runs-on: ubuntu-latest
+    needs: playwright_smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run reconai:lighthouse
+        env:
+          BASE_URL: ${{ env.PROD_URL }}
+
+  zap_baseline:
+    runs-on: ubuntu-latest
+    needs: playwright_smoke
+    steps:
+      - name: OWASP ZAP Baseline Scan (passive)
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: ${{ env.PROD_URL }}

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useOrg } from "@/lib/org-context";
+import { hasAccess } from "@/lib/access";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUser, useClerk } from "@clerk/nextjs";
@@ -28,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Lock,
 } from "lucide-react";
 
 type NavItem = {
@@ -100,14 +103,19 @@ export default function Sidebar({
     const intelligence: NavItem[] = [
       {
         name: "AI Worker",
-        href: "/ai-worker",
+        href: "/intelligence/ai-worker",
         icon: Bot,
         section: "Intelligence",
       },
-      { name: "Alerts", href: "/alerts", icon: Bell, section: "Intelligence" },
+      {
+        name: "Alerts",
+        href: "/intelligence/alerts",
+        icon: Bell,
+        section: "Intelligence",
+      },
       {
         name: "Insights",
-        href: "/insights",
+        href: "/intelligence/insights",
         icon: Sparkles,
         section: "Intelligence",
       },
@@ -173,12 +181,18 @@ export default function Sidebar({
 
   const [openTier, setOpenTier] = useState<Tier["id"]>("core");
 
-  const navItemClass = (active: boolean) =>
+  const { role } = useOrg();
+  const canUseIntelligence = hasAccess(role, "intelligence");
+  const canUseCfo = hasAccess(role, "cfo");
+
+  const navItemClass = (active: boolean, disabled: boolean) =>
     cx(
       "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
-      active
-        ? "bg-primary/10 text-foreground"
-        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+      disabled
+        ? "opacity-50 cursor-not-allowed text-muted-foreground"
+        : active
+          ? "bg-primary/10 text-foreground"
+          : "text-muted-foreground hover:bg-accent hover:text-foreground",
     );
 
   return (
@@ -306,11 +320,28 @@ export default function Sidebar({
                       {tier.items.map((item) => {
                         const active = isActive(pathname, item.href);
                         const Icon = item.icon;
+                        const disabled =
+                          (tier.id === "intelligence" && !canUseIntelligence) ||
+                          (tier.id === "cfo" && !canUseCfo);
+
+                        if (disabled) {
+                          return (
+                            <div
+                              key={item.href}
+                              className={navItemClass(active, true)}
+                            >
+                              <Icon className="h-4 w-4 text-muted-foreground" />
+                              <span className="flex-1">{item.name}</span>
+                              <Lock className="h-4 w-4 opacity-70" />
+                            </div>
+                          );
+                        }
+
                         return (
                           <Link
                             key={item.href}
                             href={item.href}
-                            className={navItemClass(active)}
+                            className={navItemClass(active, false)}
                           >
                             <Icon
                               className={cx(
@@ -335,6 +366,22 @@ export default function Sidebar({
                   {tier.items.slice(0, 4).map((item) => {
                     const active = isActive(pathname, item.href);
                     const Icon = item.icon;
+                    const disabled =
+                      (tier.id === "intelligence" && !canUseIntelligence) ||
+                      (tier.id === "cfo" && !canUseCfo);
+
+                    if (disabled) {
+                      return (
+                        <div
+                          key={item.href}
+                          className="h-10 w-full inline-flex items-center justify-center rounded-xl border border-border bg-background opacity-50 cursor-not-allowed"
+                          aria-label={item.name}
+                        >
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      );
+                    }
+
                     return (
                       <Link
                         key={item.href}

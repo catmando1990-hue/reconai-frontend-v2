@@ -5,7 +5,10 @@ import { getVideoUrl } from "@/config/video-urls";
 
 export function AIVideoPreview() {
   const ref = useRef<HTMLVideoElement>(null);
-  const previewVideoUrl = getVideoUrl("reconaiPreview", "/videos/reconai-preview.mp4");
+  const previewVideoUrl = getVideoUrl(
+    "reconaiPreview",
+    "/videos/reconai-preview.mp4",
+  );
 
   useEffect(() => {
     const video = ref.current;

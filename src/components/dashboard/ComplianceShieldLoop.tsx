@@ -5,7 +5,10 @@ import { getVideoUrl } from "@/config/video-urls";
 
 export function ComplianceShieldLoop() {
   const ref = useRef<HTMLVideoElement>(null);
-  const videoUrl = getVideoUrl("complianceShield", "/videos/compliance-shield-loop.mp4");
+  const videoUrl = getVideoUrl(
+    "complianceShield",
+    "/videos/compliance-shield-loop.mp4",
+  );
 
   useEffect(() => {
     const video = ref.current;

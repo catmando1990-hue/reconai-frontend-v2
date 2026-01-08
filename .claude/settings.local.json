@@ -30,7 +30,9 @@
       "Bash(echo:*)",
       "Bash(done)",
       "Bash(npm run format:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(find:*)",
+      "Bash(ls:*)"
     ]
   }
 }

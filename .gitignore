@@ -49,3 +49,6 @@ next-env.d.ts
 # Windows reserved / invalid files
 nul
 NUL
+
+.vercel
+.env*.local

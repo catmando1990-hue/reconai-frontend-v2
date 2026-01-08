@@ -19,7 +19,11 @@
       "Bash(npm install:*)",
       "Bash(npx prettier:*)",
       "Bash(dir \"C:\\\\tmp\\\\phase22_extract\")",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(taskkill /PID 24800 /F)",
+      "Bash(taskkill:*)"
     ]
   }
 }

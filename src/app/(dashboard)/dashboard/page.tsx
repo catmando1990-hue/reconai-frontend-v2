@@ -840,7 +840,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={cashFlowData}>
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -901,7 +901,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-6">
                 <div className="h-48 w-48">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                  <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={spendingData}

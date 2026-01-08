@@ -18,6 +18,7 @@ import {
   Layers,
 } from "lucide-react";
 import { AIVideoPreview } from "./AIVideoPreview";
+import { ComplianceShieldLoop } from "@/components/dashboard/ComplianceShieldLoop";
 
 type UseCase = "solo" | "smb" | "enterprise";
 
@@ -244,14 +245,8 @@ export function MarketingHomePage() {
       {/* TRUST STRIP */}
       <section className="border-t border-border bg-card">
         <div className="mx-auto max-w-6xl px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-          <div className="md:col-span-1 rounded-2xl overflow-hidden border border-border bg-background">
-            <Image
-              src="/security-lock.jpg"
-              alt="Security and encryption"
-              width={400}
-              height={128}
-              className="h-32 w-full object-cover opacity-90 dark:opacity-80"
-            />
+          <div className="md:col-span-1">
+            <ComplianceShieldLoop />
           </div>
 
           <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">

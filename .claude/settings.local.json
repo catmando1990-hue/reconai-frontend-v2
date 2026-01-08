@@ -17,7 +17,9 @@
       "Bash(git -C c:/dev/reconai-frontend-v2 status --short public/videos/)",
       "Bash(git -C c:/dev/reconai-frontend-v2 status)",
       "Bash(npm install:*)",
-      "Bash(npx prettier:*)"
+      "Bash(npx prettier:*)",
+      "Bash(dir \"C:\\\\tmp\\\\phase22_extract\")",
+      "Bash(cat:*)"
     ]
   }
 }

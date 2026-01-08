@@ -53,7 +53,7 @@ export function getVideoUrl(
 `;
 
   writeFileSync(configPath, configContent);
-  console.log(\`\\n✓ Config saved to \${configPath}\`);
+  console.log(`\n✓ Config saved to ${configPath}`);
 }
 
 uploadVideos().catch(console.error);

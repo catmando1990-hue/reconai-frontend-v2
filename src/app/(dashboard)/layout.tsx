@@ -1,14 +1,12 @@
 import React from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { SidebarRail } from "@/components/dashboard/SidebarRail";
-import { SidebarContext } from "@/components/dashboard/SidebarContext";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 /**
- * Phase 18: True 3-tier sidebar
- * - Tier 1: Icon rail (global, always visible)
- * - Tier 2: Context sidebar (changes by product section)
- * - Tier 3: Main content
+ * Responsive dashboard shell:
+ * - md+: 3-tier sidebar (rail + context + content)
+ * - mobile: top bar + drawer (rail + context)
  */
 export default async function DashboardGroupLayout({
   children,
@@ -21,11 +19,5 @@ export default async function DashboardGroupLayout({
     redirect("/sign-in?redirect_url=/dashboard");
   }
 
-  return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <SidebarRail />
-      <SidebarContext />
-      <main className="flex-1 overflow-y-auto">{children}</main>
-    </div>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

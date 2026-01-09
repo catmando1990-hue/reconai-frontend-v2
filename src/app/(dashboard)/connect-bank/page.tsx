@@ -1,4 +1,5 @@
 import { ConnectBankButton } from "@/components/plaid/connect-bank-button";
+import { ConnectedAccounts } from "@/components/plaid/connected-accounts";
 
 export default function ConnectBankPage() {
   return (
@@ -21,6 +22,8 @@ export default function ConnectBankPage() {
           Outputs are informational only and require user review.
         </div>
       </section>
+
+      <ConnectedAccounts />
     </main>
   );
 }

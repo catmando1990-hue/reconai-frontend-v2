@@ -37,7 +37,8 @@
     "recharts": "^3.6.0",
     "tailwind-merge": "^3.4.0",
     "plaid": "^41.0.0",
-    "react-plaid-link": "^4.1.1"
+    "react-plaid-link": "^4.1.1",
+    "@supabase/supabase-js": "^2.49.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

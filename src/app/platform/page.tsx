@@ -52,7 +52,7 @@ export default function PlatformPage() {
     <main className="bg-background text-foreground">
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-border">
-        <div className="relative px-6 py-20">
+        <div className="relative px-4 py-12 sm:px-6 sm:py-20">
           <Image
             src="/product-dashboard-wide.jpg"
             alt="ReconAI dashboard overview"
@@ -67,7 +67,7 @@ export default function PlatformPage() {
               Platform Overview
             </div>
 
-            <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
+            <h1 className="mt-6 text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
               A platform built for clarity, control, and defensibility
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground text-lg">
@@ -112,7 +112,7 @@ export default function PlatformPage() {
       </section>
 
       {/* SCREENSHOTS */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Product proof</h2>
@@ -130,7 +130,7 @@ export default function PlatformPage() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 rounded-2xl overflow-hidden border border-border bg-card relative h-72">
+          <div className="lg:col-span-2 rounded-2xl overflow-hidden border border-border bg-card relative h-48 sm:h-60 lg:h-72">
             <Image
               src="/product-dashboard-wide.jpg"
               alt="Dashboard overview"
@@ -139,7 +139,7 @@ export default function PlatformPage() {
               className="object-cover"
             />
           </div>
-          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-72">
+          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-48 sm:h-60 lg:h-72">
             <Image
               src="/security-lock.jpg"
               alt="Security"
@@ -151,7 +151,7 @@ export default function PlatformPage() {
         </div>
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-56">
+          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-40 sm:h-48 lg:h-56">
             <Image
               src="/product-dashboard-ui.jpg"
               alt="UI detail"
@@ -160,7 +160,7 @@ export default function PlatformPage() {
               className="object-cover"
             />
           </div>
-          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-56">
+          <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-40 sm:h-48 lg:h-56">
             <Image
               src="/product-charts-close.jpg"
               alt="Charts and trends"
@@ -174,7 +174,7 @@ export default function PlatformPage() {
 
       {/* FEATURE BUCKETS */}
       <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
           <h2 className="text-3xl font-bold tracking-tight">
             What you can do with ReconAI
           </h2>
@@ -209,7 +209,7 @@ export default function PlatformPage() {
       </section>
 
       {/* WHO IT'S FOR */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
         <h2 className="text-3xl font-bold tracking-tight">Who it&apos;s for</h2>
         <p className="mt-2 text-muted-foreground max-w-2xl">
           ReconAI is built for serious operators across business sizes and
@@ -250,7 +250,7 @@ export default function PlatformPage() {
 
       {/* FINAL CTA */}
       <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
           <div className="rounded-3xl border border-border bg-background p-8 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center overflow-hidden">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
@@ -277,7 +277,7 @@ export default function PlatformPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-72">
+            <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-48 sm:h-60 lg:h-72">
               <Image
                 src="/finance-tax-desk.jpg"
                 alt="Clean, reviewable financial operations"

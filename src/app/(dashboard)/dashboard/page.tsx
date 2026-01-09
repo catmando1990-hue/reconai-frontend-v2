@@ -550,7 +550,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+    <div className="relative min-h-dvh bg-background text-foreground overflow-hidden">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 left-1/2 h-72 w-3xl -translate-x-1/2 rounded-full bg-linear-to-r from-primary/25 via-purple-500/10 to-cyan-500/15 blur-3xl dark:from-primary/20 dark:via-purple-500/10 dark:to-cyan-500/10" />
         <div className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-linear-to-tr from-cyan-500/15 via-primary/10 to-transparent blur-3xl dark:from-cyan-500/10 dark:via-primary/10" />

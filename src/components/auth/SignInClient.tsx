@@ -50,7 +50,7 @@ function SignInContent() {
 
 export default function SignInClient() {
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-6 bg-background overflow-hidden">
+    <div className="relative flex min-h-dvh items-center justify-center p-4 sm:p-6 bg-background overflow-hidden">
       {/* Hero background */}
       <Image
         src="/hero-boardroom.jpg"

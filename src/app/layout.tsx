@@ -35,7 +35,7 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <Providers>
-              <div className="min-h-screen">
+              <div className="min-h-dvh">
                 <Header />
                 {children}
                 <Footer />

@@ -43,11 +43,11 @@ export default function PageHelp({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
-              className="border-border max-h-[85vh] w-full max-w-lg overflow-hidden rounded-2xl border bg-card/90 shadow-2xl backdrop-blur-sm"
+              className="border-border max-h-[85dvh] w-full max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border bg-card/90 shadow-2xl backdrop-blur-sm sm:max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/5 p-6">
+              <div className="flex items-center justify-between border-b border-white/5 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
                     <HelpCircle className="text-primary h-5 w-5" />
@@ -70,7 +70,7 @@ export default function PageHelp({
               </div>
 
               {/* Content */}
-              <div className="max-h-[calc(85vh-140px)] overflow-y-auto p-6">
+              <div className="max-h-[calc(85dvh-140px)] overflow-y-auto p-4 sm:p-6">
                 <p className="text-foreground mb-6 leading-relaxed">
                   {description}
                 </p>

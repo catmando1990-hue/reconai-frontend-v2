@@ -79,7 +79,7 @@ export function MarketingHomePage() {
     <main className="bg-background text-foreground">
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="relative min-h-[92vh] flex items-center justify-center px-6 py-24">
+        <div className="relative min-h-[92dvh] flex items-center justify-center px-4 py-16 sm:px-6 sm:py-24">
           <Image
             src="/hero-boardroom.jpg"
             alt="Enterprise team collaborating with financial intelligence dashboards"
@@ -108,7 +108,7 @@ export function MarketingHomePage() {
               {uc.subtitle}
             </div>
 
-            <h1 className="mt-6 text-5xl md:text-6xl font-extrabold tracking-tight">
+            <h1 className="mt-6 text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
               Financial intelligence
               <span className="block text-primary">you can defend</span>
             </h1>
@@ -410,7 +410,7 @@ export function MarketingHomePage() {
                   alt="Modern financial intelligence dashboard"
                   width={800}
                   height={256}
-                  className="h-64 w-full object-cover"
+                  className="h-40 w-full object-cover sm:h-52 md:h-64"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -420,7 +420,7 @@ export function MarketingHomePage() {
                     alt="Financial reporting interface"
                     width={400}
                     height={176}
-                    className="h-44 w-full object-cover"
+                    className="h-32 w-full object-cover sm:h-40 md:h-44"
                   />
                 </div>
                 <div className="rounded-2xl overflow-hidden border border-border bg-card">
@@ -429,7 +429,7 @@ export function MarketingHomePage() {
                     alt="Charts and trend analysis"
                     width={400}
                     height={176}
-                    className="h-44 w-full object-cover"
+                    className="h-32 w-full object-cover sm:h-40 md:h-44"
                   />
                 </div>
               </div>
@@ -484,7 +484,7 @@ export function MarketingHomePage() {
                     alt="Founder working with confidence"
                     width={600}
                     height={176}
-                    className="h-44 w-full object-cover"
+                    className="h-32 w-full object-cover sm:h-40 md:h-44"
                   />
                 </div>
                 <div className="rounded-2xl overflow-hidden border border-border bg-card">
@@ -493,7 +493,7 @@ export function MarketingHomePage() {
                     alt="Positive financial outcomes for small business owners"
                     width={600}
                     height={176}
-                    className="h-44 w-full object-cover"
+                    className="h-32 w-full object-cover sm:h-40 md:h-44"
                   />
                 </div>
               </div>

@@ -1,0 +1,20 @@
+# CODEOWNERS — ReconAI
+# Require Jonathon to review sensitive areas.
+
+* @Catmando1990-hue
+
+# Auth / Security
+src/middleware.ts @Catmando1990-hue
+src/app/**/sign-in/** @Catmando1990-hue
+src/app/**/sign-up/** @Catmando1990-hue
+src/app/**/connect-bank/** @Catmando1990-hue
+
+# Payments / Billing (adjust paths if your repo differs)
+src/**/stripe/** @Catmando1990-hue
+src/**/billing/** @Catmando1990-hue
+
+# AI / governance layer
+ai-system/** @Catmando1990-hue
+
+# CI / workflows
+.github/** @Catmando1990-hue

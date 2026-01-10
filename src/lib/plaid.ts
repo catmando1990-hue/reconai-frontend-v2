@@ -1,5 +1,7 @@
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
+let client: PlaidApi | null = null;
+
 function requireEnv(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`Missing env var: ${name}`);
@@ -7,8 +9,9 @@ function requireEnv(name: string): string {
 }
 
 export function getPlaidClient(): PlaidApi {
-  const env = (process.env.PLAID_ENV || "sandbox").toLowerCase();
+  if (client) return client;
 
+  const env = (process.env.PLAID_ENV || "sandbox").toLowerCase();
   const basePath =
     env === "production"
       ? PlaidEnvironments.production
@@ -16,7 +19,7 @@ export function getPlaidClient(): PlaidApi {
         ? PlaidEnvironments.development
         : PlaidEnvironments.sandbox;
 
-  const configuration = new Configuration({
+  const config = new Configuration({
     basePath,
     baseOptions: {
       headers: {
@@ -26,7 +29,8 @@ export function getPlaidClient(): PlaidApi {
     },
   });
 
-  return new PlaidApi(configuration);
+  client = new PlaidApi(config);
+  return client;
 }
 
 export function getPlaidWebhookUrl(): string | undefined {

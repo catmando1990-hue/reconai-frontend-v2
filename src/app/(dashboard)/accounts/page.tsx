@@ -1,4 +1,5 @@
 import { RouteShell } from "@/components/dashboard/RouteShell";
+import { AccountsPanel } from "@/components/plaid/accounts-panel";
 
 export default function AccountsPage() {
   return (
@@ -6,9 +7,7 @@ export default function AccountsPage() {
       title="Accounts"
       subtitle="Linked accounts, balances, and connection health."
     >
-      <p className="text-sm text-muted-foreground">
-        This section is wired and ready for logic phases.
-      </p>
+      <AccountsPanel />
     </RouteShell>
   );
 }

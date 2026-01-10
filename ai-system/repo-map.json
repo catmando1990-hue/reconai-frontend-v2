@@ -1,0 +1,12 @@
+{
+  "routes": {
+    "/": "Marketing homepage",
+    "/sign-in": "Clerk auth entry",
+    "/connect-bank": "Plaid connection flow",
+    "/dashboard": "Authenticated user dashboard"
+  },
+  "components": [],
+  "services": [],
+  "auth": "Clerk",
+  "deployment": "Vercel"
+}

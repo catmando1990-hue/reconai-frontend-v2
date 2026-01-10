@@ -1,0 +1,45 @@
+name: ReconAI CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Detect scripts
+        id: scripts
+        run: |
+          node -e "const p=require('./package.json'); const s=(p.scripts||{}); const out={lint:!!s.lint,typecheck:!!s.typecheck,test:!!s.test,build:!!s.build}; console.log('lint='+out.lint); console.log('typecheck='+out.typecheck); console.log('test='+out.test); console.log('build='+out.build);" >> $GITHUB_OUTPUT
+
+      - name: Lint
+        if: steps.scripts.outputs.lint == 'true'
+        run: npm run lint
+
+      - name: Typecheck
+        if: steps.scripts.outputs.typecheck == 'true'
+        run: npm run typecheck
+
+      - name: Test
+        if: steps.scripts.outputs.test == 'true'
+        run: npm test
+
+      - name: Build
+        if: steps.scripts.outputs.build == 'true'
+        run: npm run build

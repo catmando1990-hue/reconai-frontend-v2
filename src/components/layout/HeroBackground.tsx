@@ -5,6 +5,7 @@ import "@/styles/recon-hero-awardwinning.css";
 export function HeroBackground({ children }: { children: React.ReactNode }) {
   return (
     <div className="recon-hero-v3 recon-animate">
+      <div className="focus-plane" />
       <div className="vignette" />
       <div className="beam" />
       <div className="grid" />

@@ -14,7 +14,14 @@ const SignIn = dynamic(() => import("@clerk/nextjs").then((m) => m.SignIn), {
 function SignInContent() {
   const searchParams = useSearchParams();
   const { resolvedTheme } = useTheme();
-  const clerkAppearance = resolvedTheme === "dark" ? { baseTheme: dark } : {};
+  const clerkAppearance = {
+    ...(resolvedTheme === "dark" ? { baseTheme: dark } : {}),
+    elements: {
+      formFieldInput__password: {
+        autocomplete: "current-password",
+      },
+    },
+  };
 
   const redirectUrl = useMemo(() => {
     const v =

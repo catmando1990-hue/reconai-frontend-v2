@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { dark } from "@clerk/themes";
@@ -14,17 +14,33 @@ const SignUp = dynamic(() => import("@clerk/nextjs").then((m) => m.SignUp), {
 function SignUpContent() {
   const searchParams = useSearchParams();
   const { resolvedTheme } = useTheme();
-  const clerkAppearance = {
-    ...(resolvedTheme === "dark" ? { baseTheme: dark } : {}),
-    elements: {
-      formFieldInput__emailAddress: {
-        autocomplete: "username",
-      },
-      formFieldInput__password: {
-        autocomplete: "new-password",
-      },
-    },
-  };
+  const containerRef = useRef<HTMLDivElement>(null);
+  const clerkAppearance = resolvedTheme === "dark" ? { baseTheme: dark } : {};
+
+  // Set autocomplete attributes on Clerk inputs after render
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new MutationObserver(() => {
+      const emailInput = container.querySelector<HTMLInputElement>(
+        'input[name="emailAddress"]',
+      );
+      const passwordInput = container.querySelector<HTMLInputElement>(
+        'input[type="password"]',
+      );
+
+      if (emailInput && !emailInput.getAttribute("autocomplete")) {
+        emailInput.setAttribute("autocomplete", "username");
+      }
+      if (passwordInput && !passwordInput.getAttribute("autocomplete")) {
+        passwordInput.setAttribute("autocomplete", "new-password");
+      }
+    });
+
+    observer.observe(container, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   const redirectUrl = useMemo(() => {
     const v =
@@ -48,13 +64,15 @@ function SignUpContent() {
   const afterSignUpUrl = redirectUrl ?? "/dashboard";
 
   return (
-    <SignUp
-      routing="path"
-      path="/sign-up"
-      fallbackRedirectUrl={afterSignUpUrl}
-      forceRedirectUrl={redirectUrl}
-      appearance={clerkAppearance}
-    />
+    <div ref={containerRef}>
+      <SignUp
+        routing="path"
+        path="/sign-up"
+        fallbackRedirectUrl={afterSignUpUrl}
+        forceRedirectUrl={redirectUrl}
+        appearance={clerkAppearance}
+      />
+    </div>
   );
 }
 

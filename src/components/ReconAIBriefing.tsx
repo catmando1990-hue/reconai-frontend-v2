@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 type Persona = {
   name: string;
@@ -13,7 +13,7 @@ export function ReconAIBriefing() {
 
   useEffect(() => {
     // Assumes your frontend proxy routes /api to backend, or swap to NEXT_PUBLIC_API_URL.
-    fetch('/api/ai/identity')
+    fetch("/api/ai/identity")
       .then((r) => r.json())
       .then(setPersona)
       .catch(() => setPersona(null));
@@ -24,7 +24,9 @@ export function ReconAIBriefing() {
   return (
     <div className="rounded-2xl border p-4 md:p-6">
       <div className="text-lg font-semibold">{persona.name} Briefing</div>
-      <pre className="mt-3 whitespace-pre-wrap text-sm opacity-90">{persona.intro_briefing}</pre>
+      <pre className="mt-3 whitespace-pre-wrap text-sm opacity-90">
+        {persona.intro_briefing}
+      </pre>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import Providers from "@/app/providers";
 import { ClerkProvider } from "@clerk/nextjs";
-import { ClerkAutocompletePatches } from "@/components/auth/ClerkAutocompletePatches";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { RouteBackgroundWrapper } from "@/components/layout/RouteBackgroundWrapper";
@@ -37,7 +36,6 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <Providers>
-              <ClerkAutocompletePatches />
               <RouteBackgroundWrapper>
                 <div className="min-h-dvh">
                   <Header />

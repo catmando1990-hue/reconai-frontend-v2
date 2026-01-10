@@ -1,9 +1,9 @@
 // hooks/useFeatureFlags.ts
 // Step 19: Feature Flags Hook
 
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from "react";
 
 interface FeatureFlag {
   id: string;
@@ -24,7 +24,7 @@ interface UseFeatureFlagsResult {
   refresh: () => Promise<void>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 export function useFeatureFlags(): UseFeatureFlagsResult {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
@@ -36,7 +36,9 @@ export function useFeatureFlags(): UseFeatureFlagsResult {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE}/governance/features?enabled_only=true`);
+      const res = await fetch(
+        `${API_BASE}/governance/features?enabled_only=true`,
+      );
 
       if (!res.ok) {
         throw new Error(`Failed to fetch feature flags: ${res.status}`);
@@ -45,7 +47,9 @@ export function useFeatureFlags(): UseFeatureFlagsResult {
       const data = await res.json();
       setFlags(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load feature flags');
+      setError(
+        err instanceof Error ? err.message : "Failed to load feature flags",
+      );
       setFlags([]);
     } finally {
       setLoading(false);
@@ -61,7 +65,7 @@ export function useFeatureFlags(): UseFeatureFlagsResult {
       const flag = flags.find((f) => f.name === name);
       return flag?.enabled ?? false;
     },
-    [flags]
+    [flags],
   );
 
   const flagNames = flags.filter((f) => f.enabled).map((f) => f.name);

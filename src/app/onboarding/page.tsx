@@ -161,8 +161,8 @@ export default function OnboardingPage() {
                     <div className="text-sm">
                       <div className="font-medium">I confirm the basics</div>
                       <div className="text-muted-foreground">
-                        I understand ReconAI&apos;s purpose and agree to use it responsibly.
-                        See our{" "}
+                        I understand ReconAI&apos;s purpose and agree to use it
+                        responsibly. See our{" "}
                         <Link
                           className="text-primary hover:underline"
                           href="/terms"
@@ -204,8 +204,8 @@ export default function OnboardingPage() {
               <div className="flex-1">
                 <div className="font-semibold">What happens next</div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  You&apos;ll land in ReconAI. From there, you can explore
-                  Core, Intelligence, and CFO Mode—without losing the narrative
+                  You&apos;ll land in ReconAI. From there, you can explore Core,
+                  Intelligence, and CFO Mode—without losing the narrative
                   thread.
                 </p>
 

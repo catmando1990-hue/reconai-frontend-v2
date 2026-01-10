@@ -35,7 +35,7 @@ const entry = [
   `- Link: ${pr.html_url}`,
   `- Decision: ${decision}`,
   `- Notes: ${merged ? "Merged to main." : "Closed without merge."}`,
-  ""
+  "",
 ].join("\n");
 
 fs.mkdirSync(path.dirname(logPath), { recursive: true });
@@ -43,7 +43,7 @@ if (!fs.existsSync(logPath)) {
   fs.writeFileSync(
     logPath,
     "# Decision Log\n\n## Purpose\nTrack accepted and rejected AI changes to improve future behavior.\n\n",
-    "utf-8"
+    "utf-8",
   );
 }
 fs.appendFileSync(logPath, entry, "utf-8");

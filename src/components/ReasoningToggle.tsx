@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-type Mode = 'explain' | 'summarize' | 'silent' | 'adaptive';
+type Mode = "explain" | "summarize" | "silent" | "adaptive";
 
 export function ReasoningToggle({
   mode,

@@ -17,13 +17,27 @@ const appDir = path.join(repoRoot, "src", "app");
 const outPath = path.join(repoRoot, "ai-system", "repo-map.json");
 
 const isDir = (p) => {
-  try { return fs.statSync(p).isDirectory(); } catch { return false; }
+  try {
+    return fs.statSync(p).isDirectory();
+  } catch {
+    return false;
+  }
 };
 const exists = (p) => fs.existsSync(p);
 
 const skipNames = new Set([
-  "components", "lib", "styles", "utils", "hooks", "types", "assets", "public",
-  "favicon.ico", "globals.css", "fonts", "images"
+  "components",
+  "lib",
+  "styles",
+  "utils",
+  "hooks",
+  "types",
+  "assets",
+  "public",
+  "favicon.ico",
+  "globals.css",
+  "fonts",
+  "images",
 ]);
 
 const isSkippableSegment = (name) => {
@@ -62,8 +76,13 @@ const walk = (dir, segments = []) => {
       path: normRoute(segments),
       dir: path.relative(repoRoot, dir).replace(/\\/g, "/"),
       files: ["page", "layout", "route"].filter((k) =>
-        ["tsx","jsx","ts","js"].some((ext) => exists(path.join(dir, `${k}.${ext}`)) || exists(path.join(dir, `${k}.tsx`)) || exists(path.join(dir, `${k}.ts`)) )
-      )
+        ["tsx", "jsx", "ts", "js"].some(
+          (ext) =>
+            exists(path.join(dir, `${k}.${ext}`)) ||
+            exists(path.join(dir, `${k}.tsx`)) ||
+            exists(path.join(dir, `${k}.ts`)),
+        ),
+      ),
     });
   }
 
@@ -100,16 +119,18 @@ const next = {
     acc[r.path] = {
       description: base?.routes?.[r.path]?.description || "",
       dir: r.dir,
-      files: r.files
+      files: r.files,
     };
     return acc;
   }, {}),
   components: base.components || [],
   services: base.services || [],
   auth: base.auth || "Clerk",
-  deployment: base.deployment || "Vercel"
+  deployment: base.deployment || "Vercel",
 };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(next, null, 2) + "\n", "utf-8");
-console.log(`Updated ${path.relative(repoRoot, outPath)} with ${Object.keys(next.routes).length} routes.`);
+console.log(
+  `Updated ${path.relative(repoRoot, outPath)} with ${Object.keys(next.routes).length} routes.`,
+);

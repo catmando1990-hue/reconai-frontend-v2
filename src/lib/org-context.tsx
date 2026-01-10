@@ -27,14 +27,15 @@ const OrgProviderClerkLazy = React.lazy(async () => {
     const { isLoaded: userLoaded, user } = useUser();
 
     // Preferred: user-level role from publicMetadata (works even without org selected)
-    const userRole =
-      ((user?.publicMetadata as Record<string, unknown>)?.role as
-        | string
-        | undefined) ||
-      ((user?.unsafeMetadata as Record<string, unknown>)?.role as
-        | string
-        | undefined) ||
-      null;
+    const userRole = user
+      ? ((user.publicMetadata as Record<string, unknown>)?.role as
+          | string
+          | undefined) ||
+        ((user.unsafeMetadata as Record<string, unknown>)?.role as
+          | string
+          | undefined) ||
+        null
+      : null;
 
     const effectiveRole = userRole ?? orgRole ?? null;
 

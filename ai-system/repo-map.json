@@ -1,12 +1,433 @@
 {
   "routes": {
-    "/": "Marketing homepage",
-    "/sign-in": "Clerk auth entry",
-    "/connect-bank": "Plaid connection flow",
-    "/dashboard": "Authenticated user dashboard"
+    "/": {
+      "description": "",
+      "dir": "src/app/(marketing)",
+      "files": [
+        "page",
+        "layout"
+      ]
+    },
+    "/accounts": {
+      "description": "",
+      "dir": "src/app/(dashboard)/accounts",
+      "files": [
+        "page"
+      ]
+    },
+    "/admin/settings": {
+      "description": "",
+      "dir": "src/app/admin/settings",
+      "files": [
+        "page"
+      ]
+    },
+    "/ai-worker": {
+      "description": "",
+      "dir": "src/app/(dashboard)/ai-worker",
+      "files": [
+        "page"
+      ]
+    },
+    "/alerts": {
+      "description": "",
+      "dir": "src/app/(dashboard)/alerts",
+      "files": [
+        "page"
+      ]
+    },
+    "/api/admin/maintenance": {
+      "description": "",
+      "dir": "src/app/api/admin/maintenance",
+      "files": [
+        "route"
+      ]
+    },
+    "/api/plaid/accounts": {
+      "description": "",
+      "dir": "src/app/api/plaid/accounts",
+      "files": [
+        "route"
+      ]
+    },
+    "/api/plaid/create-link-token": {
+      "description": "",
+      "dir": "src/app/api/plaid/create-link-token",
+      "files": [
+        "route"
+      ]
+    },
+    "/api/plaid/exchange-public-token": {
+      "description": "",
+      "dir": "src/app/api/plaid/exchange-public-token",
+      "files": [
+        "route"
+      ]
+    },
+    "/api/plaid/items": {
+      "description": "",
+      "dir": "src/app/api/plaid/items",
+      "files": [
+        "route"
+      ]
+    },
+    "/api/proxy-export": {
+      "description": "",
+      "dir": "src/app/api/proxy-export",
+      "files": [
+        "route"
+      ]
+    },
+    "/cash-flow": {
+      "description": "",
+      "dir": "src/app/(dashboard)/cash-flow",
+      "files": [
+        "page"
+      ]
+    },
+    "/certifications": {
+      "description": "",
+      "dir": "src/app/(dashboard)/certifications",
+      "files": [
+        "page"
+      ]
+    },
+    "/cfo/compliance": {
+      "description": "",
+      "dir": "src/app/(dashboard)/cfo/compliance",
+      "files": [
+        "page"
+      ]
+    },
+    "/cfo/executive-summary": {
+      "description": "",
+      "dir": "src/app/(dashboard)/cfo/executive-summary",
+      "files": [
+        "page"
+      ]
+    },
+    "/cfo/overview": {
+      "description": "",
+      "dir": "src/app/(dashboard)/cfo/overview",
+      "files": [
+        "page"
+      ]
+    },
+    "/compliance": {
+      "description": "",
+      "dir": "src/app/(dashboard)/compliance",
+      "files": [
+        "page"
+      ]
+    },
+    "/connect-bank": {
+      "description": "",
+      "dir": "src/app/(dashboard)/connect-bank",
+      "files": [
+        "page"
+      ]
+    },
+    "/core/overview": {
+      "description": "",
+      "dir": "src/app/(dashboard)/core/overview",
+      "files": [
+        "page"
+      ]
+    },
+    "/core/reports": {
+      "description": "",
+      "dir": "src/app/(dashboard)/core/reports",
+      "files": [
+        "page"
+      ]
+    },
+    "/core/transactions": {
+      "description": "",
+      "dir": "src/app/(dashboard)/core/transactions",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard",
+      "files": [
+        "page",
+        "layout"
+      ]
+    },
+    "/dashboard/cfo": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/cfo",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/cfo/compliance": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/cfo/compliance",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/cfo/summary": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/cfo/summary",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/core": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/core",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/core/accounts": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/core/accounts",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/core/transactions": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/core/transactions",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/intelligence": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/intelligence",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/intelligence/expenses": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/intelligence/expenses",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/intelligence/travel": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/intelligence/travel",
+      "files": [
+        "page"
+      ]
+    },
+    "/dashboard/settings": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dashboard/settings",
+      "files": [
+        "page"
+      ]
+    },
+    "/dcaa": {
+      "description": "",
+      "dir": "src/app/(dashboard)/dcaa",
+      "files": [
+        "page"
+      ]
+    },
+    "/financial-reports": {
+      "description": "",
+      "dir": "src/app/(dashboard)/financial-reports",
+      "files": [
+        "page"
+      ]
+    },
+    "/how-it-works": {
+      "description": "",
+      "dir": "src/app/how-it-works",
+      "files": [
+        "page"
+      ]
+    },
+    "/insights": {
+      "description": "",
+      "dir": "src/app/(dashboard)/insights",
+      "files": [
+        "page"
+      ]
+    },
+    "/intelligence/ai-worker": {
+      "description": "",
+      "dir": "src/app/(dashboard)/intelligence/ai-worker",
+      "files": [
+        "page"
+      ]
+    },
+    "/intelligence/alerts": {
+      "description": "",
+      "dir": "src/app/(dashboard)/intelligence/alerts",
+      "files": [
+        "page"
+      ]
+    },
+    "/intelligence/insights": {
+      "description": "",
+      "dir": "src/app/(dashboard)/intelligence/insights",
+      "files": [
+        "page"
+      ]
+    },
+    "/leases": {
+      "description": "",
+      "dir": "src/app/(dashboard)/leases",
+      "files": [
+        "page"
+      ]
+    },
+    "/maintenance": {
+      "description": "",
+      "dir": "src/app/maintenance",
+      "files": [
+        "page"
+      ]
+    },
+    "/onboarding": {
+      "description": "",
+      "dir": "src/app/onboarding",
+      "files": [
+        "page",
+        "layout"
+      ]
+    },
+    "/onboarding/org": {
+      "description": "",
+      "dir": "src/app/onboarding/org",
+      "files": [
+        "page"
+      ]
+    },
+    "/packages": {
+      "description": "",
+      "dir": "src/app/packages",
+      "files": [
+        "page"
+      ]
+    },
+    "/platform": {
+      "description": "",
+      "dir": "src/app/platform",
+      "files": [
+        "page"
+      ]
+    },
+    "/privacy": {
+      "description": "",
+      "dir": "src/app/privacy",
+      "files": [
+        "page"
+      ]
+    },
+    "/privacy-policy": {
+      "description": "",
+      "dir": "src/app/privacy-policy",
+      "files": [
+        "page"
+      ]
+    },
+    "/properties": {
+      "description": "",
+      "dir": "src/app/(dashboard)/properties",
+      "files": [
+        "page"
+      ]
+    },
+    "/rent-collection": {
+      "description": "",
+      "dir": "src/app/(dashboard)/rent-collection",
+      "files": [
+        "page"
+      ]
+    },
+    "/security": {
+      "description": "",
+      "dir": "src/app/security",
+      "files": [
+        "page"
+      ]
+    },
+    "/settings": {
+      "description": "",
+      "dir": "src/app/settings",
+      "files": [
+        "page"
+      ]
+    },
+    "/sign-in/[[...sign-in]]": {
+      "description": "",
+      "dir": "src/app/sign-in/[[...sign-in]]",
+      "files": [
+        "page"
+      ]
+    },
+    "/sign-up/[[...sign-up]]": {
+      "description": "",
+      "dir": "src/app/sign-up/[[...sign-up]]",
+      "files": [
+        "page"
+      ]
+    },
+    "/support": {
+      "description": "",
+      "dir": "src/app/support",
+      "files": [
+        "page"
+      ]
+    },
+    "/tenants": {
+      "description": "",
+      "dir": "src/app/(dashboard)/tenants",
+      "files": [
+        "page"
+      ]
+    },
+    "/terms": {
+      "description": "",
+      "dir": "src/app/terms",
+      "files": [
+        "page"
+      ]
+    },
+    "/terms-of-service": {
+      "description": "",
+      "dir": "src/app/terms-of-service",
+      "files": [
+        "page"
+      ]
+    },
+    "/transactions": {
+      "description": "",
+      "dir": "src/app/(dashboard)/transactions",
+      "files": [
+        "page"
+      ]
+    },
+    "/units": {
+      "description": "",
+      "dir": "src/app/(dashboard)/units",
+      "files": [
+        "page"
+      ]
+    },
+    "/upload": {
+      "description": "",
+      "dir": "src/app/(dashboard)/upload",
+      "files": [
+        "page"
+      ]
+    }
   },
   "components": [],
   "services": [],
   "auth": "Clerk",
-  "deployment": "Vercel"
+  "deployment": "Vercel",
+  "generated_at": "2026-01-10T15:16:50.405Z",
+  "framework": "Next.js App Router"
 }

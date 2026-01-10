@@ -2,20 +2,20 @@
 
 import React, {
   createContext,
+  Suspense,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
 } from "react";
 
-import { useApi } from "@/lib/useApi";
-
 export type UserProfile = {
-  id?: string;
-  email?: string;
-  name?: string;
-  [key: string]: unknown;
+  id: string;
+  email: string;
+  name: string;
+  imageUrl?: string;
+  role: string | null;
+  tiers: string[];
+  internal: boolean;
 };
 
 export type UserProfileContextValue = {
@@ -27,52 +27,128 @@ export type UserProfileContextValue = {
 
 const UserProfileContext = createContext<UserProfileContextValue | null>(null);
 
+/**
+ * Default context value when Clerk is not enabled or user is not signed in.
+ */
+const DEFAULT_VALUE: UserProfileContextValue = {
+  profile: null,
+  isLoading: false,
+  error: null,
+  refetch: async () => {},
+};
+
+/**
+ * Lazily loaded Clerk-based provider to avoid bundling Clerk on pages that don't need it.
+ */
+const UserProfileProviderClerkLazy = React.lazy(async () => {
+  const { useUser } = await import("@clerk/nextjs");
+
+  function UserProfileProviderClerk({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) {
+    const { user, isLoaded, isSignedIn } = useUser();
+
+    const profile = useMemo<UserProfile | null>(() => {
+      if (!isLoaded || !isSignedIn || !user) {
+        return null;
+      }
+
+      const metadata = (user.publicMetadata ?? {}) as Record<string, unknown>;
+
+      // Extract role - check publicMetadata first, then unsafeMetadata as fallback
+      const role =
+        (metadata.role as string | undefined) ??
+        ((user.unsafeMetadata as Record<string, unknown>)?.role as
+          | string
+          | undefined) ??
+        null;
+
+      // Extract tiers - ensure it's an array of strings
+      const rawTiers = metadata.tiers;
+      const tiers: string[] = Array.isArray(rawTiers)
+        ? rawTiers.filter((t): t is string => typeof t === "string")
+        : [];
+
+      // Extract internal flag
+      const internal = metadata.internal === true;
+
+      return {
+        id: user.id,
+        email: user.primaryEmailAddress?.emailAddress ?? "",
+        name:
+          user.fullName ??
+          (`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+            user.username) ??
+          "",
+        imageUrl: user.imageUrl,
+        role,
+        tiers,
+        internal,
+      };
+    }, [user, isLoaded, isSignedIn]);
+
+    const refetch = useCallback(async () => {
+      // Clerk manages its own state; reload user data from Clerk
+      if (user) {
+        await user.reload();
+      }
+    }, [user]);
+
+    const error = useMemo<string | null>(() => {
+      // Clerk doesn't expose errors via useUser; return null
+      return null;
+    }, []);
+
+    const value = useMemo<UserProfileContextValue>(
+      () => ({
+        profile,
+        isLoading: !isLoaded,
+        error,
+        refetch,
+      }),
+      [profile, isLoaded, error, refetch],
+    );
+
+    return (
+      <UserProfileContext.Provider value={value}>
+        {children}
+      </UserProfileContext.Provider>
+    );
+  }
+
+  return { default: UserProfileProviderClerk };
+});
+
 export function UserProfileProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { apiFetch } = useApi();
+  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  if (!clerkEnabled) {
+    return (
+      <UserProfileContext.Provider value={DEFAULT_VALUE}>
+        {children}
+      </UserProfileContext.Provider>
+    );
+  }
 
-  const refetch = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Pass a custom onUnauthorized handler to prevent redirect on public pages
-      const data = await apiFetch<UserProfile>("/api/auth/me", {
-        onUnauthorized: () => {
-          // Don't redirect - just treat as no profile (user not signed in)
-        },
-      });
-      setProfile(data ?? null);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to load profile";
-      setError(message);
-      setProfile(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [apiFetch]);
-
-  useEffect(() => {
-    void refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const value = useMemo<UserProfileContextValue>(
-    () => ({ profile, isLoading, error, refetch }),
-    [profile, isLoading, error, refetch],
-  );
-
+  // While the Clerk hooks chunk loads, expose a stable "loading" state.
   return (
-    <UserProfileContext.Provider value={value}>
-      {children}
-    </UserProfileContext.Provider>
+    <Suspense
+      fallback={
+        <UserProfileContext.Provider
+          value={{ ...DEFAULT_VALUE, isLoading: true }}
+        >
+          {children}
+        </UserProfileContext.Provider>
+      }
+    >
+      <UserProfileProviderClerkLazy>{children}</UserProfileProviderClerkLazy>
+    </Suspense>
   );
 }
 

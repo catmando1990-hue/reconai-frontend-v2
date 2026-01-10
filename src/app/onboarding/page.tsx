@@ -23,31 +23,29 @@ function setCookie(name: string, value: string, days: number) {
 }
 
 /**
- * Phase 15:
+ * Phase 15 + Step 30:
  * - Light/Dark compatible (semantic tokens)
- * - Writes BOTH:
- *   publicMetadata.onboarded = true (preferred)
- *   unsafeMetadata.onboardingComplete = true (fallback/legacy)
- * - Redirects cleanly to /dashboard after completion
+ * - Visible "I confirm the basics" checkbox that enables Continue
+ * - Navigates to /dashboard/reconai
+ * - Best-effort POST to /ai/briefing/seen before navigation
  */
 
 export default function OnboardingPage() {
   const { user, isLoaded } = useUser();
 
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [basicsConfirmed, setBasicsConfirmed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canContinue = useMemo(
-    () => termsAccepted && privacyAccepted && !saving,
-    [termsAccepted, privacyAccepted, saving],
+    () => basicsConfirmed && !saving,
+    [basicsConfirmed, saving],
   );
 
   const completeOnboarding = async () => {
     if (!user) return;
-    if (!termsAccepted || !privacyAccepted) return;
+    if (!basicsConfirmed) return;
 
     setSaving(true);
     setError(null);
@@ -62,8 +60,7 @@ export default function OnboardingPage() {
           ...(user.unsafeMetadata ?? {}),
           onboardingComplete: true,
           onboardingCompleteAt: now,
-          termsAcceptedAt: now,
-          privacyAcceptedAt: now,
+          basicsConfirmedAt: now,
         },
       });
 
@@ -72,11 +69,23 @@ export default function OnboardingPage() {
       // Set cookie as fallback for middleware (unsafeMetadata isn't in JWT by default)
       setCookie("onboarding_complete", "true", 365);
 
+      // Best-effort call to mark briefing as seen (ignore failure)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      if (apiUrl) {
+        fetch(`${apiUrl}/ai/briefing/seen`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.id }),
+        }).catch(() => {
+          // Ignore errors - this is best-effort
+        });
+      }
+
       setCompleted(true);
 
-      // Hard redirect to force fresh session check by middleware.
+      // Hard redirect to ReconAI dashboard
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        window.location.href = "/dashboard/reconai";
       }, 650);
     } catch (e: unknown) {
       const message =
@@ -136,48 +145,33 @@ export default function OnboardingPage() {
             <div className="flex items-start gap-3">
               <ShieldCheck className="mt-1 h-5 w-5 text-primary" />
               <div className="flex-1">
-                <div className="font-semibold">Terms and privacy</div>
+                <div className="font-semibold">Confirm the basics</div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  ReconAI is designed for serious finance. These confirmations
-                  help keep data handling and reporting consistent.
+                  ReconAI is designed for serious finance. This confirmation
+                  helps keep data handling and reporting consistent.
                 </p>
 
-                <div className="mt-5 space-y-3">
+                <div className="mt-5">
                   <label className="flex items-start gap-3 cursor-pointer rounded-2xl border border-border bg-background px-4 py-3 hover:bg-accent transition">
                     <input
                       type="checkbox"
                       className="mt-1 h-4 w-4"
-                      checked={termsAccepted}
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      checked={basicsConfirmed}
+                      onChange={(e) => setBasicsConfirmed(e.target.checked)}
                     />
                     <div className="text-sm">
-                      <div className="font-medium">I agree to the Terms</div>
+                      <div className="font-medium">I confirm the basics</div>
                       <div className="text-muted-foreground">
-                        Read:{" "}
+                        I understand ReconAI&apos;s purpose and agree to use it responsibly.
+                        See our{" "}
                         <Link
                           className="text-primary hover:underline"
                           href="/terms"
                           target="_blank"
                         >
-                          Terms of Service
+                          Terms
                         </Link>
-                      </div>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-3 cursor-pointer rounded-2xl border border-border bg-background px-4 py-3 hover:bg-accent transition">
-                    <input
-                      type="checkbox"
-                      className="mt-1 h-4 w-4"
-                      checked={privacyAccepted}
-                      onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                    />
-                    <div className="text-sm">
-                      <div className="font-medium">
-                        I agree to the Privacy Policy
-                      </div>
-                      <div className="text-muted-foreground">
-                        Read:{" "}
+                        {" & "}
                         <Link
                           className="text-primary hover:underline"
                           href="/privacy"
@@ -185,6 +179,7 @@ export default function OnboardingPage() {
                         >
                           Privacy Policy
                         </Link>
+                        .
                       </div>
                     </div>
                   </label>
@@ -210,7 +205,7 @@ export default function OnboardingPage() {
               <div className="flex-1">
                 <div className="font-semibold">What happens next</div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  You&apos;ll land in the dashboard. From there, you can explore
+                  You&apos;ll land in ReconAI. From there, you can explore
                   Core, Intelligence, and CFO Mode—without losing the narrative
                   thread.
                 </p>
@@ -257,7 +252,7 @@ export default function OnboardingPage() {
             ) : (
               <ArrowRight className="h-4 w-4" />
             )}
-            {completed ? "Completed" : "Continue to dashboard"}
+            {completed ? "Completed" : "Continue to ReconAI"}
           </button>
 
           <Link

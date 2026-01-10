@@ -1,5 +1,6 @@
 import Providers from "@/app/providers";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkAutocompletePatches } from "@/components/auth/ClerkAutocompletePatches";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { RouteBackgroundWrapper } from "@/components/layout/RouteBackgroundWrapper";
@@ -29,13 +30,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl="/">
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <ThemeProvider>
             <Providers>
+              <ClerkAutocompletePatches />
               <RouteBackgroundWrapper>
                 <div className="min-h-dvh">
                   <Header />

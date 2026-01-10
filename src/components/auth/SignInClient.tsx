@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { dark } from "@clerk/themes";
@@ -14,33 +14,7 @@ const SignIn = dynamic(() => import("@clerk/nextjs").then((m) => m.SignIn), {
 function SignInContent() {
   const searchParams = useSearchParams();
   const { resolvedTheme } = useTheme();
-  const containerRef = useRef<HTMLDivElement>(null);
   const clerkAppearance = resolvedTheme === "dark" ? { baseTheme: dark } : {};
-
-  // Set autocomplete attributes on Clerk inputs after render
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new MutationObserver(() => {
-      const emailInput = container.querySelector<HTMLInputElement>(
-        'input[name="identifier"]',
-      );
-      const passwordInput = container.querySelector<HTMLInputElement>(
-        'input[type="password"]',
-      );
-
-      if (emailInput && !emailInput.getAttribute("autocomplete")) {
-        emailInput.setAttribute("autocomplete", "username");
-      }
-      if (passwordInput && !passwordInput.getAttribute("autocomplete")) {
-        passwordInput.setAttribute("autocomplete", "current-password");
-      }
-    });
-
-    observer.observe(container, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
 
   const redirectUrl = useMemo(() => {
     const v =
@@ -64,15 +38,13 @@ function SignInContent() {
   const afterSignInUrl = redirectUrl ?? "/dashboard";
 
   return (
-    <div ref={containerRef}>
-      <SignIn
-        routing="path"
-        path="/sign-in"
-        fallbackRedirectUrl={afterSignInUrl}
-        forceRedirectUrl={redirectUrl}
-        appearance={clerkAppearance}
-      />
-    </div>
+    <SignIn
+      routing="path"
+      path="/sign-in"
+      fallbackRedirectUrl={afterSignInUrl}
+      forceRedirectUrl={redirectUrl}
+      appearance={clerkAppearance}
+    />
   );
 }
 

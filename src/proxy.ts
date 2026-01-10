@@ -170,6 +170,13 @@ export default clerkMiddleware(async (auth, req) => {
       | Record<string, unknown>
       | undefined;
 
+    // Admin bypass: admins skip onboarding check entirely
+    const role = publicMetadata?.role as string | undefined;
+    const isAdmin = role === "admin";
+    if (isAdmin) {
+      return applySecurityHeaders(NextResponse.next());
+    }
+
     // Preferred: publicMetadata.onboarded
     const publicOnboarded =
       isTruthy(publicMetadata?.onboarded) || isTruthy(metadata?.onboarded);

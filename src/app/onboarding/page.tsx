@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import {
@@ -23,24 +24,34 @@ function setCookie(name: string, value: string, days: number) {
 }
 
 /**
- * Phase 15 + Step 30:
+ * Onboarding page - Clerk as source of truth (no backend /api/auth/me gating)
  * - Light/Dark compatible (semantic tokens)
  * - Visible "I confirm the basics" checkbox that enables Continue
  * - Navigates to /dashboard/reconai
- * - Best-effort POST to /ai/briefing/seen before navigation
+ * - Redirects to /sign-in if not signed in
  */
 
 export default function OnboardingPage() {
-  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const { user, isLoaded, isSignedIn } = useUser();
 
   const [basicsConfirmed, setBasicsConfirmed] = useState(false);
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
   const [saving, setSaving] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canContinue = useMemo(
-    () => basicsConfirmed && !saving,
-    [basicsConfirmed, saving],
+    () => isSignedIn && basicsConfirmed && !saving,
+    [isSignedIn, basicsConfirmed, saving],
   );
 
   const completeOnboarding = async () => {
@@ -68,18 +79,6 @@ export default function OnboardingPage() {
 
       // Set cookie as fallback for middleware (unsafeMetadata isn't in JWT by default)
       setCookie("onboarding_complete", "true", 365);
-
-      // Best-effort call to mark briefing as seen (ignore failure)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      if (apiUrl) {
-        fetch(`${apiUrl}/ai/briefing/seen`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.id }),
-        }).catch(() => {
-          // Ignore errors - this is best-effort
-        });
-      }
 
       setCompleted(true);
 

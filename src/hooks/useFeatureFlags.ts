@@ -24,7 +24,7 @@ interface UseFeatureFlagsResult {
   refresh: () => Promise<void>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export function useFeatureFlags(): UseFeatureFlagsResult {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);

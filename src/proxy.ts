@@ -17,7 +17,87 @@ import { has, get } from "@vercel/edge-config";
  * - Admin-only bypass using Clerk role: `admin`
  * - Edge Config toggles maintenance_mode
  * - Non-admin users redirected to /maintenance
+ *
+ * Phase CSP:
+ * - Sets Content-Security-Policy headers
+ * - Fixes Clerk blob worker CSP violation with `worker-src 'self' blob:`
  */
+
+/**
+ * Build CSP header value.
+ * - Fixes Clerk blob worker CSP violation by setting `worker-src 'self' blob:`
+ * - Keeps compatibility directives (unsafe-inline/unsafe-eval) for now
+ */
+function buildCsp() {
+  const directives: Record<string, string[]> = {
+    "default-src": ["'self'"],
+    "base-uri": ["'self'"],
+    "object-src": ["'none'"],
+    "frame-ancestors": ["'none'"],
+
+    // Images / media
+    "img-src": ["'self'", "data:", "blob:", "https:"],
+    "media-src": ["'self'", "blob:", "https:"],
+    "font-src": ["'self'", "data:", "https:"],
+
+    // Styles
+    "style-src": ["'self'", "'unsafe-inline'"],
+
+    // Scripts (compat mode for now)
+    "script-src": [
+      "'self'",
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.dev",
+      "https://clerk.reconaitechnology.com",
+      "https://challenges.cloudflare.com",
+      "https://vercel.live",
+    ],
+
+    // Critical fix for Clerk: allow blob workers
+    "worker-src": ["'self'", "blob:"],
+
+    // If Clerk uses iframes for challenges, allow them explicitly
+    "frame-src": [
+      "'self'",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.dev",
+      "https://clerk.reconaitechnology.com",
+      "https://challenges.cloudflare.com",
+    ],
+
+    // Network calls
+    "connect-src": [
+      "'self'",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.dev",
+      "https://clerk.reconaitechnology.com",
+      "https://vercel.live",
+      "https://*.vercel-storage.com",
+      "https://reconai-backend.onrender.com",
+    ],
+
+    // Optional hardening
+    "form-action": ["'self'"],
+    "upgrade-insecure-requests": [],
+  };
+
+  return Object.entries(directives)
+    .map(([k, v]) => (v.length ? `${k} ${v.join(" ")}` : `${k}`))
+    .join("; ");
+}
+
+/**
+ * Apply security headers to a response.
+ */
+function applySecurityHeaders(res: NextResponse) {
+  res.headers.set("Content-Security-Policy", buildCsp());
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  return res;
+}
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
@@ -54,15 +134,16 @@ export default clerkMiddleware(async (auth, req) => {
     if (!isAdmin && !isMaintenancePage && !isAdminRoute) {
       const url = req.nextUrl.clone();
       url.pathname = "/maintenance";
-      return NextResponse.redirect(url);
+      const redirectRes = NextResponse.redirect(url);
+      return applySecurityHeaders(redirectRes);
     }
   }
 
   // Marketing landing is always public.
-  if (pathname === "/") return NextResponse.next();
+  if (pathname === "/") return applySecurityHeaders(NextResponse.next());
 
   // Non-protected route: no-op.
-  if (!isProtectedRoute(req)) return NextResponse.next();
+  if (!isProtectedRoute(req)) return applySecurityHeaders(NextResponse.next());
 
   // Require authentication on protected routes.
   await auth.protect();
@@ -109,11 +190,12 @@ export default clerkMiddleware(async (auth, req) => {
     if (!onboarded) {
       const url = req.nextUrl.clone();
       url.pathname = "/onboarding";
-      return NextResponse.redirect(url);
+      const redirectRes = NextResponse.redirect(url);
+      return applySecurityHeaders(redirectRes);
     }
   }
 
-  return NextResponse.next();
+  return applySecurityHeaders(NextResponse.next());
 });
 
 export const config = {

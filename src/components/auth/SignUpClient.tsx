@@ -17,6 +17,9 @@ function SignUpContent() {
   const clerkAppearance = {
     ...(resolvedTheme === "dark" ? { baseTheme: dark } : {}),
     elements: {
+      formFieldInput__emailAddress: {
+        autocomplete: "username",
+      },
       formFieldInput__password: {
         autocomplete: "new-password",
       },

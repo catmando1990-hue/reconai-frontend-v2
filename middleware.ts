@@ -1,37 +1,60 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@vercel/edge-config";
-import { auth } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export async function middleware(req: NextRequest) {
+/**
+ * Middleware using Clerk's official clerkMiddleware() pattern.
+ *
+ * Features:
+ * - Maintenance mode via Vercel Edge Config (admin bypass)
+ * - Fails OPEN: if EDGE_CONFIG is missing or throws, site remains accessible
+ * - No Node-only imports (Edge runtime compatible)
+ */
+export default clerkMiddleware(async (auth, req) => {
+  // Get session claims from Clerk's auth helper
   const { sessionClaims } = await auth();
-  const isAdmin = sessionClaims?.publicMetadata?.role === "admin";
+  const publicMetadata = sessionClaims?.publicMetadata as
+    | Record<string, unknown>
+    | undefined;
+  const isAdmin = publicMetadata?.role === "admin";
 
-  // Read maintenance flag from Edge Config (lazy initialization at request time)
+  // Read maintenance mode from Edge Config (fail open)
   let maintenanceMode = false;
-  try {
-    const edgeConfig = createClient(process.env.EDGE_CONFIG);
-    maintenanceMode = Boolean(await edgeConfig.get("maintenance_mode"));
-  } catch {
-    // If Edge Config is unavailable, fail open (do not lock out production)
-    maintenanceMode = false;
+
+  // Only attempt Edge Config if env var is defined
+  if (process.env.EDGE_CONFIG) {
+    try {
+      // Dynamic import to avoid module-scope evaluation issues
+      const { createClient } = await import("@vercel/edge-config");
+      const edgeConfig = createClient(process.env.EDGE_CONFIG);
+      const value = await edgeConfig.get("maintenance_mode");
+      maintenanceMode = Boolean(value);
+    } catch {
+      // Fail open: if Edge Config is unavailable, do not block users
+      maintenanceMode = false;
+    }
   }
 
-  const url = req.nextUrl.clone();
+  const { pathname } = req.nextUrl;
 
-  // Enforce maintenance mode globally for non-admins
+  // Redirect non-admins to /maintenance when maintenance mode is enabled
   if (
     maintenanceMode &&
     !isAdmin &&
-    !url.pathname.startsWith("/maintenance") &&
-    !url.pathname.startsWith("/api")
+    !pathname.startsWith("/maintenance") &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/_next")
   ) {
+    const url = req.nextUrl.clone();
     url.pathname = "/maintenance";
     return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    // Match all routes except static files and images
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

@@ -1,3 +1,13 @@
 {
-  "claudeCode.useTerminal": false
+  "claudeCode.useTerminal": false,
+  "chat.mcp.serverSampling": {
+    "reconai-frontend-v2/.vscode/mcp.json: io.github.upstash/context7": {
+      "allowedModels": [
+        "copilot/claude-sonnet-4.5",
+        "copilot/claude-haiku-4.5",
+        "copilot/claude-opus-4.5",
+        "copilot/claude-sonnet-4"
+      ]
+    }
+  }
 }

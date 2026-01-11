@@ -1,7 +1,7 @@
 import Providers from "@/app/providers";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
+import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 import { RouteBackgroundWrapper } from "@/components/layout/RouteBackgroundWrapper";
 import { ThemeProvider } from "@/components/theme-provider";
 import { BotIdClient } from "botid/client";
@@ -55,8 +55,8 @@ export default function RootLayout({
           <ThemeProvider>
             <Providers>
               <RouteBackgroundWrapper>
-                <div className="min-h-dvh">
-                  <Header />
+                <div className="relative min-h-dvh">
+                  <ReconUtilityHeader />
                   {children}
                   <Footer />
                 </div>

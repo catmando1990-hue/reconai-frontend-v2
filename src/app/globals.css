@@ -3,6 +3,7 @@
 @import "../styles/onboarding-background.css";
 @import "../styles/intelligence-hero-polish.css";
 @import "../styles/motion-tokens.css";
+@import "../styles/recon-utility-header.css";
 
 @custom-variant dark (&:is(.dark *));
 

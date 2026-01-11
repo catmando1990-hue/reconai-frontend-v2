@@ -4,9 +4,24 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { RouteBackgroundWrapper } from "@/components/layout/RouteBackgroundWrapper";
 import { ThemeProvider } from "@/components/theme-provider";
+import { BotIdClient } from "botid/client";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+// Define protected routes for BotID bot protection
+const protectedRoutes = [
+  // Auth endpoints
+  { path: "/api/auth/*", method: "POST" as const },
+  // Plaid endpoints
+  { path: "/api/plaid/*", method: "POST" as const },
+  // Admin endpoints
+  { path: "/api/admin/*", method: "POST" as const },
+  { path: "/api/admin/*", method: "PUT" as const },
+  { path: "/api/admin/*", method: "DELETE" as const },
+  // Proxy export
+  { path: "/api/proxy-export", method: "POST" as const },
+];
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +46,9 @@ export default function RootLayout({
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <BotIdClient protect={protectedRoutes} />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >

@@ -6,6 +6,8 @@ const cspDirectives = [
   "default-src 'self'",
   // Scripts: self + inline for Next.js + Clerk + Vercel analytics
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://vercel.live",
+  // Workers: allow blob workers (Clerk uses blob: workers)
+  "worker-src 'self' blob:",
   // Styles: self + inline for Tailwind and component libraries
   "style-src 'self' 'unsafe-inline'",
   // Images: self + data URIs + blob + trusted CDNs

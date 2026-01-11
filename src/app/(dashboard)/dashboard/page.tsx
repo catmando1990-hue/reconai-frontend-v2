@@ -504,10 +504,8 @@ export default function DashboardPage() {
     null,
   );
   // Prevent recharts negative dimension warnings - charts render after hydration
-  const [chartsMounted, setChartsMounted] = useState(false);
-  if (!chartsMounted && typeof window !== "undefined") {
-    setChartsMounted(true);
-  }
+  // Use lazy initial state to detect client-side rendering
+  const [chartsMounted] = useState(() => typeof window !== "undefined");
 
   // Format currency helper
   const formatCurrency = (amount: number) => {

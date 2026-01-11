@@ -20,6 +20,7 @@ export function RouteBackgroundWrapper({
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
     pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/dashboard") ||
     pathname.startsWith("/platform") ||
     pathname.startsWith("/how-it-works") ||
     pathname.startsWith("/packages") ||

@@ -1,11 +1,11 @@
 "use client";
 
-import { useSignIn } from "@clerk/nextjs";
+import { useSignIn, useAuth } from "@clerk/nextjs";
 import type { OAuthStrategy } from "@clerk/types";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -71,8 +71,17 @@ type SignInStep =
 function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
   const router = useRouter();
   const { isLoaded, signIn, setActive } = useSignIn();
+  const { isSignedIn } = useAuth();
 
   const [step, setStep] = useState<SignInStep>("start");
+
+  // Redirect to dashboard if already signed in
+  useEffect(() => {
+    if (isSignedIn) {
+      router.replace(redirectUrl || "/dashboard");
+    }
+  }, [isSignedIn, router, redirectUrl]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -368,6 +377,11 @@ function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
       return () => clearTimeout(timer);
     }
   });
+
+  // If already signed in, show loading while redirecting
+  if (isSignedIn) {
+    return <LoadingCard />;
+  }
 
   if (!isLoaded) {
     return <LoadingCard />;

@@ -1,11 +1,11 @@
 "use client";
 
-import * as Clerk from "@clerk/elements/common";
-import * as SignIn from "@clerk/elements/sign-in";
+import { useSignIn } from "@clerk/nextjs";
+import type { OAuthStrategy } from "@clerk/types";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -60,364 +60,709 @@ function LoadingCard() {
   );
 }
 
+type SignInStep =
+  | "start"
+  | "password"
+  | "email_code"
+  | "phone_code"
+  | "forgot_password"
+  | "reset_password";
+
 function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
-  return (
-    <SignIn.Root fallback={<LoadingCard />}>
-      <Clerk.Loading>
-        {(isGlobalLoading) => (
-          <>
-            <SignIn.Step name="start">
-              <Card className="w-full max-w-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-xl">Sign in</CardTitle>
-                  <CardDescription>
-                    Welcome back! Sign in to continue
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Clerk.Connection name="google" asChild>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        disabled={isGlobalLoading}
-                        className="w-full"
-                      >
-                        <Clerk.Loading scope="provider:google">
-                          {(isLoading) =>
-                            isLoading ? (
-                              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : (
-                              <>
-                                <GoogleIcon className="size-4" />
-                                Continue with Google
-                              </>
-                            )
-                          }
-                        </Clerk.Loading>
-                      </Button>
-                    </Clerk.Connection>
-                  </div>
+  const router = useRouter();
+  const { isLoaded, signIn, setActive } = useSignIn();
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">
-                        or
-                      </span>
-                    </div>
-                  </div>
+  const [step, setStep] = useState<SignInStep>("start");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [resendTimer, setResendTimer] = useState(0);
 
-                  <div className="grid gap-4">
-                    <Clerk.Field name="identifier" className="grid gap-2">
-                      <Clerk.Label className={labelClassName}>
-                        Email
-                      </Clerk.Label>
-                      <Clerk.Input
-                        type="email"
-                        autoComplete="username"
-                        required
-                        className={inputClassName}
-                        placeholder="you@example.com"
-                      />
-                      <Clerk.FieldError className="text-sm text-destructive" />
-                    </Clerk.Field>
-                  </div>
+  const finalRedirectUrl = redirectUrl || "/dashboard";
 
-                  <SignIn.Action submit asChild>
-                    <Button disabled={isGlobalLoading} className="w-full">
-                      <Clerk.Loading>
-                        {(isLoading) =>
-                          isLoading ? (
-                            <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          ) : (
-                            "Continue"
-                          )
-                        }
-                      </Clerk.Loading>
-                    </Button>
-                  </SignIn.Action>
-                </CardContent>
-                <CardFooter className="flex-col gap-2">
-                  <p className="text-sm text-muted-foreground">
-                    Don&apos;t have an account?{" "}
-                    <Link
-                      href={
-                        redirectUrl
-                          ? `/sign-up?redirect_url=${encodeURIComponent(redirectUrl)}`
-                          : "/sign-up"
-                      }
-                      className="text-primary underline-offset-4 hover:underline"
-                    >
-                      Sign up
-                    </Link>
-                  </p>
-                </CardFooter>
-              </Card>
-            </SignIn.Step>
+  const signInWithOAuth = useCallback(
+    async (strategy: OAuthStrategy) => {
+      if (!signIn) return;
+      setIsGoogleLoading(true);
+      setError(null);
 
-            <SignIn.Step name="verifications">
-              <SignIn.Strategy name="password">
-                <Card className="w-full max-w-sm">
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-xl">Enter password</CardTitle>
-                    <CardDescription>
-                      Enter your password to continue
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-4">
-                    <Clerk.Field name="password" className="grid gap-2">
-                      <Clerk.Label className={labelClassName}>
-                        Password
-                      </Clerk.Label>
-                      <Clerk.Input
-                        type="password"
-                        autoComplete="current-password"
-                        required
-                        className={inputClassName}
-                      />
-                      <Clerk.FieldError className="text-sm text-destructive" />
-                    </Clerk.Field>
-
-                    <SignIn.Action submit asChild>
-                      <Button disabled={isGlobalLoading} className="w-full">
-                        <Clerk.Loading>
-                          {(isLoading) =>
-                            isLoading ? (
-                              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : (
-                              "Sign in"
-                            )
-                          }
-                        </Clerk.Loading>
-                      </Button>
-                    </SignIn.Action>
-
-                    <SignIn.Action navigate="forgot-password" asChild>
-                      <Button
-                        variant="link"
-                        type="button"
-                        className="h-auto p-0 text-sm"
-                      >
-                        Forgot password?
-                      </Button>
-                    </SignIn.Action>
-                  </CardContent>
-                </Card>
-              </SignIn.Strategy>
-
-              <SignIn.Strategy name="email_code">
-                <Card className="w-full max-w-sm">
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-xl">Check your email</CardTitle>
-                    <CardDescription>
-                      We sent a code to <SignIn.SafeIdentifier />
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-4">
-                    <Clerk.Field name="code" className="grid gap-2">
-                      <Clerk.Label className={labelClassName}>
-                        Email code
-                      </Clerk.Label>
-                      <Clerk.Input
-                        type="otp"
-                        autoComplete="one-time-code"
-                        required
-                        className={cn(inputClassName, "text-center")}
-                      />
-                      <Clerk.FieldError className="text-sm text-destructive" />
-                    </Clerk.Field>
-
-                    <SignIn.Action submit asChild>
-                      <Button disabled={isGlobalLoading} className="w-full">
-                        <Clerk.Loading>
-                          {(isLoading) =>
-                            isLoading ? (
-                              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : (
-                              "Continue"
-                            )
-                          }
-                        </Clerk.Loading>
-                      </Button>
-                    </SignIn.Action>
-
-                    <SignIn.Action
-                      resend
-                      asChild
-                      fallback={({ resendableAfter }) => (
-                        <p className="text-center text-sm text-muted-foreground">
-                          Resend code in {resendableAfter}s
-                        </p>
-                      )}
-                    >
-                      <Button variant="link" type="button" className="w-full">
-                        Resend code
-                      </Button>
-                    </SignIn.Action>
-                  </CardContent>
-                </Card>
-              </SignIn.Strategy>
-
-              <SignIn.Strategy name="phone_code">
-                <Card className="w-full max-w-sm">
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-xl">Check your phone</CardTitle>
-                    <CardDescription>
-                      We sent a code to your phone
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-4">
-                    <Clerk.Field name="code" className="grid gap-2">
-                      <Clerk.Label className={labelClassName}>
-                        Phone code
-                      </Clerk.Label>
-                      <Clerk.Input
-                        type="otp"
-                        autoComplete="one-time-code"
-                        required
-                        className={cn(inputClassName, "text-center")}
-                      />
-                      <Clerk.FieldError className="text-sm text-destructive" />
-                    </Clerk.Field>
-
-                    <SignIn.Action submit asChild>
-                      <Button disabled={isGlobalLoading} className="w-full">
-                        <Clerk.Loading>
-                          {(isLoading) =>
-                            isLoading ? (
-                              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : (
-                              "Continue"
-                            )
-                          }
-                        </Clerk.Loading>
-                      </Button>
-                    </SignIn.Action>
-
-                    <SignIn.Action
-                      resend
-                      asChild
-                      fallback={({ resendableAfter }) => (
-                        <p className="text-center text-sm text-muted-foreground">
-                          Resend code in {resendableAfter}s
-                        </p>
-                      )}
-                    >
-                      <Button variant="link" type="button" className="w-full">
-                        Resend code
-                      </Button>
-                    </SignIn.Action>
-                  </CardContent>
-                </Card>
-              </SignIn.Strategy>
-            </SignIn.Step>
-
-            <SignIn.Step name="forgot-password">
-              <Card className="w-full max-w-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-xl">Forgot password</CardTitle>
-                  <CardDescription>
-                    We&apos;ll send you a reset code
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  <SignIn.SupportedStrategy name="reset_password_email_code">
-                    <SignIn.Action submit asChild>
-                      <Button disabled={isGlobalLoading} className="w-full">
-                        <Clerk.Loading>
-                          {(isLoading) =>
-                            isLoading ? (
-                              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : (
-                              "Send reset code"
-                            )
-                          }
-                        </Clerk.Loading>
-                      </Button>
-                    </SignIn.Action>
-                  </SignIn.SupportedStrategy>
-
-                  <SignIn.Action navigate="previous" asChild>
-                    <Button variant="outline" className="w-full">
-                      Back
-                    </Button>
-                  </SignIn.Action>
-                </CardContent>
-              </Card>
-            </SignIn.Step>
-
-            <SignIn.Step name="reset-password">
-              <Card className="w-full max-w-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-xl">Reset password</CardTitle>
-                  <CardDescription>
-                    Enter the code we sent and your new password
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  <Clerk.Field name="code" className="grid gap-2">
-                    <Clerk.Label className={labelClassName}>
-                      Reset code
-                    </Clerk.Label>
-                    <Clerk.Input
-                      type="otp"
-                      autoComplete="one-time-code"
-                      required
-                      className={cn(inputClassName, "text-center")}
-                    />
-                    <Clerk.FieldError className="text-sm text-destructive" />
-                  </Clerk.Field>
-
-                  <Clerk.Field name="password" className="grid gap-2">
-                    <Clerk.Label className={labelClassName}>
-                      New password
-                    </Clerk.Label>
-                    <Clerk.Input
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      className={inputClassName}
-                    />
-                    <Clerk.FieldError className="text-sm text-destructive" />
-                  </Clerk.Field>
-
-                  <Clerk.Field name="confirmPassword" className="grid gap-2">
-                    <Clerk.Label className={labelClassName}>
-                      Confirm password
-                    </Clerk.Label>
-                    <Clerk.Input
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      className={inputClassName}
-                    />
-                    <Clerk.FieldError className="text-sm text-destructive" />
-                  </Clerk.Field>
-
-                  <SignIn.Action submit asChild>
-                    <Button disabled={isGlobalLoading} className="w-full">
-                      <Clerk.Loading>
-                        {(isLoading) =>
-                          isLoading ? (
-                            <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          ) : (
-                            "Reset password"
-                          )
-                        }
-                      </Clerk.Loading>
-                    </Button>
-                  </SignIn.Action>
-                </CardContent>
-              </Card>
-            </SignIn.Step>
-          </>
-        )}
-      </Clerk.Loading>
-    </SignIn.Root>
+      try {
+        await signIn.authenticateWithRedirect({
+          strategy,
+          redirectUrl: "/sign-in/sso-callback",
+          redirectUrlComplete: finalRedirectUrl,
+        });
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to sign in with Google";
+        setError(message);
+        setIsGoogleLoading(false);
+      }
+    },
+    [signIn, finalRedirectUrl],
   );
+
+  const handleEmailSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!signIn || !email.trim()) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await signIn.create({
+          identifier: email.trim(),
+        });
+
+        if (result.status === "needs_first_factor") {
+          const supportedFactors = result.supportedFirstFactors || [];
+
+          // Check for password strategy first
+          const passwordFactor = supportedFactors.find(
+            (f) => f.strategy === "password",
+          );
+          if (passwordFactor) {
+            setStep("password");
+            setIsLoading(false);
+            return;
+          }
+
+          // Check for email code
+          const emailCodeFactor = supportedFactors.find(
+            (f) => f.strategy === "email_code",
+          );
+          if (emailCodeFactor && "emailAddressId" in emailCodeFactor) {
+            await signIn.prepareFirstFactor({
+              strategy: "email_code",
+              emailAddressId: emailCodeFactor.emailAddressId,
+            });
+            setStep("email_code");
+            setResendTimer(30);
+            setIsLoading(false);
+            return;
+          }
+
+          // Check for phone code
+          const phoneCodeFactor = supportedFactors.find(
+            (f) => f.strategy === "phone_code",
+          );
+          if (phoneCodeFactor && "phoneNumberId" in phoneCodeFactor) {
+            await signIn.prepareFirstFactor({
+              strategy: "phone_code",
+              phoneNumberId: phoneCodeFactor.phoneNumberId,
+            });
+            setStep("phone_code");
+            setResendTimer(30);
+            setIsLoading(false);
+            return;
+          }
+
+          setError("No supported authentication method found");
+        } else if (result.status === "complete" && result.createdSessionId) {
+          await setActive({ session: result.createdSessionId });
+          router.push(finalRedirectUrl);
+        }
+      } catch (err: unknown) {
+        const clerkError = err as { errors?: Array<{ message: string }> };
+        const message =
+          clerkError.errors?.[0]?.message ||
+          (err instanceof Error ? err.message : "Failed to sign in");
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [signIn, email, setActive, router, finalRedirectUrl],
+  );
+
+  const handlePasswordSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!signIn || !password) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await signIn.attemptFirstFactor({
+          strategy: "password",
+          password,
+        });
+
+        if (result.status === "complete" && result.createdSessionId) {
+          await setActive({ session: result.createdSessionId });
+          router.push(finalRedirectUrl);
+        } else if (result.status === "needs_second_factor") {
+          // Handle 2FA if needed
+          setError("Two-factor authentication required");
+        }
+      } catch (err: unknown) {
+        const clerkError = err as { errors?: Array<{ message: string }> };
+        const message =
+          clerkError.errors?.[0]?.message ||
+          (err instanceof Error ? err.message : "Incorrect password");
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [signIn, password, setActive, router, finalRedirectUrl],
+  );
+
+  const handleCodeSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!signIn || !code) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const strategy = step === "email_code" ? "email_code" : "phone_code";
+        const result = await signIn.attemptFirstFactor({
+          strategy,
+          code,
+        });
+
+        if (result.status === "complete" && result.createdSessionId) {
+          await setActive({ session: result.createdSessionId });
+          router.push(finalRedirectUrl);
+        }
+      } catch (err: unknown) {
+        const clerkError = err as { errors?: Array<{ message: string }> };
+        const message =
+          clerkError.errors?.[0]?.message ||
+          (err instanceof Error ? err.message : "Invalid code");
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [signIn, code, step, setActive, router, finalRedirectUrl],
+  );
+
+  const handleForgotPassword = useCallback(async () => {
+    if (!signIn) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await signIn.create({
+        strategy: "reset_password_email_code",
+        identifier: email,
+      });
+      setStep("reset_password");
+      setResendTimer(30);
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      const message =
+        clerkError.errors?.[0]?.message ||
+        (err instanceof Error ? err.message : "Failed to send reset code");
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [signIn, email]);
+
+  const handleResetPassword = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!signIn || !code || !newPassword) return;
+
+      if (newPassword !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await signIn.attemptFirstFactor({
+          strategy: "reset_password_email_code",
+          code,
+          password: newPassword,
+        });
+
+        if (result.status === "complete" && result.createdSessionId) {
+          await setActive({ session: result.createdSessionId });
+          router.push(finalRedirectUrl);
+        }
+      } catch (err: unknown) {
+        const clerkError = err as { errors?: Array<{ message: string }> };
+        const message =
+          clerkError.errors?.[0]?.message ||
+          (err instanceof Error ? err.message : "Failed to reset password");
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      signIn,
+      code,
+      newPassword,
+      confirmPassword,
+      setActive,
+      router,
+      finalRedirectUrl,
+    ],
+  );
+
+  const handleResendCode = useCallback(async () => {
+    if (!signIn || resendTimer > 0) return;
+
+    setError(null);
+
+    try {
+      if (step === "reset_password") {
+        await signIn.create({
+          strategy: "reset_password_email_code",
+          identifier: email,
+        });
+      } else {
+        const supportedFactors = signIn.supportedFirstFactors || [];
+        if (step === "email_code") {
+          const emailFactor = supportedFactors.find(
+            (f) => f.strategy === "email_code",
+          );
+          if (emailFactor && "emailAddressId" in emailFactor) {
+            await signIn.prepareFirstFactor({
+              strategy: "email_code",
+              emailAddressId: emailFactor.emailAddressId,
+            });
+          }
+        } else if (step === "phone_code") {
+          const phoneFactor = supportedFactors.find(
+            (f) => f.strategy === "phone_code",
+          );
+          if (phoneFactor && "phoneNumberId" in phoneFactor) {
+            await signIn.prepareFirstFactor({
+              strategy: "phone_code",
+              phoneNumberId: phoneFactor.phoneNumberId,
+            });
+          }
+        }
+      }
+      setResendTimer(30);
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      const message =
+        clerkError.errors?.[0]?.message ||
+        (err instanceof Error ? err.message : "Failed to resend code");
+      setError(message);
+    }
+  }, [signIn, step, email, resendTimer]);
+
+  // Resend timer countdown
+  useState(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  });
+
+  if (!isLoaded) {
+    return <LoadingCard />;
+  }
+
+  // Start step - email input
+  if (step === "start") {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Sign in</CardTitle>
+          <CardDescription>Welcome back! Sign in to continue</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Button
+              variant="outline"
+              type="button"
+              disabled={isGoogleLoading || isLoading}
+              className="w-full"
+              onClick={() => signInWithOAuth("oauth_google")}
+            >
+              {isGoogleLoading ? (
+                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <>
+                  <GoogleIcon className="size-4" />
+                  Continue with Google
+                </>
+              )}
+            </Button>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleEmailSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+              <label htmlFor="email" className={labelClassName}>
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="username"
+                required
+                className={inputClassName}
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <Button
+              type="submit"
+              disabled={isLoading || isGoogleLoading}
+              className="w-full"
+            >
+              {isLoading ? (
+                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                "Continue"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex-col gap-2">
+          <p className="text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link
+              href={
+                redirectUrl
+                  ? `/sign-up?redirect_url=${encodeURIComponent(redirectUrl)}`
+                  : "/sign-up"
+              }
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  // Password step
+  if (step === "password") {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Enter password</CardTitle>
+          <CardDescription>Enter your password to continue</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handlePasswordSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+              <label htmlFor="password" className={labelClassName}>
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className={inputClassName}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? (
+                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                "Sign in"
+              )}
+            </Button>
+
+            <Button
+              variant="link"
+              type="button"
+              className="h-auto p-0 text-sm"
+              onClick={() => {
+                setError(null);
+                setStep("forgot_password");
+              }}
+            >
+              Forgot password?
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Forgot password step
+  if (step === "forgot_password") {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Forgot password</CardTitle>
+          <CardDescription>We&apos;ll send you a reset code</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <Button
+            onClick={handleForgotPassword}
+            disabled={isLoading}
+            className="w-full"
+          >
+            {isLoading ? (
+              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              "Send reset code"
+            )}
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              setError(null);
+              setStep("password");
+            }}
+          >
+            Back
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Reset password step
+  if (step === "reset_password") {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Reset password</CardTitle>
+          <CardDescription>
+            Enter the code we sent and your new password
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handleResetPassword} className="grid gap-4">
+            <div className="grid gap-2">
+              <label htmlFor="reset-code" className={labelClassName}>
+                Reset code
+              </label>
+              <input
+                id="reset-code"
+                name="code"
+                type="text"
+                autoComplete="one-time-code"
+                required
+                className={cn(inputClassName, "text-center")}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <label htmlFor="new-password" className={labelClassName}>
+                New password
+              </label>
+              <input
+                id="new-password"
+                name="newPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                className={inputClassName}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <label htmlFor="confirm-password" className={labelClassName}>
+                Confirm password
+              </label>
+              <input
+                id="confirm-password"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                className={inputClassName}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? (
+                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                "Reset password"
+              )}
+            </Button>
+
+            {resendTimer > 0 ? (
+              <p className="text-center text-sm text-muted-foreground">
+                Resend code in {resendTimer}s
+              </p>
+            ) : (
+              <Button
+                variant="link"
+                type="button"
+                className="w-full"
+                onClick={handleResendCode}
+              >
+                Resend code
+              </Button>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Email code step
+  if (step === "email_code") {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Check your email</CardTitle>
+          <CardDescription>We sent a code to {email}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handleCodeSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+              <label htmlFor="email-code" className={labelClassName}>
+                Email code
+              </label>
+              <input
+                id="email-code"
+                name="code"
+                type="text"
+                autoComplete="one-time-code"
+                required
+                className={cn(inputClassName, "text-center")}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? (
+                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                "Continue"
+              )}
+            </Button>
+
+            {resendTimer > 0 ? (
+              <p className="text-center text-sm text-muted-foreground">
+                Resend code in {resendTimer}s
+              </p>
+            ) : (
+              <Button
+                variant="link"
+                type="button"
+                className="w-full"
+                onClick={handleResendCode}
+              >
+                Resend code
+              </Button>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Phone code step
+  if (step === "phone_code") {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Check your phone</CardTitle>
+          <CardDescription>We sent a code to your phone</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handleCodeSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+              <label htmlFor="phone-code" className={labelClassName}>
+                Phone code
+              </label>
+              <input
+                id="phone-code"
+                name="code"
+                type="text"
+                autoComplete="one-time-code"
+                required
+                className={cn(inputClassName, "text-center")}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? (
+                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                "Continue"
+              )}
+            </Button>
+
+            {resendTimer > 0 ? (
+              <p className="text-center text-sm text-muted-foreground">
+                Resend code in {resendTimer}s
+              </p>
+            ) : (
+              <Button
+                variant="link"
+                type="button"
+                className="w-full"
+                onClick={handleResendCode}
+              >
+                Resend code
+              </Button>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return <LoadingCard />;
 }
 
 function SignInForm() {

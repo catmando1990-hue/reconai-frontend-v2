@@ -32,6 +32,10 @@ function OrgOnboardingContent() {
           <OrganizationSwitcher
             appearance={{ elements: { rootBox: "w-full", card: "w-full" } }}
             hidePersonal
+            organizationProfileMode="navigation"
+            organizationProfileUrl="/organization"
+            createOrganizationMode="navigation"
+            createOrganizationUrl="/organization/create"
           />
 
           <div className="flex items-center justify-between">

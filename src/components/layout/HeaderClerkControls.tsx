@@ -20,7 +20,11 @@ export function HeaderClerkControls() {
         >
           Dashboard
         </Link>
-        <UserButton appearance={clerkAppearance} />
+        <UserButton
+          appearance={clerkAppearance}
+          userProfileMode="navigation"
+          userProfileUrl="/account"
+        />
       </SignedIn>
 
       <SignedOut>

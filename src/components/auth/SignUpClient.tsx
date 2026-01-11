@@ -4,7 +4,7 @@ import * as Clerk from "@clerk/elements/common";
 import * as SignUp from "@clerk/elements/sign-up";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -46,28 +46,23 @@ const inputClassName =
 
 const labelClassName = "text-sm font-medium leading-none";
 
-function SignUpForm() {
-  const searchParams = useSearchParams();
-
-  const redirectUrl = useMemo(() => {
-    const v =
-      searchParams.get("redirect_url") || searchParams.get("redirectUrl");
-    if (!v) return undefined;
-    if (
-      v.startsWith("/") &&
-      !v.startsWith("//") &&
-      !v.startsWith("/\\") &&
-      !v.includes(":") &&
-      !v.includes("%2f%2f") &&
-      !v.includes("%5c")
-    ) {
-      return v;
-    }
-    return undefined;
-  }, [searchParams]);
-
+function LoadingCard() {
   return (
-    <SignUp.Root>
+    <Card className="w-full max-w-sm">
+      <CardHeader className="text-center">
+        <CardTitle className="text-xl">Create an account</CardTitle>
+        <CardDescription>Loading...</CardDescription>
+      </CardHeader>
+      <CardContent className="flex justify-center py-8">
+        <span className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function SignUpFormContent({ redirectUrl }: { redirectUrl?: string }) {
+  return (
+    <SignUp.Root fallback={<LoadingCard />}>
       <Clerk.Loading>
         {(isGlobalLoading) => (
           <>
@@ -372,6 +367,29 @@ function SignUpForm() {
   );
 }
 
+function SignUpForm() {
+  const searchParams = useSearchParams();
+
+  const redirectUrl = useMemo(() => {
+    const v =
+      searchParams.get("redirect_url") || searchParams.get("redirectUrl");
+    if (!v) return undefined;
+    if (
+      v.startsWith("/") &&
+      !v.startsWith("//") &&
+      !v.startsWith("/\\") &&
+      !v.includes(":") &&
+      !v.includes("%2f%2f") &&
+      !v.includes("%5c")
+    ) {
+      return v;
+    }
+    return undefined;
+  }, [searchParams]);
+
+  return <SignUpFormContent redirectUrl={redirectUrl} />;
+}
+
 export default function SignUpClient() {
   return (
     <div className="relative flex min-h-dvh items-center justify-center p-4 sm:p-6 bg-background overflow-hidden">
@@ -386,7 +404,9 @@ export default function SignUpClient() {
       <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/60 to-background/80 dark:from-background/70 dark:via-background/50 dark:to-background/70" />
 
       <div className="relative z-10">
-        <SignUpForm />
+        <Suspense fallback={<LoadingCard />}>
+          <SignUpForm />
+        </Suspense>
       </div>
     </div>
   );

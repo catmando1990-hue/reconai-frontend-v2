@@ -310,11 +310,11 @@ function SignUpFormContent({ redirectUrl }: { redirectUrl?: string }) {
           <form onSubmit={handleSignUpSubmit} className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <label htmlFor="firstName" className={labelClassName}>
+                <label htmlFor="signup-firstName" className={labelClassName}>
                   First name
                 </label>
                 <input
-                  id="firstName"
+                  id="signup-firstName"
                   name="firstName"
                   type="text"
                   autoComplete="given-name"
@@ -326,11 +326,11 @@ function SignUpFormContent({ redirectUrl }: { redirectUrl?: string }) {
               </div>
 
               <div className="grid gap-2">
-                <label htmlFor="lastName" className={labelClassName}>
+                <label htmlFor="signup-lastName" className={labelClassName}>
                   Last name
                 </label>
                 <input
-                  id="lastName"
+                  id="signup-lastName"
                   name="lastName"
                   type="text"
                   autoComplete="family-name"
@@ -343,11 +343,11 @@ function SignUpFormContent({ redirectUrl }: { redirectUrl?: string }) {
             </div>
 
             <div className="grid gap-2">
-              <label htmlFor="email" className={labelClassName}>
+              <label htmlFor="signup-email" className={labelClassName}>
                 Email
               </label>
               <input
-                id="email"
+                id="signup-email"
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -361,11 +361,11 @@ function SignUpFormContent({ redirectUrl }: { redirectUrl?: string }) {
             </div>
 
             <div className="grid gap-2">
-              <label htmlFor="password" className={labelClassName}>
+              <label htmlFor="signup-password" className={labelClassName}>
                 Password
               </label>
               <input
-                id="password"
+                id="signup-password"
                 name="password"
                 type="password"
                 autoComplete="new-password"

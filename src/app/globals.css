@@ -125,6 +125,10 @@
   body {
     @apply bg-background text-foreground overflow-x-hidden;
   }
+  /* Hide Clerk's internal form elements injected for analytics/session tracking */
+  [data-alooma-source="authorization"] {
+    display: none !important;
+  }
   /* Accessibility: visible focus states */
   a:focus-visible,
   button:focus-visible,

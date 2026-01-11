@@ -412,11 +412,11 @@ function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
 
           <form onSubmit={handleEmailSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label htmlFor="email" className={labelClassName}>
+              <label htmlFor="signin-email" className={labelClassName}>
                 Email
               </label>
               <input
-                id="email"
+                id="signin-email"
                 name="email"
                 type="email"
                 autoComplete="username"
@@ -474,11 +474,11 @@ function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
         <CardContent className="grid gap-4">
           <form onSubmit={handlePasswordSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label htmlFor="password" className={labelClassName}>
+              <label htmlFor="signin-password" className={labelClassName}>
                 Password
               </label>
               <input
-                id="password"
+                id="signin-password"
                 name="password"
                 type="password"
                 autoComplete="current-password"

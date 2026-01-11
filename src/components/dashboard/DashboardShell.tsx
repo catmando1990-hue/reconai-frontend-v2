@@ -3,8 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { SidebarRail } from "@/components/dashboard/SidebarRail";
-import { SidebarContext } from "@/components/dashboard/SidebarContext";
+import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Menu, X } from "lucide-react";
 
 function getSectionTitle(pathname: string): string {
@@ -41,10 +40,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-[100dvh] bg-background text-foreground overflow-x-hidden">
-      {/* Desktop sidebars */}
-      <div className="hidden md:flex">
-        <SidebarRail />
-        <SidebarContext />
+      {/* Desktop sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
       </div>
 
       {/* Mobile top bar */}
@@ -97,11 +95,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
 
-            <div className="flex h-[calc(100%-3.5rem)]">
-              <SidebarRail />
-              <div className="flex-1 overflow-y-auto">
-                <SidebarContext />
-              </div>
+            <div className="h-[calc(100%-3.5rem)] overflow-y-auto">
+              <Sidebar />
             </div>
           </div>
         </div>

@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@vercel/edge-config";
 import { auth } from "@clerk/nextjs/server";
 
-const edgeConfig = createClient(process.env.EDGE_CONFIG);
-
 export async function middleware(req: NextRequest) {
   const { sessionClaims } = await auth();
   const isAdmin = sessionClaims?.publicMetadata?.role === "admin";
 
-  // Read maintenance flag from Edge Config
+  // Read maintenance flag from Edge Config (lazy initialization at request time)
   let maintenanceMode = false;
   try {
+    const edgeConfig = createClient(process.env.EDGE_CONFIG);
     maintenanceMode = Boolean(await edgeConfig.get("maintenance_mode"));
   } catch {
     // If Edge Config is unavailable, fail open (do not lock out production)

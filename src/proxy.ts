@@ -1,9 +1,26 @@
+/**
+ * ============================================================================
+ * DEPRECATED: THIS FILE IS NOT USED BY NEXT.JS
+ * ============================================================================
+ *
+ * Next.js middleware MUST be located at one of these paths:
+ *   - /middleware.ts (repo root)
+ *   - /src/middleware.ts
+ *
+ * This file (src/proxy.ts) is NOT recognized by Next.js as middleware.
+ * The active middleware is: /middleware.ts
+ *
+ * DO NOT import or rely on this file. It is retained only for reference.
+ * If you need to merge logic from here, copy it into /middleware.ts.
+ * ============================================================================
+ */
+
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { has, get } from "@vercel/edge-config";
 
 /**
- * Next.js 16 uses `src/proxy.ts` instead of middleware.ts.
+ * DEPRECATED: The claim below is incorrect. Next.js 16 does NOT use proxy.ts.
  *
  * Phase 15:
  * - Keep marketing landing `/` public and untouched.

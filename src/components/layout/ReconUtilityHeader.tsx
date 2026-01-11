@@ -1,26 +1,39 @@
 "use client";
 
+import Link from "next/link";
+
 export default function ReconUtilityHeader() {
   return (
     <header className="recon-header">
       <div className="recon-left">
-        <span className="recon-logo">ReconAI</span>
+        <Link href="/" className="recon-logo">
+          ReconAI
+        </Link>
       </div>
 
       <nav className="recon-right">
-        <button className="recon-link">Platform</button>
+        <Link href="/platform" className="recon-link">
+          Platform
+        </Link>
 
         <div className="recon-dropdown">
-          <button className="recon-link">Resources</button>
+          <span className="recon-link">Resources</span>
           <div className="recon-dropdown-content">
-            <a>Docs</a>
-            <a>Blog</a>
-            <a>Help</a>
+            <Link href="/how-it-works">How it works</Link>
+            <Link href="/packages">Packages</Link>
+            <Link href="/support">Help</Link>
           </div>
         </div>
 
-        <button className="recon-link">Company</button>
-        <button className="recon-link recon-signin">Sign in</button>
+        <Link href="/about" className="recon-link">
+          Company
+        </Link>
+        <Link href="/dashboard" className="recon-link">
+          Dashboard
+        </Link>
+        <Link href="/sign-in" className="recon-link recon-signin">
+          Sign in
+        </Link>
       </nav>
     </header>
   );

@@ -503,6 +503,11 @@ export default function DashboardPage() {
   const [selectedInsight, setSelectedInsight] = useState<AIInsight | null>(
     null,
   );
+  // Prevent recharts negative dimension warnings - charts render after hydration
+  const [chartsMounted, setChartsMounted] = useState(false);
+  if (!chartsMounted && typeof window !== "undefined") {
+    setChartsMounted(true);
+  }
 
   // Format currency helper
   const formatCurrency = (amount: number) => {
@@ -840,47 +845,49 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={cashFlowData}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="rgba(255,255,255,0.05)"
-                    />
-                    <XAxis
-                      dataKey="month"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `$${value / 1000}k`}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Line
-                      type="monotone"
-                      dataKey="income"
-                      name="Income"
-                      stroke="#d4a855"
-                      strokeWidth={2}
-                      dot={{ fill: "#d4a855", strokeWidth: 0, r: 4 }}
-                      activeDot={{ r: 6, fill: "#f0c060" }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="expenses"
-                      name="Expenses"
-                      stroke="#888888"
-                      strokeWidth={2}
-                      dot={{ fill: "#888888", strokeWidth: 0, r: 4 }}
-                      activeDot={{ r: 6, fill: "#aaaaaa" }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {chartsMounted && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={cashFlowData}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="rgba(255,255,255,0.05)"
+                      />
+                      <XAxis
+                        dataKey="month"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `$${value / 1000}k`}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line
+                        type="monotone"
+                        dataKey="income"
+                        name="Income"
+                        stroke="#d4a855"
+                        strokeWidth={2}
+                        dot={{ fill: "#d4a855", strokeWidth: 0, r: 4 }}
+                        activeDot={{ r: 6, fill: "#f0c060" }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="expenses"
+                        name="Expenses"
+                        stroke="#888888"
+                        strokeWidth={2}
+                        dot={{ fill: "#888888", strokeWidth: 0, r: 4 }}
+                        activeDot={{ r: 6, fill: "#aaaaaa" }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </motion.div>
 
@@ -901,47 +908,50 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-6">
                 <div className="h-48 w-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={spendingData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {spendingData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            const data = payload[0].payload;
-                            return (
-                              <div className="border-border rounded-lg border bg-card/70 p-3 shadow-xl backdrop-blur-sm">
-                                <p className="text-foreground text-sm font-medium">
-                                  {data.name}
-                                </p>
-                                <p className="text-primary font-mono text-sm">
-                                  ${data.value.toLocaleString()}
-                                </p>
-                                <p className="text-muted-foreground text-xs">
-                                  {((data.value / totalSpending) * 100).toFixed(
-                                    1,
-                                  )}
-                                  %
-                                </p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {chartsMounted && (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={spendingData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {spendingData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              return (
+                                <div className="border-border rounded-lg border bg-card/70 p-3 shadow-xl backdrop-blur-sm">
+                                  <p className="text-foreground text-sm font-medium">
+                                    {data.name}
+                                  </p>
+                                  <p className="text-primary font-mono text-sm">
+                                    ${data.value.toLocaleString()}
+                                  </p>
+                                  <p className="text-muted-foreground text-xs">
+                                    {(
+                                      (data.value / totalSpending) *
+                                      100
+                                    ).toFixed(1)}
+                                    %
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
                 <div className="flex-1 space-y-3">
                   {spendingData.map((item) => (

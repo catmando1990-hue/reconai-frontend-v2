@@ -106,9 +106,12 @@ export default function TermsPage() {
           </section>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border">
+        <div className="mt-12 pt-8 border-t border-border flex gap-6">
           <Link href="/privacy" className="text-primary hover:underline">
-            View Privacy Policy →
+            Privacy Policy
+          </Link>
+          <Link href="/disclaimers" className="text-primary hover:underline">
+            Disclaimers
           </Link>
         </div>
       </div>

@@ -88,14 +88,17 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold mb-3">7. Contact Us</h2>
             <p className="text-muted-foreground leading-relaxed">
               For privacy questions or concerns, please contact our team at
-              privacy@reconai.com.
+              support@reconaitechnology.com.
             </p>
           </section>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border">
+        <div className="mt-12 pt-8 border-t border-border flex gap-6">
           <Link href="/terms" className="text-primary hover:underline">
-            View Terms of Service →
+            Terms of Service
+          </Link>
+          <Link href="/disclaimers" className="text-primary hover:underline">
+            Disclaimers
           </Link>
         </div>
       </div>

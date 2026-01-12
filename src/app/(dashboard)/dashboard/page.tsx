@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp,
@@ -40,6 +41,8 @@ import {
   Store,
 } from "lucide-react";
 import PageHelp from "@/components/dashboard/PageHelp";
+import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
+import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
 import {
   LineChart,
@@ -490,6 +493,7 @@ const CustomTooltip = ({
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const router = useRouter();
   const { metrics, isLoading: metricsLoading } = useDashboardMetrics();
   const greeting = getGreeting();
   const totalSpending = spendingData.reduce((acc, item) => acc + item.value, 0);
@@ -607,6 +611,15 @@ export default function DashboardPage() {
               })}
             </p>
           </motion.div>
+
+          {/* First-run acknowledgement and initial value */}
+          <FirstRunSystemBanner message="Your financial system is active." />
+          <FirstValueCallout
+            title="Initial insight"
+            insight="12 transactions require classification. Review them to ensure accurate reporting."
+            actionLabel="Review transactions"
+            onAction={() => router.push("/dashboard/core/transactions")}
+          />
 
           {/* Stat Cards */}
           <motion.div

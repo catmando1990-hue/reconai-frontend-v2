@@ -1,267 +1,101 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
+import { useOnboarding } from "@/lib/onboarding-context";
 
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  // Security: Add Secure flag for HTTPS-only cookies in production
-  const isSecure =
-    typeof window !== "undefined" && window.location.protocol === "https:";
-  const secureFlag = isSecure ? "; Secure" : "";
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax${secureFlag}`;
-}
-
-/**
- * Onboarding page - Clerk as source of truth (no backend /api/auth/me gating)
- * - Light/Dark compatible (semantic tokens)
- * - Visible "I confirm the basics" checkbox that enables Continue
- * - Navigates to /dashboard/reconai
- * - Redirects to /sign-in if not signed in
- */
-
-export default function OnboardingPage() {
+export default function ComplianceGatePage() {
   const router = useRouter();
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
+  const { state, updateState, canProceed, nextStep } = useOnboarding();
 
-  const [basicsConfirmed, setBasicsConfirmed] = useState(false);
-
-  // Redirect to sign-in if not authenticated
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!isSignedIn) {
-      router.push("/sign-in");
+    if (isLoaded && !isSignedIn) {
+      router.push("/sign-in?redirect_url=/onboarding");
     }
   }, [isLoaded, isSignedIn, router]);
 
-  const [saving, setSaving] = useState(false);
-  const [completed, setCompleted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const canContinue = useMemo(
-    () => isSignedIn && basicsConfirmed && !saving,
-    [isSignedIn, basicsConfirmed, saving],
-  );
-
-  const completeOnboarding = async () => {
-    if (!user) return;
-    if (!basicsConfirmed) return;
-
-    setSaving(true);
-    setError(null);
-
-    try {
-      const now = new Date().toISOString();
-
-      // Write unsafeMetadata (client-settable). publicMetadata requires server-side API.
-      // The middleware checks both publicMetadata.onboarded AND unsafeMetadata.onboardingComplete.
-      await user.update({
-        unsafeMetadata: {
-          ...(user.unsafeMetadata ?? {}),
-          onboardingComplete: true,
-          onboardingCompleteAt: now,
-          basicsConfirmedAt: now,
-        },
-      });
-
-      await user.reload();
-
-      // Set cookie as fallback for middleware (unsafeMetadata isn't in JWT by default)
-      setCookie("onboarding_complete", "true", 365);
-
-      setCompleted(true);
-
-      // Hard redirect to ReconAI dashboard
-      setTimeout(() => {
-        window.location.href = "/dashboard/reconai";
-      }, 650);
-    } catch (e: unknown) {
-      const message =
-        e instanceof Error
-          ? e.message
-          : "Failed to complete onboarding. Please try again.";
-      setError(message);
-      setSaving(false);
-    }
-  };
-
   if (!isLoaded) {
     return (
-      <main className="min-h-[80vh] flex items-center justify-center bg-background text-foreground px-6">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Loading...
-        </div>
-      </main>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
   return (
-    <main className="relative min-h-[92vh] overflow-hidden text-foreground px-6 py-16">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/hero/onboarding-hero.png"
-          alt="ReconAI onboarding background"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-40 dark:opacity-30"
-        />
-        <div className="absolute inset-0 bg-background/80 dark:bg-background/75" />
-      </div>
-      <div className="relative z-10 mx-auto max-w-3xl">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
-          <Sparkles className="h-4 w-4 text-primary" />
-          One-time setup
+    <div className="space-y-8">
+      <header>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <ShieldCheck className="h-4 w-4" />
+          Step 1 of 6
         </div>
-
-        <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
-          Welcome to ReconAI
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight">
+          Compliance acknowledgement
         </h1>
-        <p className="mt-4 text-muted-foreground text-lg max-w-2xl">
-          Before you enter the dashboard, confirm a few basics so your outputs
-          remain defensible and review-ready.
+        <p className="mt-2 text-muted-foreground">
+          ReconAI is built for defensible financial operations. Before
+          proceeding, confirm you understand the following.
         </p>
+      </header>
 
-        <div className="mt-10 grid grid-cols-1 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="rounded-3xl border border-border bg-card p-6"
-          >
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="mt-1 h-5 w-5 text-primary" />
-              <div className="flex-1">
-                <div className="font-semibold">Confirm the basics</div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  ReconAI is designed for serious finance. This confirmation
-                  helps keep data handling and reporting consistent.
-                </p>
-
-                <div className="mt-5">
-                  <label className="flex items-start gap-3 cursor-pointer rounded-2xl border border-border bg-background px-4 py-3 hover:bg-accent transition">
-                    <input
-                      type="checkbox"
-                      className="mt-1 h-4 w-4"
-                      checked={basicsConfirmed}
-                      onChange={(e) => setBasicsConfirmed(e.target.checked)}
-                    />
-                    <div className="text-sm">
-                      <div className="font-medium">I confirm the basics</div>
-                      <div className="text-muted-foreground">
-                        I understand ReconAI&apos;s purpose and agree to use it
-                        responsibly. See our{" "}
-                        <Link
-                          className="text-primary hover:underline"
-                          href="/terms"
-                          target="_blank"
-                        >
-                          Terms
-                        </Link>
-                        {" & "}
-                        <Link
-                          className="text-primary hover:underline"
-                          href="/privacy"
-                          target="_blank"
-                        >
-                          Privacy Policy
-                        </Link>
-                        .
-                      </div>
-                    </div>
-                  </label>
-                </div>
-
-                {error ? (
-                  <div className="mt-4 rounded-xl border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
-                    {error}
-                  </div>
-                ) : null}
-              </div>
+      <div className="space-y-4">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4 transition hover:bg-accent">
+          <input
+            type="checkbox"
+            checked={state.complianceAcknowledged}
+            onChange={(e) =>
+              updateState({ complianceAcknowledged: e.target.checked })
+            }
+            className="mt-1 h-4 w-4 rounded border-input"
+          />
+          <div className="text-sm">
+            <div className="font-medium">
+              I acknowledge that ReconAI outputs are for informational purposes
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.05 }}
-            className="rounded-3xl border border-border bg-card p-6"
-          >
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="mt-1 h-5 w-5 text-primary" />
-              <div className="flex-1">
-                <div className="font-semibold">What happens next</div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  You&apos;ll land in ReconAI. From there, you can explore Core,
-                  Intelligence, and CFO Mode—without losing the narrative
-                  thread.
-                </p>
-
-                <div className="mt-5 flex flex-wrap gap-3 text-sm">
-                  <Link
-                    href="/how-it-works"
-                    className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition"
-                  >
-                    How it works
-                  </Link>
-                  <Link
-                    href="/packages"
-                    className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition"
-                  >
-                    Packages
-                  </Link>
-                  <Link
-                    href="/security"
-                    className="rounded-xl border border-border px-4 py-2 hover:bg-accent transition"
-                  >
-                    Security
-                  </Link>
-                </div>
-              </div>
+            <div className="mt-1 text-muted-foreground">
+              Outputs should be reviewed by qualified professionals before use
+              in financial reporting, tax filings, or regulatory submissions.
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </label>
 
-        <div className="mt-10 flex flex-col sm:flex-row gap-4">
-          <button
-            type="button"
-            onClick={completeOnboarding}
-            disabled={!canContinue || completed}
-            className={[
-              "inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 transition",
-              canContinue && !completed
-                ? "bg-primary text-primary-foreground hover:opacity-90"
-                : "bg-muted text-muted-foreground cursor-not-allowed",
-            ].join(" ")}
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <ArrowRight className="h-4 w-4" />
-            )}
-            {completed ? "Completed" : "Continue to ReconAI"}
-          </button>
-
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-          >
-            Back to home <ArrowRight className="h-4 w-4" />
-          </Link>
+        <div className="rounded-xl border border-border bg-card p-4 text-sm">
+          <div className="font-medium">What this means</div>
+          <ul className="mt-2 space-y-1 text-muted-foreground">
+            <li>
+              ReconAI assists with categorization, analysis, and reporting
+            </li>
+            <li>All outputs should be verified before external use</li>
+            <li>You retain responsibility for your financial decisions</li>
+          </ul>
         </div>
       </div>
-    </main>
+
+      <footer className="flex items-center justify-between pt-4">
+        <Link
+          href="/"
+          className="text-sm text-muted-foreground hover:text-foreground transition"
+        >
+          Back to home
+        </Link>
+        <button
+          type="button"
+          onClick={nextStep}
+          disabled={!canProceed}
+          className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition ${
+            canProceed
+              ? "bg-primary text-primary-foreground hover:opacity-90"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
+          }`}
+        >
+          Continue
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </footer>
+    </div>
   );
 }

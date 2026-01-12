@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 import {
   ArrowRight,
   CheckCircle2,
@@ -160,23 +159,12 @@ export function MarketingHomePage() {
             </div>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <SignedOut>
-                <Link
-                  href="/sign-in"
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-                >
-                  Get Started <ArrowRight className="h-4 w-4" />
-                </Link>
-              </SignedOut>
-
-              <SignedIn>
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/60 px-6 py-3 hover:bg-accent transition"
-                >
-                  Go to Dashboard <ArrowRight className="h-4 w-4" />
-                </Link>
-              </SignedIn>
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
+              >
+                Get Started <ArrowRight className="h-4 w-4" />
+              </Link>
 
               <Link
                 href="/platform"
@@ -452,22 +440,12 @@ export function MarketingHomePage() {
                 </p>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                  <SignedOut>
-                    <Link
-                      href="/sign-in"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-                    >
-                      Start Now <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </SignedOut>
-                  <SignedIn>
-                    <Link
-                      href="/dashboard"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-                    >
-                      Open Dashboard <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </SignedIn>
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
+                  >
+                    Start Now <ArrowRight className="h-4 w-4" />
+                  </Link>
                   <Link
                     href="/support"
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
@@ -520,22 +498,12 @@ export function MarketingHomePage() {
             </div>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <SignedOut>
-              <Link
-                href="/sign-in"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-primary-foreground hover:opacity-90 transition"
-              >
-                Get Started <ArrowRight className="h-4 w-4" />
-              </Link>
-            </SignedOut>
-            <SignedIn>
-              <Link
-                href="/dashboard"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 hover:bg-accent transition"
-              >
-                Open Dashboard <ArrowRight className="h-4 w-4" />
-              </Link>
-            </SignedIn>
+            <Link
+              href="/sign-in"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-primary-foreground hover:opacity-90 transition"
+            >
+              Get Started <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </div>

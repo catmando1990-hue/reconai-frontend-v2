@@ -2,6 +2,7 @@ import React from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
 
 /**
  * Responsive dashboard shell:
@@ -19,5 +20,9 @@ export default async function DashboardGroupLayout({
     redirect("/sign-in?redirect_url=/dashboard");
   }
 
-  return <DashboardShell>{children}</DashboardShell>;
+  return (
+    <ClerkProviderWrapper>
+      <DashboardShell>{children}</DashboardShell>
+    </ClerkProviderWrapper>
+  );
 }

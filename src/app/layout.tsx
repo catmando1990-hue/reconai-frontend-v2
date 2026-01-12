@@ -1,5 +1,4 @@
 import Providers from "@/app/providers";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Footer } from "@/components/layout/Footer";
 import { RouteBackgroundWrapper } from "@/components/layout/RouteBackgroundWrapper";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -43,26 +42,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider afterSignOutUrl="/">
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <BotIdClient protect={protectedRoutes} />
-        </head>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <ThemeProvider>
-            <Providers>
-              <RouteBackgroundWrapper>
-                <div className="min-h-dvh">
-                  {children}
-                  <Footer />
-                </div>
-              </RouteBackgroundWrapper>
-            </Providers>
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <BotIdClient protect={protectedRoutes} />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ThemeProvider>
+          <Providers>
+            <RouteBackgroundWrapper>
+              <div className="min-h-dvh">
+                {children}
+                <Footer />
+              </div>
+            </RouteBackgroundWrapper>
+          </Providers>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

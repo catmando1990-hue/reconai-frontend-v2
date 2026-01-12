@@ -10,6 +10,7 @@ export default function Hero() {
   const heroPosterUrl = getVideoUrl("heroPoster", "/videos/hero-poster.webp");
   const reduceMotion = useReducedMotion();
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   // Ensures server + first client render match (prevents hydration mismatch)
   const [mounted, setMounted] = useState(false);
@@ -18,8 +19,31 @@ export default function Hero() {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // After mount, enforce reduced-motion behavior without changing initial SSR markup
+  // Lazy-load video: only load source when hero is visible and mounted
   useEffect(() => {
+    if (!mounted || reduceMotion) return;
+
+    const v = videoRef.current;
+    if (!v) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !videoLoaded) {
+          setVideoLoaded(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(v);
+    return () => observer.disconnect();
+  }, [mounted, reduceMotion, videoLoaded]);
+
+  // After video source is loaded, handle playback
+  useEffect(() => {
+    if (!videoLoaded) return;
+
     const v = videoRef.current;
     if (!v) return;
 
@@ -59,24 +83,23 @@ export default function Hero() {
     return () => {
       cancelled = true;
     };
-  }, [reduceMotion, mounted]);
+  }, [reduceMotion, videoLoaded]);
 
   return (
     <section className="relative overflow-hidden">
       {/* Background media */}
       <div className="absolute inset-0 -z-10">
-        {/* VIDEO (lowest layer) */}
+        {/* VIDEO (lowest layer) - no source until visible, uses poster as placeholder */}
         <video
           ref={videoRef}
-          autoPlay
           muted
           loop
           playsInline
-          preload="auto"
+          preload="none"
           poster={heroPosterUrl}
           className="absolute inset-0 z-0 h-full w-full object-cover"
         >
-          <source src={heroVideoUrl} type="video/mp4" />
+          {videoLoaded && <source src={heroVideoUrl} type="video/mp4" />}
         </video>
 
         {/* Soft gradient mask for text contrast (works in light + dark) */}

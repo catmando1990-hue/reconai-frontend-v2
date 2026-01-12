@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Building2, Briefcase, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  Briefcase,
+  Users,
+} from "lucide-react";
 import { useOnboarding, type EntityType } from "@/lib/onboarding-context";
 
 const ENTITY_OPTIONS: Array<{
@@ -30,7 +36,8 @@ const ENTITY_OPTIONS: Array<{
 ];
 
 export default function EntityPage() {
-  const { state, updateState, canProceed, nextStep, prevStep } = useOnboarding();
+  const { state, updateState, canProceed, nextStep, prevStep } =
+    useOnboarding();
 
   return (
     <div className="space-y-8">
@@ -72,7 +79,9 @@ export default function EntityPage() {
               </div>
               <div>
                 <div className="font-medium">{label}</div>
-                <div className="text-sm text-muted-foreground">{description}</div>
+                <div className="text-sm text-muted-foreground">
+                  {description}
+                </div>
               </div>
             </button>
           ))}

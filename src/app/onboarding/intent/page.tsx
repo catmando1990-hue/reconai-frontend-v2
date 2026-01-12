@@ -50,7 +50,8 @@ const INTENT_OPTIONS: Array<{
 ];
 
 export default function IntentPage() {
-  const { state, updateState, canProceed, nextStep, prevStep } = useOnboarding();
+  const { state, updateState, canProceed, nextStep, prevStep } =
+    useOnboarding();
 
   return (
     <div className="space-y-8">

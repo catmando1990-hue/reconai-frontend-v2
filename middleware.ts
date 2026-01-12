@@ -1,53 +1,106 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Middleware using Clerk's official clerkMiddleware() pattern.
- *
- * Features:
- * - Maintenance mode via Vercel Edge Config (admin bypass)
- * - Fails OPEN: if EDGE_CONFIG is missing or throws, site remains accessible
- * - No Node-only imports (Edge runtime compatible)
+ * Protected route prefixes - only these routes run Clerk auth
+ */
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/account",
+  "/connect-bank",
+  "/accounts",
+  "/transactions",
+  "/cash-flow",
+  "/insights",
+  "/alerts",
+  "/ai-worker",
+  "/compliance",
+  "/certifications",
+  "/financial-reports",
+  "/cfo",
+  "/core",
+  "/intelligence",
+  "/admin",
+  "/settings",
+  "/upload",
+  "/properties",
+  "/units",
+  "/tenants",
+  "/leases",
+  "/rent-collection",
+  "/dcaa",
+];
+
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+/**
+ * Maintenance mode check - runs on all routes (no Clerk dependency)
+ */
+async function checkMaintenanceMode(
+  req: NextRequest,
+  isAdmin: boolean,
+): Promise<NextResponse | null> {
+  // Only attempt Edge Config if env var is defined
+  if (!process.env.EDGE_CONFIG) {
+    return null;
+  }
+
+  try {
+    const { createClient } = await import("@vercel/edge-config");
+    const edgeConfig = createClient(process.env.EDGE_CONFIG);
+    const maintenanceMode = Boolean(await edgeConfig.get("maintenance_mode"));
+
+    const { pathname } = req.nextUrl;
+
+    if (
+      maintenanceMode &&
+      !isAdmin &&
+      !pathname.startsWith("/maintenance") &&
+      !pathname.startsWith("/api") &&
+      !pathname.startsWith("/_next")
+    ) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/maintenance";
+      return NextResponse.redirect(url);
+    }
+  } catch {
+    // Fail open: if Edge Config is unavailable, do not block users
+  }
+
+  return null;
+}
+
+/**
+ * Middleware with selective Clerk auth:
+ * - Maintenance mode check runs on ALL routes
+ * - Clerk auth runs ONLY on protected routes
+ * - Public routes have zero auth overhead
  */
 export default clerkMiddleware(async (auth, req) => {
-  // Get session claims from Clerk's auth helper
-  const { sessionClaims } = await auth();
-  const publicMetadata = sessionClaims?.publicMetadata as
-    | Record<string, unknown>
-    | undefined;
-  const isAdmin = publicMetadata?.role === "admin";
-
-  // Read maintenance mode from Edge Config (fail open)
-  let maintenanceMode = false;
-
-  // Only attempt Edge Config if env var is defined
-  if (process.env.EDGE_CONFIG) {
-    try {
-      // Dynamic import to avoid module-scope evaluation issues
-      const { createClient } = await import("@vercel/edge-config");
-      const edgeConfig = createClient(process.env.EDGE_CONFIG);
-      const value = await edgeConfig.get("maintenance_mode");
-      maintenanceMode = Boolean(value);
-    } catch {
-      // Fail open: if Edge Config is unavailable, do not block users
-      maintenanceMode = false;
-    }
-  }
-
   const { pathname } = req.nextUrl;
 
-  // Redirect non-admins to /maintenance when maintenance mode is enabled
-  if (
-    maintenanceMode &&
-    !isAdmin &&
-    !pathname.startsWith("/maintenance") &&
-    !pathname.startsWith("/api") &&
-    !pathname.startsWith("/_next")
-  ) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/maintenance";
-    return NextResponse.redirect(url);
+  // For protected routes: run full Clerk auth
+  if (isProtectedRoute(pathname)) {
+    const { sessionClaims } = await auth();
+    const publicMetadata = sessionClaims?.publicMetadata as
+      | Record<string, unknown>
+      | undefined;
+    const isAdmin = publicMetadata?.role === "admin";
+
+    // Check maintenance mode (with admin bypass)
+    const maintenanceRedirect = await checkMaintenanceMode(req, isAdmin);
+    if (maintenanceRedirect) return maintenanceRedirect;
+
+    return NextResponse.next();
   }
+
+  // For public routes: only check maintenance mode (no Clerk auth overhead)
+  const maintenanceRedirect = await checkMaintenanceMode(req, false);
+  if (maintenanceRedirect) return maintenanceRedirect;
 
   return NextResponse.next();
 });

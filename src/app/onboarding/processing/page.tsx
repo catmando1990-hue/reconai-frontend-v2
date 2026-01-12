@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { CheckCircle2, Loader2, Settings } from "lucide-react";
 import { useOnboarding } from "@/lib/onboarding-context";
 
@@ -22,8 +20,6 @@ function setCookie(name: string, value: string, days: number) {
 }
 
 export default function ProcessingPage() {
-  const router = useRouter();
-  const { user } = useUser();
   const { state, nextStep } = useOnboarding();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -35,44 +31,38 @@ export default function ProcessingPage() {
       }, 800);
       return () => clearTimeout(timer);
     } else if (!completed) {
-      // All steps done - save onboarding data to Clerk
-      const completeOnboarding = async () => {
-        if (!user) return;
-
+      // All steps done - save onboarding data to localStorage
+      // User will sync to Clerk after signing in
+      const completeOnboarding = () => {
         try {
           const now = new Date().toISOString();
-          await user.update({
-            unsafeMetadata: {
-              ...(user.unsafeMetadata ?? {}),
-              onboardingComplete: true,
-              onboardingCompleteAt: now,
-              entityType: state.entityType,
-              entityName: state.entityName,
-              operatingIntent: state.operatingIntent,
-              dataSource: state.dataSource,
-            },
-          });
-
+          const onboardingData = {
+            onboardingComplete: true,
+            onboardingCompleteAt: now,
+            entityType: state.entityType,
+            entityName: state.entityName,
+            operatingIntent: state.operatingIntent,
+            dataSource: state.dataSource,
+          };
+          localStorage.setItem(
+            "reconai_onboarding",
+            JSON.stringify(onboardingData),
+          );
           setCookie("onboarding_complete", "true", 365);
-          setCompleted(true);
-
-          // Move to complete page
-          setTimeout(() => {
-            nextStep();
-          }, 500);
         } catch (error) {
           console.error("Failed to save onboarding:", error);
-          // Still proceed even on error
-          setCompleted(true);
-          setTimeout(() => {
-            nextStep();
-          }, 500);
         }
+
+        setCompleted(true);
+        // Move to complete page
+        setTimeout(() => {
+          nextStep();
+        }, 500);
       };
 
       completeOnboarding();
     }
-  }, [currentStepIndex, completed, user, state, nextStep, router]);
+  }, [currentStepIndex, completed, state, nextStep]);
 
   return (
     <div className="space-y-8">

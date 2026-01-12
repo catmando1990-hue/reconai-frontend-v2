@@ -7,6 +7,11 @@ import { useOnboarding } from "@/lib/onboarding-context";
 export default function CompletePage() {
   const { state } = useOnboarding();
 
+  // Gate protected routes through sign-in
+  const getAuthGatedPath = (targetPath: string) => {
+    return `/sign-in?redirect_url=${encodeURIComponent(targetPath)}`;
+  };
+
   const dashboardPath =
     state.dataSource === "bank-connect"
       ? "/connect-bank"
@@ -44,12 +49,8 @@ export default function CompletePage() {
                 {state.dataSource === "later" && (
                   <li>Explore the platform and add data when ready</li>
                 )}
-                <li>
-                  ReconAI will analyze transactions and surface insights
-                </li>
-                <li>
-                  Review outputs in your dashboard for accuracy
-                </li>
+                <li>ReconAI will analyze transactions and surface insights</li>
+                <li>Review outputs in your dashboard for accuracy</li>
               </ul>
             </div>
           </div>
@@ -82,7 +83,7 @@ export default function CompletePage() {
 
       <footer className="flex flex-col gap-3 pt-4">
         <Link
-          href={dashboardPath}
+          href={getAuthGatedPath(dashboardPath)}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
         >
           {state.dataSource === "bank-connect"
@@ -94,7 +95,7 @@ export default function CompletePage() {
         </Link>
         {state.dataSource !== "later" && (
           <Link
-            href="/dashboard"
+            href={getAuthGatedPath("/dashboard")}
             className="text-center text-sm text-muted-foreground hover:text-foreground transition"
           >
             Skip to dashboard

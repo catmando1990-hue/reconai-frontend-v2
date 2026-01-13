@@ -57,7 +57,7 @@ export default function Hero() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-balance text-4xl font-semibold tracking-tight text-white md:text-6xl"
         >
-          ReconAI turns financial noise into clarity.
+          ReconAI organizes financial data for review.
         </motion.h1>
 
         <motion.p
@@ -66,9 +66,8 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
           className="mt-6 max-w-2xl text-pretty text-lg text-white/85"
         >
-          Built for individuals, small businesses, and enterprise teams—ReconAI
-          analyzes transactions, operational activity, and financial patterns to
-          support better decisions with explainable insight.
+          Categorizes transactions, detects patterns, and generates structured
+          reports. Works for individuals, small businesses, and enterprise teams.
         </motion.p>
 
         <motion.div

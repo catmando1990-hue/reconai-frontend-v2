@@ -31,26 +31,26 @@ const USE_CASES: Array<{
   {
     id: "solo",
     title: "Solo",
-    subtitle: "Operator-first clarity",
+    subtitle: "Structured outputs",
     Icon: Briefcase,
     subheadline:
-      "Get clean categorization, defensible reports, and a clear financial story—without living in spreadsheets.",
+      "Categorizes transactions, generates reports, and organizes financial data in one place.",
   },
   {
     id: "smb",
     title: "Small Business",
-    subtitle: "Systems that scale",
+    subtitle: "Consistent records",
     Icon: Users,
     subheadline:
-      "Standardize how money moves through your business and keep outputs consistent across time, teams, and reviews.",
+      "Applies consistent classification across accounts. Outputs are structured for review.",
   },
   {
     id: "enterprise",
     title: "Enterprise",
-    subtitle: "Audit-ready operations",
+    subtitle: "Traceable outputs",
     Icon: Building2,
     subheadline:
-      "Controls, traceability, and defensible outputs—designed for higher-stakes finance and compliance environments.",
+      "Surfaces cost structures, flags unclassified items, and generates audit-trail documentation.",
   },
 ];
 
@@ -108,8 +108,8 @@ export function MarketingHomePage() {
             </div>
 
             <h1 className="mt-6 text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
-              Financial intelligence
-              <span className="block text-primary">you can defend</span>
+              Structured financial data
+              <span className="block text-primary">ready for review</span>
             </h1>
 
             <p className="mt-6 text-lg md:text-xl text-muted-foreground">
@@ -197,9 +197,9 @@ export function MarketingHomePage() {
             {/* Proof strip */}
             <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               {[
-                { k: "95%+", v: "Target classification accuracy" },
-                { k: "<24h", v: "Time-to-first-value for most teams" },
-                { k: "Audit", v: "Traceable, defensible outputs" },
+                { k: "95%+", v: "Classification accuracy target" },
+                { k: "<24h", v: "Typical setup time" },
+                { k: "Audit", v: "Traceable outputs" },
               ].map((m) => (
                 <div
                   key={m.k}
@@ -213,9 +213,9 @@ export function MarketingHomePage() {
 
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               {[
-                "Audit-ready architecture",
-                "Security and controls by default",
-                "Built to scale from solo to enterprise",
+                "Structured for audit review",
+                "Access controls included",
+                "Solo to enterprise scale",
               ].map((t) => (
                 <div
                   key={t}
@@ -256,27 +256,27 @@ export function MarketingHomePage() {
               <div className="flex items-center gap-3 rounded-xl border border-border bg-card/90 backdrop-blur p-4">
                 <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
                 <div>
-                  <div className="font-medium">Compliance-minded</div>
+                  <div className="font-medium">Access controls</div>
                   <div className="text-muted-foreground">
-                    Controls + auditability baked in
+                    Role-based permissions and audit logs
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-xl border border-border bg-card/90 backdrop-blur p-4">
                 <Lock className="h-5 w-5 text-primary shrink-0" />
                 <div>
-                  <div className="font-medium">Secure by default</div>
+                  <div className="font-medium">Encryption at rest</div>
                   <div className="text-muted-foreground">
-                    Designed for sensitive financial data
+                    Data encrypted in storage and transit
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-xl border border-border bg-card/90 backdrop-blur p-4">
                 <FileText className="h-5 w-5 text-primary shrink-0" />
                 <div>
-                  <div className="font-medium">Defensible outputs</div>
+                  <div className="font-medium">Traceable outputs</div>
                   <div className="text-muted-foreground">
-                    Evidence you can stand behind
+                    Reports link to source transactions
                   </div>
                 </div>
               </div>
@@ -293,11 +293,11 @@ export function MarketingHomePage() {
                 Packaging (no pricing)
               </div>
               <h2 className="mt-4 text-3xl font-bold tracking-tight">
-                Start with Core. Add Intelligence. Unlock CFO Mode.
+                Core. Intelligence. CFO Mode.
               </h2>
               <p className="mt-2 text-muted-foreground max-w-2xl">
-                ReconAI is built in layers to keep the story clear, scalable,
-                and defensible.
+                ReconAI organizes data in layers. Each layer adds structure
+                without requiring the previous.
               </p>
             </div>
             <Link
@@ -313,17 +313,17 @@ export function MarketingHomePage() {
               {
                 title: "Core",
                 icon: FileText,
-                desc: "Accounts, transactions, reporting foundations.",
+                desc: "Accounts, transactions, and standard reports.",
               },
               {
                 title: "Intelligence",
                 icon: Sparkles,
-                desc: "AI Worker, alerts, patterns, decision context.",
+                desc: "Pattern detection, alerts, and classification suggestions.",
               },
               {
                 title: "CFO Mode",
                 icon: LineChart,
-                desc: "Executive views and review-ready outputs.",
+                desc: "Summaries, dashboards, and exportable reports.",
               },
             ].map(({ title, icon: Icon, desc }) => (
               <div
@@ -361,31 +361,30 @@ export function MarketingHomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                See your business like a CFO—without becoming one
+                Financial data, organized and exportable
               </h2>
               <p className="mt-4 text-muted-foreground">
-                ReconAI organizes transactions, highlights patterns, and
-                delivers insight that&apos;s clear, consistent, and ready for
-                serious review.
+                ReconAI categorizes transactions, surfaces patterns, and
+                generates reports structured for review.
               </p>
 
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4">
                   <div className="flex items-center gap-2 font-medium">
                     <LineChart className="h-4 w-4 text-primary" />
-                    Clear reporting
+                    Standard reports
                   </div>
                   <div className="mt-1 text-muted-foreground">
-                    Cash flow, performance, and risk signals in one place.
+                    Cash flow, income/expense, and category breakdowns.
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4">
                   <div className="flex items-center gap-2 font-medium">
                     <ShieldCheck className="h-4 w-4 text-primary" />
-                    Audit-ready trails
+                    Audit trail
                   </div>
                   <div className="mt-1 text-muted-foreground">
-                    Consistent classification and defensible records.
+                    Classification history and source transaction links.
                   </div>
                 </div>
               </div>
@@ -431,12 +430,11 @@ export function MarketingHomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center rounded-3xl border border-border bg-card/90 backdrop-blur p-8 md:p-12 overflow-hidden">
               <div>
                 <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-                  Built for founders, operators, and teams that take finance
-                  seriously
+                  For teams that need organized financial data
                 </h3>
                 <p className="mt-4 text-muted-foreground">
-                  If your decisions need to stand up to scrutiny, ReconAI is
-                  built for you.
+                  ReconAI structures transactions, generates reports, and
+                  maintains audit trails.
                 </p>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -492,9 +490,9 @@ export function MarketingHomePage() {
       >
         <div className="rounded-2xl border border-border bg-card/80 backdrop-blur p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
           <div className="text-sm">
-            <div className="font-medium">Ready to see ReconAI in action?</div>
+            <div className="font-medium">View the dashboard</div>
             <div className="text-muted-foreground">
-              Sign in and open your dashboard in seconds.
+              Sign in to access your data.
             </div>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">

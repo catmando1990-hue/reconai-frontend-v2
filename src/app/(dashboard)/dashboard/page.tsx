@@ -171,17 +171,17 @@ const aiInsights: AIInsight[] = [
   {
     id: "1",
     type: "tip",
-    title: "Savings Opportunity",
+    title: "Spending Pattern",
     description:
-      "Your dining expenses are 23% higher than last month. Consider meal prepping to save ~$180/month.",
+      "Dining expenses are 23% higher than last month. Category breakdown available.",
     detailedInfo: {
       summary:
-        "Your food and dining spending has increased significantly this month. Here's a detailed breakdown and actionable tips to reduce costs.",
+        "Food and dining spending increased this month. Breakdown by subcategory shown below.",
       stats: [
         { label: "This Month", value: "$847", change: 23 },
         { label: "Last Month", value: "$689", change: 0 },
         { label: "Monthly Average", value: "$712", change: 0 },
-        { label: "Potential Savings", value: "$180/mo", change: 0 },
+        { label: "Difference", value: "+$158", change: 0 },
       ],
       breakdown: [
         { item: "Restaurants", amount: 412, icon: Utensils },
@@ -190,13 +190,13 @@ const aiInsights: AIInsight[] = [
         { item: "Groceries", amount: 90, icon: ShoppingCart },
       ],
       recommendations: [
-        "Meal prep on Sundays to reduce weekday restaurant visits",
-        "Brew coffee at home - potential savings of $120/month",
-        "Limit food delivery to once per week maximum",
-        "Use cashback apps when dining out (average 5% back)",
-        "Set a weekly dining budget of $150 in the app",
+        "View transaction details for this category",
+        "Compare to previous months",
+        "Export category report",
+        "Set budget alert threshold",
+        "Review individual transactions",
       ],
-      actionButton: { label: "Set Dining Budget", href: "/budgets" },
+      actionButton: { label: "View Category", href: "/budgets" },
     },
   },
   {
@@ -204,10 +204,10 @@ const aiInsights: AIInsight[] = [
     type: "warning",
     title: "Upcoming Bill",
     description:
-      "Your car insurance payment of $245 is due in 3 days. Ensure sufficient balance.",
+      "Car insurance payment of $245 due in 3 days. Current balance: $12,450.",
     detailedInfo: {
       summary:
-        "You have an upcoming car insurance payment. Here's what you need to know to avoid late fees.",
+        "Scheduled payment detected. Payment history and balance shown below.",
       stats: [
         { label: "Amount Due", value: "$245.00", change: 0 },
         { label: "Due Date", value: "Jan 2, 2025", change: 0 },
@@ -223,12 +223,12 @@ const aiInsights: AIInsight[] = [
         { date: "Jan 3", event: "Late fee applies ($25)", completed: false },
       ],
       recommendations: [
-        "Set up autopay to never miss a payment",
-        "Consider paying bi-annually for 5% discount",
-        "Shop around for better rates - you may save $300/year",
-        "Bundle with home/renters insurance for additional savings",
+        "View bill details",
+        "Check payment history",
+        "Review vendor record",
+        "Export payment schedule",
       ],
-      actionButton: { label: "Pay Now", href: "/bills" },
+      actionButton: { label: "View Bill", href: "/bills" },
     },
   },
   {
@@ -236,15 +236,15 @@ const aiInsights: AIInsight[] = [
     type: "goal",
     title: "Goal Progress",
     description:
-      "You're 67% towards your emergency fund goal. At this rate, you'll reach it by March.",
+      "Emergency fund: $10,050 of $15,000 target (67%). Based on current rate.",
     detailedInfo: {
       summary:
-        "Great progress on your emergency fund! You're on track to reach your goal ahead of schedule.",
+        "Goal tracking data. Progress calculated from linked account balance.",
       stats: [
         { label: "Target Amount", value: "$15,000", change: 0 },
         { label: "Current Balance", value: "$10,050", change: 12 },
         { label: "Monthly Contribution", value: "$850", change: 5 },
-        { label: "Months Remaining", value: "~6 months", change: 0 },
+        { label: "Months at Current Rate", value: "~6 months", change: 0 },
       ],
       progress: 67,
       targetAmount: 15000,
@@ -254,15 +254,15 @@ const aiInsights: AIInsight[] = [
         { date: "Sep 2024", event: "Reached 25% - $3,750", completed: true },
         { date: "Nov 2024", event: "Reached 50% - $7,500", completed: true },
         { date: "Dec 2024", event: "Current - $10,050 (67%)", completed: true },
-        { date: "Mar 2025", event: "Projected completion", completed: false },
+        { date: "Mar 2025", event: "Projected at current rate", completed: false },
       ],
       recommendations: [
-        "Increase monthly contribution by $50 to finish in February",
-        "Consider a high-yield savings account (4.5% APY)",
-        "Set up automatic transfers on payday",
-        "Once complete, start investing the surplus",
+        "View contribution history",
+        "Adjust target amount",
+        "Change linked account",
+        "Export goal report",
       ],
-      actionButton: { label: "Adjust Goal", href: "/goals" },
+      actionButton: { label: "Edit Goal", href: "/goals" },
     },
   },
 ];
@@ -585,16 +585,16 @@ export default function DashboardPage() {
               </p>
               <PageHelp
                 title="Dashboard"
-                description="Your central hub for financial intelligence. Get a complete snapshot of your finances including net worth, spending trends, and AI-powered insights."
+                description="Displays account balances, recent transactions, and spending breakdowns. Data updates when you refresh."
                 features={[
-                  "Real-time net worth tracking across all accounts",
-                  "Spending analysis with category breakdown",
-                  "AI-generated insights and recommendations",
-                  "Cash flow trends and projections",
+                  "Account balance summary",
+                  "Spending breakdown by category",
+                  "Pattern detection alerts",
+                  "Cash flow chart",
                 ]}
                 tips={[
-                  "Click on stat cards to see detailed breakdowns",
-                  "AI insights are personalized based on your spending patterns",
+                  "Click stat cards for details",
+                  "Alerts highlight unusual patterns",
                 ]}
               />
             </div>

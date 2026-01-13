@@ -17,32 +17,32 @@ import {
 const BUCKETS = [
   {
     title: "Core Financial Ops",
-    desc: "Accounts, transactions, and reporting that stay consistent over time.",
+    desc: "Accounts, transactions, and reports in a single system.",
     Icon: Layers,
     items: [
-      "Accounts & bank connections",
-      "Transaction classification",
-      "Ledger & reporting",
+      "Bank account connections",
+      "Transaction categorization",
+      "Standard financial reports",
     ],
   },
   {
-    title: "Compliance & Defensibility",
-    desc: "Controls and traceability designed for serious review environments.",
+    title: "Controls & Traceability",
+    desc: "Audit logs, access controls, and linked source records.",
     Icon: ShieldCheck,
     items: [
-      "Audit-friendly outputs",
-      "Policy-backed categorization",
-      "Security-first posture",
+      "Classification audit trail",
+      "Role-based access",
+      "Encryption at rest",
     ],
   },
   {
-    title: "Operator Intelligence",
-    desc: "Insight that supports decisions without adding overhead.",
+    title: "Analysis & Reporting",
+    desc: "Pattern detection, alerts, and exportable summaries.",
     Icon: LineChart,
     items: [
-      "Cash flow signals",
-      "Pattern detection",
-      "Executive-level summaries",
+      "Cash flow analysis",
+      "Anomaly detection",
+      "Exportable dashboards",
     ],
   },
 ];
@@ -68,11 +68,11 @@ export default function PlatformPage() {
             </div>
 
             <h1 className="mt-6 text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-              A platform built for clarity, control, and defensibility
+              Financial data, organized and exportable
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground text-lg">
-              ReconAI turns messy financial inputs into clean, reviewable
-              outputs—so operators and teams can move with confidence.
+              ReconAI categorizes transactions, generates reports, and maintains
+              audit trails in a single system.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -115,10 +115,10 @@ export default function PlatformPage() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Product proof</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Product overview</h2>
             <p className="mt-2 text-muted-foreground max-w-2xl">
-              Use the platform like a CFO: see performance, risk, and decisions
-              clearly—without rebuilding your workflow.
+              Dashboards display accounts, transactions, and reports.
+              Data exports in standard formats.
             </p>
           </div>
           <Link
@@ -176,11 +176,11 @@ export default function PlatformPage() {
       <section className="border-t border-border bg-card">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
           <h2 className="text-3xl font-bold tracking-tight">
-            What you can do with ReconAI
+            Platform capabilities
           </h2>
           <p className="mt-2 text-muted-foreground max-w-2xl">
-            The platform is designed to scale from solo operators to enterprise
-            teams—without losing clarity or control.
+            Scales from single-user to multi-team deployments.
+            Same data structure at every tier.
           </p>
 
           <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -210,10 +210,10 @@ export default function PlatformPage() {
 
       {/* WHO IT'S FOR */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
-        <h2 className="text-3xl font-bold tracking-tight">Who it&apos;s for</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Who uses ReconAI</h2>
         <p className="mt-2 text-muted-foreground max-w-2xl">
-          ReconAI is built for serious operators across business sizes and
-          review environments.
+          Individuals, small businesses, and enterprise teams use the same
+          underlying data structure.
         </p>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
@@ -221,17 +221,17 @@ export default function PlatformPage() {
             {
               title: "Solo operators",
               Icon: FileText,
-              desc: "Replace chaos with consistent categorization and reporting.",
+              desc: "Categorizes transactions and generates standard reports.",
             },
             {
               title: "Growing SMBs",
               Icon: Users,
-              desc: "Standardize outputs across teams and time periods.",
+              desc: "Applies consistent classification across accounts.",
             },
             {
               title: "Enterprise & Gov",
               Icon: Building2,
-              desc: "Controls and defensibility designed for scrutiny.",
+              desc: "Adds access controls, audit logs, and custom exports.",
             },
           ].map(({ title, Icon, desc }) => (
             <div
@@ -254,11 +254,11 @@ export default function PlatformPage() {
           <div className="rounded-3xl border border-border bg-background p-8 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center overflow-hidden">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-                Ready to see it live?
+                View the dashboard
               </h3>
               <p className="mt-4 text-muted-foreground">
-                Sign in and open your dashboard. If you need help, we&apos;ll
-                guide you through setup.
+                Sign in to access your data. Setup documentation is available
+                in the help section.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">

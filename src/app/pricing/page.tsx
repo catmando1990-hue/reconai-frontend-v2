@@ -13,38 +13,37 @@ const TIERS: Tier[] = [
   {
     name: "Free",
     price: "$0",
-    who: "Anyone validating fit",
-    purpose: "Prove ReconAI understands your financial reality.",
-    why: "Evaluation-only access to intelligence without operational dependence.",
+    who: "Anyone evaluating the product",
+    purpose: "View dashboards and sample reports.",
+    why: "Evaluation access. No production data.",
   },
   {
     name: "Core",
     price: "$49 / month",
-    who: "Founders and solo operators",
-    purpose: "Clarity and control without complexity.",
-    why: "Priced like infrastructure; replaces basic tools and reduces manual risk.",
+    who: "Individuals and solo operators",
+    purpose: "Transaction categorization and standard reports.",
+    why: "Single-user access with basic features.",
   },
   {
     name: "Pro",
     price: "$89 / month",
-    who: "Growing businesses and teams",
-    purpose:
-      "Manage obligations, vendors, and operational reporting with confidence.",
-    why: "Replaces a fragmented stack and recurring manual reporting cost.",
+    who: "Small businesses and teams",
+    purpose: "Multi-account support, vendor tracking, and custom reports.",
+    why: "Adds team features and export options.",
   },
   {
     name: "Contractor / Compliance",
     price: "$119 / month",
-    who: "Government contractors and compliance-sensitive operators",
-    purpose: "Enforced cost structure and audit readiness.",
-    why: "Under-costs legacy systems while supporting the same compliance ground.",
+    who: "Government contractors",
+    purpose: "Cost structure templates and audit trail exports.",
+    why: "Includes compliance-oriented report formats.",
   },
   {
     name: "Enterprise / CFO Intelligence",
     price: "Custom",
-    who: "Multi-entity or complex organizations",
-    purpose: "Tailored controls, reporting, and support.",
-    why: "Scope, risk, and support requirements vary.",
+    who: "Multi-entity organizations",
+    purpose: "Custom integrations, SSO, and dedicated support.",
+    why: "Pricing varies by scope and requirements.",
   },
 ];
 
@@ -54,8 +53,7 @@ export default function PricingPage() {
       <header className="mb-10">
         <h1 className="text-2xl font-semibold tracking-tight">Pricing</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          ReconAI is priced as financial infrastructure — less than the tools
-          you replace, and far less than the mistakes you avoid.
+          Monthly subscription. Features scale by tier.
         </p>
         <p className="mt-3 text-sm text-muted-foreground">
           Save 15% with annual billing.

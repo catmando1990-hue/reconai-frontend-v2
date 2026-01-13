@@ -117,12 +117,11 @@ export default function HowItWorksPage() {
             </div>
 
             <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
-              A system built for defensible financial intelligence
+              How ReconAI organizes financial data
             </h1>
             <p className="mt-4 max-w-3xl text-muted-foreground text-lg">
-              ReconAI is not &quot;AI bookkeeping.&quot; It&apos;s an integrated
-              system designed to turn messy financial inputs into clean,
-              reviewable outputs—so decisions hold up under scrutiny.
+              ReconAI categorizes transactions, detects patterns, and generates
+              structured reports. Outputs link to source records.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -148,38 +147,38 @@ export default function HowItWorksPage() {
         <SectionTitle
           kicker="The ReconAI system"
           title="Core → Intelligence → CFO Mode"
-          desc="We build financial clarity in layers. Each layer strengthens defensibility without adding chaos or overhead."
+          desc="Data flows through three layers. Each layer adds structure."
         />
 
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card
             icon={FileText}
             title="ReconAI Core"
-            desc="Structured financial reality. Clean inputs. Consistent outputs."
+            desc="Accounts, transactions, and standard reports."
             items={[
-              "Accounts, transactions, vendors, customers",
-              "Bills, invoices, aging and cash flow",
-              "Consistent reporting you can review",
+              "Bank connections and transaction imports",
+              "Bills, invoices, and cash flow tracking",
+              "Standard financial reports",
             ]}
           />
           <Card
             icon={Sparkles}
             title="ReconAI Intelligence"
-            desc="Signals and support that reduce noise and surface what matters."
+            desc="Pattern detection and classification suggestions."
             items={[
-              "AI Worker + alerting",
-              "Patterns, anomalies, and trend signals",
-              'Decision context (not "AI magic")',
+              "Automated categorization",
+              "Anomaly and trend detection",
+              "Configurable alerts",
             ]}
           />
           <Card
             icon={LineChart}
             title="ReconAI CFO Mode"
-            desc="Executive-level clarity for decisions and review environments."
+            desc="Summaries, dashboards, and exportable reports."
             items={[
-              "Executive summaries and performance views",
-              "Lender / stakeholder-ready narratives",
-              "Defensible outputs built to be checked",
+              "Executive summary views",
+              "Custom report exports",
+              "Multi-period comparisons",
             ]}
           />
         </div>
@@ -187,12 +186,11 @@ export default function HowItWorksPage() {
         <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-sm">
           <div className="flex items-center gap-2 font-semibold">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            Compliance is implied—by design
+            Audit trail included
           </div>
           <p className="mt-2 text-muted-foreground">
-            We don&apos;t bolt compliance on at the end. Defensibility is built
-            into the way outputs are formed: traceability, consistency, and
-            review-friendly reporting are foundational.
+            All outputs link to source records. Classification changes are
+            logged with timestamps and user attribution.
           </p>
         </div>
       </section>
@@ -202,9 +200,9 @@ export default function HowItWorksPage() {
         <div className="mx-auto max-w-6xl px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
             <SectionTitle
-              kicker="Product proof"
-              title="From messy inputs to clean, reviewable outputs"
-              desc="ReconAI turns transaction streams into a financial story you can stand behind—especially when decisions get reviewed."
+              kicker="Data flow"
+              title="Transactions in, structured reports out"
+              desc="Reports link to source transactions. Exports include audit metadata."
             />
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -212,12 +210,12 @@ export default function HowItWorksPage() {
                 {
                   title: "Traceability",
                   icon: ShieldCheck,
-                  desc: "Clear relationships between inputs and outputs.",
+                  desc: "Reports link to source transactions.",
                 },
                 {
-                  title: "Control",
+                  title: "Access control",
                   icon: Lock,
-                  desc: "Designed for sensitive financial contexts.",
+                  desc: "Role-based permissions and encryption.",
                 },
               ].map(({ title, icon: Icon, desc }) => (
                 <div
@@ -262,11 +260,11 @@ export default function HowItWorksPage() {
           <div className="rounded-3xl border border-border bg-card p-8 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center overflow-hidden">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-                Want to see ReconAI in action?
+                View the platform
               </h3>
               <p className="mt-4 text-muted-foreground">
-                Open the platform, explore the dashboards, and see how clarity
-                builds from Core to CFO Mode.
+                Sign in to access dashboards and reports. Documentation
+                describes each feature.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 
 interface DashboardMetrics {
   counts: {
@@ -31,32 +32,32 @@ interface DashboardMetrics {
   };
 }
 
-// Mock data for demonstration - replace with actual API calls
-const mockMetrics: DashboardMetrics = {
+// Empty metrics for fallback
+const emptyMetrics: DashboardMetrics = {
   counts: {
-    invoices: 24,
-    bills: 18,
-    customers: 12,
-    vendors: 8,
+    invoices: 0,
+    bills: 0,
+    customers: 0,
+    vendors: 0,
   },
   summary: {
-    totalInvoiced: 125000,
-    totalInvoicePaid: 98500,
-    totalInvoiceDue: 26500,
-    totalBilled: 67000,
-    totalBillPaid: 52000,
-    totalBillDue: 15000,
+    totalInvoiced: 0,
+    totalInvoicePaid: 0,
+    totalInvoiceDue: 0,
+    totalBilled: 0,
+    totalBillPaid: 0,
+    totalBillDue: 0,
   },
   invoicesByStatus: {
-    paid: 18,
-    pending: 4,
-    overdue: 2,
+    paid: 0,
+    pending: 0,
+    overdue: 0,
     draft: 0,
   },
   billsByStatus: {
-    paid: 12,
-    pending: 4,
-    overdue: 2,
+    paid: 0,
+    pending: 0,
+    overdue: 0,
     draft: 0,
   },
 };
@@ -67,28 +68,25 @@ export function useDashboardMetrics() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let alive = true;
+
     const fetchMetrics = async () => {
       try {
         setIsLoading(true);
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
-
-        // TODO: Replace with actual API call
-        // const response = await fetch('/api/dashboard/metrics');
-        // const data = await response.json();
-        // setMetrics(data);
-
-        setMetrics(mockMetrics);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("Failed to fetch metrics"),
-        );
+        const data = await apiFetch<DashboardMetrics>("/api/dashboard/metrics");
+        if (alive) setMetrics(data);
+      } catch {
+        // Silent failure: use empty metrics
+        if (alive) setMetrics(emptyMetrics);
       } finally {
-        setIsLoading(false);
+        if (alive) setIsLoading(false);
       }
     };
 
     fetchMetrics();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   return { metrics, isLoading, error };

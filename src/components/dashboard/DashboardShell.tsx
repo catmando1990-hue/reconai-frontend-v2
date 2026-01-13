@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { AdminCommandStrip } from "@/components/admin/AdminCommandStrip";
 import { Menu, X } from "lucide-react";
 
 function getSectionTitle(pathname: string): string {
@@ -102,8 +103,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Main */}
-      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">{children}</main>
+      {/* Main content area */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* BUILD 9: Admin command strip - only visible to admins */}
+        <div className="hidden md:block">
+          <AdminCommandStrip />
+        </div>
+
+        {/* Main */}
+        <main className="flex-1 overflow-y-auto pt-14 md:pt-0">{children}</main>
+      </div>
     </div>
   );
 }

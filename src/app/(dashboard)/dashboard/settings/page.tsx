@@ -2,6 +2,7 @@
 
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { useUser } from "@clerk/nextjs";
+import AuditPanel from "@/components/audit/AuditPanel";
 
 export default function SettingsPage() {
   const { user } = useUser();
@@ -31,6 +32,9 @@ export default function SettingsPage() {
             Settings and preferences coming soon.
           </p>
         </div>
+
+        {/* BUILD 5: Audit Log Panel */}
+        <AuditPanel />
       </div>
     </RouteShell>
   );

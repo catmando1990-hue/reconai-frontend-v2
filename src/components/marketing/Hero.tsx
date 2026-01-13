@@ -2,15 +2,14 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getVideoUrl } from "@/config/video-urls";
+import LazyVideo from "@/components/media/LazyVideo";
 
 export default function Hero() {
   const heroVideoUrl = getVideoUrl("heroLoop", "/videos/hero-loop.mp4");
   const heroPosterUrl = getVideoUrl("heroPoster", "/videos/hero-poster.webp");
   const reduceMotion = useReducedMotion();
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
 
   // Ensures server + first client render match (prevents hydration mismatch)
   const [mounted, setMounted] = useState(false);
@@ -19,93 +18,24 @@ export default function Hero() {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Lazy-load video: only load source when hero is visible and mounted
-  useEffect(() => {
-    if (!mounted || reduceMotion) return;
-
-    const v = videoRef.current;
-    if (!v) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !videoLoaded) {
-          setVideoLoaded(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(v);
-    return () => observer.disconnect();
-  }, [mounted, reduceMotion, videoLoaded]);
-
-  // After video source is loaded, handle playback
-  useEffect(() => {
-    if (!videoLoaded) return;
-
-    const v = videoRef.current;
-    if (!v) return;
-
-    // Reinforce autoplay-friendly properties (some browsers are picky)
-    v.muted = true;
-    v.defaultMuted = true;
-    v.playsInline = true;
-    v.loop = true;
-
-    if (reduceMotion) {
-      v.pause();
-      return;
-    }
-
-    let cancelled = false;
-
-    const playNow = async () => {
-      if (cancelled) return;
-
-      try {
-        // Wait until the video has enough data to play (prevents silent failures)
-        if (v.readyState < 3) {
-          await new Promise<void>((resolve) => {
-            const onCanPlay = () => resolve();
-            v.addEventListener("canplay", onCanPlay, { once: true });
-          });
-        }
-
-        await v.play();
-      } catch {
-        // Autoplay can still be blocked; ignore silently
-      }
-    };
-
-    playNow();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [reduceMotion, videoLoaded]);
-
   return (
     <section className="relative overflow-hidden">
       {/* Background media */}
       <div className="absolute inset-0 -z-10">
-        {/* VIDEO (lowest layer) - no source until visible, uses poster as placeholder */}
-        <video
-          ref={videoRef}
-          muted
-          loop
-          playsInline
-          preload="none"
+        {/* VIDEO (lowest layer) - sources attach only when in-view */}
+        <LazyVideo
+          src={heroVideoUrl}
           poster={heroPosterUrl}
+          preload="none"
+          autoPlayOnVisible={!reduceMotion}
           className="absolute inset-0 z-0 h-full w-full object-cover"
-        >
-          {videoLoaded && <source src={heroVideoUrl} type="video/mp4" />}
-        </video>
+          ariaHidden
+        />
 
         {/* Soft gradient mask for text contrast (works in light + dark) */}
         <div className="absolute inset-0 z-10 bg-linear-to-b from-black/55 via-black/25 to-black/60 dark:from-black/65 dark:via-black/30 dark:to-black/75" />
 
-        {/* Top “spotlight” mask (adds premium depth) */}
+        {/* Top "spotlight" mask (adds premium depth) */}
         <div className="absolute inset-0 z-20 bg-[radial-gradient(900px_500px_at_30%_15%,rgba(255,255,255,0.10),transparent_60%)] dark:bg-[radial-gradient(900px_500px_at_30%_15%,rgba(255,255,255,0.06),transparent_60%)]" />
 
         {/* Subtle film grain (realism) */}

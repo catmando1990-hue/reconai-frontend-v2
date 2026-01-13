@@ -43,6 +43,7 @@ import {
 import PageHelp from "@/components/dashboard/PageHelp";
 import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
 import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
+import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
 import {
   LineChart,
@@ -620,6 +621,9 @@ export default function DashboardPage() {
             actionLabel="Review transactions"
             onAction={() => router.push("/dashboard/core/transactions")}
           />
+
+          {/* Phase 3A: Signal detection */}
+          <DuplicateChargesInsight />
 
           {/* Stat Cards */}
           <motion.div

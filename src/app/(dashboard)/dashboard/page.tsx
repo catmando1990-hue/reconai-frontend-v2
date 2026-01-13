@@ -45,6 +45,7 @@ import PageHelp from "@/components/dashboard/PageHelp";
 import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
 import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
+import SignalsPanel from "@/components/signals/SignalsPanel";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
 import {
   LineChart,
@@ -659,6 +660,9 @@ export default function DashboardPage() {
 
           {/* Phase 3A: Signal detection */}
           <DuplicateChargesInsight />
+
+          {/* Phase 3B: Server-side signals */}
+          <SignalsPanel />
 
           {/* Stat Cards */}
           <motion.div

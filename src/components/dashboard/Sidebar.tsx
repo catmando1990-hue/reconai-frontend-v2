@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Layers,
@@ -17,6 +18,7 @@ import {
   FileText,
   ShieldCheck,
   User,
+  LogOut,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -109,8 +111,15 @@ function getActiveSection(pathname: string): string {
 
 export function Sidebar() {
   const pathname = usePathname() || "";
+  const router = useRouter();
+  const { signOut } = useClerk();
   const activeSection = getActiveSection(pathname);
   const [expanded, setExpanded] = useState<string>(activeSection);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/");
+  };
 
   // Update expanded section when navigating
   useEffect(() => {
@@ -196,13 +205,21 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border p-4 space-y-2">
         <Link
           href="/"
           className="flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition"
         >
           Back to Home
         </Link>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </button>
       </div>
     </aside>
   );

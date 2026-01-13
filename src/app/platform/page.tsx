@@ -39,11 +39,7 @@ const BUCKETS = [
     title: "Analysis & Reporting",
     desc: "Pattern detection, alerts, and exportable summaries.",
     Icon: LineChart,
-    items: [
-      "Cash flow analysis",
-      "Anomaly detection",
-      "Exportable dashboards",
-    ],
+    items: ["Cash flow analysis", "Anomaly detection", "Exportable dashboards"],
   },
 ];
 
@@ -115,10 +111,12 @@ export default function PlatformPage() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Product overview</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Product overview
+            </h2>
             <p className="mt-2 text-muted-foreground max-w-2xl">
-              Dashboards display accounts, transactions, and reports.
-              Data exports in standard formats.
+              Dashboards display accounts, transactions, and reports. Data
+              exports in standard formats.
             </p>
           </div>
           <Link
@@ -179,8 +177,8 @@ export default function PlatformPage() {
             Platform capabilities
           </h2>
           <p className="mt-2 text-muted-foreground max-w-2xl">
-            Scales from single-user to multi-team deployments.
-            Same data structure at every tier.
+            Scales from single-user to multi-team deployments. Same data
+            structure at every tier.
           </p>
 
           <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -257,8 +255,8 @@ export default function PlatformPage() {
                 View the dashboard
               </h3>
               <p className="mt-4 text-muted-foreground">
-                Sign in to access your data. Setup documentation is available
-                in the help section.
+                Sign in to access your data. Setup documentation is available in
+                the help section.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">

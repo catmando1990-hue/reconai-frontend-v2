@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,7 +45,6 @@ import PageHelp from "@/components/dashboard/PageHelp";
 import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
 import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
-import { apiFetch } from "@/lib/api";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
 import {
   LineChart,
@@ -100,6 +100,13 @@ interface AIInsight {
     currentAmount?: number;
   };
 }
+
+// Backend /me contract (Build 1)
+type BackendMeResponse = {
+  user: { id?: string; email?: string | null };
+  org: { id?: string; name?: string | null; slug?: string | null } | null;
+  permissions?: { role?: string | null; permissions?: Record<string, unknown> };
+};
 
 // Mock Data
 const cashFlowData = [
@@ -255,7 +262,11 @@ const aiInsights: AIInsight[] = [
         { date: "Sep 2024", event: "Reached 25% - $3,750", completed: true },
         { date: "Nov 2024", event: "Reached 50% - $7,500", completed: true },
         { date: "Dec 2024", event: "Current - $10,050 (67%)", completed: true },
-        { date: "Mar 2025", event: "Projected at current rate", completed: false },
+        {
+          date: "Mar 2025",
+          event: "Projected at current rate",
+          completed: false,
+        },
       ],
       recommendations: [
         "View contribution history",
@@ -496,29 +507,24 @@ const CustomTooltip = ({
 export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
-  const { metrics, isLoading: metricsLoading } = useDashboardMetrics();
-
-  type BackendMeResponse = {
-    user: { email: string };
-    org: { name: string };
-    permissions: { role: string };
-  };
 
   const [backendMe, setBackendMe] = useState<BackendMeResponse | null>(null);
 
   useEffect(() => {
     let alive = true;
-    apiFetch<BackendMeResponse>("/api/me")
-      .then((data) => {
-        if (alive) setBackendMe(data);
-      })
-      .catch(() => {
-        // Silent: dashboard remains functional even if backend isn't configured yet.
-      });
+    (async () => {
+      try {
+        const me = await apiFetch<BackendMeResponse>("/api/me");
+        if (alive) setBackendMe(me);
+      } catch {
+        // Silent by design: dashboard remains usable if backend is unavailable
+      }
+    })();
     return () => {
       alive = false;
     };
   }, []);
+  const { metrics, isLoading: metricsLoading } = useDashboardMetrics();
   const greeting = getGreeting();
   const totalSpending = spendingData.reduce((acc, item) => acc + item.value, 0);
   const [showNetWorthModal, setShowNetWorthModal] = useState(false);
@@ -640,7 +646,7 @@ export default function DashboardPage() {
           <FirstRunSystemBanner
             message={
               backendMe
-                ? `Connected • ${backendMe.user.email} • ${backendMe.org.name}`
+                ? `Connected • ${backendMe.user.email ?? ""}${backendMe.org?.name ? ` • ${backendMe.org.name}` : ""}`
                 : "Your financial system is active."
             }
           />

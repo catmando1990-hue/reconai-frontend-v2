@@ -67,7 +67,8 @@ export default function Hero() {
           className="mt-6 max-w-2xl text-pretty text-lg text-white/85"
         >
           Categorizes transactions, detects patterns, and generates structured
-          reports. Works for individuals, small businesses, and enterprise teams.
+          reports. Works for individuals, small businesses, and enterprise
+          teams.
         </motion.p>
 
         <motion.div

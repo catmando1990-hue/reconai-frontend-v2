@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * ReconAI middleware (Edge-safe):
  * - Clerk middleware wraps all routes (required for server-side auth() calls)
  * - Auth protection is only enforced on protected routes
- * - Maintenance mode is evaluated globally (fail-open)
+ * - BUILD 8: Maintenance mode enforcement via backend API (fail-open)
  * - Public pages still have minimal Clerk overhead (no auth enforcement)
  */
 
@@ -34,23 +34,35 @@ const PROTECTED_PREFIXES = [
   "/leases(.*)",
   "/rent-collection(.*)",
   "/dcaa(.*)",
+  "/invoices(.*)",
+  "/bills(.*)",
+  "/customers(.*)",
+  "/vendors(.*)",
 ];
 
 const isProtectedRoute = createRouteMatcher(PROTECTED_PREFIXES);
 
 /**
- * Check maintenance mode from Edge Config (fail-open).
+ * BUILD 8: Check maintenance mode from backend API (fail-open).
+ * Uses /api/maintenance/status from BUILD 7.
  */
 async function checkMaintenanceMode(): Promise<boolean> {
-  if (!process.env.EDGE_CONFIG) return false;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return false;
 
   try {
-    const { createClient } = await import("@vercel/edge-config");
-    const edgeConfig = createClient(process.env.EDGE_CONFIG);
-    const value = await edgeConfig.get("maintenance_mode");
-    return Boolean(value);
+    const res = await fetch(`${apiUrl}/api/maintenance/status`, {
+      cache: "no-store",
+      // Short timeout to prevent blocking
+      signal: AbortSignal.timeout(2000),
+    });
+
+    if (!res.ok) return false;
+
+    const data = await res.json();
+    return Boolean(data?.enabled);
   } catch {
-    return false; // fail open
+    return false; // fail open - if API unreachable, allow access
   }
 }
 
@@ -66,25 +78,32 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
-  // Check maintenance mode
-  const maintenanceMode = await checkMaintenanceMode();
+  // BUILD 8: Maintenance mode enforcement - PROTECTED ROUTES ONLY
+  // Public/marketing pages are never affected
+  if (isProtectedRoute(req)) {
+    const maintenanceMode = await checkMaintenanceMode();
 
-  if (maintenanceMode) {
-    // Allow access to maintenance page itself
-    if (pathname.startsWith("/maintenance")) return NextResponse.next();
+    if (maintenanceMode) {
+      // Check admin bypass via session claims
+      const { sessionClaims } = await auth();
+      const publicMetadata = sessionClaims?.publicMetadata as
+        | Record<string, unknown>
+        | undefined;
+      const isAdmin =
+        publicMetadata?.role === "admin" ||
+        publicMetadata?.role === "org:admin";
 
-    // Check admin bypass
-    const { sessionClaims } = await auth();
-    const publicMetadata = sessionClaims?.publicMetadata as
-      | Record<string, unknown>
-      | undefined;
-    const isAdmin = publicMetadata?.role === "admin";
-
-    if (!isAdmin) {
-      const url = req.nextUrl.clone();
-      url.pathname = "/maintenance";
-      return NextResponse.redirect(url);
+      if (!isAdmin) {
+        const url = req.nextUrl.clone();
+        url.pathname = "/maintenance";
+        return NextResponse.redirect(url);
+      }
     }
+  }
+
+  // Always allow maintenance page itself
+  if (pathname.startsWith("/maintenance")) {
+    return NextResponse.next();
   }
 
   // Protected routes are handled by server-side auth() in layouts

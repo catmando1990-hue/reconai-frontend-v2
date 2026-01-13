@@ -1,6 +1,7 @@
 "use client";
 
 import { RouteShell } from "@/components/dashboard/RouteShell";
+import PolicyBanner from "@/components/policy/PolicyBanner";
 import Link from "next/link";
 import {
   Building2,
@@ -71,6 +72,11 @@ export default function CoreOverviewPage() {
       title="Core"
       subtitle="Structured financial reality. Your operational foundation."
     >
+      <PolicyBanner
+        policy="bookkeeping"
+        message="Transaction categorization is automated but may require review. Verify classifications before using for tax or compliance purposes."
+        context="core"
+      />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {coreModules.map((module) => {
           const Icon = module.icon;

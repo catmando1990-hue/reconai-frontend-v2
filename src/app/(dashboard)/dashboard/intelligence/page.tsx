@@ -4,6 +4,7 @@ import { RouteShell } from "@/components/dashboard/RouteShell";
 import { TierGate } from "@/components/legal/TierGate";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { AI_DISCLAIMER } from "@/lib/legal/disclaimers";
+import PolicyBanner from "@/components/policy/PolicyBanner";
 import Link from "next/link";
 import { Bot, Bell, Sparkles, ChevronRight } from "lucide-react";
 
@@ -42,6 +43,11 @@ export default function IntelligenceOverviewPage() {
         title="Intelligence"
         subtitle="AI-powered signals and workflow assistance"
       >
+        <PolicyBanner
+          policy="legal"
+          message="AI-generated insights are advisory only. Always verify recommendations with qualified professionals before making financial decisions."
+          context="intelligence"
+        />
         <DisclaimerNotice>{AI_DISCLAIMER}</DisclaimerNotice>
 
         <div className="h-6" />

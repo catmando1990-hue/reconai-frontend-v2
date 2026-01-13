@@ -1,3 +1,5 @@
+import MaintenanceStatus from "@/components/maintenance/MaintenanceStatus";
+
 export default function MaintenancePage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 text-center">
@@ -6,6 +8,9 @@ export default function MaintenancePage() {
         ReconAI is temporarily offline for system updates and security
         improvements. Please check back shortly.
       </p>
+
+      {/* BUILD 10: Extended maintenance status */}
+      <MaintenanceStatus />
     </main>
   );
 }

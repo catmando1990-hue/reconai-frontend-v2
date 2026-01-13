@@ -49,6 +49,19 @@ next-env.d.ts
 # Windows reserved / invalid files
 nul
 NUL
+null
+NULL
+
+# Claude temp files
+tmpclaude-*
+
+# Temp / backup files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
 
 .vercel
 .env*.local

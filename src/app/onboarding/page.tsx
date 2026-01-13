@@ -18,7 +18,7 @@ export default function ComplianceGatePage() {
           Compliance acknowledgement
         </h1>
         <p className="mt-2 text-muted-foreground">
-          ReconAI is built for defensible financial operations. Before
+          ReconAI generates structured, reviewable financial reports. Before
           proceeding, confirm you understand the following.
         </p>
       </header>

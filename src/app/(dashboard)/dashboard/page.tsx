@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,6 +44,7 @@ import PageHelp from "@/components/dashboard/PageHelp";
 import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
 import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
+import { apiFetch } from "@/lib/api";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
 import {
   LineChart,
@@ -496,6 +497,28 @@ export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
   const { metrics, isLoading: metricsLoading } = useDashboardMetrics();
+
+  type BackendMeResponse = {
+    user: { email: string };
+    org: { name: string };
+    permissions: { role: string };
+  };
+
+  const [backendMe, setBackendMe] = useState<BackendMeResponse | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    apiFetch<BackendMeResponse>("/api/me")
+      .then((data) => {
+        if (alive) setBackendMe(data);
+      })
+      .catch(() => {
+        // Silent: dashboard remains functional even if backend isn't configured yet.
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
   const greeting = getGreeting();
   const totalSpending = spendingData.reduce((acc, item) => acc + item.value, 0);
   const [showNetWorthModal, setShowNetWorthModal] = useState(false);
@@ -614,7 +637,13 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* First-run acknowledgement and initial value */}
-          <FirstRunSystemBanner message="Your financial system is active." />
+          <FirstRunSystemBanner
+            message={
+              backendMe
+                ? `Connected • ${backendMe.user.email} • ${backendMe.org.name}`
+                : "Your financial system is active."
+            }
+          />
           <FirstValueCallout
             title="Initial insight"
             insight="12 transactions require classification. Review them to ensure accurate reporting."

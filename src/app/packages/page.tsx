@@ -108,9 +108,8 @@ export default function PackagesPage() {
             </h1>
             <p className="mt-4 max-w-3xl text-muted-foreground text-lg">
               ReconAI is built in layers. Start with Core, add Intelligence for
-              signals and support, and unlock CFO Mode for executive-level
-              clarity. Compliance is implied by design—defensibility is
-              foundational.
+              pattern detection, and unlock CFO Mode for summary dashboards.
+              Each layer adds structure to your financial data.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -140,8 +139,8 @@ export default function PackagesPage() {
               Core → Intelligence → CFO Mode
             </h2>
             <p className="mt-2 text-muted-foreground max-w-2xl">
-              These packages describe capability layers—not price tiers. We keep
-              the story simple and defensible.
+              These packages describe capability layers—not price tiers.
+              Features scale with each tier.
             </p>
           </div>
           <Link
@@ -156,11 +155,11 @@ export default function PackagesPage() {
           <Card
             title="ReconAI Core"
             icon={FileText}
-            desc="Structured financial reality. Clean inputs and consistent outputs."
+            desc="Accounts, transactions, and standard reports in one system."
             bullets={[
-              "Accounts + transaction organization",
+              "Bank connections and transaction imports",
               "Bills, invoices, customers, vendors",
-              "Reporting foundation (cash flow, aging, summaries)",
+              "Standard reports (cash flow, aging, summaries)",
             ]}
             ctaHref="/sign-in"
             ctaLabel="Start with Core"
@@ -169,11 +168,11 @@ export default function PackagesPage() {
           <Card
             title="ReconAI Intelligence"
             icon={Sparkles}
-            desc="Signals, patterns, and an AI Worker that helps you move faster with confidence."
+            desc="Pattern detection, alerts, and classification suggestions."
             bullets={[
-              "AI Worker + workflow support",
-              "Alerts, patterns, anomaly signals",
-              'Decision context without "AI magic"',
+              "Automated categorization",
+              "Anomaly and trend detection",
+              "Configurable alerts",
             ]}
             ctaHref="/platform"
             ctaLabel="See Intelligence in platform"
@@ -183,11 +182,11 @@ export default function PackagesPage() {
           <Card
             title="ReconAI CFO Mode"
             icon={LineChart}
-            desc="Executive-level clarity for decisions and review environments."
+            desc="Summaries, dashboards, and exportable reports."
             bullets={[
-              "Executive summaries + performance signals",
-              "Lender / stakeholder-ready narratives",
-              "Outputs designed to be reviewed and defended",
+              "Executive summary views",
+              "Custom report exports",
+              "Multi-period comparisons",
             ]}
             ctaHref="/how-it-works"
             ctaLabel="See the system flow"
@@ -195,20 +194,18 @@ export default function PackagesPage() {
         </div>
       </section>
 
-      {/* COMPLIANCE (IMPLIED) */}
+      {/* CONTROLS & TRACEABILITY */}
       <section className="border-t border-border bg-card">
         <div className="mx-auto max-w-6xl px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
-            <Pill icon={ShieldCheck} text="Compliance (implied)" />
+            <Pill icon={ShieldCheck} text="Controls & Traceability" />
             <h3 className="mt-4 text-2xl md:text-3xl font-bold tracking-tight">
-              Defensibility is foundational—not an add-on
+              Audit trails and access controls included
             </h3>
             <p className="mt-4 text-muted-foreground">
-              We avoid loud compliance marketing. Instead, we build outputs
-              meant to survive scrutiny through traceability, consistency, and
-              review-friendly reporting. For enterprise or government
-              environments, we&apos;ll walk you through the posture and intended
-              controls.
+              All outputs link to source records. Classification changes are
+              logged with timestamps. Role-based access controls are available
+              at higher tiers.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link
@@ -243,7 +240,7 @@ export default function PackagesPage() {
       <section className="border-t border-border bg-background">
         <div className="mx-auto max-w-6xl px-6 py-10 text-sm flex flex-wrap gap-4 items-center justify-between">
           <div className="text-muted-foreground">
-            ReconAI packaging (no pricing). Built for clarity and defensibility.
+            ReconAI packaging (no pricing). Features scale by tier.
           </div>
           <div className="flex flex-wrap gap-4">
             <Link href="/" className="hover:underline">

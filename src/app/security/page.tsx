@@ -44,12 +44,11 @@ export default function SecurityPage() {
             </div>
 
             <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
-              Built for defensibility, not vibes
+              Built for review, not vibes
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground text-lg">
-              ReconAI is designed to produce clean, reviewable outputs with
-              traceability and controls—so your financial story can stand up to
-              scrutiny.
+              ReconAI generates structured outputs with audit trails and access
+              controls. Reports link to source transactions.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -97,8 +96,8 @@ export default function SecurityPage() {
               Traceability
             </div>
             <div className="mt-2 text-muted-foreground">
-              Outputs are designed to be explainable and reviewable—so decisions
-              are defensible.
+              Reports link to source transactions. Classification changes are
+              logged with timestamps.
             </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
@@ -119,19 +118,18 @@ export default function SecurityPage() {
         <div className="mx-auto max-w-6xl px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Auditability as a product feature
+              Audit trail as a product feature
             </h2>
             <p className="mt-4 text-muted-foreground">
-              We design outputs to be consistent, reviewable, and explainable.
-              That means clear categorization logic, predictable reporting, and
-              a financial narrative you can stand behind.
+              Outputs link to source records. Classification history is logged.
+              Reports export with metadata for review.
             </p>
 
             <ul className="mt-6 space-y-3 text-sm">
               {[
                 "Consistent classification patterns over time.",
-                "Defensible outputs aligned to policy and review.",
-                "Clear inputs → outputs relationships for stakeholders.",
+                "Outputs link to source transactions.",
+                "Exports include audit metadata.",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />

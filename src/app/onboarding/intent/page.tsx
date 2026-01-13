@@ -44,7 +44,7 @@ const INTENT_OPTIONS: Array<{
   {
     id: "enterprise-finance",
     label: "Enterprise Finance",
-    description: "Multi-entity, consolidated reporting, audit-ready",
+    description: "Multi-entity, consolidated reporting, structured for review",
     icon: Target,
   },
 ];

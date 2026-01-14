@@ -33,8 +33,8 @@ test.describe("Core Pages", () => {
     await expect(page).toHaveURL(/sign-in|sign_up|sign-up/i);
   });
 
-  test("terms-of-service page loads", async ({ page }) => {
-    await page.goto("/terms-of-service");
+  test("terms page loads", async ({ page }) => {
+    await page.goto("/terms");
     await expect(page.locator("h1")).toContainText(/Terms of Service/i);
 
     // Verify no horizontal scrollbar
@@ -44,8 +44,8 @@ test.describe("Core Pages", () => {
     expect(hasHorizontalScroll).toBe(false);
   });
 
-  test("privacy-policy page loads", async ({ page }) => {
-    await page.goto("/privacy-policy");
+  test("privacy page loads", async ({ page }) => {
+    await page.goto("/privacy");
     await expect(page.locator("h1")).toContainText(/Privacy Policy/i);
 
     // Verify no horizontal scrollbar

@@ -15,9 +15,9 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
   const isAdminRole = (role: unknown): boolean =>
     role === "admin" || role === "org:admin";
 
-  // Check session claims first
+  // Check session claims first (metadata is set via Clerk session token customization)
   const sessionRole = (
-    sessionClaims?.publicMetadata as Record<string, unknown> | undefined
+    sessionClaims?.metadata as Record<string, unknown> | undefined
   )?.role;
   if (isAdminRole(sessionRole)) {
     const token = await getToken();

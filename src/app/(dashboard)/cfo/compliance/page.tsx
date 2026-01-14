@@ -1,15 +1,11 @@
 "use client";
 
-// Build 26: CFO Compliance page
+// Build 27: CFO Compliance page – Export notifications
 //
-// This page implements the audit export surface and evidence retention UX for
-// ReconAI's CFO mode. It replaces the previous placeholder with three
-// read‑only panels:
-// 1. AuditPanel – shows recent audit log entries (read‑only; existing refresh).
-// 2. RetentionPanel – displays the current evidence data retention policy.
-// 3. ExportPackRequestPanel – allows authorized users to request an export pack
-//    containing audit, evidence, and policy data. This is a manual action and
-//    does not trigger any automatic exports.
+// This file extends the Build 26 CFO Compliance page by introducing a
+// persistent status message that surfaces the result of an export pack
+// request. A success or error indicator appears above the panels once the
+// request completes. No timers or background polling are introduced.
 
 import { useEffect, useState } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
@@ -24,12 +20,22 @@ import {
 } from "@/components/enterprise/ExportPackRequestPanel";
 import type { RbacSnapshot } from "@/lib/enterprise/rbac";
 import { apiFetch } from "@/lib/api";
+import { StatusChip } from "@/components/dashboard/StatusChip";
 
 export default function CfoCompliancePage() {
   // RBAC snapshot controls access to compliance panels. Defaults to null until fetched.
   const [rbac, setRbac] = useState<RbacSnapshot | null>(null);
   // Retention policy for evidence data. Defaults to null until fetched.
   const [policy, setPolicy] = useState<RetentionPolicyView | null>(null);
+  // Tracks the result of the most recent export pack request. When non‑null,
+  // a status message will be displayed to the user. The object contains a
+  // variant ("ok" for success or "warn" for error) and a human‑readable
+  // message. Note: we avoid timers or auto‑dismiss to comply with
+  // performance laws — the message will persist until the next request.
+  const [exportResult, setExportResult] = useState<{
+    variant: "ok" | "warn";
+    message: string;
+  } | null>(null);
 
   // Fetch RBAC and retention policy on first render. These calls run once
   // without any polling or timers to adhere to ReconAI's performance laws.
@@ -63,13 +69,23 @@ export default function CfoCompliancePage() {
         method: "POST",
         body: JSON.stringify(req),
       });
-      // Successful request; consumers can surface a toast or status message.
-      // For now we log to the console for traceability.
-      console.log("Export pack requested", req);
+      // Update result state to show a success message. Using StatusChip
+      // with variant "ok" signals success. We avoid console.log here to
+      // reduce noise in production.
+      setExportResult({
+        variant: "ok",
+        message: "Export pack requested successfully.",
+      });
     } catch (error) {
       // Log errors to aid debugging; UI components can surface user‑friendly
-      // messages via toasts or banners outside of this handler.
+      // messages via StatusChip outside of this handler.
       console.error("Export pack request failed", error);
+      // Surface an error state to the UI. Using StatusChip with variant
+      // "warn" ensures the chip uses a muted tone rather than a success color.
+      setExportResult({
+        variant: "warn",
+        message: "Export pack request failed. Please try again.",
+      });
     }
   }
 
@@ -79,6 +95,18 @@ export default function CfoCompliancePage() {
       subtitle="Audit logs, exports and evidence retention"
     >
       <div className="space-y-6">
+        {/* Display export result if present. Uses StatusChip to maintain
+            semantic token rules. This section is shown only after an export
+            request has completed. */}
+        {exportResult && (
+          <div className="flex items-center space-x-2 rounded border p-3">
+            <StatusChip variant={exportResult.variant}>
+              {exportResult.variant === "ok" ? "Success" : "Error"}
+            </StatusChip>
+            <p className="text-sm">{exportResult.message}</p>
+          </div>
+        )}
+
         {/* Read‑only audit log. Uses internal refresh every 30s but introduces no new polling. */}
         <AuditPanel />
 

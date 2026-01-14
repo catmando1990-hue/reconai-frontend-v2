@@ -8,23 +8,35 @@ async function assertAdmin() {
   const { userId, sessionClaims } = await auth();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized", debug: "No userId from auth()" },
+      { status: 401 },
+    );
   }
 
   // Check session claims first (if publicMetadata is synced to token)
-  const sessionRole = sessionClaims?.publicMetadata?.role;
+  const sessionRole = (
+    sessionClaims?.publicMetadata as Record<string, unknown> | undefined
+  )?.role;
   if (sessionRole === "admin") {
     return null;
   }
 
   // Fallback: fetch user directly to check publicMetadata
   const user = await currentUser();
-  const userRole = user?.publicMetadata?.role;
+  const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
+    ?.role;
   if (userRole === "admin") {
     return null;
   }
 
-  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  return NextResponse.json(
+    {
+      error: "Forbidden",
+      debug: { userId, sessionRole, userRole },
+    },
+    { status: 403 },
+  );
 }
 
 export async function GET() {

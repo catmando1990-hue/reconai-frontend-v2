@@ -2,9 +2,10 @@ import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
 
 // Content Security Policy directives
+// Plaid requirements from: https://plaid.com/docs/link/web/
 const cspDirectives = [
   "default-src 'self'",
-  // Scripts: self + inline for Next.js + Clerk + Plaid + Vercel analytics
+  // Scripts: self + inline for Next.js + Clerk + Plaid (cdn.plaid.com) + Vercel
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://vercel.live https://cdn.plaid.com",
   // Workers: allow blob workers (Clerk uses blob: workers)
   "worker-src 'self' blob:",
@@ -14,12 +15,12 @@ const cspDirectives = [
   "img-src 'self' data: blob: https://*.clerk.dev https://*.clerk.accounts.dev https://img.clerk.com https://clerk.reconaitechnology.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
   // Fonts: self + data URIs
   "font-src 'self' data:",
-  // Connect: API endpoints + Clerk + Plaid + analytics
-  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev wss://clerk.reconaitechnology.com https://*.plaid.com",
+  // Connect: API endpoints + Clerk + Plaid (production.plaid.com per docs) + analytics
+  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev wss://clerk.reconaitechnology.com https://production.plaid.com https://cdn.plaid.com",
   // Media: self + Vercel Blob storage
   "media-src 'self' https://*.vercel-storage.com https://*.public.blob.vercel-storage.com blob:",
-  // Frame: self + Clerk + Plaid for auth flows
-  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://*.plaid.com",
+  // Frame: self + Clerk + Plaid (cdn.plaid.com per docs)
+  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://cdn.plaid.com",
   // Frame ancestors: prevent clickjacking
   "frame-ancestors 'self'",
   // Form actions: self only
@@ -51,8 +52,10 @@ const nextConfig: NextConfig = {
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
+            // Permissions-Policy: Plaid Link requires encrypted-media for fingerprinting
+            // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy/encrypted-media
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), encrypted-media=*",
+            value: "camera=(), microphone=(), geolocation=()",
           },
           {
             key: "Content-Security-Policy",

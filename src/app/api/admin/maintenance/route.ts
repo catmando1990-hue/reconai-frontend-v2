@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 
-const EDGE_CONFIG_ID = process.env.EDGE_CONFIG!;
+// EDGE_CONFIG is a full URL like: https://edge-config.vercel.com/ecfg_xxx?token=yyy
+// Extract just the ID (ecfg_xxx) for the Vercel API
+function getEdgeConfigId(): string {
+  const edgeConfigUrl = process.env.EDGE_CONFIG || "";
+  const match = edgeConfigUrl.match(/edge-config\.vercel\.com\/(ecfg_[a-z0-9]+)/);
+  return match?.[1] || "";
+}
+
 const VERCEL_TOKEN = process.env.VERCEL_API_TOKEN!;
 
 async function assertAdmin() {
@@ -43,8 +50,16 @@ export async function GET() {
   const forbidden = await assertAdmin();
   if (forbidden) return forbidden;
 
+  const edgeConfigId = getEdgeConfigId();
+  if (!edgeConfigId) {
+    return NextResponse.json(
+      { error: "Edge Config not configured", maintenance: false },
+      { status: 200 },
+    );
+  }
+
   const res = await fetch(
-    `https://api.vercel.com/v1/edge-config/${EDGE_CONFIG_ID}/items?key=maintenance_mode`,
+    `https://api.vercel.com/v1/edge-config/${edgeConfigId}/items?key=maintenance_mode`,
     {
       headers: { Authorization: `Bearer ${VERCEL_TOKEN}` },
       cache: "no-store",
@@ -70,11 +85,19 @@ export async function POST(req: Request) {
   const forbidden = await assertAdmin();
   if (forbidden) return forbidden;
 
+  const edgeConfigId = getEdgeConfigId();
+  if (!edgeConfigId) {
+    return NextResponse.json(
+      { error: "Edge Config not configured" },
+      { status: 500 },
+    );
+  }
+
   const body = (await req.json().catch(() => ({}))) as { enabled?: boolean };
   const enabled = Boolean(body.enabled);
 
   const res = await fetch(
-    `https://api.vercel.com/v1/edge-config/${EDGE_CONFIG_ID}/items`,
+    `https://api.vercel.com/v1/edge-config/${edgeConfigId}/items`,
     {
       method: "PATCH",
       headers: {

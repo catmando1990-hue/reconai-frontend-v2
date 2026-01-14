@@ -62,16 +62,24 @@ function MetricCard(props: {
 export function OverviewSnapshot(props: { refreshMs?: number }) {
   const refreshInterval = props.refreshMs ?? 30000;
 
+  // Disable automatic retries on error to prevent flooding the API
+  const swrOptions = {
+    refreshInterval,
+    errorRetryCount: 1,
+    errorRetryInterval: 10000, // Wait 10s before retry on error
+    shouldRetryOnError: false, // Don't auto-retry on 401/other errors
+  };
+
   const { data: status } = useSWR<SystemStatus>(
     "/api/system/status",
     (url: string) => apiFetch<SystemStatus>(url),
-    { refreshInterval },
+    swrOptions,
   );
 
   const { data: txs } = useSWR<TransactionRow[]>(
     "/api/transactions",
     (url: string) => apiFetch<TransactionRow[]>(url),
-    { refreshInterval },
+    swrOptions,
   );
 
   const txCount = Array.isArray(txs) ? txs.length : 0;

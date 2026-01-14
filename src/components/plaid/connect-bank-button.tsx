@@ -22,8 +22,16 @@ async function postJSON<T>(url: string, body?: unknown): Promise<T> {
   });
   const data = (await res.json().catch(() => ({}))) as T;
   if (!res.ok) {
-    const msg =
-      (data as { error?: string })?.error || `Request failed: ${res.status}`;
+    // Handle various error response formats
+    const errorData = data as { error?: string | object; detail?: string };
+    let msg = `Request failed: ${res.status}`;
+    if (typeof errorData?.error === "string") {
+      msg = errorData.error;
+    } else if (typeof errorData?.detail === "string") {
+      msg = errorData.detail;
+    } else if (typeof errorData?.error === "object" && errorData.error !== null) {
+      msg = JSON.stringify(errorData.error);
+    }
     throw new Error(msg);
   }
   return data;

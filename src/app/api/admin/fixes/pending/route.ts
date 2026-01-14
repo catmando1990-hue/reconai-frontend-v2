@@ -3,29 +3,35 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function assertAdmin() {
-  const { userId, sessionClaims } = await auth();
+async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { token: string }> {
+  const { userId, sessionClaims, getToken } = await auth();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   }
 
   const sessionRole = (
     sessionClaims?.publicMetadata as Record<string, unknown> | undefined
   )?.role;
-  if (sessionRole === "admin") return null;
+  if (sessionRole === "admin") {
+    const token = await getToken();
+    return { token: token || "" };
+  }
 
   const user = await currentUser();
   const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
     ?.role;
-  if (userRole === "admin") return null;
+  if (userRole === "admin") {
+    const token = await getToken();
+    return { token: token || "" };
+  }
 
-  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
 }
 
 export async function GET() {
-  const forbidden = await assertAdmin();
-  if (forbidden) return forbidden;
+  const authResult = await assertAdminAndGetToken();
+  if ("error" in authResult) return authResult.error;
 
   if (!API_URL) {
     return NextResponse.json(
@@ -39,6 +45,7 @@ export async function GET() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${authResult.token}`,
       },
     });
 

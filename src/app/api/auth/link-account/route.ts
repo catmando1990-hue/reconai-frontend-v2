@@ -29,20 +29,67 @@ export async function POST() {
       return NextResponse.json({ error: "No email found for user" }, { status: 400 });
     }
 
-    // Call backend to link Clerk ID to existing user
-    const res = await fetch(`${API_URL}/api/auth/link-clerk`, {
+    const email = user.primaryEmailAddress.emailAddress;
+    const firstName = user.firstName || "";
+    const lastName = user.lastName || "";
+
+    // First try to link existing user
+    let res = await fetch(`${API_URL}/api/auth/link-clerk`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
-        email: user.primaryEmailAddress.emailAddress,
+        email: email,
         clerk_user_id: userId,
       }),
     });
 
-    const data = await res.json();
+    let data = await res.json();
+
+    // If user not found, create via signup
+    if (res.status === 404) {
+      const slugBase = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "-");
+      const orgSlug = `${slugBase}-org`;
+
+      res = await fetch(`${API_URL}/api/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          clerk_user_id: userId,
+          first_name: firstName,
+          last_name: lastName,
+          organization_name: `${firstName || email.split("@")[0]}'s Organization`,
+          organization_slug: orgSlug,
+          tier: "individual",
+        }),
+      });
+
+      data = await res.json();
+
+      if (res.ok) {
+        return NextResponse.json({
+          success: true,
+          message: "Account created successfully",
+          action: "signup",
+          ...data,
+        });
+      }
+    }
+
+    if (res.ok) {
+      return NextResponse.json({
+        success: true,
+        message: "Account linked successfully",
+        action: "link",
+        ...data,
+      });
+    }
+
     return NextResponse.json(data, { status: res.status });
   } catch (error) {
     console.error("Link account error:", error);

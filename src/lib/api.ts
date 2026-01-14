@@ -103,12 +103,9 @@ async function getClerkOrgIdServer(): Promise<string | null> {
 }
 
 function defaultUnauthorizedHandler() {
-  if (typeof window !== "undefined") {
-    // Default to Clerk's conventional route; adjust if your app uses a different URL.
-    window.location.assign("/sign-in");
-    return;
-  }
-
+  // Don't redirect on 401 - let components handle auth state via Clerk.
+  // Redirecting causes infinite loops when Clerk session exists but backend rejects token.
+  // Components should gracefully handle missing data instead of forcing redirects.
   throw new Error("Unauthorized (401)");
 }
 

@@ -18,9 +18,10 @@ export async function POST() {
 
     // Build OAuth redirect URI from request headers
     const headersList = await headers();
-    const host = headersList.get("host") || "app.reconaitechnology.com";
+    const host = headersList.get("host") || "www.reconaitechnology.com";
     const protocol = host.includes("localhost") ? "http" : "https";
-    const redirectUri = `${protocol}://${host}/dashboard/settings/connect-bank`;
+    // Use the same path structure as the current page
+    const redirectUri = `${protocol}://${host}/connect-bank`;
 
     const resp = await fetch(`${BACKEND_URL}/link-token`, {
       method: "POST",

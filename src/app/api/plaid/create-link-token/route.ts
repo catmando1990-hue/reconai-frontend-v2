@@ -15,7 +15,7 @@ export async function POST() {
 
     const token = await getToken();
 
-    const resp = await fetch(`${BACKEND_URL}/plaid/link-token`, {
+    const resp = await fetch(`${BACKEND_URL}/link-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

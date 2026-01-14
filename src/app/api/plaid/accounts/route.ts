@@ -16,7 +16,7 @@ export async function GET() {
     const token = await getToken();
 
     const resp = await fetch(
-      `${BACKEND_URL}/plaid/accounts?user_id=${encodeURIComponent(userId)}`,
+      `${BACKEND_URL}/accounts?user_id=${encodeURIComponent(userId)}`,
       {
         method: "GET",
         headers: {

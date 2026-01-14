@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
     const token = await getToken();
 
-    const resp = await fetch(`${BACKEND_URL}/plaid/exchange-public-token`, {
+    const resp = await fetch(`${BACKEND_URL}/exchange-public-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

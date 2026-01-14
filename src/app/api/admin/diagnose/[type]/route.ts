@@ -10,11 +10,15 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
     return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   }
 
+  // Helper to check if role is admin
+  const isAdminRole = (role: unknown): boolean =>
+    role === "admin" || role === "org:admin";
+
   // Check session claims first
   const sessionRole = (
     sessionClaims?.publicMetadata as Record<string, unknown> | undefined
   )?.role;
-  if (sessionRole === "admin") {
+  if (isAdminRole(sessionRole)) {
     const token = await getToken();
     return { token: token || "" };
   }
@@ -23,7 +27,7 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
   const user = await currentUser();
   const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
     ?.role;
-  if (userRole === "admin") {
+  if (isAdminRole(userRole)) {
     const token = await getToken();
     return { token: token || "" };
   }

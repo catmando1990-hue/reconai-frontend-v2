@@ -11,17 +11,30 @@ export default function AdminSettingsPage() {
     let cancelled = false;
 
     async function fetchStatus() {
-      const res = await fetch("/api/admin/maintenance", { cache: "no-store" });
-      if (cancelled) return;
+      try {
+        const res = await fetch("/api/admin/maintenance", { cache: "no-store" });
+        if (cancelled) return;
 
-      if (res.status === 403) {
-        setError("Access denied. Admin only.");
-        return;
-      }
-      if (res.ok) {
+        if (res.status === 401) {
+          setError("Not authenticated. Please sign in.");
+          return;
+        }
+        if (res.status === 403) {
+          setError("Access denied. Admin only.");
+          return;
+        }
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setError(data.error || `Error: ${res.status}`);
+          return;
+        }
         const data = await res.json();
         if (!cancelled) {
           setMaintenance(Boolean(data.maintenance));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(`Failed to fetch: ${err instanceof Error ? err.message : "Unknown error"}`);
         }
       }
     }

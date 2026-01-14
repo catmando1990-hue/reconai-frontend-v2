@@ -5,7 +5,9 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 // Extract just the ID (ecfg_xxx) for the Vercel API
 function getEdgeConfigId(): string {
   const edgeConfigUrl = process.env.EDGE_CONFIG || "";
-  const match = edgeConfigUrl.match(/edge-config\.vercel\.com\/(ecfg_[a-z0-9]+)/);
+  const match = edgeConfigUrl.match(
+    /edge-config\.vercel\.com\/(ecfg_[a-z0-9]+)/,
+  );
   return match?.[1] || "";
 }
 

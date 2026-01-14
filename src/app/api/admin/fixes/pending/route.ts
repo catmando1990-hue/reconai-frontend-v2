@@ -3,11 +3,15 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { token: string }> {
+async function assertAdminAndGetToken(): Promise<
+  { error: NextResponse } | { token: string }
+> {
   const { userId, sessionClaims, getToken } = await auth();
 
   if (!userId) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+    return {
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
   }
 
   // Helper to check if role is admin
@@ -49,7 +53,7 @@ export async function GET() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authResult.token}`,
+        Authorization: `Bearer ${authResult.token}`,
       },
     });
 

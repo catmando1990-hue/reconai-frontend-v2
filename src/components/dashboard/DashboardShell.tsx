@@ -87,7 +87,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                 ReconAI
               </span>
-              <span className="text-sm font-medium text-foreground">{title}</span>
+              <span className="text-sm font-medium text-foreground">
+                {title}
+              </span>
             </div>
           </div>
 

@@ -4,6 +4,6 @@ export async function GET() {
   return NextResponse.json({
     status: "ok",
     timestamp: new Date().toISOString(),
-    message: "API routes are working"
+    message: "API routes are working",
   });
 }

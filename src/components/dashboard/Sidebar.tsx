@@ -145,8 +145,12 @@ export function Sidebar() {
               <Brain className="h-5 w-5 text-primary" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-foreground tracking-tight">ReconAI</span>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Financial Intelligence</span>
+              <span className="font-semibold text-foreground tracking-tight">
+                ReconAI
+              </span>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                Financial Intelligence
+              </span>
             </div>
           </Link>
         </div>
@@ -173,16 +177,22 @@ export function Sidebar() {
                     ].join(" ")}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={[
-                        "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
-                        isActive
-                          ? "bg-primary/10"
-                          : "bg-card/50 group-hover:bg-accent"
-                      ].join(" ")}>
-                        <Icon className={[
-                          "h-4 w-4 transition-colors",
-                          isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                        ].join(" ")} />
+                      <div
+                        className={[
+                          "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
+                          isActive
+                            ? "bg-primary/10"
+                            : "bg-card/50 group-hover:bg-accent",
+                        ].join(" ")}
+                      >
+                        <Icon
+                          className={[
+                            "h-4 w-4 transition-colors",
+                            isActive
+                              ? "text-primary"
+                              : "text-muted-foreground group-hover:text-foreground",
+                          ].join(" ")}
+                        />
                       </div>
                       <span>{item.label}</span>
                     </div>
@@ -214,10 +224,12 @@ export function Sidebar() {
                                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                             ].join(" ")}
                           >
-                            <ChildIcon className={[
-                              "h-4 w-4",
-                              childActive ? "text-primary" : ""
-                            ].join(" ")} />
+                            <ChildIcon
+                              className={[
+                                "h-4 w-4",
+                                childActive ? "text-primary" : "",
+                              ].join(" ")}
+                            />
                             <span>{child.label}</span>
                           </Link>
                         );

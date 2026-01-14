@@ -108,7 +108,9 @@ export default function AdminSettingsPage() {
 
     async function fetchStatus() {
       try {
-        const res = await fetch("/api/admin/maintenance", { cache: "no-store" });
+        const res = await fetch("/api/admin/maintenance", {
+          cache: "no-store",
+        });
         if (cancelled) return;
 
         if (res.status === 401) {
@@ -214,9 +216,13 @@ export default function AdminSettingsPage() {
           : "✗";
     const lines: string[] = [];
 
-    lines.push(`## ${result.type.charAt(0).toUpperCase() + result.type.slice(1)} Diagnostic Report`);
+    lines.push(
+      `## ${result.type.charAt(0).toUpperCase() + result.type.slice(1)} Diagnostic Report`,
+    );
     lines.push("");
-    lines.push(`### Overall Status: ${statusEmoji} ${result.status.toUpperCase()}`);
+    lines.push(
+      `### Overall Status: ${statusEmoji} ${result.status.toUpperCase()}`,
+    );
     lines.push(`**Score:** ${result.score}/100`);
     lines.push("");
 
@@ -603,7 +609,9 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
 
     // Check Intelligence Service
     try {
-      const res = await fetch("/api/intelligence/status", { cache: "no-store" });
+      const res = await fetch("/api/intelligence/status", {
+        cache: "no-store",
+      });
       if (res.ok) {
         checks[5] = {
           name: "Intelligence Service",
@@ -716,7 +724,10 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
                   maxLength={6}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Code: <code className="font-bold">{approvalDialog.fix.confirmation_code}</code>
+                  Code:{" "}
+                  <code className="font-bold">
+                    {approvalDialog.fix.confirmation_code}
+                  </code>
                 </p>
               </div>
 
@@ -764,7 +775,9 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
                 }
                 className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
               >
-                {approvalDialog.isApproving ? "Approving..." : "Approve & Execute"}
+                {approvalDialog.isApproving
+                  ? "Approving..."
+                  : "Approve & Execute"}
               </button>
             </div>
           </div>
@@ -889,7 +902,8 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
                           Pending Fixes - Admin Approval Required
                         </h3>
                         <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
-                          AI agents cannot execute fixes automatically. Click a fix to approve and execute it.
+                          AI agents cannot execute fixes automatically. Click a
+                          fix to approve and execute it.
                         </p>
                         <div className="space-y-2">
                           {dialog.diagnosticResult.pending_fixes.map((fix) => (
@@ -899,7 +913,9 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
                               className="w-full text-left rounded border border-yellow-400 bg-white p-3 hover:bg-yellow-100 dark:bg-gray-800 dark:hover:bg-gray-700"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-medium">{fix.action}</span>
+                                <span className="font-medium">
+                                  {fix.action}
+                                </span>
                                 <span className="text-xs bg-yellow-200 dark:bg-yellow-800 px-2 py-1 rounded">
                                   {fix.risk} risk
                                 </span>

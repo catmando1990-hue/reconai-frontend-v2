@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://reconai-backend.onrender.com";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://reconai-backend.onrender.com";
 
 export async function GET() {
   const { userId } = await auth();
@@ -26,7 +29,10 @@ export async function POST() {
     const user = await currentUser();
 
     if (!user?.primaryEmailAddress?.emailAddress) {
-      return NextResponse.json({ error: "No email found for user" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No email found for user" },
+        { status: 400 },
+      );
     }
 
     const email = user.primaryEmailAddress.emailAddress;
@@ -38,7 +44,7 @@ export async function POST() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         email: email,
@@ -50,7 +56,10 @@ export async function POST() {
 
     // If user not found, create via signup
     if (res.status === 404) {
-      const slugBase = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "-");
+      const slugBase = email
+        .split("@")[0]
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-");
       const orgSlug = `${slugBase}-org`;
 
       res = await fetch(`${API_URL}/api/auth/signup`, {

@@ -29,7 +29,11 @@ export async function GET() {
       console.error("Backend /api/me error:", resp.status, data);
       return NextResponse.json(
         {
-          error: data.detail?.message || data.detail || data.error || "Failed to fetch profile",
+          error:
+            data.detail?.message ||
+            data.detail ||
+            data.error ||
+            "Failed to fetch profile",
           backend_status: resp.status,
           backend_error: data,
         },

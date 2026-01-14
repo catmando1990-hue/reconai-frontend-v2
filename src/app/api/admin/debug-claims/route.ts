@@ -13,8 +13,11 @@ export async function GET() {
   const token = await getToken();
 
   // Extract roles from both sources
-  const sessionRole = (sessionClaims?.publicMetadata as Record<string, unknown> | undefined)?.role;
-  const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)?.role;
+  const sessionRole = (
+    sessionClaims?.publicMetadata as Record<string, unknown> | undefined
+  )?.role;
+  const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
+    ?.role;
 
   // Helper to check admin
   const isAdminRole = (role: unknown): boolean =>

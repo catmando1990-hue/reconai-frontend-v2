@@ -41,9 +41,7 @@ export function RouteShell(props: {
       </section>
 
       {/* Content area - children should contain their own cards */}
-      <div className="space-y-6">
-        {children}
-      </div>
+      <div className="space-y-6">{children}</div>
     </div>
   );
 }

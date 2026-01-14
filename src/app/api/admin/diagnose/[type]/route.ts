@@ -3,12 +3,19 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { token: string }> {
+async function assertAdminAndGetToken(): Promise<
+  { error: NextResponse } | { token: string }
+> {
   const { userId, sessionClaims, getToken } = await auth();
 
   if (!userId) {
     console.error("assertAdminAndGetToken: No userId found in auth()");
-    return { error: NextResponse.json({ error: "Unauthorized", debug: "No userId" }, { status: 401 }) };
+    return {
+      error: NextResponse.json(
+        { error: "Unauthorized", debug: "No userId" },
+        { status: 401 },
+      ),
+    };
   }
 
   // Helper to check if role is admin
@@ -34,7 +41,7 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
     sessionRole,
     userRole,
     userPublicMetadata: user?.publicMetadata,
-    isAdminByUser: isAdminRole(userRole)
+    isAdminByUser: isAdminRole(userRole),
   });
 
   if (isAdminRole(userRole)) {
@@ -42,16 +49,24 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
     return { token: token || "" };
   }
 
-  console.error("assertAdminAndGetToken: User not admin", { sessionRole, userRole });
-  return { error: NextResponse.json({
-    error: "Forbidden",
-    debug: "Not admin",
+  console.error("assertAdminAndGetToken: User not admin", {
     sessionRole,
     userRole,
-    userPublicMetadata: user?.publicMetadata,
-    userId,
-    isAdminCheck: isAdminRole(userRole)
-  }, { status: 403 }) };
+  });
+  return {
+    error: NextResponse.json(
+      {
+        error: "Forbidden",
+        debug: "Not admin",
+        sessionRole,
+        userRole,
+        userPublicMetadata: user?.publicMetadata,
+        userId,
+        isAdminCheck: isAdminRole(userRole),
+      },
+      { status: 403 },
+    ),
+  };
 }
 
 export async function POST(
@@ -86,7 +101,7 @@ export async function POST(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authResult.token}`,
+        Authorization: `Bearer ${authResult.token}`,
       },
       body: JSON.stringify({
         type,

@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://reconai-backend.onrender.com";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://reconai-backend.onrender.com";
 
 // GET handler to test if route exists
 export async function GET() {
-  return NextResponse.json({ route: "link-clerk", status: "available", methods: ["GET", "POST"] });
+  return NextResponse.json({
+    route: "link-clerk",
+    status: "available",
+    methods: ["GET", "POST"],
+  });
 }
 
 export async function POST(req: Request) {
@@ -20,7 +27,10 @@ export async function POST(req: Request) {
     const user = await currentUser();
 
     if (!user?.primaryEmailAddress?.emailAddress) {
-      return NextResponse.json({ error: "No email found for user" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No email found for user" },
+        { status: 400 },
+      );
     }
 
     if (!API_URL) {
@@ -35,7 +45,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         email: user.primaryEmailAddress.emailAddress,

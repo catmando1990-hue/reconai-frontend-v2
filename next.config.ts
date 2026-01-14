@@ -4,8 +4,8 @@ import { withBotId } from "botid/next/config";
 // Content Security Policy directives
 const cspDirectives = [
   "default-src 'self'",
-  // Scripts: self + inline for Next.js + Clerk + Vercel analytics
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://vercel.live",
+  // Scripts: self + inline for Next.js + Clerk + Plaid + Vercel analytics
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://vercel.live https://cdn.plaid.com",
   // Workers: allow blob workers (Clerk uses blob: workers)
   "worker-src 'self' blob:",
   // Styles: self + inline for Tailwind and component libraries
@@ -14,12 +14,12 @@ const cspDirectives = [
   "img-src 'self' data: blob: https://*.clerk.dev https://*.clerk.accounts.dev https://img.clerk.com https://clerk.reconaitechnology.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
   // Fonts: self + data URIs
   "font-src 'self' data:",
-  // Connect: API endpoints + Clerk + analytics
-  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev wss://clerk.reconaitechnology.com",
+  // Connect: API endpoints + Clerk + Plaid + analytics
+  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev wss://clerk.reconaitechnology.com https://*.plaid.com",
   // Media: self + Vercel Blob storage
   "media-src 'self' https://*.vercel-storage.com https://*.public.blob.vercel-storage.com blob:",
-  // Frame: self + Clerk for auth flows
-  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com",
+  // Frame: self + Clerk + Plaid for auth flows
+  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://*.plaid.com",
   // Frame ancestors: prevent clickjacking
   "frame-ancestors 'self'",
   // Form actions: self only

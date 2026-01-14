@@ -3,6 +3,11 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// GET handler to test if route exists
+export async function GET() {
+  return NextResponse.json({ route: "link-clerk", status: "available" });
+}
+
 export async function POST(req: Request) {
   try {
     const { userId, getToken } = await auth();

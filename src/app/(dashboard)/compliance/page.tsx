@@ -1,14 +1,23 @@
-import { RouteShell } from "@/components/dashboard/RouteShell";
+"use client";
 
-export default function CompliancePage() {
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PlaceholderSurface } from "@/components/dashboard/PlaceholderSurface";
+
+export default function Page() {
   return (
     <RouteShell
       title="Compliance"
-      subtitle="Controls, audit posture, and exception tracking."
+      subtitle="Compliance surfaces remain read-only and evidence-first."
     >
-      <p className="text-sm text-muted-foreground">
-        This section is wired and ready for logic phases.
-      </p>
+      <PlaceholderSurface
+        title="Compliance"
+        subtitle="Compliance surfaces remain read-only and evidence-first."
+        bullets={[
+          "Audit trail review",
+          "Policy acknowledgements",
+          "Signals-driven risk flags",
+        ]}
+      />
     </RouteShell>
   );
 }

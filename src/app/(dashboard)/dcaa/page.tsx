@@ -1,14 +1,23 @@
-import { RouteShell } from "@/components/dashboard/RouteShell";
+"use client";
 
-export default function DcaaPage() {
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PlaceholderSurface } from "@/components/dashboard/PlaceholderSurface";
+
+export default function Page() {
   return (
     <RouteShell
       title="DCAA"
-      subtitle="GovCon-ready compliance tooling and documentation."
+      subtitle="DCAA surfaces staged for controlled rollout."
     >
-      <p className="text-sm text-muted-foreground">
-        This section is wired and ready for logic phases.
-      </p>
+      <PlaceholderSurface
+        title="DCAA"
+        subtitle="DCAA surfaces staged for controlled rollout."
+        bullets={[
+          "Audit-ready logging",
+          "Evidence snapshots",
+          "Read-only posture until approved",
+        ]}
+      />
     </RouteShell>
   );
 }

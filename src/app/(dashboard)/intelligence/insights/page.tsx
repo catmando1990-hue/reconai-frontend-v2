@@ -10,6 +10,7 @@ import { AI_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
+import { IntelligenceV1Panel } from "@/components/intelligence/IntelligenceV1Panel";
 
 export default function IntelligenceInsightsPage() {
   const { data, isLoading, error, refetch } = useInsightsSummary();
@@ -33,6 +34,7 @@ export default function IntelligenceInsightsPage() {
 
         <div className="h-6" />
 
+        {/* Existing insights summary surface */}
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading insights…</p>
         ) : error ? (
@@ -68,6 +70,11 @@ export default function IntelligenceInsightsPage() {
             signals.
           </p>
         )}
+
+        <div className="h-8" />
+
+        {/* BUILD 20 — Opt-in Intelligence v1 surfacing (no auto-run) */}
+        <IntelligenceV1Panel />
       </RouteShell>
     </TierGate>
   );

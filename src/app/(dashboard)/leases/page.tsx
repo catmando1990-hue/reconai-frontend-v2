@@ -1,11 +1,20 @@
-import { RouteShell } from "@/components/dashboard/RouteShell";
+"use client";
 
-export default function LeasesPage() {
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PlaceholderSurface } from "@/components/dashboard/PlaceholderSurface";
+
+export default function Page() {
   return (
-    <RouteShell title="Leases" subtitle="Lease tracking and obligations.">
-      <p className="text-sm text-muted-foreground">
-        This section is wired and ready for logic phases.
-      </p>
+    <RouteShell title="Leases" subtitle="Property/lease modules are staged.">
+      <PlaceholderSurface
+        title="Leases"
+        subtitle="Property/lease modules are staged."
+        bullets={[
+          "Read-only entities first",
+          "Evidence-first changes later",
+          "Audit logging required for writes",
+        ]}
+      />
     </RouteShell>
   );
 }

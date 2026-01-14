@@ -1,14 +1,23 @@
-import { RouteShell } from "@/components/dashboard/RouteShell";
+"use client";
 
-export default function CertificationsPage() {
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PlaceholderSurface } from "@/components/dashboard/PlaceholderSurface";
+
+export default function Page() {
   return (
     <RouteShell
       title="Certifications"
-      subtitle="Certification status and renewal tracking."
+      subtitle="Compliance certification surfaces staged."
     >
-      <p className="text-sm text-muted-foreground">
-        This section is wired and ready for logic phases.
-      </p>
+      <PlaceholderSurface
+        title="Certifications"
+        subtitle="Compliance certification surfaces staged."
+        bullets={[
+          "Control checklists",
+          "Evidence links",
+          "Audit-backed attestations later",
+        ]}
+      />
     </RouteShell>
   );
 }

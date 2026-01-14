@@ -1,14 +1,23 @@
-import { RouteShell } from "@/components/dashboard/RouteShell";
+"use client";
 
-export default function FinancialReportsPage() {
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PlaceholderSurface } from "@/components/dashboard/PlaceholderSurface";
+
+export default function Page() {
   return (
     <RouteShell
       title="Financial Reports"
-      subtitle="P&L, balance sheet, and cash flow reporting."
+      subtitle="Report surfaces staged for the next release phase."
     >
-      <p className="text-sm text-muted-foreground">
-        This section is wired and ready for logic phases.
-      </p>
+      <PlaceholderSurface
+        title="Financial Reports"
+        subtitle="Report surfaces staged for the next release phase."
+        bullets={[
+          "Read-only summaries",
+          "Export-ready structures",
+          "No official filing claims",
+        ]}
+      />
     </RouteShell>
   );
 }

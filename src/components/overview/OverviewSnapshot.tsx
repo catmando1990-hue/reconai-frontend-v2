@@ -1,142 +1,205 @@
 "use client";
 
-import useSWR from "swr";
-
+import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  StatusChip,
+  type StatusVariant,
+} from "@/components/dashboard/StatusChip";
+import { cn } from "@/lib/utils";
 
 type SystemStatus = {
-  api?: string;
-  maintenance?: boolean | { enabled?: boolean };
-  enabled?: boolean; // some implementations return { ok, enabled }
+  ok: boolean;
+  maintenance?:
+    | { enabled: boolean }
+    | { enabled: boolean; reason?: string | null };
+  maintenance_enabled?: boolean;
   signals_24h?: number;
   audit_total?: number;
   last_plaid_sync?: string | null;
-  updated_at?: string | null;
-  reason?: string | null;
 };
 
-type TransactionRow = {
+type TxRow = {
   id: string | number;
   duplicate?: boolean;
 };
 
-function getMaintenanceEnabled(s: SystemStatus | undefined): boolean {
-  if (!s) return false;
-  if (typeof s.maintenance === "boolean") return s.maintenance;
-  if (typeof s.maintenance === "object" && s.maintenance) {
-    return Boolean(s.maintenance.enabled);
-  }
-  if (typeof s.enabled === "boolean") return s.enabled;
-  return false;
+function fmtRelative(iso?: string | null) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const diffMs = Date.now() - d.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 48) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
 }
 
-function formatMaybeDate(value: string | null | undefined): string {
-  if (!value) return "—";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleString();
+function healthVariant(ok?: boolean): StatusVariant {
+  return ok ? "ok" : "warn";
 }
 
-function MetricCard(props: {
-  label: string;
-  value: React.ReactNode;
-  sub?: React.ReactNode;
-}) {
-  const { label, value, sub } = props;
+export function OverviewSnapshot({ className }: { className?: string }) {
+  const [system, setSystem] = useState<SystemStatus | null>(null);
+  const [txs, setTxs] = useState<TxRow[] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      try {
+        const [sys, tx] = await Promise.all([
+          apiFetch<SystemStatus>("/api/system/status"),
+          apiFetch<TxRow[]>("/api/transactions").catch(() => []),
+        ]);
+        if (cancelled) return;
+        setSystem(sys);
+        setTxs(tx ?? []);
+      } catch {
+        if (cancelled) return;
+        setSystem(null);
+        setTxs([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const txCount = txs?.length ?? 0;
+  const dupCount = useMemo(
+    () => (txs ?? []).filter((t) => Boolean(t.duplicate)).length,
+    [txs],
+  );
+
+  const maintenanceEnabled =
+    (typeof system?.maintenance === "object" && system.maintenance?.enabled) ||
+    system?.maintenance_enabled ||
+    false;
+
+  const tiles: Array<{
+    label: string;
+    value: string;
+    chip: { label: string; variant: StatusVariant };
+    sub?: string;
+  }> = [
+    {
+      label: "API Health",
+      value: system ? (system.ok ? "OK" : "Degraded") : loading ? "…" : "—",
+      chip: {
+        label: system ? (system.ok ? "OK" : "Warn") : "—",
+        variant: healthVariant(system?.ok),
+      },
+      sub: "Authenticated health surface",
+    },
+    {
+      label: "Maintenance",
+      value: system ? (maintenanceEnabled ? "ON" : "OFF") : loading ? "…" : "—",
+      chip: {
+        label: system ? (maintenanceEnabled ? "Active" : "Normal") : "—",
+        variant: maintenanceEnabled ? "warn" : "ok",
+      },
+      sub: maintenanceEnabled
+        ? "Protected routes blocked for non-admin"
+        : "System open",
+    },
+    {
+      label: "Signals (24h)",
+      value: system ? String(system.signals_24h ?? 0) : loading ? "…" : "—",
+      chip: {
+        label: system
+          ? (system.signals_24h ?? 0) > 0
+            ? "Review"
+            : "Quiet"
+          : "—",
+        variant: system
+          ? (system.signals_24h ?? 0) > 0
+            ? "warn"
+            : "ok"
+          : "muted",
+      },
+      sub: "Server-side signals surface",
+    },
+    {
+      label: "Audit Events",
+      value: system ? String(system.audit_total ?? 0) : loading ? "…" : "—",
+      chip: { label: "Read-only", variant: "muted" },
+      sub: "Compliance trail",
+    },
+    {
+      label: "Transactions",
+      value: txs ? String(txCount) : loading ? "…" : "—",
+      chip: { label: "Read-only", variant: "muted" },
+      sub: "Normalized feed",
+    },
+    {
+      label: "Duplicates",
+      value: txs ? String(dupCount) : loading ? "…" : "—",
+      chip: {
+        label: txs ? (dupCount > 0 ? "Investigate" : "Clear") : "—",
+        variant: txs ? (dupCount > 0 ? "warn" : "ok") : "muted",
+      },
+      sub: "Duplicate flag from backend",
+    },
+    {
+      label: "Plaid Sync",
+      value: system
+        ? fmtRelative(system.last_plaid_sync ?? null)
+        : loading
+          ? "…"
+          : "—",
+      chip: { label: "Guarded", variant: "muted" },
+      sub: "Sync hardening enforced",
+    },
+  ];
+
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="mt-1 text-2xl font-semibold tracking-tight">
-          {value}
+    <Card className={cn("border bg-card/50", className)}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold">
+          Operational Snapshot
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Read-only telemetry across integrity, compliance, and ingestion.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {tiles.map((t) => (
+            <div
+              key={t.label}
+              className="rounded-xl border border-border/70 bg-background/40 p-4 transition-shadow hover:shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-xs font-medium text-muted-foreground">
+                  {t.label}
+                </div>
+                <StatusChip variant={t.chip.variant}>{t.chip.label}</StatusChip>
+              </div>
+              <div className="mt-2 flex items-baseline gap-2">
+                <div className="text-2xl font-semibold tracking-tight">
+                  {t.value}
+                </div>
+              </div>
+              {t.sub ? (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {t.sub}
+                </div>
+              ) : null}
+            </div>
+          ))}
         </div>
-        {sub ? (
-          <div className="mt-1 text-xs text-muted-foreground">{sub}</div>
-        ) : null}
       </CardContent>
     </Card>
-  );
-}
-
-export function OverviewSnapshot(props: { refreshMs?: number }) {
-  const refreshInterval = props.refreshMs ?? 30000;
-
-  // Disable automatic retries on error to prevent flooding the API
-  const swrOptions = {
-    refreshInterval,
-    errorRetryCount: 1,
-    errorRetryInterval: 10000, // Wait 10s before retry on error
-    shouldRetryOnError: false, // Don't auto-retry on 401/other errors
-  };
-
-  const { data: status } = useSWR<SystemStatus>(
-    "/api/system/status",
-    (url: string) => apiFetch<SystemStatus>(url),
-    swrOptions,
-  );
-
-  const { data: txs } = useSWR<TransactionRow[]>(
-    "/api/transactions",
-    (url: string) => apiFetch<TransactionRow[]>(url),
-    swrOptions,
-  );
-
-  const txCount = Array.isArray(txs) ? txs.length : 0;
-  const dupCount = Array.isArray(txs)
-    ? txs.reduce((acc, t) => acc + (t?.duplicate ? 1 : 0), 0)
-    : 0;
-
-  const maintenanceEnabled = getMaintenanceEnabled(status);
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <MetricCard
-          label="Transactions"
-          value={txCount}
-          sub={
-            dupCount ? `${dupCount} flagged duplicate` : "No duplicates flagged"
-          }
-        />
-        <MetricCard
-          label="Signals (24h)"
-          value={status?.signals_24h ?? "—"}
-          sub="Server-side detections"
-        />
-        <MetricCard
-          label="Audit entries"
-          value={status?.audit_total ?? "—"}
-          sub="Compliance trail"
-        />
-        <MetricCard
-          label="Maintenance"
-          value={maintenanceEnabled ? "ON" : "OFF"}
-          sub={
-            maintenanceEnabled
-              ? status?.reason
-                ? `Reason: ${status.reason}`
-                : "System paused"
-              : "Normal operation"
-          }
-        />
-        <MetricCard
-          label="Last Plaid sync"
-          value={formatMaybeDate(status?.last_plaid_sync ?? null)}
-          sub="Incremental cursor sync"
-        />
-        <MetricCard
-          label="API"
-          value={status?.api ?? "—"}
-          sub="Backend health"
-        />
-      </div>
-
-      {maintenanceEnabled && status?.updated_at ? (
-        <div className="text-xs text-muted-foreground">
-          Maintenance last updated: {formatMaybeDate(status.updated_at)}
-        </div>
-      ) : null}
-    </div>
   );
 }

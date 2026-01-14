@@ -1,8 +1,23 @@
-export default function CfoCompliancePage() {
+"use client";
+
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PlaceholderSurface } from "@/components/dashboard/PlaceholderSurface";
+
+export default function Page() {
   return (
-    <section>
-      <h1>Compliance</h1>
-      <p>This section is active and routed correctly.</p>
-    </section>
+    <RouteShell
+      title="CFO Compliance"
+      subtitle="Executive compliance surfaces staged."
+    >
+      <PlaceholderSurface
+        title="CFO Compliance"
+        subtitle="Executive compliance surfaces staged."
+        bullets={[
+          "Audit summary already live",
+          "Signals evidence review",
+          "Controls staged for next phase",
+        ]}
+      />
+    </RouteShell>
   );
 }

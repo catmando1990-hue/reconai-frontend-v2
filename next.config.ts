@@ -52,10 +52,11 @@ const nextConfig: NextConfig = {
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
-            // Permissions-Policy: Plaid Link requires encrypted-media for fingerprinting
-            // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy/encrypted-media
+            // Permissions-Policy: Plaid Link requires encrypted-media and accelerometer for SEON fingerprinting
+            // Using * to allow these features for all origins including Plaid's iframe
+            // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), encrypted-media=(self \"https://cdn.plaid.com\")",
+            value: "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
           },
           {
             key: "Content-Security-Policy",

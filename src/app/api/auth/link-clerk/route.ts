@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // GET handler to test if route exists
 export async function GET() {
-  return NextResponse.json({ route: "link-clerk", status: "available" });
+  return NextResponse.json({ route: "link-clerk", status: "available", methods: ["GET", "POST"] });
 }
 
 export async function POST(req: Request) {

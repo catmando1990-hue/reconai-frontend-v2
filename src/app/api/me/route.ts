@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
-// Proxy to Render backend
+// Proxy to Render backend - check both env vars for compatibility
 const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://reconai-backend.onrender.com";
 
@@ -25,8 +26,13 @@ export async function GET() {
 
     if (!resp.ok) {
       const data = await resp.json().catch(() => ({}));
+      console.error("Backend /api/me error:", resp.status, data);
       return NextResponse.json(
-        { error: data.detail || data.error || "Failed to fetch profile" },
+        {
+          error: data.detail?.message || data.detail || data.error || "Failed to fetch profile",
+          backend_status: resp.status,
+          backend_error: data,
+        },
         { status: resp.status },
       );
     }

@@ -29,7 +29,10 @@ async function postJSON<T>(url: string, body?: unknown): Promise<T> {
       msg = errorData.error;
     } else if (typeof errorData?.detail === "string") {
       msg = errorData.detail;
-    } else if (typeof errorData?.error === "object" && errorData.error !== null) {
+    } else if (
+      typeof errorData?.error === "object" &&
+      errorData.error !== null
+    ) {
       msg = JSON.stringify(errorData.error);
     }
     throw new Error(msg);

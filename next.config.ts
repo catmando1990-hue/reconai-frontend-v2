@@ -56,7 +56,8 @@ const nextConfig: NextConfig = {
             // Using * to allow these features for all origins including Plaid's iframe
             // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
+            value:
+              "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
           },
           {
             key: "Content-Security-Policy",

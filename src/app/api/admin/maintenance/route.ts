@@ -1,16 +1,30 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 const EDGE_CONFIG_ID = process.env.EDGE_CONFIG!;
 const VERCEL_TOKEN = process.env.VERCEL_API_TOKEN!;
 
 async function assertAdmin() {
-  const { sessionClaims } = await auth();
-  const isAdmin = sessionClaims?.publicMetadata?.role === "admin";
-  if (!isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const { userId, sessionClaims } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  return null;
+
+  // Check session claims first (if publicMetadata is synced to token)
+  const sessionRole = sessionClaims?.publicMetadata?.role;
+  if (sessionRole === "admin") {
+    return null;
+  }
+
+  // Fallback: fetch user directly to check publicMetadata
+  const user = await currentUser();
+  const userRole = user?.publicMetadata?.role;
+  if (userRole === "admin") {
+    return null;
+  }
+
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
 export async function GET() {

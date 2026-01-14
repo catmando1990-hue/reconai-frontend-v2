@@ -7,7 +7,8 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
   const { userId, sessionClaims, getToken } = await auth();
 
   if (!userId) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+    console.error("assertAdminAndGetToken: No userId found in auth()");
+    return { error: NextResponse.json({ error: "Unauthorized", debug: "No userId" }, { status: 401 }) };
   }
 
   // Helper to check if role is admin
@@ -32,7 +33,8 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
     return { token: token || "" };
   }
 
-  return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+  console.error("assertAdminAndGetToken: User not admin", { sessionRole, userRole });
+  return { error: NextResponse.json({ error: "Forbidden", debug: "Not admin", sessionRole, userRole }, { status: 403 }) };
 }
 
 export async function POST(

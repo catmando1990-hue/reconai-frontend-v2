@@ -16,9 +16,15 @@ export async function GET() {
   const sessionRole = (sessionClaims?.publicMetadata as Record<string, unknown> | undefined)?.role;
   const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)?.role;
 
+  // Helper to check admin
+  const isAdminRole = (role: unknown): boolean =>
+    role === "admin" || role === "org:admin";
+
   // Return the full session claims for debugging
   return NextResponse.json({
     userId,
+    // Full session claims (to see all available fields)
+    sessionClaimsKeys: sessionClaims ? Object.keys(sessionClaims) : [],
     sessionClaims,
     publicMetadata: sessionClaims?.publicMetadata,
     role: sessionClaims?.publicMetadata?.role,
@@ -29,10 +35,10 @@ export async function GET() {
     userPublicMetadata: user?.publicMetadata,
     sessionRole,
     userRole,
-    // Admin check result
-    isAdminBySession: sessionRole === "admin",
-    isAdminByUser: userRole === "admin",
-    isAdmin: sessionRole === "admin" || userRole === "admin",
+    // Admin check result (now includes org:admin)
+    isAdminBySession: isAdminRole(sessionRole),
+    isAdminByUser: isAdminRole(userRole),
+    isAdmin: isAdminRole(sessionRole) || isAdminRole(userRole),
     // Token info
     hasToken: !!token,
     tokenPreview: token ? `${token.substring(0, 30)}...` : null,

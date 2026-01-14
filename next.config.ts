@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
             // Permissions-Policy: Plaid Link requires encrypted-media for fingerprinting
             // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy/encrypted-media
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            value: "camera=(), microphone=(), geolocation=(), encrypted-media=(self \"https://cdn.plaid.com\")",
           },
           {
             key: "Content-Security-Policy",

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { AdminCommandStrip } from "@/components/admin/AdminCommandStrip";
-import { CommandStripV2 } from "@/components/CommandStripV2";
+import { CommandStripV2 } from "@/components/dashboard/CommandStripV2";
 import { Menu, X } from "lucide-react";
 
 function getSectionTitle(pathname: string): string {

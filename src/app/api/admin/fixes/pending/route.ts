@@ -35,14 +35,10 @@ export async function GET() {
   }
 
   try {
-    const { getAuth } = await auth();
-    const token = await getAuth?.().getToken();
-
     const res = await fetch(`${API_URL}/api/admin/fixes/pending`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
 

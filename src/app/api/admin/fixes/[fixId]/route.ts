@@ -40,14 +40,10 @@ export async function DELETE(
   }
 
   try {
-    const { getAuth } = await auth();
-    const token = await getAuth?.().getToken();
-
     const res = await fetch(`${API_URL}/api/admin/fixes/${fixId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
 

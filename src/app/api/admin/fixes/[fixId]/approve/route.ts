@@ -50,14 +50,10 @@ export async function POST(
       );
     }
 
-    const { getAuth } = await auth();
-    const token = await getAuth?.().getToken();
-
     const res = await fetch(`${API_URL}/api/admin/fixes/${fixId}/approve`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         action: body.action,

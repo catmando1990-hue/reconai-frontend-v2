@@ -1,62 +1,47 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { Products, CountryCode } from "plaid";
-import { getPlaidClient, getPlaidWebhookUrl } from "@/lib/plaid";
+
+// Proxy to Render backend which has Plaid credentials configured
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://reconai-backend.onrender.com";
 
 export async function POST() {
   try {
-    const { userId } = await auth();
+    const { userId, getToken } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const plaid = getPlaidClient();
-    const webhook = getPlaidWebhookUrl();
+    const token = await getToken();
 
-    const resp = await plaid.linkTokenCreate({
-      user: {
-        // Must not be PII; Clerk userId is suitable.
-        client_user_id: userId,
+    const resp = await fetch(`${BACKEND_URL}/plaid/link-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      client_name: "ReconAI",
-      products: [Products.Transactions],
-      country_codes: [CountryCode.Us],
-      language: "en",
-      ...(webhook ? { webhook } : {}),
+      body: JSON.stringify({ user_id: userId }),
     });
 
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      return NextResponse.json(
+        { error: data.detail || data.error || "Failed to create link token" },
+        { status: resp.status },
+      );
+    }
+
     return NextResponse.json({
-      link_token: resp.data.link_token,
-      expiration: resp.data.expiration,
+      link_token: data.link_token,
+      expiration: data.expiration,
     });
   } catch (err: unknown) {
     console.error("Plaid link token error:", err);
-
-    // Check for Plaid-specific error
-    const plaidError = err as {
-      response?: { data?: { error_message?: string; error_code?: string } };
-    };
-    if (plaidError?.response?.data?.error_message) {
-      return NextResponse.json(
-        {
-          error: plaidError.response.data.error_message,
-          code: plaidError.response.data.error_code,
-        },
-        { status: 400 },
-      );
-    }
-
-    // Check for missing env var error
     const message = err instanceof Error ? err.message : "Unknown error";
-    if (message.includes("Missing env var")) {
-      return NextResponse.json(
-        { error: "Server configuration error: " + message },
-        { status: 500 },
-      );
-    }
-
     return NextResponse.json(
-      { error: "Failed to create link token" },
+      { error: "Failed to create link token: " + message },
       { status: 500 },
     );
   }

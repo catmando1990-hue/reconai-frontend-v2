@@ -1,50 +1,56 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getPlaidClient } from "@/lib/plaid";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
+// Proxy to Render backend which has Plaid credentials configured
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://reconai-backend.onrender.com";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  try {
+    const { userId, getToken } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const body = await req.json().catch(() => ({}));
-  const public_token = body?.public_token;
+    const body = await req.json().catch(() => ({}));
+    const public_token = body?.public_token;
 
-  if (!public_token || typeof public_token !== "string") {
+    if (!public_token || typeof public_token !== "string") {
+      return NextResponse.json(
+        { error: "Missing public_token" },
+        { status: 400 },
+      );
+    }
+
+    const token = await getToken();
+
+    const resp = await fetch(`${BACKEND_URL}/plaid/exchange-public-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ user_id: userId, public_token }),
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      return NextResponse.json(
+        { error: data.detail || data.error || "Failed to exchange token" },
+        { status: resp.status },
+      );
+    }
+
+    // Return minimal metadata (never expose access_token to client)
+    return NextResponse.json({ item_id: data.item_id });
+  } catch (err: unknown) {
+    console.error("Plaid exchange token error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { error: "Missing public_token" },
-      { status: 400 },
-    );
-  }
-
-  const plaid = getPlaidClient();
-  const resp = await plaid.itemPublicTokenExchange({ public_token });
-
-  const access_token = resp.data.access_token;
-  const item_id = resp.data.item_id;
-
-  // Persist to Supabase (server-only)
-  const sb = supabaseAdmin();
-  const { error } = await sb.from("plaid_items").upsert(
-    {
-      clerk_user_id: userId,
-      item_id,
-      access_token,
-      status: "active",
-    },
-    { onConflict: "clerk_user_id,item_id" },
-  );
-
-  if (error) {
-    // Never return access_token; keep error generic.
-    return NextResponse.json(
-      { error: "Failed to persist bank connection" },
+      { error: "Failed to exchange token: " + message },
       { status: 500 },
     );
   }
-
-  // Return minimal metadata
-  return NextResponse.json({ item_id });
 }

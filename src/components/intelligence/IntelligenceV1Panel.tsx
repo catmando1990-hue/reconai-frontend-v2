@@ -34,6 +34,10 @@ type Cashflow = {
 
 const THRESHOLD = 0.85;
 
+// Local storage key for cached intelligence results.  Storing results here avoids
+// re-fetching the same data on subsequent runs.
+const CACHE_KEY = "intelligence_v1_cache";
+
 export function IntelligenceV1Panel() {
   const [running, setRunning] = useState(false);
   const [ran, setRan] = useState(false);
@@ -41,11 +45,34 @@ export function IntelligenceV1Panel() {
   const [dup, setDup] = useState<DuplicateGroup[] | null>(null);
   const [cash, setCash] = useState<Cashflow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cached, setCached] = useState(false);
 
   const run = async () => {
     if (running) return;
     setRunning(true);
     setError(null);
+
+    // Check for cached results before performing API requests.  If cached data
+    // exists, populate state and skip the network calls.
+    try {
+      if (typeof window !== "undefined") {
+        const cachedStr = window.localStorage.getItem(CACHE_KEY);
+        if (cachedStr) {
+          const cachedData = JSON.parse(cachedStr);
+          setCat(cachedData.cat ?? null);
+          setDup(cachedData.dup ?? null);
+          setCash(cachedData.cash ?? null);
+          setRan(true);
+          setCached(true);
+          setRunning(false);
+          return;
+        }
+      }
+    } catch (e) {
+      // If parsing fails, ignore cache and proceed to fetch fresh data.
+      console.error(e);
+    }
+    setCached(false);
 
     try {
       const [c1, d1, k1] = await Promise.all([
@@ -58,14 +85,31 @@ export function IntelligenceV1Panel() {
         apiFetch<Cashflow>("/api/intelligence/cashflow/insights"),
       ]);
 
-      setCat(
-        (c1?.suggestions ?? []).filter((s) => (s.confidence ?? 0) >= THRESHOLD),
+      // Apply the confidence threshold on the client and prepare new results.
+      const newCat = (c1?.suggestions ?? []).filter(
+        (s) => (s.confidence ?? 0) >= THRESHOLD,
       );
-      setDup(
-        (d1?.duplicates ?? []).filter((g) => (g.confidence ?? 0) >= THRESHOLD),
+      const newDup = (d1?.duplicates ?? []).filter(
+        (g) => (g.confidence ?? 0) >= THRESHOLD,
       );
-      setCash(k1 && (k1.confidence ?? 0) >= THRESHOLD ? k1 : null);
+      const newCash = k1 && (k1.confidence ?? 0) >= THRESHOLD ? k1 : null;
+
+      setCat(newCat);
+      setDup(newDup);
+      setCash(newCash);
       setRan(true);
+      // Persist the filtered results to localStorage so subsequent runs can
+      // immediately populate from cache without hitting the backend.
+      try {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({ cat: newCat, dup: newDup, cash: newCash }),
+          );
+        }
+      } catch (e) {
+        console.error(e);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
       setRan(true);
@@ -77,8 +121,9 @@ export function IntelligenceV1Panel() {
   const status = useMemo(() => {
     if (!ran) return { label: "Manual run", tone: "muted" as const };
     if (error) return { label: "Error", tone: "warn" as const };
+    if (cached) return { label: "Cached", tone: "muted" as const };
     return { label: "Complete", tone: "ok" as const };
-  }, [ran, error]);
+  }, [ran, error, cached]);
 
   return (
     <Card className="border bg-card/50">

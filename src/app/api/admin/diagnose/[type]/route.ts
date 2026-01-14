@@ -28,13 +28,30 @@ async function assertAdminAndGetToken(): Promise<{ error: NextResponse } | { tok
   const user = await currentUser();
   const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
     ?.role;
+
+  console.log("assertAdminAndGetToken debug:", {
+    userId,
+    sessionRole,
+    userRole,
+    userPublicMetadata: user?.publicMetadata,
+    isAdminByUser: isAdminRole(userRole)
+  });
+
   if (isAdminRole(userRole)) {
     const token = await getToken();
     return { token: token || "" };
   }
 
   console.error("assertAdminAndGetToken: User not admin", { sessionRole, userRole });
-  return { error: NextResponse.json({ error: "Forbidden", debug: "Not admin", sessionRole, userRole }, { status: 403 }) };
+  return { error: NextResponse.json({
+    error: "Forbidden",
+    debug: "Not admin",
+    sessionRole,
+    userRole,
+    userPublicMetadata: user?.publicMetadata,
+    userId,
+    isAdminCheck: isAdminRole(userRole)
+  }, { status: 403 }) };
 }
 
 export async function POST(

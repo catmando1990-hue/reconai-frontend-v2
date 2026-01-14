@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
 
 // Proxy to Render backend which has Plaid credentials configured
@@ -15,13 +16,22 @@ export async function POST() {
 
     const token = await getToken();
 
+    // Build OAuth redirect URI from request headers
+    const headersList = await headers();
+    const host = headersList.get("host") || "app.reconaitechnology.com";
+    const protocol = host.includes("localhost") ? "http" : "https";
+    const redirectUri = `${protocol}://${host}/dashboard/settings/connect-bank`;
+
     const resp = await fetch(`${BACKEND_URL}/link-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ user_id: userId }),
+      body: JSON.stringify({
+        user_id: userId,
+        redirect_uri: redirectUri,
+      }),
     });
 
     const data = await resp.json();

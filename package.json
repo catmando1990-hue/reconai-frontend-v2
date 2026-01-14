@@ -16,7 +16,8 @@
     "reconai:test": "playwright test",
     "reconai:test:ui": "playwright test --ui",
     "reconai:lighthouse": "lhci autorun",
-    "reconai:inspect": "npm run reconai:test && npm run reconai:lighthouse"
+    "reconai:inspect": "npm run reconai:test && npm run reconai:lighthouse",
+    "check:public-clerk": "node scripts/check_public_clerk.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.5",

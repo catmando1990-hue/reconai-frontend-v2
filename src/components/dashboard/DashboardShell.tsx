@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { AdminCommandStrip } from "@/components/admin/AdminCommandStrip";
+import { CommandStripV2 } from "@/components/CommandStripV2";
 import { Menu, X } from "lucide-react";
 
 function getSectionTitle(pathname: string): string {
@@ -108,6 +109,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         {/* BUILD 9: Admin command strip - only visible to admins */}
         <div className="hidden md:block">
           <AdminCommandStrip />
+        </div>
+
+        {/* BUILD 21-23: Command Strip V2 - desktop only */}
+        <div className="hidden md:block">
+          <CommandStripV2 />
         </div>
 
         {/* Main */}

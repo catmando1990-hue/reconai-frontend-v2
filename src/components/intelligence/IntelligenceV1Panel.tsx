@@ -5,6 +5,7 @@ import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusChip } from "@/components/dashboard/StatusChip";
+import { IntelligenceResultCard } from "@/components/IntelligenceResultCard";
 
 type CatSuggestion = {
   transaction_id: string;
@@ -119,25 +120,16 @@ export function IntelligenceV1Panel() {
           {cat?.length ? (
             <div className="space-y-2">
               {cat.slice(0, 6).map((s) => (
-                <div
+                <IntelligenceResultCard
                   key={s.transaction_id}
-                  className="rounded-xl border border-border/70 bg-background/40 p-3"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-medium">
-                      {s.suggested_category ?? s.category ?? "Suggestion"}
-                    </div>
-                    <StatusChip variant="muted">
-                      {Math.round(s.confidence * 100)}%
-                    </StatusChip>
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {s.explanation}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    tx: {s.transaction_id}
-                  </p>
-                </div>
+                  id={s.transaction_id}
+                  title={s.suggested_category ?? s.category ?? "Suggestion"}
+                  confidence={s.confidence}
+                  explanation={s.explanation}
+                  subtitle={`tx: ${s.transaction_id}`}
+                  evidence={s.evidence}
+                  threshold={THRESHOLD}
+                />
               ))}
             </div>
           ) : ran ? (
@@ -161,25 +153,17 @@ export function IntelligenceV1Panel() {
           {dup?.length ? (
             <div className="space-y-2">
               {dup.slice(0, 6).map((g) => (
-                <div
+                <IntelligenceResultCard
                   key={g.group_id}
-                  className="rounded-xl border border-border/70 bg-background/40 p-3"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-medium">
-                      Group {g.group_id}
-                    </div>
-                    <StatusChip variant="warn">
-                      {Math.round(g.confidence * 100)}%
-                    </StatusChip>
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {g.explanation}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    tx: {g.transactions.join(", ")}
-                  </p>
-                </div>
+                  id={g.group_id}
+                  title={`Group ${g.group_id}`}
+                  confidence={g.confidence}
+                  explanation={g.explanation}
+                  subtitle={`tx: ${g.transactions.join(", ")}`}
+                  evidence={g.evidence}
+                  statusVariant="warn"
+                  threshold={THRESHOLD}
+                />
               ))}
             </div>
           ) : ran ? (
@@ -201,24 +185,17 @@ export function IntelligenceV1Panel() {
             </span>
           </div>
           {cash ? (
-            <div className="rounded-xl border border-border/70 bg-background/40 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-medium capitalize">
-                  {cash.trend}
-                </div>
-                <StatusChip variant="muted">
-                  {Math.round(cash.confidence * 100)}%
-                </StatusChip>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {cash.explanation}
-              </p>
-              {cash.forecast ? (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  forecast: {cash.forecast}
-                </p>
-              ) : null}
-            </div>
+            <IntelligenceResultCard
+              id="cashflow-insight"
+              title={cash.trend}
+              confidence={cash.confidence}
+              explanation={cash.explanation}
+              subtitle={
+                cash.forecast ? `forecast: ${cash.forecast}` : undefined
+              }
+              evidence={cash.evidence}
+              threshold={THRESHOLD}
+            />
           ) : ran ? (
             <p className="text-sm text-muted-foreground">
               No cashflow insight met the confidence threshold.

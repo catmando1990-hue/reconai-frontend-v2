@@ -4,7 +4,14 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://reconai-backend.onrender.com";
 
 export async function GET() {
-  return NextResponse.json({ route: "link-account", version: "v1" });
+  const { userId } = await auth();
+  const user = await currentUser();
+  return NextResponse.json({
+    route: "link-account",
+    version: "v2",
+    clerk_user_id: userId,
+    email: user?.primaryEmailAddress?.emailAddress,
+  });
 }
 
 export async function POST() {

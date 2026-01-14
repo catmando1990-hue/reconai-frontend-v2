@@ -1,8 +1,13 @@
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { OverviewSnapshot } from "@/components/overview/OverviewSnapshot";
+
 export default function CoreOverviewPage() {
   return (
-    <section>
-      <h1>Core Overview</h1>
-      <p>This section is active and routed correctly.</p>
-    </section>
+    <RouteShell
+      title="Core Overview"
+      subtitle="Read-only operational snapshot across accounts, activity, and controls."
+    >
+      <OverviewSnapshot />
+    </RouteShell>
   );
 }

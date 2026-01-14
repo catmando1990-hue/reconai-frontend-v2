@@ -1,0 +1,63 @@
+import { NextResponse } from "next/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+async function assertAdmin() {
+  const { userId, sessionClaims } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const sessionRole = (
+    sessionClaims?.publicMetadata as Record<string, unknown> | undefined
+  )?.role;
+  if (sessionRole === "admin") return null;
+
+  const user = await currentUser();
+  const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
+    ?.role;
+  if (userRole === "admin") return null;
+
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ fixId: string }> },
+) {
+  const forbidden = await assertAdmin();
+  if (forbidden) return forbidden;
+
+  const { fixId } = await params;
+
+  if (!API_URL) {
+    return NextResponse.json(
+      { error: "Backend API not configured" },
+      { status: 500 },
+    );
+  }
+
+  try {
+    const { getAuth } = await auth();
+    const token = await getAuth?.().getToken();
+
+    const res = await fetch(`${API_URL}/api/admin/fixes/${fixId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
+  } catch (error) {
+    console.error("Cancel fix error:", error);
+    return NextResponse.json(
+      { error: "Failed to cancel fix" },
+      { status: 500 },
+    );
+  }
+}

@@ -4,7 +4,7 @@
 // NO dark patterns — transparent tier limits only.
 // Must match backend app/entitlements/tiers.py
 
-export type SubscriptionTier = "free" | "starter" | "pro" | "enterprise";
+export type SubscriptionTier = "free" | "starter" | "pro" | "govcon" | "enterprise";
 
 export interface TierLimits {
   name: string;
@@ -46,6 +46,15 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     summary_enabled: true,
     intelligence_enabled: true,
     max_transactions_per_month: 5000,
+  },
+  govcon: {
+    name: "GovCon",
+    exports_enabled: true,
+    export_limit_per_day: 100,
+    signals_depth: 500,
+    summary_enabled: true,
+    intelligence_enabled: true,
+    max_transactions_per_month: 10000,
   },
   enterprise: {
     name: "Enterprise",

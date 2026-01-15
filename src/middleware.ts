@@ -2,14 +2,22 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
+ * STEP 2 — Auth Isolation (Canonical Laws Compliant)
+ *
  * ReconAI middleware (Edge-safe):
- * - Clerk middleware wraps all routes (required for server-side auth() calls)
- * - Auth protection is only enforced on protected routes
- * - BUILD 8: Maintenance mode enforcement via backend API (fail-open)
- * - Public pages still have minimal Clerk overhead (no auth enforcement)
+ * - Clerk middleware ONLY runs on authenticated routes
+ * - Public/marketing routes bypass Clerk entirely (ZERO overhead)
+ * - Auth routes (sign-in, sign-up) use Clerk for auth flow
+ * - BUILD 8: Maintenance mode enforcement (fail-open)
  */
 
-const PROTECTED_PREFIXES = [
+// Routes that require Clerk middleware (authenticated + auth flow)
+const CLERK_ROUTES = [
+  // Auth flow routes
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/onboarding(.*)",
+  // Protected dashboard routes
   "/dashboard(.*)",
   "/account(.*)",
   "/connect-bank(.*)",
@@ -40,11 +48,16 @@ const PROTECTED_PREFIXES = [
   "/vendors(.*)",
 ];
 
+// Routes that need auth enforcement (subset of CLERK_ROUTES)
+const PROTECTED_PREFIXES = CLERK_ROUTES.filter(
+  (r) => !r.startsWith("/sign-in") && !r.startsWith("/sign-up") && !r.startsWith("/onboarding")
+);
+
+const requiresClerk = createRouteMatcher(CLERK_ROUTES);
 const isProtectedRoute = createRouteMatcher(PROTECTED_PREFIXES);
 
 /**
  * BUILD 8: Check maintenance mode from backend API (fail-open).
- * Uses /api/maintenance/status from BUILD 7.
  */
 async function checkMaintenanceMode(): Promise<boolean> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -53,7 +66,6 @@ async function checkMaintenanceMode(): Promise<boolean> {
   try {
     const res = await fetch(`${apiUrl}/api/maintenance/status`, {
       cache: "no-store",
-      // Short timeout to prevent blocking
       signal: AbortSignal.timeout(2000),
     });
 
@@ -62,29 +74,21 @@ async function checkMaintenanceMode(): Promise<boolean> {
     const data = await res.json();
     return Boolean(data?.enabled);
   } catch {
-    return false; // fail open - if API unreachable, allow access
+    return false; // fail open
   }
 }
 
-export default clerkMiddleware(async (auth, req: NextRequest) => {
+/**
+ * Clerk middleware handler — only invoked for authenticated routes.
+ */
+const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
-  // Always allow Next internals and static assets
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname === "/favicon.ico"
-  ) {
-    return NextResponse.next();
-  }
-
-  // BUILD 8: Maintenance mode enforcement - PROTECTED ROUTES ONLY
-  // Public/marketing pages are never affected
+  // Maintenance mode enforcement — PROTECTED ROUTES ONLY
   if (isProtectedRoute(req)) {
     const maintenanceMode = await checkMaintenanceMode();
 
     if (maintenanceMode) {
-      // Check admin bypass via session claims
       const { sessionClaims } = await auth();
       const publicMetadata = sessionClaims?.publicMetadata as
         | Record<string, unknown>
@@ -101,15 +105,45 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     }
   }
 
-  // Always allow maintenance page itself
+  // Allow maintenance page itself
   if (pathname.startsWith("/maintenance")) {
     return NextResponse.next();
   }
 
   // Protected routes are handled by server-side auth() in layouts
-  // No redirect enforcement here - layouts handle that
   return NextResponse.next();
 });
+
+/**
+ * Main middleware: Routes Clerk only where needed.
+ * Public/marketing routes get ZERO Clerk overhead.
+ */
+export default async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Always skip Next internals and static assets
+  if (
+    pathname.startsWith("/_next") ||
+    pathname === "/favicon.ico"
+  ) {
+    return NextResponse.next();
+  }
+
+  // API routes — pass through (no Clerk overhead on public APIs)
+  if (pathname.startsWith("/api")) {
+    // API routes that need auth use their own auth() calls
+    return NextResponse.next();
+  }
+
+  // STEP 2: Only apply Clerk middleware to authenticated routes
+  if (requiresClerk(req)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return clerkHandler(req, {} as any);
+  }
+
+  // Public/marketing routes — ZERO Clerk overhead
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

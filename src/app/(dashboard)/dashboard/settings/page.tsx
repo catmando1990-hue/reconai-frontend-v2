@@ -33,6 +33,18 @@ interface PendingFix {
   expires_at: string;
 }
 
+// STEP A — New Diagnostic API response format
+interface DiagnosticRunResult {
+  request_id: string;
+  ok: boolean;
+  agent: string;
+  started_at: string;
+  completed_at: string;
+  results_summary: string;
+  findings: Finding[];
+  severity_counts: Record<string, number>;
+}
+
 interface DiagnosticResult {
   type: string;
   status: "healthy" | "warning" | "critical";
@@ -48,6 +60,14 @@ interface DiagnosticResult {
   timestamp: string;
 }
 
+// STEP A — Confirmation phrases for AI-Powered Diagnostics (FAIL CLOSED)
+const CONFIRMATION_PHRASES: Record<string, string> = {
+  health: "RUN HEALTH AGENT",
+  performance: "RUN PERFORMANCE AGENT",
+  security: "RUN SECURITY AGENT",
+  bugs: "RUN BUG DETECTION AGENT",
+};
+
 interface HealthCheck {
   name: string;
   status: "ok" | "warning" | "error" | "checking";
@@ -62,6 +82,11 @@ interface DiagnosticDialogState {
   isLoading: boolean;
   type: "health" | "performance" | "security" | "bugs" | null;
   diagnosticResult: DiagnosticResult | null;
+  // STEP A — New fields for confirmation phrase flow
+  step: "confirm" | "running" | "results";
+  confirmationInput: string;
+  confirmationError: string | null;
+  newApiResult: DiagnosticRunResult | null;
 }
 
 interface ApprovalDialogState {
@@ -194,6 +219,11 @@ export default function SettingsPage() {
       isLoading: false,
       type: null,
       diagnosticResult: null,
+      // STEP A — New fields
+      step: "confirm",
+      confirmationInput: "",
+      confirmationError: null,
+      newApiResult: null,
     });
   const [approvalDialog, setApprovalDialog] = useState<ApprovalDialogState>({
     isOpen: false,
@@ -290,9 +320,54 @@ export default function SettingsPage() {
 
   // Admin diagnostic functions
   const closeDiagnosticDialog = useCallback(() => {
-    setDiagnosticDialog((d) => ({ ...d, isOpen: false }));
+    setDiagnosticDialog((d) => ({
+      ...d,
+      isOpen: false,
+      step: "confirm",
+      confirmationInput: "",
+      confirmationError: null,
+      newApiResult: null,
+    }));
   }, []);
 
+  // STEP A — New API: POST /api/diagnostics/run with confirmation phrase
+  const runNewDiagnosticApi = async (
+    type: "health" | "performance" | "security" | "bugs",
+    confirmPhrase: string,
+  ): Promise<DiagnosticRunResult | null> => {
+    // Map frontend type to backend agent name
+    const agentMap: Record<string, string> = {
+      health: "health",
+      performance: "performance",
+      security: "security",
+      bugs: "bug_detection",
+    };
+    const agent = agentMap[type];
+
+    try {
+      const res = await fetch("/api/diagnostics/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agent, confirm: confirmPhrase }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        // Handle confirmation phrase mismatch or other errors
+        const errorMsg =
+          data.detail?.message ||
+          data.detail?.error ||
+          data.detail ||
+          `Diagnostic failed: ${res.status}`;
+        throw new Error(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));
+      }
+      return data;
+    } catch (err) {
+      console.error("Diagnostic API error:", err);
+      throw err;
+    }
+  };
+
+  // Legacy function (kept for compatibility with old fixes flow)
   const runBackendDiagnostic = async (
     type: "health" | "performance" | "security" | "bugs",
   ): Promise<DiagnosticResult | null> => {
@@ -373,7 +448,8 @@ export default function SettingsPage() {
     return lines.join("\n");
   };
 
-  const openDiagnosticDialog = async (
+  // STEP A — Open dialog shows confirmation step first (manual-first UX)
+  const openDiagnosticDialog = (
     type: "health" | "performance" | "security" | "bugs",
   ) => {
     const titles: Record<string, string> = {
@@ -382,30 +458,104 @@ export default function SettingsPage() {
       security: "Security Diagnostic",
       bugs: "Bug Detection Diagnostic",
     };
+    // Show confirmation step first - no auto-run
     setDiagnosticDialog({
       isOpen: true,
       title: titles[type],
       content: "",
-      isLoading: true,
+      isLoading: false,
       type,
       diagnosticResult: null,
+      step: "confirm",
+      confirmationInput: "",
+      confirmationError: null,
+      newApiResult: null,
     });
-    const backendResult = await runBackendDiagnostic(type);
-    if (backendResult) {
+  };
+
+  // STEP A — Execute diagnostic after confirmation phrase is entered
+  const executeDiagnostic = async () => {
+    if (!diagnosticDialog.type) return;
+
+    const expectedPhrase = CONFIRMATION_PHRASES[diagnosticDialog.type];
+    if (diagnosticDialog.confirmationInput !== expectedPhrase) {
       setDiagnosticDialog((d) => ({
         ...d,
-        content: formatDiagnosticResult(backendResult),
-        isLoading: false,
-        diagnosticResult: backendResult,
+        confirmationError: `Confirmation phrase mismatch. Expected: "${expectedPhrase}"`,
       }));
-    } else {
+      return;
+    }
+
+    // Move to running step
+    setDiagnosticDialog((d) => ({
+      ...d,
+      step: "running",
+      isLoading: true,
+      confirmationError: null,
+    }));
+
+    try {
+      const result = await runNewDiagnosticApi(
+        diagnosticDialog.type,
+        diagnosticDialog.confirmationInput,
+      );
+      if (result) {
+        setDiagnosticDialog((d) => ({
+          ...d,
+          step: "results",
+          isLoading: false,
+          newApiResult: result,
+          content: formatNewApiResult(result),
+        }));
+      }
+    } catch (err) {
       setDiagnosticDialog((d) => ({
         ...d,
-        content: `## ${type.charAt(0).toUpperCase() + type.slice(1)} Diagnostic\n\n**Note:** Backend diagnostic unavailable. Please check that the backend is running.`,
+        step: "results",
         isLoading: false,
-        diagnosticResult: null,
+        content: `## Diagnostic Failed\n\n**Error:** ${err instanceof Error ? err.message : "Unknown error"}\n\nPlease verify you have admin access and try again.`,
       }));
     }
+  };
+
+  // STEP A — Format new API result for display
+  const formatNewApiResult = (result: DiagnosticRunResult): string => {
+    const okEmoji = result.ok ? "✓" : "✗";
+    const lines: string[] = [];
+    lines.push(`## ${result.agent.replace(/_/g, " ").toUpperCase()} Diagnostic Report`);
+    lines.push("");
+    lines.push(`### Overall Status: ${okEmoji} ${result.ok ? "PASS" : "FAIL"}`);
+    lines.push(`**Request ID:** \`${result.request_id}\``);
+    lines.push(`**Summary:** ${result.results_summary}`);
+    lines.push("");
+    if (result.findings.length > 0) {
+      lines.push("### Findings");
+      for (const finding of result.findings) {
+        const severityIcon =
+          finding.severity === "critical"
+            ? "🔴"
+            : finding.severity === "warning" || finding.severity === "error"
+              ? "🟡"
+              : "🔵";
+        lines.push(`- ${severityIcon} **${finding.component}**: ${finding.message}`);
+      }
+      lines.push("");
+    } else {
+      lines.push("### Findings");
+      lines.push("- No issues detected");
+      lines.push("");
+    }
+    lines.push("### Severity Counts");
+    for (const [sev, count] of Object.entries(result.severity_counts)) {
+      if (count > 0) {
+        lines.push(`- **${sev}:** ${count}`);
+      }
+    }
+    lines.push("");
+    lines.push(`---`);
+    lines.push(`*Started at ${new Date(result.started_at).toLocaleString()}*`);
+    lines.push(`*Completed at ${new Date(result.completed_at).toLocaleString()}*`);
+    return lines.join("\n");
   };
 
   const openApprovalDialog = (fix: PendingFix) => {
@@ -1085,7 +1235,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Diagnostic Dialog Modal */}
+          {/* STEP A — Diagnostic Dialog Modal with Confirmation Phrase */}
           {diagnosticDialog.isOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
               <div className="mx-4 max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-xl dark:bg-gray-900">
@@ -1102,18 +1252,63 @@ export default function SettingsPage() {
                   </Button>
                 </div>
                 <div className="max-h-[60vh] overflow-y-auto p-4">
-                  {diagnosticDialog.isLoading ? (
+                  {/* STEP A — Confirmation Step (Manual-First UX) */}
+                  {diagnosticDialog.step === "confirm" && diagnosticDialog.type && (
+                    <div className="space-y-4">
+                      <div className="rounded border-2 border-yellow-500 bg-yellow-50 p-4 dark:bg-yellow-900/20">
+                        <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
+                          Admin Confirmation Required
+                        </h3>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">
+                          To run this diagnostic agent, type the exact confirmation phrase below:
+                        </p>
+                        <code className="block mt-2 p-2 bg-white dark:bg-gray-800 rounded text-sm font-mono">
+                          {CONFIRMATION_PHRASES[diagnosticDialog.type]}
+                        </code>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Confirmation Phrase:
+                        </label>
+                        <input
+                          type="text"
+                          value={diagnosticDialog.confirmationInput}
+                          onChange={(e) =>
+                            setDiagnosticDialog((d) => ({
+                              ...d,
+                              confirmationInput: e.target.value,
+                              confirmationError: null,
+                            }))
+                          }
+                          placeholder="Type the exact phrase above..."
+                          className="w-full rounded border border-gray-300 p-2 dark:border-gray-600 dark:bg-gray-800"
+                        />
+                        {diagnosticDialog.confirmationError && (
+                          <p className="mt-2 text-sm text-red-600">
+                            {diagnosticDialog.confirmationError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Running Step */}
+                  {diagnosticDialog.step === "running" && (
                     <div className="flex flex-col items-center justify-center py-12">
                       <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
                       <p className="text-muted-foreground">
                         Running diagnostic analysis...
                       </p>
                     </div>
-                  ) : (
+                  )}
+
+                  {/* Results Step */}
+                  {diagnosticDialog.step === "results" && (
                     <>
                       <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
                         {diagnosticDialog.content}
                       </div>
+                      {/* Legacy: Show pending fixes if using old API result */}
                       {diagnosticDialog.diagnosticResult &&
                         diagnosticDialog.diagnosticResult.pending_fixes.length >
                           0 && (
@@ -1150,14 +1345,29 @@ export default function SettingsPage() {
                             </div>
                           </div>
                         )}
+                      {/* New API: Show request_id prominently */}
+                      {diagnosticDialog.newApiResult && (
+                        <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded text-sm">
+                          <span className="text-muted-foreground">Request ID: </span>
+                          <code className="font-mono">{diagnosticDialog.newApiResult.request_id}</code>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
                 <div className="flex justify-end gap-2 border-t p-4 dark:border-gray-700">
                   <Button variant="outline" onClick={closeDiagnosticDialog}>
-                    Close
+                    {diagnosticDialog.step === "confirm" ? "Cancel" : "Close"}
                   </Button>
-                  {!diagnosticDialog.isLoading && diagnosticDialog.type && (
+                  {diagnosticDialog.step === "confirm" && (
+                    <Button
+                      onClick={executeDiagnostic}
+                      disabled={!diagnosticDialog.confirmationInput}
+                    >
+                      Run Diagnostic
+                    </Button>
+                  )}
+                  {diagnosticDialog.step === "results" && diagnosticDialog.type && (
                     <Button
                       onClick={() =>
                         openDiagnosticDialog(diagnosticDialog.type!)

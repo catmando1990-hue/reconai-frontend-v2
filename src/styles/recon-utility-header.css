@@ -8,11 +8,19 @@
   justify-content: space-between;
   align-items: center;
 
-  padding: 0 24px;
+  padding: 0 16px;
   background: none;
   border: none;
   box-shadow: none;
   z-index: 50;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .recon-header {
+    padding: 0 24px;
+  }
 }
 
 .recon-logo {
@@ -23,8 +31,22 @@
 
 .recon-right {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   align-items: center;
+}
+
+@media (min-width: 640px) {
+  .recon-right {
+    gap: 20px;
+  }
+}
+
+/* Hide non-essential links on mobile */
+@media (max-width: 639px) {
+  .recon-dropdown,
+  .recon-right a:not(.recon-signin) {
+    display: none;
+  }
 }
 
 .recon-link {

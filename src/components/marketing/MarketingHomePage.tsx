@@ -357,8 +357,8 @@ export function MarketingHomePage() {
         <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-background via-background/80 to-transparent" />
 
         {/* PRODUCT PROOF */}
-        <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center overflow-hidden">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
                 Financial data, organized and exportable
@@ -390,33 +390,33 @@ export function MarketingHomePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <div className="rounded-2xl overflow-hidden border border-border bg-card">
+            <div className="grid grid-cols-1 gap-4 min-w-0">
+              <div className="relative rounded-2xl overflow-hidden border border-border bg-card h-40 sm:h-52 md:h-64">
                 <Image
                   src="/product-dashboard-wide.jpg"
                   alt="Modern financial intelligence dashboard"
-                  width={800}
-                  height={256}
-                  className="h-40 w-full object-cover sm:h-52 md:h-64"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
+                <div className="relative rounded-2xl overflow-hidden border border-border bg-card h-32 sm:h-40 md:h-44">
                   <Image
                     src="/product-dashboard-ui.jpg"
                     alt="Financial reporting interface"
-                    width={400}
-                    height={176}
-                    className="h-32 w-full object-cover sm:h-40 md:h-44"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
                 </div>
-                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                <div className="relative rounded-2xl overflow-hidden border border-border bg-card h-32 sm:h-40 md:h-44">
                   <Image
                     src="/product-charts-close.jpg"
                     alt="Charts and trend analysis"
-                    width={400}
-                    height={176}
-                    className="h-32 w-full object-cover sm:h-40 md:h-44"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
                 </div>
               </div>
@@ -453,23 +453,23 @@ export function MarketingHomePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+              <div className="grid grid-cols-1 gap-4 min-w-0">
+                <div className="relative rounded-2xl overflow-hidden border border-border bg-card h-32 sm:h-40 md:h-44">
                   <Image
                     src="/user-owner-laptop.jpg"
                     alt="Founder working with confidence"
-                    width={600}
-                    height={176}
-                    className="h-32 w-full object-cover sm:h-40 md:h-44"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>
-                <div className="rounded-2xl overflow-hidden border border-border bg-card">
+                <div className="relative rounded-2xl overflow-hidden border border-border bg-card h-32 sm:h-40 md:h-44">
                   <Image
                     src="/user-success.jpg"
                     alt="Positive financial outcomes for small business owners"
-                    width={600}
-                    height={176}
-                    className="h-32 w-full object-cover sm:h-40 md:h-44"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>
               </div>

@@ -4,7 +4,12 @@
 // NO dark patterns — transparent tier limits only.
 // Must match backend app/entitlements/tiers.py
 
-export type SubscriptionTier = "free" | "starter" | "pro" | "govcon" | "enterprise";
+export type SubscriptionTier =
+  | "free"
+  | "starter"
+  | "pro"
+  | "govcon"
+  | "enterprise";
 
 export interface TierLimits {
   name: string;
@@ -102,7 +107,7 @@ export function getSignalsDepth(plan: string | null | undefined): number {
  * Get max transactions per month for a plan.
  */
 export function getMaxTransactionsPerMonth(
-  plan: string | null | undefined
+  plan: string | null | undefined,
 ): number {
   const limits = getTierLimits(plan);
   return limits.max_transactions_per_month;
@@ -125,7 +130,7 @@ export interface FeatureAccessResult {
  */
 export function checkFeatureAccess(
   plan: string | null | undefined,
-  feature: EntitlementFeature
+  feature: EntitlementFeature,
 ): FeatureAccessResult {
   const limits = getTierLimits(plan);
 
@@ -157,7 +162,7 @@ export function checkFeatureAccess(
  */
 export function getUpgradePrompt(
   feature: EntitlementFeature,
-  currentTier: string | null | undefined
+  currentTier: string | null | undefined,
 ): string {
   const tierName = getTierLimits(currentTier).name;
 

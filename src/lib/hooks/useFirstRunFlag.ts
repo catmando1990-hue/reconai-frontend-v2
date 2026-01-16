@@ -22,7 +22,7 @@ function getServerSnapshot(): boolean {
   return false;
 }
 
-function subscribe(_callback: () => void): () => void {
+function subscribe(): () => void {
   // localStorage doesn't emit events for same-tab writes, so this is a no-op
   // The flag is read once on mount and never changes
   return () => {};

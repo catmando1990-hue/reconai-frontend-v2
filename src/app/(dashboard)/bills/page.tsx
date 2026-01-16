@@ -48,13 +48,19 @@ export default function BillsPage() {
           <div className="h-10 bg-card/20 rounded" />
         </div>
       ) : bills.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 mb-4">
             <Receipt className="h-6 w-6 text-red-400" />
           </div>
-          <p className="text-muted-foreground text-sm">No bills yet.</p>
-          <p className="text-muted-foreground text-xs mt-1">
-            Bills will appear here once added.
+          <h3 className="text-foreground font-medium mb-2">No Bills Yet</h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            ReconAI automatically imports bills and payables from your connected
+            accounts. Track due dates, payment status, and cash flow obligations
+            in one place.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Next step: Connect a bank account or accounting platform to start
+            importing bills.
           </p>
         </div>
       ) : (

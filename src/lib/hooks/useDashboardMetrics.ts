@@ -73,11 +73,15 @@ export function useDashboardMetrics() {
     const fetchMetrics = async () => {
       try {
         setIsLoading(true);
+        if (alive) setError(null);
         const data = await apiFetch<DashboardMetrics>("/api/dashboard/metrics");
         if (alive) setMetrics(data);
       } catch {
         // Silent failure: use empty metrics
-        if (alive) setMetrics(emptyMetrics);
+        if (alive) {
+          setMetrics(emptyMetrics);
+          setError(new Error("Failed to load dashboard metrics"));
+        }
       } finally {
         if (alive) setIsLoading(false);
       }

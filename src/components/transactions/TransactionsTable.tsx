@@ -50,10 +50,18 @@ export default function TransactionsTable() {
 
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-muted-foreground text-sm">No transactions yet.</p>
-        <p className="text-muted-foreground text-xs mt-1">
-          Transactions will appear here once imported.
+      <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
+        <h3 className="text-foreground font-medium mb-2">
+          No Transactions Yet
+        </h3>
+        <p className="text-muted-foreground text-sm mb-4">
+          ReconAI imports transactions automatically from your connected bank
+          accounts. Once synced, transactions appear here for categorization,
+          duplicate detection, and reconciliation.
+        </p>
+        <p className="text-muted-foreground text-xs">
+          Next step: Connect a bank account via Plaid to start importing
+          transactions.
         </p>
       </div>
     );

@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { AlertTriangle, ChevronRight, X } from "lucide-react";
+import { AlertTriangle, ChevronRight, X, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { StatusChip } from "@/components/dashboard/StatusChip";
+
+// Confidence threshold for displaying signals (matches IntelligenceV1Panel)
+const CONFIDENCE_THRESHOLD = 0.85;
 
 type Signal = {
   id: string;
@@ -11,6 +16,8 @@ type Signal = {
   severity?: "low" | "medium" | "high";
   message?: string;
   created_at?: string;
+  confidence?: number;
+  explanation?: string;
 };
 
 type SignalEvidence = {
@@ -24,29 +31,44 @@ type SignalEvidence = {
   }>;
 };
 
+/**
+ * SignalsPanel - Manual-trigger signals viewer
+ *
+ * LAWS COMPLIANCE:
+ * - NO AUTO-EXECUTION: Requires manual "Fetch Signals" button click
+ * - ADVISORY ONLY: Read-only display with evidence viewer
+ * - CONFIDENCE CONTRACT: Filters signals below 0.85 confidence threshold
+ */
 export default function SignalsPanel() {
   const [signals, setSignals] = useState<Signal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [ran, setRan] = useState(false);
   const [selectedSignal, setSelectedSignal] = useState<string | null>(null);
   const [evidence, setEvidence] = useState<SignalEvidence | null>(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const data = await apiFetch<Signal[]>("/api/signals");
-        if (alive) setSignals(data);
-      } catch {
-        // Silent: empty array on failure
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+  // Manual fetch - NO AUTO-EXECUTION
+  const fetchSignals = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await apiFetch<Signal[]>("/api/signals");
+      // Apply confidence threshold filter
+      const filteredSignals = (data ?? []).filter(
+        (s) => (s.confidence ?? 0) >= CONFIDENCE_THRESHOLD,
+      );
+      setSignals(filteredSignals);
+      setRan(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to fetch signals");
+      setRan(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchEvidence = async (signalId: string) => {
     setSelectedSignal(signalId);
@@ -68,61 +90,107 @@ export default function SignalsPanel() {
     setEvidence(null);
   };
 
-  // Don't render if loading or no signals
-  if (loading) {
-    return (
-      <div className="rounded-xl border border-border bg-card/50 p-4">
-        <div className="animate-pulse space-y-2">
-          <div className="h-4 w-24 bg-card/20 rounded" />
-          <div className="h-8 bg-card/20 rounded" />
-        </div>
-      </div>
-    );
-  }
-
-  if (signals.length === 0) {
-    return null;
-  }
+  // Determine status for display
+  const status = ran
+    ? error
+      ? { label: "Error", tone: "warn" as const }
+      : { label: "Complete", tone: "ok" as const }
+    : { label: "Manual run", tone: "muted" as const };
 
   return (
     <div className="rounded-xl border border-border bg-card/50 p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
-        <AlertTriangle className="h-4 w-4 text-amber-500" />
-        Signals ({signals.length})
+      {/* Header with manual trigger */}
+      <div className="flex items-center justify-between gap-4 mb-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          Signals (Advisory)
+        </div>
+        <div className="flex items-center gap-2">
+          <StatusChip variant={status.tone}>{status.label}</StatusChip>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void fetchSignals()}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                Fetching...
+              </>
+            ) : (
+              "Fetch Signals"
+            )}
+          </Button>
+        </div>
       </div>
 
-      <ul className="space-y-2">
-        {signals.map((signal) => (
-          <li
-            key={signal.id}
-            className="flex items-center justify-between rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm"
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  signal.severity === "high"
-                    ? "bg-red-500"
-                    : signal.severity === "medium"
-                      ? "bg-amber-500"
-                      : "bg-blue-500"
-                }`}
-              />
-              <span className="text-muted-foreground">
-                {signal.message ??
-                  `${signal.type} detected${signal.entity_id ? ` (${signal.entity_id})` : ""}`}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => fetchEvidence(signal.id)}
-              className="flex items-center gap-1 text-xs text-primary hover:underline"
+      <p className="text-xs text-muted-foreground mb-4">
+        Manual-run only. Results filtered to confidence &ge;{" "}
+        {CONFIDENCE_THRESHOLD * 100}%.
+      </p>
+
+      {/* Error state */}
+      {error && <p className="text-sm text-destructive mb-3">{error}</p>}
+
+      {/* Pre-run state */}
+      {!ran && !loading && (
+        <p className="text-sm text-muted-foreground">
+          Click &quot;Fetch Signals&quot; to check for anomalies, duplicate
+          transactions, or unusual patterns in your financial data.
+        </p>
+      )}
+
+      {/* Empty state after run */}
+      {ran && !error && signals.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No signals met the confidence threshold ({CONFIDENCE_THRESHOLD * 100}
+          %). This means no high-confidence anomalies were detected.
+        </p>
+      )}
+
+      {/* Signals list */}
+      {signals.length > 0 && (
+        <ul className="space-y-2">
+          {signals.map((signal) => (
+            <li
+              key={signal.id}
+              className="flex items-center justify-between rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm"
             >
-              Evidence
-              <ChevronRight className="h-3 w-3" />
-            </button>
-          </li>
-        ))}
-      </ul>
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span
+                  className={`h-2 w-2 shrink-0 rounded-full ${
+                    signal.severity === "high"
+                      ? "bg-red-500"
+                      : signal.severity === "medium"
+                        ? "bg-amber-500"
+                        : "bg-blue-500"
+                  }`}
+                />
+                <span className="text-muted-foreground truncate">
+                  {signal.message ??
+                    `${signal.type} detected${signal.entity_id ? ` (${signal.entity_id})` : ""}`}
+                </span>
+                {signal.confidence !== undefined && (
+                  <StatusChip
+                    variant={signal.confidence >= 0.9 ? "ok" : "warn"}
+                  >
+                    {Math.round(signal.confidence * 100)}%
+                  </StatusChip>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => fetchEvidence(signal.id)}
+                className="flex items-center gap-1 text-xs text-primary hover:underline shrink-0 ml-2"
+              >
+                Evidence
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {/* Evidence Modal */}
       {selectedSignal && (
@@ -195,6 +263,12 @@ export default function SignalsPanel() {
                 No evidence available.
               </div>
             )}
+
+            {/* Advisory footer */}
+            <div className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground">
+              Evidence is provided for transparency. Results should be verified
+              before taking action.
+            </div>
           </div>
         </div>
       )}

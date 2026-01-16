@@ -51,13 +51,19 @@ export default function InvoicesPage() {
           <div className="h-10 bg-card/20 rounded" />
         </div>
       ) : invoices.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 mb-4">
             <FileText className="h-6 w-6 text-green-400" />
           </div>
-          <p className="text-muted-foreground text-sm">No invoices yet.</p>
-          <p className="text-muted-foreground text-xs mt-1">
-            Invoices will appear here once added.
+          <h3 className="text-foreground font-medium mb-2">No Invoices Yet</h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            ReconAI automatically imports invoices from your connected bank
+            accounts and accounting integrations. Once synced, your receivables
+            will appear here for tracking and reconciliation.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Next step: Connect a bank account or accounting platform to start
+            importing data.
           </p>
         </div>
       ) : (

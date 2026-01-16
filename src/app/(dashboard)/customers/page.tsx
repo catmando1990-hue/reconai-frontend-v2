@@ -43,13 +43,19 @@ export default function CustomersPage() {
           <div className="h-10 bg-card/20 rounded" />
         </div>
       ) : customers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 mb-4">
             <Users className="h-6 w-6 text-blue-400" />
           </div>
-          <p className="text-muted-foreground text-sm">No customers yet.</p>
-          <p className="text-muted-foreground text-xs mt-1">
-            Customers will appear here once added.
+          <h3 className="text-foreground font-medium mb-2">No Customers Yet</h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            Customer records are automatically created when ReconAI processes
+            your invoices and transactions. Track customer relationships,
+            payment history, and receivables status.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Next step: Import invoices to automatically populate your customer
+            list.
           </p>
         </div>
       ) : (

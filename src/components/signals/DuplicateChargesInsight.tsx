@@ -24,7 +24,7 @@ function getServerSnapshot(): boolean {
   return true; // Assume dismissed on server to avoid flash
 }
 
-function subscribe(_callback: () => void): () => void {
+function subscribe(): () => void {
   return () => {};
 }
 

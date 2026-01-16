@@ -50,7 +50,10 @@ const CLERK_ROUTES = [
 
 // Routes that need auth enforcement (subset of CLERK_ROUTES)
 const PROTECTED_PREFIXES = CLERK_ROUTES.filter(
-  (r) => !r.startsWith("/sign-in") && !r.startsWith("/sign-up") && !r.startsWith("/onboarding")
+  (r) =>
+    !r.startsWith("/sign-in") &&
+    !r.startsWith("/sign-up") &&
+    !r.startsWith("/onboarding"),
 );
 
 const requiresClerk = createRouteMatcher(CLERK_ROUTES);
@@ -122,10 +125,7 @@ export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Always skip Next internals and static assets
-  if (
-    pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico"
-  ) {
+  if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
   }
 

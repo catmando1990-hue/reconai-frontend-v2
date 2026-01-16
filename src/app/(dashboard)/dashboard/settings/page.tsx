@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import {
@@ -11,6 +12,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { UpgradePanel } from "@/components/billing/UpgradePanel";
+import type { SubscriptionTier } from "@/lib/entitlements";
 
 // Types for diagnostics
 interface Finding {
@@ -131,10 +134,31 @@ function StatusChip({
 
 export default function SettingsPage() {
   const { user, isLoaded: userLoaded } = useUser();
+  const searchParams = useSearchParams();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [plaid, setPlaid] = useState<PlaidData | null>(null);
   const [intel, setIntel] = useState<IntelData | null>(null);
   const [auditAvailable, setAuditAvailable] = useState<boolean | null>(null);
+  const [checkoutStatus, setCheckoutStatus] = useState<
+    "success" | "cancelled" | null
+  >(null);
+
+  // Get user's current tier from metadata
+  const userTier = (user?.publicMetadata as Record<string, unknown> | undefined)
+    ?.tier as SubscriptionTier | undefined;
+
+  // Check for checkout result from URL params
+  useEffect(() => {
+    const checkout = searchParams.get("checkout");
+    if (checkout === "success") {
+      setCheckoutStatus("success");
+      // Clear URL param after showing message
+      window.history.replaceState({}, "", "/dashboard/settings");
+    } else if (checkout === "cancelled") {
+      setCheckoutStatus("cancelled");
+      window.history.replaceState({}, "", "/dashboard/settings");
+    }
+  }, [searchParams]);
 
   // Editable preferences state
   const [preferences, setPreferences] = useState<PreferencesData>({
@@ -579,6 +603,28 @@ export default function SettingsPage() {
       title="Settings"
       subtitle="Manage your account and preferences."
     >
+      {/* Checkout status message */}
+      {checkoutStatus === "success" && (
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+            Payment successful! Your plan is being updated.
+          </p>
+          <p className="mt-1 text-sm text-green-700 dark:text-green-300">
+            It may take a moment for your new features to activate.
+          </p>
+        </div>
+      )}
+      {checkoutStatus === "cancelled" && (
+        <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            Checkout was cancelled. No changes were made to your plan.
+          </p>
+        </div>
+      )}
+
+      {/* Billing & Upgrade Section */}
+      <UpgradePanel currentTier={userTier} />
+
       {/* Profile Section */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

@@ -40,13 +40,19 @@ export default function VendorsPage() {
           <div className="h-10 bg-card/20 rounded" />
         </div>
       ) : vendors.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/10 mb-4">
             <Store className="h-6 w-6 text-purple-400" />
           </div>
-          <p className="text-muted-foreground text-sm">No vendors yet.</p>
-          <p className="text-muted-foreground text-xs mt-1">
-            Vendors will appear here once added.
+          <h3 className="text-foreground font-medium mb-2">No Vendors Yet</h3>
+          <p className="text-muted-foreground text-sm mb-4">
+            Vendor records are automatically created when ReconAI processes your
+            bills and expenses. Track supplier relationships, payment
+            obligations, and spending patterns.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Next step: Import bills or connect an accounting platform to
+            populate vendors.
           </p>
         </div>
       ) : (

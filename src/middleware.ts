@@ -52,6 +52,12 @@ const CLERK_ROUTES = [
   "/api/diagnostics(.*)",
   "/api/admin(.*)",
   "/api/me(.*)",
+  "/api/audit(.*)",
+  "/api/intelligence(.*)",
+  "/api/plaid(.*)",
+  "/api/dashboard(.*)",
+  "/api/checkout(.*)",
+  "/api/proxy-export(.*)",
 ];
 
 // Routes that need auth enforcement (subset of CLERK_ROUTES)

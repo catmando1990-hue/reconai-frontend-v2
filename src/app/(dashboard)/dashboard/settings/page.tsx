@@ -331,6 +331,7 @@ export default function SettingsPage() {
   }, []);
 
   // STEP A — New API: POST /api/diagnostics/run with confirmation phrase
+  // Fail-safe parsing: reads text() first, handles empty/invalid JSON gracefully
   const runNewDiagnosticApi = async (
     type: "health" | "performance" | "security" | "bugs",
     confirmPhrase: string,
@@ -350,19 +351,46 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ agent, confirm: confirmPhrase }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        // Handle confirmation phrase mismatch or other errors
-        const errorMsg =
-          data.detail?.message ||
-          data.detail?.error ||
-          data.detail ||
-          `Diagnostic failed: ${res.status}`;
+
+      // Read response as text first (fail-safe)
+      const responseText = await res.text();
+
+      // Handle empty response
+      if (!responseText || responseText.trim() === "") {
+        throw new Error("Empty response from server. Please try again.");
+      }
+
+      // Try to parse JSON
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
         throw new Error(
-          typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg),
+          `Invalid JSON from server: ${responseText.slice(0, 100)}...`,
         );
       }
-      return data;
+
+      // Check for error envelope
+      if (!res.ok) {
+        // Handle structured error response
+        const errorObj = data.error as Record<string, unknown> | undefined;
+        const detailObj = data.detail as Record<string, unknown> | string | undefined;
+        const errorMsg =
+          errorObj?.message ||
+          (typeof detailObj === "object" ? detailObj?.message : null) ||
+          (typeof detailObj === "object" ? detailObj?.error : null) ||
+          detailObj ||
+          data.message ||
+          `Diagnostic failed: ${res.status}`;
+        const requestId = data.request_id || errorObj?.request_id || "unknown";
+        throw new Error(
+          typeof errorMsg === "string"
+            ? `${errorMsg} (request_id: ${requestId})`
+            : JSON.stringify(errorMsg),
+        );
+      }
+
+      return data as unknown as DiagnosticRunResult;
     } catch (err) {
       console.error("Diagnostic API error:", err);
       throw err;

@@ -43,3 +43,9 @@ jobs:
       - name: Build
         if: steps.scripts.outputs.build == 'true'
         run: npm run build
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright smoke tests
+        run: npx playwright test

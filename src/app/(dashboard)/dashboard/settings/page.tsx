@@ -358,7 +358,9 @@ export default function SettingsPage() {
           data.detail?.error ||
           data.detail ||
           `Diagnostic failed: ${res.status}`;
-        throw new Error(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));
+        throw new Error(
+          typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg),
+        );
       }
       return data;
     } catch (err) {
@@ -522,7 +524,9 @@ export default function SettingsPage() {
   const formatNewApiResult = (result: DiagnosticRunResult): string => {
     const okEmoji = result.ok ? "✓" : "✗";
     const lines: string[] = [];
-    lines.push(`## ${result.agent.replace(/_/g, " ").toUpperCase()} Diagnostic Report`);
+    lines.push(
+      `## ${result.agent.replace(/_/g, " ").toUpperCase()} Diagnostic Report`,
+    );
     lines.push("");
     lines.push(`### Overall Status: ${okEmoji} ${result.ok ? "PASS" : "FAIL"}`);
     lines.push(`**Request ID:** \`${result.request_id}\``);
@@ -537,7 +541,9 @@ export default function SettingsPage() {
             : finding.severity === "warning" || finding.severity === "error"
               ? "🟡"
               : "🔵";
-        lines.push(`- ${severityIcon} **${finding.component}**: ${finding.message}`);
+        lines.push(
+          `- ${severityIcon} **${finding.component}**: ${finding.message}`,
+        );
       }
       lines.push("");
     } else {
@@ -554,7 +560,9 @@ export default function SettingsPage() {
     lines.push("");
     lines.push(`---`);
     lines.push(`*Started at ${new Date(result.started_at).toLocaleString()}*`);
-    lines.push(`*Completed at ${new Date(result.completed_at).toLocaleString()}*`);
+    lines.push(
+      `*Completed at ${new Date(result.completed_at).toLocaleString()}*`,
+    );
     return lines.join("\n");
   };
 
@@ -1253,44 +1261,46 @@ export default function SettingsPage() {
                 </div>
                 <div className="max-h-[60vh] overflow-y-auto p-4">
                   {/* STEP A — Confirmation Step (Manual-First UX) */}
-                  {diagnosticDialog.step === "confirm" && diagnosticDialog.type && (
-                    <div className="space-y-4">
-                      <div className="rounded border-2 border-yellow-500 bg-yellow-50 p-4 dark:bg-yellow-900/20">
-                        <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                          Admin Confirmation Required
-                        </h3>
-                        <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">
-                          To run this diagnostic agent, type the exact confirmation phrase below:
-                        </p>
-                        <code className="block mt-2 p-2 bg-white dark:bg-gray-800 rounded text-sm font-mono">
-                          {CONFIRMATION_PHRASES[diagnosticDialog.type]}
-                        </code>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Confirmation Phrase:
-                        </label>
-                        <input
-                          type="text"
-                          value={diagnosticDialog.confirmationInput}
-                          onChange={(e) =>
-                            setDiagnosticDialog((d) => ({
-                              ...d,
-                              confirmationInput: e.target.value,
-                              confirmationError: null,
-                            }))
-                          }
-                          placeholder="Type the exact phrase above..."
-                          className="w-full rounded border border-gray-300 p-2 dark:border-gray-600 dark:bg-gray-800"
-                        />
-                        {diagnosticDialog.confirmationError && (
-                          <p className="mt-2 text-sm text-red-600">
-                            {diagnosticDialog.confirmationError}
+                  {diagnosticDialog.step === "confirm" &&
+                    diagnosticDialog.type && (
+                      <div className="space-y-4">
+                        <div className="rounded border-2 border-yellow-500 bg-yellow-50 p-4 dark:bg-yellow-900/20">
+                          <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
+                            Admin Confirmation Required
+                          </h3>
+                          <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">
+                            To run this diagnostic agent, type the exact
+                            confirmation phrase below:
                           </p>
-                        )}
+                          <code className="block mt-2 p-2 bg-white dark:bg-gray-800 rounded text-sm font-mono">
+                            {CONFIRMATION_PHRASES[diagnosticDialog.type]}
+                          </code>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Confirmation Phrase:
+                          </label>
+                          <input
+                            type="text"
+                            value={diagnosticDialog.confirmationInput}
+                            onChange={(e) =>
+                              setDiagnosticDialog((d) => ({
+                                ...d,
+                                confirmationInput: e.target.value,
+                                confirmationError: null,
+                              }))
+                            }
+                            placeholder="Type the exact phrase above..."
+                            className="w-full rounded border border-gray-300 p-2 dark:border-gray-600 dark:bg-gray-800"
+                          />
+                          {diagnosticDialog.confirmationError && (
+                            <p className="mt-2 text-sm text-red-600">
+                              {diagnosticDialog.confirmationError}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Running Step */}
                   {diagnosticDialog.step === "running" && (
@@ -1348,8 +1358,12 @@ export default function SettingsPage() {
                       {/* New API: Show request_id prominently */}
                       {diagnosticDialog.newApiResult && (
                         <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded text-sm">
-                          <span className="text-muted-foreground">Request ID: </span>
-                          <code className="font-mono">{diagnosticDialog.newApiResult.request_id}</code>
+                          <span className="text-muted-foreground">
+                            Request ID:{" "}
+                          </span>
+                          <code className="font-mono">
+                            {diagnosticDialog.newApiResult.request_id}
+                          </code>
                         </div>
                       )}
                     </>
@@ -1367,15 +1381,16 @@ export default function SettingsPage() {
                       Run Diagnostic
                     </Button>
                   )}
-                  {diagnosticDialog.step === "results" && diagnosticDialog.type && (
-                    <Button
-                      onClick={() =>
-                        openDiagnosticDialog(diagnosticDialog.type!)
-                      }
-                    >
-                      Re-run Diagnostic
-                    </Button>
-                  )}
+                  {diagnosticDialog.step === "results" &&
+                    diagnosticDialog.type && (
+                      <Button
+                        onClick={() =>
+                          openDiagnosticDialog(diagnosticDialog.type!)
+                        }
+                      >
+                        Re-run Diagnostic
+                      </Button>
+                    )}
                 </div>
               </div>
             </div>

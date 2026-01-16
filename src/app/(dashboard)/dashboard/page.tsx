@@ -47,6 +47,7 @@ import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
 import SignalsPanel from "@/components/signals/SignalsPanel";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
+import { useChartReady } from "@/lib/hooks/useChartReady";
 import {
   LineChart,
   Line,
@@ -538,9 +539,10 @@ export default function DashboardPage() {
   const [selectedInsight, setSelectedInsight] = useState<AIInsight | null>(
     null,
   );
-  // Prevent recharts negative dimension warnings - charts render after hydration
-  // Use lazy initial state to detect client-side rendering
-  const [chartsMounted] = useState(() => typeof window !== "undefined");
+  // Prevent recharts negative dimension warnings - charts render after container has valid dimensions
+  // useChartReady uses ResizeObserver to detect when width > 0 && height > 0 (no polling)
+  const [cashFlowChartRef, cashFlowChartReady] = useChartReady();
+  const [spendingChartRef, spendingChartReady] = useChartReady();
 
   // Format currency helper
   const formatCurrency = (amount: number) => {
@@ -903,8 +905,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div className="h-64">
-                {chartsMounted && (
+              <div ref={cashFlowChartRef} className="h-64">
+                {cashFlowChartReady && (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={cashFlowData}>
                       <CartesianGrid
@@ -966,8 +968,8 @@ export default function DashboardPage() {
                 </h2>
               </div>
               <div className="flex items-center gap-6">
-                <div className="h-48 w-48">
-                  {chartsMounted && (
+                <div ref={spendingChartRef} className="h-48 w-48">
+                  {spendingChartReady && (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie

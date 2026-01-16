@@ -27,7 +27,7 @@ export default function AboutPage() {
             About ReconAI
           </div>
           <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
-            Financial infrastructure
+            Financial infrastructure{" "}
             <span className="block text-primary">built for evidence</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">

@@ -47,6 +47,7 @@ const CLERK_ROUTES = [
   "/customers(.*)",
   "/vendors(.*)",
   "/receipts(.*)",
+  "/diagnostics(.*)",
 ];
 
 // Routes that need auth enforcement (subset of CLERK_ROUTES)

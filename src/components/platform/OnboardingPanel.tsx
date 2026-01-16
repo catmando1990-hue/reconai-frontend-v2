@@ -255,7 +255,7 @@ export function OnboardingPanel({ apiBase }: { apiBase: string }) {
 
           {statusData.progress.is_complete ? (
             <div className="mt-4 rounded-xl bg-green-50 p-3 text-center text-sm text-green-700">
-              Onboarding complete! You're all set.
+              Onboarding complete! You&apos;re all set.
             </div>
           ) : null}
 
@@ -332,7 +332,7 @@ export function OnboardingPanel({ apiBase }: { apiBase: string }) {
       {activeTab === 'sample-data' && insightsData ? (
         <div className="mt-4">
           <div className="mb-3 text-sm opacity-70">
-            Seed sample data to explore ReconAI's features without connecting a real account.
+            Seed sample data to explore ReconAI&apos;s features without connecting a real account.
           </div>
 
           <div className="space-y-2">

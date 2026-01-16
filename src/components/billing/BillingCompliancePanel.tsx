@@ -238,7 +238,7 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
         <div className="text-sm font-medium mb-3">Right to Export (GDPR/CCPA)</div>
         <div className="grid gap-3">
           <div>
-            <label className="text-xs opacity-70 block mb-1">Type "EXPORT MY DATA" to confirm</label>
+            <label className="text-xs opacity-70 block mb-1">Type &quot;EXPORT MY DATA&quot; to confirm</label>
             <input
               type="text"
               value={exportConfirm}
@@ -286,7 +286,7 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
             />
           </div>
           <div>
-            <label className="text-xs opacity-70 block mb-1">Type "DELETE MY DATA" to confirm</label>
+            <label className="text-xs opacity-70 block mb-1">Type &quot;DELETE MY DATA&quot; to confirm</label>
             <input
               type="text"
               value={deleteConfirm}

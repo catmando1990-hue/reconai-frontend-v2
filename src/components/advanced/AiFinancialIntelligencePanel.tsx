@@ -199,7 +199,7 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
           </div>
 
           <div className="mt-2 text-xs opacity-50">
-            Try: "What is my MRR?", "Show revenue forecast", "How many active users?"
+            Try: &quot;What is my MRR?&quot;, &quot;Show revenue forecast&quot;, &quot;How many active users?&quot;
           </div>
 
           {queryResult ? (

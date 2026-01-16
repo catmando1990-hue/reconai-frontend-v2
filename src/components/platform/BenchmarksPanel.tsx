@@ -271,7 +271,7 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
 
           <div className="text-xs opacity-50 text-center">
             Advisory: Cohort data is calculated from anonymized aggregate data.
-            Cohorts with fewer than the minimum required organizations show "Insufficient data".
+            Cohorts with fewer than the minimum required organizations show &quot;Insufficient data&quot;.
           </div>
         </div>
       ) : null}

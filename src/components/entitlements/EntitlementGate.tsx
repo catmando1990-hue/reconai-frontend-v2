@@ -91,7 +91,7 @@ export function EntitlementGate({
    * - Routes to existing Stripe upgrade flow
    * - Optional callback for analytics
    */
-  const handleUpgradeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleUpgradeClick = () => {
     // Call optional analytics callback
     if (onUpgradeClick) {
       onUpgradeClick(feature, capabilities.tier);

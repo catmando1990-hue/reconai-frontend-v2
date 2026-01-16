@@ -150,7 +150,7 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
           ))}
         </div>
       ) : (
-        <div className="mt-3 text-sm opacity-70">No roles loaded. Click "Load Roles" to view team members.</div>
+        <div className="mt-3 text-sm opacity-70">No roles loaded. Click &quot;Load Roles&quot; to view team members.</div>
       )}
     </div>
   );

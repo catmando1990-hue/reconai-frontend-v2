@@ -141,6 +141,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // Log backend errors for debugging
+    if (backendRes.status >= 400) {
+      console.error("Backend diagnostic error:", {
+        status: backendRes.status,
+        data,
+        requestId,
+      });
+    }
+
     // Return backend response with original status
     return NextResponse.json(data, { status: backendRes.status });
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Activity, Database, Clock, AlertCircle } from "lucide-react";
+import { Activity, Database, Clock, AlertCircle, RefreshCw } from "lucide-react";
 
 interface SystemStatusData {
   ok: boolean;
@@ -16,16 +16,16 @@ interface SystemStatusData {
 
 /**
  * BUILD 11: System health status panel for admin dashboard.
- * Auto-refreshes every 30 seconds.
+ * Manual refresh only - no polling.
  * Uses authenticated apiFetch.
  */
 export default function SystemStatusPanel() {
-  const { data, error, isLoading } = useSWR<SystemStatusData>(
+  // Manual-first UX: No polling. User triggers refresh manually.
+  const { data, error, isLoading, mutate } = useSWR<SystemStatusData>(
     "/api/system/status",
     apiFetch,
     {
-      refreshInterval: 30000, // Refresh every 30s
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
     },
   );
 
@@ -65,6 +65,16 @@ export default function SystemStatusPanel() {
 
   return (
     <div className="flex items-center gap-4 text-xs">
+      {/* Manual Refresh Button */}
+      <button
+        onClick={() => mutate()}
+        disabled={isLoading}
+        className="flex items-center gap-1 rounded border border-white/10 bg-card/60 px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-card/80 hover:text-foreground disabled:opacity-50"
+        title="Refresh status"
+      >
+        <RefreshCw className={`h-2.5 w-2.5 ${isLoading ? "animate-spin" : ""}`} />
+      </button>
+
       {/* API Status */}
       <div className="flex items-center gap-1.5">
         <Activity

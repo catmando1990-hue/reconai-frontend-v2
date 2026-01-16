@@ -18,6 +18,7 @@ interface MaintenanceStatusData {
  * No auth required - uses public endpoint.
  */
 export default function MaintenanceStatus() {
+  // Manual-first UX: No polling. Maintenance status fetched once on mount.
   const { data, error } = useSWR<MaintenanceStatusData>(
     `${process.env.NEXT_PUBLIC_API_URL}/api/maintenance/status`,
     async (url: string) => {
@@ -26,8 +27,7 @@ export default function MaintenanceStatus() {
       return res.json();
     },
     {
-      refreshInterval: 30000, // Refresh every 30s
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
     },
   );
 

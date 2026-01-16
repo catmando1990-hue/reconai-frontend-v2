@@ -48,6 +48,10 @@ const CLERK_ROUTES = [
   "/vendors(.*)",
   "/receipts(.*)",
   "/diagnostics(.*)",
+  // API routes that require auth
+  "/api/diagnostics(.*)",
+  "/api/admin(.*)",
+  "/api/me(.*)",
 ];
 
 // Routes that need auth enforcement (subset of CLERK_ROUTES)
@@ -131,13 +135,8 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // API routes — pass through (no Clerk overhead on public APIs)
-  if (pathname.startsWith("/api")) {
-    // API routes that need auth use their own auth() calls
-    return NextResponse.next();
-  }
-
   // STEP 2: Only apply Clerk middleware to authenticated routes
+  // This includes both page routes AND API routes that need auth
   if (requiresClerk(req)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return clerkHandler(req, {} as any);

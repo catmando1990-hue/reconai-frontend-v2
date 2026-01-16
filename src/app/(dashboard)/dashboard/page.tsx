@@ -590,18 +590,21 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="relative min-h-dvh bg-background text-foreground overflow-hidden">
-      {/* Decorative background blurs - behind content */}
+    <div className="relative min-h-dvh text-foreground overflow-hidden">
+      {/* Base background layer - z-0 */}
+      <div className="absolute inset-0 z-0 bg-background" />
+
+      {/* Decorative background blurs - z-[1] above base, below content */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0"
+        className="pointer-events-none absolute inset-0 z-[1]"
       >
         <div className="absolute -top-24 left-1/2 h-72 w-3xl -translate-x-1/2 rounded-full bg-linear-to-r from-primary/25 via-purple-500/10 to-cyan-500/15 blur-3xl dark:from-primary/20 dark:via-purple-500/10 dark:to-cyan-500/10" />
         <div className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-linear-to-tr from-cyan-500/15 via-primary/10 to-transparent blur-3xl dark:from-cyan-500/10 dark:via-primary/10" />
         <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-linear-to-tr from-purple-500/15 via-primary/10 to-transparent blur-3xl dark:from-purple-500/10 dark:via-primary/10" />
       </div>
 
-      {/* Main content - above decorative elements */}
+      {/* Main content - z-10 above all decorative layers */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
         <motion.div
           className="w-full"

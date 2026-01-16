@@ -618,17 +618,24 @@ function SignUpForm() {
 
 export default function SignUpClient() {
   return (
-    <div className="relative flex min-h-dvh items-center justify-center p-4 sm:p-6 bg-background overflow-hidden">
+    <div className="relative flex min-h-dvh items-center justify-center p-4 sm:p-6 overflow-hidden">
+      {/* Base background layer - z-0 */}
+      <div className="absolute inset-0 z-0 bg-background" />
+
+      {/* Background image - z-[1] */}
       <Image
         src="/hero-boardroom.jpg"
         alt=""
         fill
-        className="object-cover opacity-25 dark:opacity-35"
+        className="z-[1] object-cover opacity-25 dark:opacity-35"
         aria-hidden="true"
         priority
       />
-      <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/60 to-background/80 dark:from-background/70 dark:via-background/50 dark:to-background/70" />
 
+      {/* Gradient overlay - z-[2] */}
+      <div className="absolute inset-0 z-[2] bg-linear-to-b from-background/80 via-background/60 to-background/80 dark:from-background/70 dark:via-background/50 dark:to-background/70" />
+
+      {/* Content - z-10 */}
       <div className="relative z-10">
         <Suspense fallback={<LoadingCard />}>
           <SignUpForm />

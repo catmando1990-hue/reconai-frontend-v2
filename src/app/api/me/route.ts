@@ -7,11 +7,24 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://reconai-backend.onrender.com";
 
+/**
+ * GET /api/me
+ *
+ * Proxies to backend /api/me which auto-provisions personal workspace for new users.
+ * Never returns 404 for valid Clerk sessions.
+ *
+ * Response always includes request_id for tracing.
+ */
 export async function GET() {
+  const requestId = crypto.randomUUID();
+
   try {
     const { userId, getToken } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized", request_id: requestId },
+        { status: 401 },
+      );
     }
 
     const token = await getToken();
@@ -24,35 +37,63 @@ export async function GET() {
       },
     });
 
+    // Read response as text first for fail-safe parsing
+    const responseText = await resp.text();
+
+    if (!responseText || responseText.trim() === "") {
+      console.error("Backend /api/me returned empty response");
+      return NextResponse.json(
+        { error: "Empty response from backend", request_id: requestId },
+        { status: 502 },
+      );
+    }
+
+    let data: Record<string, unknown>;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error("Backend /api/me returned invalid JSON:", responseText.slice(0, 200));
+      return NextResponse.json(
+        { error: "Invalid JSON from backend", request_id: requestId },
+        { status: 502 },
+      );
+    }
+
     if (!resp.ok) {
-      const data = await resp.json().catch(() => ({}));
       console.error("Backend /api/me error:", resp.status, data);
       return NextResponse.json(
         {
           error:
-            data.detail?.message ||
+            (data.detail as Record<string, unknown>)?.message ||
             data.detail ||
             data.error ||
             "Failed to fetch profile",
           backend_status: resp.status,
-          backend_error: data,
+          request_id: data.request_id || requestId,
         },
         { status: resp.status },
       );
     }
 
-    const data = await resp.json();
-
     // Transform backend response to match frontend ProfileData interface
+    const user = data.user as Record<string, unknown> | undefined;
+    const org = data.org as Record<string, unknown> | undefined;
+    const permissions = data.permissions as Record<string, unknown> | undefined;
+
     const profile = {
-      id: data.user?.id,
+      request_id: data.request_id || requestId,
+      id: user?.id,
+      email: user?.email,
       name:
-        [data.user?.first_name, data.user?.last_name]
+        [user?.first_name, user?.last_name]
           .filter(Boolean)
           .join(" ") || undefined,
-      organizationName: data.org?.name,
-      orgId: data.org?.id,
-      role: data.permissions?.role,
+      organizationName: org?.name,
+      orgId: org?.id,
+      orgSlug: org?.slug,
+      tier: org?.tier,
+      isPersonalWorkspace: org?.is_personal_workspace || false,
+      role: permissions?.role,
       timezone: undefined, // Not provided by backend yet
       currency: undefined, // Not provided by backend yet
       fiscalYearStart: undefined, // Not provided by backend yet
@@ -65,7 +106,7 @@ export async function GET() {
     console.error("Profile fetch error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to fetch profile: " + message },
+      { error: "Failed to fetch profile: " + message, request_id: requestId },
       { status: 500 },
     );
   }

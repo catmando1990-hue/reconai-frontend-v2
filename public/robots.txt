@@ -1,0 +1,13 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.reconaitechnology.com/sitemap.xml
+
+# Disallow dashboard/authenticated routes from indexing
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /api/

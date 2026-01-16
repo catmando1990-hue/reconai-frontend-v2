@@ -31,7 +31,10 @@ export async function GET(req: Request) {
     if (!API_URL) {
       return NextResponse.json(
         {
-          error: { code: "CONFIG_ERROR", message: "Backend API not configured" },
+          error: {
+            code: "CONFIG_ERROR",
+            message: "Backend API not configured",
+          },
           request_id: requestId,
         },
         { status: 500 },
@@ -45,7 +48,10 @@ export async function GET(req: Request) {
     if (!agent) {
       return NextResponse.json(
         {
-          error: { code: "INVALID_REQUEST", message: "Missing required query param: agent" },
+          error: {
+            code: "INVALID_REQUEST",
+            message: "Missing required query param: agent",
+          },
           request_id: requestId,
         },
         { status: 400 },
@@ -56,13 +62,16 @@ export async function GET(req: Request) {
     const token = await getToken();
 
     // Proxy to backend
-    const backendRes = await fetch(`${API_URL}/api/diagnostics/last?agent=${agent}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const backendRes = await fetch(
+      `${API_URL}/api/diagnostics/last?agent=${agent}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     // Read response as text first
     const responseText = await backendRes.text();
@@ -71,7 +80,10 @@ export async function GET(req: Request) {
     if (!responseText || responseText.trim() === "") {
       return NextResponse.json(
         {
-          error: { code: "EMPTY_RESPONSE", message: "Empty response from backend" },
+          error: {
+            code: "EMPTY_RESPONSE",
+            message: "Empty response from backend",
+          },
           request_id: requestId,
         },
         { status: 502 },
@@ -102,7 +114,10 @@ export async function GET(req: Request) {
       {
         error: {
           code: "PROXY_ERROR",
-          message: error instanceof Error ? error.message : "Failed to proxy last request",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to proxy last request",
         },
         request_id: requestId,
       },

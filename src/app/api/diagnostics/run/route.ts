@@ -33,7 +33,9 @@ export async function POST(req: Request) {
 
     // Admin check
     const user = await currentUser();
-    const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)?.role;
+    const userRole = (
+      user?.publicMetadata as Record<string, unknown> | undefined
+    )?.role;
     const isAdmin = userRole === "admin" || userRole === "org:admin";
 
     if (!isAdmin) {
@@ -50,7 +52,10 @@ export async function POST(req: Request) {
     if (!API_URL) {
       return NextResponse.json(
         {
-          error: { code: "CONFIG_ERROR", message: "Backend API not configured" },
+          error: {
+            code: "CONFIG_ERROR",
+            message: "Backend API not configured",
+          },
           request_id: requestId,
         },
         { status: 500 },
@@ -64,7 +69,10 @@ export async function POST(req: Request) {
     } catch {
       return NextResponse.json(
         {
-          error: { code: "INVALID_REQUEST", message: "Invalid JSON in request body" },
+          error: {
+            code: "INVALID_REQUEST",
+            message: "Invalid JSON in request body",
+          },
           request_id: requestId,
         },
         { status: 400 },
@@ -75,7 +83,10 @@ export async function POST(req: Request) {
     if (!body.agent || !body.confirm) {
       return NextResponse.json(
         {
-          error: { code: "INVALID_REQUEST", message: "Missing required fields: agent, confirm" },
+          error: {
+            code: "INVALID_REQUEST",
+            message: "Missing required fields: agent, confirm",
+          },
           request_id: requestId,
         },
         { status: 400 },
@@ -102,7 +113,10 @@ export async function POST(req: Request) {
     if (!responseText || responseText.trim() === "") {
       return NextResponse.json(
         {
-          error: { code: "EMPTY_RESPONSE", message: "Empty response from backend" },
+          error: {
+            code: "EMPTY_RESPONSE",
+            message: "Empty response from backend",
+          },
           request_id: requestId,
         },
         { status: 502 },
@@ -135,7 +149,10 @@ export async function POST(req: Request) {
       {
         error: {
           code: "PROXY_ERROR",
-          message: error instanceof Error ? error.message : "Failed to proxy diagnostic request",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to proxy diagnostic request",
         },
         request_id: requestId,
       },

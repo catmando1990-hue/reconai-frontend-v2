@@ -52,7 +52,10 @@ export async function GET() {
     try {
       data = JSON.parse(responseText);
     } catch {
-      console.error("Backend /api/me returned invalid JSON:", responseText.slice(0, 200));
+      console.error(
+        "Backend /api/me returned invalid JSON:",
+        responseText.slice(0, 200),
+      );
       return NextResponse.json(
         { error: "Invalid JSON from backend", request_id: requestId },
         { status: 502 },
@@ -85,9 +88,8 @@ export async function GET() {
       id: user?.id,
       email: user?.email,
       name:
-        [user?.first_name, user?.last_name]
-          .filter(Boolean)
-          .join(" ") || undefined,
+        [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+        undefined,
       organizationName: org?.name,
       orgId: org?.id,
       orgSlug: org?.slug,

@@ -31,7 +31,10 @@ export async function GET() {
     if (!API_URL) {
       return NextResponse.json(
         {
-          error: { code: "CONFIG_ERROR", message: "Backend API not configured" },
+          error: {
+            code: "CONFIG_ERROR",
+            message: "Backend API not configured",
+          },
           request_id: requestId,
         },
         { status: 500 },
@@ -57,7 +60,10 @@ export async function GET() {
     if (!responseText || responseText.trim() === "") {
       return NextResponse.json(
         {
-          error: { code: "EMPTY_RESPONSE", message: "Empty response from backend" },
+          error: {
+            code: "EMPTY_RESPONSE",
+            message: "Empty response from backend",
+          },
           request_id: requestId,
         },
         { status: 502 },
@@ -88,7 +94,10 @@ export async function GET() {
       {
         error: {
           code: "PROXY_ERROR",
-          message: error instanceof Error ? error.message : "Failed to proxy status request",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to proxy status request",
         },
         request_id: requestId,
       },

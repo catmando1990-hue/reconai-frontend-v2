@@ -42,10 +42,7 @@ export default function ReceiptsPage() {
   }, []);
 
   return (
-    <RouteShell
-      title="Receipts"
-      subtitle="Track and manage expense receipts."
-    >
+    <RouteShell title="Receipts" subtitle="Track and manage expense receipts.">
       {loading ? (
         <div className="animate-pulse space-y-3">
           <div className="h-10 bg-card/20 rounded" />

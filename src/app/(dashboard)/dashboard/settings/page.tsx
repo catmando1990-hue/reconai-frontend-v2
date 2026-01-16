@@ -374,7 +374,10 @@ export default function SettingsPage() {
       if (!res.ok) {
         // Handle structured error response
         const errorObj = data.error as Record<string, unknown> | undefined;
-        const detailObj = data.detail as Record<string, unknown> | string | undefined;
+        const detailObj = data.detail as
+          | Record<string, unknown>
+          | string
+          | undefined;
         const errorMsg =
           errorObj?.message ||
           (typeof detailObj === "object" ? detailObj?.message : null) ||

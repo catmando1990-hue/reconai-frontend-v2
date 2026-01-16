@@ -123,7 +123,7 @@ export const LazyKillSwitchStatusPanel = React.lazy(
 /**
  * Check if component should be lazy-loaded based on viewport visibility
  */
-export function useInViewport(ref: React.RefObject<HTMLElement>) {
+export function useInViewport<T extends HTMLElement>(ref: React.RefObject<T | null>) {
   const [isInViewport, setIsInViewport] = React.useState(false);
 
   React.useEffect(() => {

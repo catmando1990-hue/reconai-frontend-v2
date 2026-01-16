@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 type Invoice = {
   id: string;
@@ -21,7 +21,9 @@ export function InvoicesPanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/invoices`, { credentials: 'include' });
+      const res = await fetch(`${apiBase}/api/billing/invoices`, {
+        credentials: "include",
+      });
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || `HTTP ${res.status}`);
@@ -29,7 +31,8 @@ export function InvoicesPanel({ apiBase }: { apiBase: string }) {
       const json = await res.json();
       setItems((json?.invoices || []) as Invoice[]);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to load invoices';
+      const message =
+        e instanceof Error ? e.message : "Failed to load invoices";
       setErr(message);
     } finally {
       setLoading(false);
@@ -41,7 +44,9 @@ export function InvoicesPanel({ apiBase }: { apiBase: string }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">Invoices</div>
-          <div className="text-xs opacity-70">Read-only invoices and receipts from Stripe.</div>
+          <div className="text-xs opacity-70">
+            Read-only invoices and receipts from Stripe.
+          </div>
         </div>
         <button
           type="button"
@@ -49,7 +54,7 @@ export function InvoicesPanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Load'}
+          {loading ? "Loading..." : "Load"}
         </button>
       </div>
 
@@ -61,14 +66,28 @@ export function InvoicesPanel({ apiBase }: { apiBase: string }) {
             <div key={inv.id} className="rounded-xl border p-3 text-sm">
               <div className="flex justify-between gap-3">
                 <div className="font-mono text-xs">{inv.id}</div>
-                <div className="opacity-70">{inv.status || ''}</div>
+                <div className="opacity-70">{inv.status || ""}</div>
               </div>
               <div className="mt-2 flex flex-wrap gap-3">
                 {inv.hosted_invoice_url ? (
-                  <a className="underline" href={inv.hosted_invoice_url} target="_blank" rel="noreferrer">Hosted invoice</a>
+                  <a
+                    className="underline"
+                    href={inv.hosted_invoice_url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Hosted invoice
+                  </a>
                 ) : null}
                 {inv.invoice_pdf ? (
-                  <a className="underline" href={inv.invoice_pdf} target="_blank" rel="noreferrer">PDF</a>
+                  <a
+                    className="underline"
+                    href={inv.invoice_pdf}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    PDF
+                  </a>
                 ) : null}
               </div>
             </div>

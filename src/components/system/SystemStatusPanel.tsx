@@ -2,7 +2,13 @@
 
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Activity, Database, Clock, AlertCircle, RefreshCw } from "lucide-react";
+import {
+  Activity,
+  Database,
+  Clock,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 
 interface SystemStatusData {
   ok: boolean;
@@ -72,7 +78,9 @@ export default function SystemStatusPanel() {
         className="flex items-center gap-1 rounded border border-white/10 bg-card/60 px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-card/80 hover:text-foreground disabled:opacity-50"
         title="Refresh status"
       >
-        <RefreshCw className={`h-2.5 w-2.5 ${isLoading ? "animate-spin" : ""}`} />
+        <RefreshCw
+          className={`h-2.5 w-2.5 ${isLoading ? "animate-spin" : ""}`}
+        />
       </button>
 
       {/* API Status */}

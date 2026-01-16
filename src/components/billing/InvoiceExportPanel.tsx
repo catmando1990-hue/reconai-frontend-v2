@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 type ExportResult = {
   request_id: string;
@@ -17,9 +17,9 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [result, setResult] = React.useState<ExportResult | null>(null);
-  const [format, setFormat] = React.useState<'json' | 'csv'>('json');
-  const [startDate, setStartDate] = React.useState('');
-  const [endDate, setEndDate] = React.useState('');
+  const [format, setFormat] = React.useState<"json" | "csv">("json");
+  const [startDate, setStartDate] = React.useState("");
+  const [endDate, setEndDate] = React.useState("");
 
   const exportInvoices = async () => {
     setLoading(true);
@@ -31,9 +31,9 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
       if (endDate) body.end_date = endDate;
 
       const res = await fetch(`${apiBase}/api/billing/invoices/export`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -45,7 +45,8 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
       const json = (await res.json()) as ExportResult;
       setResult(json);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to export invoices';
+      const message =
+        e instanceof Error ? e.message : "Failed to export invoices";
       setErr(message);
     } finally {
       setLoading(false);
@@ -59,19 +60,19 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
     let filename: string;
     let mimeType: string;
 
-    if (result.format === 'csv' && result.data) {
+    if (result.format === "csv" && result.data) {
       content = result.data;
-      filename = `invoices-export-${new Date().toISOString().split('T')[0]}.csv`;
-      mimeType = 'text/csv';
+      filename = `invoices-export-${new Date().toISOString().split("T")[0]}.csv`;
+      mimeType = "text/csv";
     } else {
       content = JSON.stringify(result.invoices || [], null, 2);
-      filename = `invoices-export-${new Date().toISOString().split('T')[0]}.json`;
-      mimeType = 'application/json';
+      filename = `invoices-export-${new Date().toISOString().split("T")[0]}.json`;
+      mimeType = "application/json";
     }
 
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
@@ -85,7 +86,9 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">Invoice Export</div>
-          <div className="text-xs opacity-70">Export invoice data from Stripe (manual, read-only).</div>
+          <div className="text-xs opacity-70">
+            Export invoice data from Stripe (manual, read-only).
+          </div>
         </div>
       </div>
 
@@ -95,7 +98,7 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
             <label className="text-xs opacity-70 block mb-1">Format</label>
             <select
               value={format}
-              onChange={(e) => setFormat(e.target.value as 'json' | 'csv')}
+              onChange={(e) => setFormat(e.target.value as "json" | "csv")}
               className="rounded-lg border px-2 py-1 text-sm"
             >
               <option value="json">JSON</option>
@@ -103,7 +106,9 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
             </select>
           </div>
           <div>
-            <label className="text-xs opacity-70 block mb-1">Start Date (optional)</label>
+            <label className="text-xs opacity-70 block mb-1">
+              Start Date (optional)
+            </label>
             <input
               type="date"
               value={startDate}
@@ -112,7 +117,9 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
             />
           </div>
           <div>
-            <label className="text-xs opacity-70 block mb-1">End Date (optional)</label>
+            <label className="text-xs opacity-70 block mb-1">
+              End Date (optional)
+            </label>
             <input
               type="date"
               value={endDate}
@@ -129,7 +136,7 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
             disabled={loading}
             className="rounded-xl border px-3 py-2 text-sm"
           >
-            {loading ? 'Exporting...' : 'Export Invoices'}
+            {loading ? "Exporting..." : "Export Invoices"}
           </button>
           {result && (
             <button

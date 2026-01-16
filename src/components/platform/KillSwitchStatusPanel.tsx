@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * STEP 24 — Kill-Switch Status Panel
@@ -14,7 +14,7 @@ import * as React from 'react';
 type FeatureStatus = {
   env_var: string;
   is_killed: boolean;
-  status: 'enabled' | 'disabled';
+  status: "enabled" | "disabled";
 };
 
 type KillSwitchResponse = {
@@ -39,12 +39,14 @@ export function KillSwitchStatusPanel({ apiBase }: { apiBase: string }) {
     setErr(null);
     try {
       const res = await fetch(`${apiBase}/api/killswitch/status`, {
-        credentials: 'include',
+        credentials: "include",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load kill-switch status');
+      setErr(
+        e instanceof Error ? e.message : "Failed to load kill-switch status",
+      );
     } finally {
       setLoading(false);
     }
@@ -56,9 +58,9 @@ export function KillSwitchStatusPanel({ apiBase }: { apiBase: string }) {
 
   const formatFeatureName = (name: string) => {
     return name
-      .split('_')
+      .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .join(" ");
   };
 
   return (
@@ -76,7 +78,7 @@ export function KillSwitchStatusPanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -91,11 +93,11 @@ export function KillSwitchStatusPanel({ apiBase }: { apiBase: string }) {
               <span
                 className={`px-2 py-1 rounded text-xs ${
                   data.summary.all_enabled
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-amber-100 text-amber-800'
+                    ? "bg-green-100 text-green-800"
+                    : "bg-amber-100 text-amber-800"
                 }`}
               >
-                {data.summary.all_enabled ? 'All Enabled' : 'Some Disabled'}
+                {data.summary.all_enabled ? "All Enabled" : "Some Disabled"}
               </span>
             </div>
             <div className="mt-3 grid grid-cols-3 gap-4 text-center">
@@ -124,7 +126,7 @@ export function KillSwitchStatusPanel({ apiBase }: { apiBase: string }) {
               <div
                 key={feature}
                 className={`flex items-center justify-between rounded-xl border p-3 ${
-                  status.is_killed ? 'bg-amber-50 border-amber-200' : ''
+                  status.is_killed ? "bg-amber-50 border-amber-200" : ""
                 }`}
               >
                 <div>
@@ -138,8 +140,8 @@ export function KillSwitchStatusPanel({ apiBase }: { apiBase: string }) {
                 <span
                   className={`px-2 py-1 rounded text-xs font-medium ${
                     status.is_killed
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-green-100 text-green-800'
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-green-100 text-green-800"
                   }`}
                 >
                   {status.status}
@@ -178,7 +180,10 @@ export function KillSwitchStatusPanel({ apiBase }: { apiBase: string }) {
  * Use this to conditionally show disabled states.
  */
 export function useKillSwitchStatus(apiBase: string) {
-  const [features, setFeatures] = React.useState<Record<string, FeatureStatus> | null>(null);
+  const [features, setFeatures] = React.useState<Record<
+    string,
+    FeatureStatus
+  > | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -187,13 +192,13 @@ export function useKillSwitchStatus(apiBase: string) {
     setError(null);
     try {
       const res = await fetch(`${apiBase}/api/killswitch/status`, {
-        credentials: 'include',
+        credentials: "include",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: KillSwitchResponse = await res.json();
       setFeatures(data.features);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to load');
+      setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
       setLoading(false);
     }

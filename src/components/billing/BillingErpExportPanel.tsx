@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 type ErpFormat = {
   id: string;
@@ -28,16 +28,18 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
   const [exporting, setExporting] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [formats, setFormats] = React.useState<ErpFormat[]>([]);
-  const [selectedFormat, setSelectedFormat] = React.useState('');
-  const [startDate, setStartDate] = React.useState('');
-  const [endDate, setEndDate] = React.useState('');
+  const [selectedFormat, setSelectedFormat] = React.useState("");
+  const [startDate, setStartDate] = React.useState("");
+  const [endDate, setEndDate] = React.useState("");
   const [result, setResult] = React.useState<ExportResult | null>(null);
 
   const fetchFormats = React.useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/erp/formats`, { credentials: 'include' });
+      const res = await fetch(`${apiBase}/api/billing/erp/formats`, {
+        credentials: "include",
+      });
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || `HTTP ${res.status}`);
@@ -48,7 +50,8 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
         setSelectedFormat(json.formats[0].id);
       }
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to load ERP formats';
+      const message =
+        e instanceof Error ? e.message : "Failed to load ERP formats";
       setErr(message);
     } finally {
       setLoading(false);
@@ -57,7 +60,7 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
 
   const exportToErp = async () => {
     if (!selectedFormat) {
-      setErr('Please select an ERP format.');
+      setErr("Please select an ERP format.");
       return;
     }
 
@@ -70,9 +73,9 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
       if (endDate) body.end_date = endDate;
 
       const res = await fetch(`${apiBase}/api/billing/erp/export`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -84,7 +87,8 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
       const json = (await res.json()) as ExportResult;
       setResult(json);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to export to ERP';
+      const message =
+        e instanceof Error ? e.message : "Failed to export to ERP";
       setErr(message);
     } finally {
       setExporting(false);
@@ -94,11 +98,11 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
   const downloadCsv = () => {
     if (!result?.csv_data) return;
 
-    const blob = new Blob([result.csv_data], { type: 'text/csv' });
+    const blob = new Blob([result.csv_data], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `erp-export-${result.format}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `erp-export-${result.format}-${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -117,7 +121,9 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">ERP Export</div>
-          <div className="text-xs opacity-70">Export billing data to NetSuite, QuickBooks (manual trigger only).</div>
+          <div className="text-xs opacity-70">
+            Export billing data to NetSuite, QuickBooks (manual trigger only).
+          </div>
         </div>
         <button
           type="button"
@@ -125,7 +131,7 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -143,7 +149,9 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
               <option value="">Loading formats...</option>
             ) : (
               formats.map((f) => (
-                <option key={f.id} value={f.id}>{f.name}</option>
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
               ))
             )}
           </select>
@@ -151,10 +159,14 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
 
         {selectedFormatInfo ? (
           <div className="rounded-lg border p-2 text-xs">
-            <div className="opacity-70 mb-1">{selectedFormatInfo.description}</div>
+            <div className="opacity-70 mb-1">
+              {selectedFormatInfo.description}
+            </div>
             <div className="flex flex-wrap gap-1">
               {selectedFormatInfo.fields.map((field) => (
-                <span key={field} className="rounded bg-gray-100 px-2 py-0.5">{field}</span>
+                <span key={field} className="rounded bg-gray-100 px-2 py-0.5">
+                  {field}
+                </span>
               ))}
             </div>
           </div>
@@ -162,7 +174,9 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
 
         <div className="flex gap-3 flex-wrap">
           <div>
-            <label className="text-xs opacity-70 block mb-1">Start Date (optional)</label>
+            <label className="text-xs opacity-70 block mb-1">
+              Start Date (optional)
+            </label>
             <input
               type="date"
               value={startDate}
@@ -171,7 +185,9 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
             />
           </div>
           <div>
-            <label className="text-xs opacity-70 block mb-1">End Date (optional)</label>
+            <label className="text-xs opacity-70 block mb-1">
+              End Date (optional)
+            </label>
             <input
               type="date"
               value={endDate}
@@ -188,7 +204,7 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
             disabled={exporting || !selectedFormat}
             className="rounded-xl border bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-50"
           >
-            {exporting ? 'Exporting...' : 'Export to ERP'}
+            {exporting ? "Exporting..." : "Export to ERP"}
           </button>
           {result?.csv_data ? (
             <button
@@ -218,7 +234,7 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
           </div>
           <div className="flex justify-between">
             <span className="opacity-70">Audit Logged</span>
-            <span>{result.audit_logged ? 'Yes' : 'No'}</span>
+            <span>{result.audit_logged ? "Yes" : "No"}</span>
           </div>
           <div className="flex justify-between">
             <span className="opacity-70">Request ID</span>

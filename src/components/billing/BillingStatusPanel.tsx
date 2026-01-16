@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 type BillingStatus = {
   org_id: string;
@@ -21,7 +21,9 @@ export function BillingStatusPanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/status`, { credentials: 'include' });
+      const res = await fetch(`${apiBase}/api/billing/status`, {
+        credentials: "include",
+      });
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || `HTTP ${res.status}`);
@@ -29,7 +31,8 @@ export function BillingStatusPanel({ apiBase }: { apiBase: string }) {
       const json = (await res.json()) as BillingStatus;
       setData(json);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to load billing status';
+      const message =
+        e instanceof Error ? e.message : "Failed to load billing status";
       setErr(message);
     } finally {
       setLoading(false);
@@ -46,7 +49,9 @@ export function BillingStatusPanel({ apiBase }: { apiBase: string }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">Billing status</div>
-          <div className="text-xs opacity-70">Stripe-backed, read-only view.</div>
+          <div className="text-xs opacity-70">
+            Stripe-backed, read-only view.
+          </div>
         </div>
         <button
           type="button"
@@ -54,7 +59,7 @@ export function BillingStatusPanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Refreshing...' : 'Refresh'}
+          {loading ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
@@ -62,18 +67,36 @@ export function BillingStatusPanel({ apiBase }: { apiBase: string }) {
         <div className="mt-3 text-sm">{err}</div>
       ) : data ? (
         <div className="mt-3 grid gap-2 text-sm">
-          <div className="flex justify-between"><span className="opacity-70">Tier</span><span>{data.tier}</span></div>
+          <div className="flex justify-between">
+            <span className="opacity-70">Tier</span>
+            <span>{data.tier}</span>
+          </div>
           {data.interval ? (
-            <div className="flex justify-between"><span className="opacity-70">Interval</span><span>{data.interval}</span></div>
+            <div className="flex justify-between">
+              <span className="opacity-70">Interval</span>
+              <span>{data.interval}</span>
+            </div>
           ) : null}
           {data.status ? (
-            <div className="flex justify-between"><span className="opacity-70">Status</span><span>{data.status}</span></div>
+            <div className="flex justify-between">
+              <span className="opacity-70">Status</span>
+              <span>{data.status}</span>
+            </div>
           ) : null}
           {data.renewal_date ? (
-            <div className="flex justify-between"><span className="opacity-70">Renews</span><span>{data.renewal_date}</span></div>
+            <div className="flex justify-between">
+              <span className="opacity-70">Renews</span>
+              <span>{data.renewal_date}</span>
+            </div>
           ) : null}
-          <div className="flex justify-between"><span className="opacity-70">Source</span><span>{data.source || 'stripe'}</span></div>
-          <div className="flex justify-between"><span className="opacity-70">Request</span><span className="font-mono text-xs">{data.request_id}</span></div>
+          <div className="flex justify-between">
+            <span className="opacity-70">Source</span>
+            <span>{data.source || "stripe"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="opacity-70">Request</span>
+            <span className="font-mono text-xs">{data.request_id}</span>
+          </div>
         </div>
       ) : (
         <div className="mt-3 text-sm opacity-70">No billing data yet.</div>

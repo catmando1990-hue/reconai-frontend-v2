@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * STEP 21 — Investor Audit Trail & Export Receipts Panel
@@ -19,7 +19,7 @@ type Receipt = {
   org_id: string;
   user_id: string;
   org_tier: string;
-  export_type: 'json' | 'pdf';
+  export_type: "json" | "pdf";
   timestamp: string;
   fields_included: string[];
   fields_count: number;
@@ -77,7 +77,9 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
   const [err, setErr] = React.useState<string | null>(null);
   const [receipts, setReceipts] = React.useState<Receipt[]>([]);
   const [summary, setSummary] = React.useState<AuditSummary | null>(null);
-  const [selectedReceipt, setSelectedReceipt] = React.useState<Receipt | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = React.useState<Receipt | null>(
+    null,
+  );
   const [requestId, setRequestId] = React.useState<string | null>(null);
   const [generating, setGenerating] = React.useState(false);
 
@@ -86,11 +88,16 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
     setErr(null);
     try {
       const [receiptsRes, summaryRes] = await Promise.all([
-        fetch(`${apiBase}/api/investor/audit/receipts`, { credentials: 'include' }),
-        fetch(`${apiBase}/api/investor/audit/summary`, { credentials: 'include' }),
+        fetch(`${apiBase}/api/investor/audit/receipts`, {
+          credentials: "include",
+        }),
+        fetch(`${apiBase}/api/investor/audit/summary`, {
+          credentials: "include",
+        }),
       ]);
 
-      if (!receiptsRes.ok) throw new Error(`Receipts: HTTP ${receiptsRes.status}`);
+      if (!receiptsRes.ok)
+        throw new Error(`Receipts: HTTP ${receiptsRes.status}`);
       if (!summaryRes.ok) throw new Error(`Summary: HTTP ${summaryRes.status}`);
 
       const receiptsData: ReceiptsResponse = await receiptsRes.json();
@@ -100,7 +107,7 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
       setSummary(summaryData.summary);
       setRequestId(receiptsData.request_id);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load audit data');
+      setErr(e instanceof Error ? e.message : "Failed to load audit data");
     } finally {
       setLoading(false);
     }
@@ -110,22 +117,22 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
     fetchData();
   }, [fetchData]);
 
-  const handleGenerateReceipt = async (exportType: 'json' | 'pdf') => {
+  const handleGenerateReceipt = async (exportType: "json" | "pdf") => {
     setGenerating(true);
     setErr(null);
     try {
       const res = await fetch(
         `${apiBase}/api/investor/audit/receipts/generate?export_type=${exportType}`,
         {
-          method: 'POST',
-          credentials: 'include',
-        }
+          method: "POST",
+          credentials: "include",
+        },
       );
       if (!res.ok) throw new Error(`Generate: HTTP ${res.status}`);
       // Refresh data after generation
       await fetchData();
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to generate receipt');
+      setErr(e instanceof Error ? e.message : "Failed to generate receipt");
     } finally {
       setGenerating(false);
     }
@@ -154,7 +161,7 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -183,7 +190,7 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
               <div className="text-sm font-medium">
                 {summary.latest_export
                   ? formatTimestamp(summary.latest_export)
-                  : 'None'}
+                  : "None"}
               </div>
               <div className="text-xs opacity-70">Latest Export</div>
             </div>
@@ -197,12 +204,12 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
                 <span
                   key={key}
                   className={`px-2 py-1 rounded text-xs ${
-                    status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-600'
+                    status === "active"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {key.replace(/_/g, ' ')}: {status}
+                  {key.replace(/_/g, " ")}: {status}
                 </span>
               ))}
             </div>
@@ -214,19 +221,19 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
       <div className="mt-4 flex gap-2">
         <button
           type="button"
-          onClick={() => handleGenerateReceipt('json')}
+          onClick={() => handleGenerateReceipt("json")}
           disabled={generating}
           className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
         >
-          {generating ? 'Generating...' : 'Generate JSON Receipt'}
+          {generating ? "Generating..." : "Generate JSON Receipt"}
         </button>
         <button
           type="button"
-          onClick={() => handleGenerateReceipt('pdf')}
+          onClick={() => handleGenerateReceipt("pdf")}
           disabled={generating}
           className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
         >
-          {generating ? 'Generating...' : 'Generate PDF Receipt'}
+          {generating ? "Generating..." : "Generate PDF Receipt"}
         </button>
       </div>
 
@@ -247,8 +254,8 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
                 key={receipt.receipt_id}
                 className={`rounded-xl border p-3 cursor-pointer transition-colors ${
                   selectedReceipt?.receipt_id === receipt.receipt_id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'hover:bg-gray-50'
+                    ? "border-blue-500 bg-blue-50"
+                    : "hover:bg-gray-50"
                 }`}
                 onClick={() => setSelectedReceipt(receipt)}
               >
@@ -256,9 +263,9 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
                   <div className="flex items-center gap-3">
                     <span
                       className={`px-2 py-1 rounded text-xs font-medium ${
-                        receipt.export_type === 'json'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-purple-100 text-purple-800'
+                        receipt.export_type === "json"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-purple-100 text-purple-800"
                       }`}
                     >
                       {receipt.export_type.toUpperCase()}
@@ -355,7 +362,7 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
                     >
                       {field}
                     </span>
-                  )
+                  ),
                 )}
               </div>
             </div>
@@ -369,13 +376,13 @@ export function InvestorAuditPanel({ apiBase }: { apiBase: string }) {
                       key={key}
                       className={`px-2 py-1 rounded text-xs ${
                         applied
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-500'
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      {key.replace(/_/g, ' ')}: {applied ? 'Yes' : 'No'}
+                      {key.replace(/_/g, " ")}: {applied ? "Yes" : "No"}
                     </span>
-                  )
+                  ),
                 )}
               </div>
             </div>

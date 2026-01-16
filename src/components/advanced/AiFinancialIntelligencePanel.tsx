@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 type AiInsight = {
   id: string;
@@ -46,12 +46,17 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
   const [loading, setLoading] = React.useState(false);
   const [querying, setQuerying] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
-  const [activeTab, setActiveTab] = React.useState<'query' | 'insights' | 'forecast' | 'explain'>('query');
+  const [activeTab, setActiveTab] = React.useState<
+    "query" | "insights" | "forecast" | "explain"
+  >("query");
   const [insights, setInsights] = React.useState<AiInsight[]>([]);
   const [forecasts, setForecasts] = React.useState<ForecastPoint[]>([]);
-  const [queryInput, setQueryInput] = React.useState('');
-  const [queryResult, setQueryResult] = React.useState<QueryResult | null>(null);
-  const [explainability, setExplainability] = React.useState<Explainability | null>(null);
+  const [queryInput, setQueryInput] = React.useState("");
+  const [queryResult, setQueryResult] = React.useState<QueryResult | null>(
+    null,
+  );
+  const [explainability, setExplainability] =
+    React.useState<Explainability | null>(null);
   const [currentMrr, setCurrentMrr] = React.useState(0);
   const [requestId, setRequestId] = React.useState<string | null>(null);
 
@@ -59,13 +64,15 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/ai/insights`, { credentials: 'include' });
+      const res = await fetch(`${apiBase}/api/ai/insights`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setInsights(json.insights || []);
       setRequestId(json.request_id);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load insights');
+      setErr(e instanceof Error ? e.message : "Failed to load insights");
     } finally {
       setLoading(false);
     }
@@ -74,14 +81,16 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
   const fetchForecast = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/ai/forecast?months=12`, { credentials: 'include' });
+      const res = await fetch(`${apiBase}/api/ai/forecast?months=12`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setForecasts(json.forecasts || []);
       setCurrentMrr(json.current_mrr || 0);
       setRequestId(json.request_id);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load forecast');
+      setErr(e instanceof Error ? e.message : "Failed to load forecast");
     } finally {
       setLoading(false);
     }
@@ -90,13 +99,15 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
   const fetchExplainability = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/ai/explainability`, { credentials: 'include' });
+      const res = await fetch(`${apiBase}/api/ai/explainability`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setExplainability(json.explainability);
       setRequestId(json.request_id);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load explainability');
+      setErr(e instanceof Error ? e.message : "Failed to load explainability");
     } finally {
       setLoading(false);
     }
@@ -104,7 +115,7 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
 
   const submitQuery = async () => {
     if (!queryInput.trim()) {
-      setErr('Please enter a query');
+      setErr("Please enter a query");
       return;
     }
 
@@ -113,9 +124,9 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
     setQueryResult(null);
     try {
       const res = await fetch(`${apiBase}/api/ai/query`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: queryInput }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -123,7 +134,7 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
       setQueryResult(json);
       setRequestId(json.request_id);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to process query');
+      setErr(e instanceof Error ? e.message : "Failed to process query");
     } finally {
       setQuerying(false);
     }
@@ -131,9 +142,9 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
 
   const handleTabChange = async (tab: typeof activeTab) => {
     setActiveTab(tab);
-    if (tab === 'insights') await fetchInsights();
-    else if (tab === 'forecast') await fetchForecast();
-    else if (tab === 'explain') await fetchExplainability();
+    if (tab === "insights") await fetchInsights();
+    else if (tab === "forecast") await fetchForecast();
+    else if (tab === "explain") await fetchExplainability();
   };
 
   React.useEffect(() => {
@@ -143,10 +154,14 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'info': return 'bg-blue-100 text-blue-800';
-      case 'warning': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "info":
+        return "bg-blue-100 text-blue-800";
+      case "warning":
+        return "bg-yellow-100 text-yellow-800";
+      case "error":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -155,20 +170,26 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">AI Financial Intelligence</div>
-          <div className="text-xs opacity-70">Natural language queries, insights, and forecasting (read-only).</div>
+          <div className="text-xs opacity-70">
+            Natural language queries, insights, and forecasting (read-only).
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="mt-4 flex gap-2 border-b pb-2">
-        {(['query', 'insights', 'forecast', 'explain'] as const).map((tab) => (
+        {(["query", "insights", "forecast", "explain"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => handleTabChange(tab)}
-            className={`rounded-lg px-3 py-1 text-sm ${activeTab === tab ? 'bg-blue-600 text-white' : 'border'}`}
+            className={`rounded-lg px-3 py-1 text-sm ${activeTab === tab ? "bg-blue-600 text-white" : "border"}`}
           >
-            {tab === 'query' ? 'Ask AI' : tab === 'explain' ? 'Explainability' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === "query"
+              ? "Ask AI"
+              : tab === "explain"
+                ? "Explainability"
+                : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
       </div>
@@ -177,14 +198,14 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
 
       {loading ? (
         <div className="mt-3 text-sm opacity-70">Loading...</div>
-      ) : activeTab === 'query' ? (
+      ) : activeTab === "query" ? (
         <div className="mt-3">
           <div className="flex gap-2">
             <input
               type="text"
               value={queryInput}
               onChange={(e) => setQueryInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && submitQuery()}
+              onKeyDown={(e) => e.key === "Enter" && submitQuery()}
               placeholder="Ask about revenue, subscriptions, forecasts..."
               className="flex-1 rounded-lg border px-3 py-2 text-sm"
             />
@@ -194,12 +215,13 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
               disabled={querying}
               className="rounded-xl border bg-blue-600 text-white px-4 py-2 text-sm"
             >
-              {querying ? 'Asking...' : 'Ask'}
+              {querying ? "Asking..." : "Ask"}
             </button>
           </div>
 
           <div className="mt-2 text-xs opacity-50">
-            Try: &quot;What is my MRR?&quot;, &quot;Show revenue forecast&quot;, &quot;How many active users?&quot;
+            Try: &quot;What is my MRR?&quot;, &quot;Show revenue forecast&quot;,
+            &quot;How many active users?&quot;
           </div>
 
           {queryResult ? (
@@ -208,22 +230,28 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
               <div className="text-sm">{queryResult.answer}</div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="opacity-70">Query Type:</span>{' '}
-                  <span className="font-medium">{queryResult.classification.type}</span>
+                  <span className="opacity-70">Query Type:</span>{" "}
+                  <span className="font-medium">
+                    {queryResult.classification.type}
+                  </span>
                 </div>
                 <div>
-                  <span className="opacity-70">Confidence:</span>{' '}
-                  <span className="font-medium">{(queryResult.classification.confidence * 100).toFixed(0)}%</span>
+                  <span className="opacity-70">Confidence:</span>{" "}
+                  <span className="font-medium">
+                    {(queryResult.classification.confidence * 100).toFixed(0)}%
+                  </span>
                 </div>
                 <div>
-                  <span className="opacity-70">Read-Only:</span>{' '}
-                  <span className="font-medium text-green-600">{queryResult.explainability.read_only ? 'Yes' : 'No'}</span>
+                  <span className="opacity-70">Read-Only:</span>{" "}
+                  <span className="font-medium text-green-600">
+                    {queryResult.explainability.read_only ? "Yes" : "No"}
+                  </span>
                 </div>
               </div>
             </div>
           ) : null}
         </div>
-      ) : activeTab === 'insights' ? (
+      ) : activeTab === "insights" ? (
         <div className="mt-3 grid gap-2">
           {insights.length === 0 ? (
             <div className="text-sm opacity-70">No insights available.</div>
@@ -232,29 +260,40 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
               <div key={i.id} className="rounded-lg border p-3">
                 <div className="flex justify-between items-start">
                   <div className="text-sm font-medium">{i.title}</div>
-                  <span className={`px-2 py-0.5 rounded text-xs ${getSeverityColor(i.severity)}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded text-xs ${getSeverityColor(i.severity)}`}
+                  >
                     {i.severity}
                   </span>
                 </div>
                 <div className="text-sm mt-1 opacity-70">{i.description}</div>
                 <div className="text-xs mt-2 opacity-50">
                   Confidence: {(i.confidence * 100).toFixed(0)}%
-                  {i.action_suggested ? ` | Suggested: ${i.action_suggested}` : ''}
+                  {i.action_suggested
+                    ? ` | Suggested: ${i.action_suggested}`
+                    : ""}
                 </div>
               </div>
             ))
           )}
         </div>
-      ) : activeTab === 'forecast' ? (
+      ) : activeTab === "forecast" ? (
         <div className="mt-3">
           <div className="rounded-xl border p-3 mb-3">
-            <div className="text-sm font-medium">Current MRR: ${currentMrr}</div>
-            <div className="text-xs opacity-70">12-month forecast with 10% monthly growth assumption</div>
+            <div className="text-sm font-medium">
+              Current MRR: ${currentMrr}
+            </div>
+            <div className="text-xs opacity-70">
+              12-month forecast with 10% monthly growth assumption
+            </div>
           </div>
 
           <div className="grid gap-2 max-h-80 overflow-y-auto">
             {forecasts.map((f) => (
-              <div key={f.month} className="rounded-lg border p-2 flex justify-between items-center">
+              <div
+                key={f.month}
+                className="rounded-lg border p-2 flex justify-between items-center"
+              >
                 <div>
                   <span className="text-sm font-medium">Month {f.month}</span>
                   <span className="ml-2 text-xs opacity-50">
@@ -263,7 +302,9 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-bold">${f.projected_mrr}</div>
-                  <div className="text-xs opacity-50">{(f.confidence * 100).toFixed(0)}% confidence</div>
+                  <div className="text-xs opacity-50">
+                    {(f.confidence * 100).toFixed(0)}% confidence
+                  </div>
                 </div>
               </div>
             ))}
@@ -275,7 +316,9 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
             <div className="grid gap-3">
               <div className="rounded-lg border p-3">
                 <div className="text-sm font-medium">Model Version</div>
-                <div className="text-sm opacity-70">{explainability.model_version}</div>
+                <div className="text-sm opacity-70">
+                  {explainability.model_version}
+                </div>
               </div>
 
               <div className="rounded-lg border p-3">
@@ -288,7 +331,9 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
               </div>
 
               <div className="rounded-lg border border-green-200 p-3">
-                <div className="text-sm font-medium mb-2 text-green-700">Safety Features</div>
+                <div className="text-sm font-medium mb-2 text-green-700">
+                  Safety Features
+                </div>
                 <ul className="text-sm opacity-70 list-disc pl-4">
                   {explainability.safety_features.map((f, i) => (
                     <li key={i}>{f}</li>
@@ -297,7 +342,9 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
               </div>
 
               <div className="rounded-lg border border-yellow-200 p-3">
-                <div className="text-sm font-medium mb-2 text-yellow-700">Limitations</div>
+                <div className="text-sm font-medium mb-2 text-yellow-700">
+                  Limitations
+                </div>
                 <ul className="text-sm opacity-70 list-disc pl-4">
                   {explainability.limitations.map((l, i) => (
                     <li key={i}>{l}</li>
@@ -306,7 +353,9 @@ export function AiFinancialIntelligencePanel({ apiBase }: { apiBase: string }) {
               </div>
             </div>
           ) : (
-            <div className="text-sm opacity-70">Loading explainability info...</div>
+            <div className="text-sm opacity-70">
+              Loading explainability info...
+            </div>
           )}
         </div>
       )}

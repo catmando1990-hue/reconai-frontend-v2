@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 type GovernanceFilter = {
   id: string;
@@ -34,50 +34,65 @@ type GovernanceData = {
   export_history?: ExportHistoryItem[];
 };
 
-export function BillingGovernanceEnhancements({ apiBase }: { apiBase: string }) {
+export function BillingGovernanceEnhancements({
+  apiBase,
+}: {
+  apiBase: string;
+}) {
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
-  const [activeTab, setActiveTab] = React.useState<'filters' | 'diffs' | 'exports'>('filters');
+  const [activeTab, setActiveTab] = React.useState<
+    "filters" | "diffs" | "exports"
+  >("filters");
   const [filters, setFilters] = React.useState<GovernanceFilter[]>([]);
   const [diffs, setDiffs] = React.useState<GovernanceDiff[]>([]);
-  const [exportHistory, setExportHistory] = React.useState<ExportHistoryItem[]>([]);
+  const [exportHistory, setExportHistory] = React.useState<ExportHistoryItem[]>(
+    [],
+  );
   const [requestId, setRequestId] = React.useState<string | null>(null);
 
-  const fetchData = React.useCallback(async (endpoint: string) => {
-    setLoading(true);
-    setErr(null);
-    try {
-      const res = await fetch(`${apiBase}/api/billing/governance/${endpoint}`, {
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
+  const fetchData = React.useCallback(
+    async (endpoint: string) => {
+      setLoading(true);
+      setErr(null);
+      try {
+        const res = await fetch(
+          `${apiBase}/api/billing/governance/${endpoint}`,
+          {
+            credentials: "include",
+          },
+        );
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error(t || `HTTP ${res.status}`);
+        }
+        const json = (await res.json()) as GovernanceData;
+        setRequestId(json.request_id);
+        return json;
+      } catch (e: unknown) {
+        const message =
+          e instanceof Error ? e.message : "Failed to load governance data";
+        setErr(message);
+        return null;
+      } finally {
+        setLoading(false);
       }
-      const json = (await res.json()) as GovernanceData;
-      setRequestId(json.request_id);
-      return json;
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to load governance data';
-      setErr(message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [apiBase]);
+    },
+    [apiBase],
+  );
 
   const loadFilters = React.useCallback(async () => {
-    const data = await fetchData('filters');
+    const data = await fetchData("filters");
     if (data?.filters) setFilters(data.filters);
   }, [fetchData]);
 
   const loadDiffs = React.useCallback(async () => {
-    const data = await fetchData('diffs');
+    const data = await fetchData("diffs");
     if (data?.diffs) setDiffs(data.diffs);
   }, [fetchData]);
 
   const loadExportHistory = React.useCallback(async () => {
-    const data = await fetchData('export-history');
+    const data = await fetchData("export-history");
     if (data?.export_history) setExportHistory(data.export_history);
   }, [fetchData]);
 
@@ -86,11 +101,11 @@ export function BillingGovernanceEnhancements({ apiBase }: { apiBase: string }) 
     loadFilters();
   }, [loadFilters]);
 
-  const handleTabChange = async (tab: 'filters' | 'diffs' | 'exports') => {
+  const handleTabChange = async (tab: "filters" | "diffs" | "exports") => {
     setActiveTab(tab);
-    if (tab === 'filters') await loadFilters();
-    else if (tab === 'diffs') await loadDiffs();
-    else if (tab === 'exports') await loadExportHistory();
+    if (tab === "filters") await loadFilters();
+    else if (tab === "diffs") await loadDiffs();
+    else if (tab === "exports") await loadExportHistory();
   };
 
   return (
@@ -98,17 +113,19 @@ export function BillingGovernanceEnhancements({ apiBase }: { apiBase: string }) 
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">Governance UI</div>
-          <div className="text-xs opacity-70">Read-only view of filters, diffs, and export history.</div>
+          <div className="text-xs opacity-70">
+            Read-only view of filters, diffs, and export history.
+          </div>
         </div>
       </div>
 
       <div className="mt-4 flex gap-2 border-b pb-2">
-        {(['filters', 'diffs', 'exports'] as const).map((tab) => (
+        {(["filters", "diffs", "exports"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => handleTabChange(tab)}
-            className={`rounded-lg px-3 py-1 text-sm ${activeTab === tab ? 'bg-blue-600 text-white' : 'border'}`}
+            className={`rounded-lg px-3 py-1 text-sm ${activeTab === tab ? "bg-blue-600 text-white" : "border"}`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
@@ -119,7 +136,7 @@ export function BillingGovernanceEnhancements({ apiBase }: { apiBase: string }) 
 
       {loading ? (
         <div className="mt-3 text-sm opacity-70">Loading...</div>
-      ) : activeTab === 'filters' ? (
+      ) : activeTab === "filters" ? (
         <div className="mt-3">
           {filters.length === 0 ? (
             <div className="text-sm opacity-70">No saved filters.</div>
@@ -128,13 +145,15 @@ export function BillingGovernanceEnhancements({ apiBase }: { apiBase: string }) 
               {filters.map((f) => (
                 <div key={f.id} className="rounded-lg border p-2 text-sm">
                   <span className="font-medium">{f.label}</span>
-                  <span className="ml-2 opacity-70">{f.field} {f.operator} {f.value}</span>
+                  <span className="ml-2 opacity-70">
+                    {f.field} {f.operator} {f.value}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </div>
-      ) : activeTab === 'diffs' ? (
+      ) : activeTab === "diffs" ? (
         <div className="mt-3">
           {diffs.length === 0 ? (
             <div className="text-sm opacity-70">No change history.</div>
@@ -147,7 +166,9 @@ export function BillingGovernanceEnhancements({ apiBase }: { apiBase: string }) 
                     <span className="text-xs opacity-70">{d.timestamp}</span>
                   </div>
                   <div className="mt-1 text-xs">
-                    <span className="line-through opacity-50">{d.old_value}</span>
+                    <span className="line-through opacity-50">
+                      {d.old_value}
+                    </span>
                     <span className="mx-2">→</span>
                     <span>{d.new_value}</span>
                   </div>
@@ -166,10 +187,14 @@ export function BillingGovernanceEnhancements({ apiBase }: { apiBase: string }) 
               {exportHistory.map((e) => (
                 <div key={e.id} className="rounded-lg border p-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="font-medium">{e.format.toUpperCase()}</span>
+                    <span className="font-medium">
+                      {e.format.toUpperCase()}
+                    </span>
                     <span className="text-xs opacity-70">{e.timestamp}</span>
                   </div>
-                  <div className="text-xs opacity-70">{e.record_count} records by {e.actor}</div>
+                  <div className="text-xs opacity-70">
+                    {e.record_count} records by {e.actor}
+                  </div>
                 </div>
               ))}
             </div>

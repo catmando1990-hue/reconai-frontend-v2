@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * STEP 25 — Billing ↔ Entitlement Reconciliation Panel
@@ -79,8 +79,12 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
     setErr(null);
     try {
       const [statusRes, diffRes] = await Promise.all([
-        fetch(`${apiBase}/api/billing/reconcile/status`, { credentials: 'include' }),
-        fetch(`${apiBase}/api/billing/reconcile/diff`, { credentials: 'include' }),
+        fetch(`${apiBase}/api/billing/reconcile/status`, {
+          credentials: "include",
+        }),
+        fetch(`${apiBase}/api/billing/reconcile/diff`, {
+          credentials: "include",
+        }),
       ]);
 
       if (!statusRes.ok) throw new Error(`Status: HTTP ${statusRes.status}`);
@@ -89,7 +93,9 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
       setStatus(await statusRes.json());
       setDiff(await diffRes.json());
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load reconciliation data');
+      setErr(
+        e instanceof Error ? e.message : "Failed to load reconciliation data",
+      );
     } finally {
       setLoading(false);
     }
@@ -100,8 +106,8 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
   }, [fetchData]);
 
   const formatValue = (value: unknown): string => {
-    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-    if (typeof value === 'number') return value.toLocaleString();
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+    if (typeof value === "number") return value.toLocaleString();
     return String(value);
   };
 
@@ -120,7 +126,7 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -132,8 +138,8 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
           <div
             className={`mt-4 rounded-xl border p-4 ${
               status.status.is_synced
-                ? 'border-green-200 bg-green-50'
-                : 'border-amber-200 bg-amber-50'
+                ? "border-green-200 bg-green-50"
+                : "border-amber-200 bg-amber-50"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -141,11 +147,11 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
               <span
                 className={`px-2 py-1 rounded text-xs font-medium ${
                   status.status.is_synced
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-amber-100 text-amber-800'
+                    ? "bg-green-100 text-green-800"
+                    : "bg-amber-100 text-amber-800"
                 }`}
               >
-                {status.status.is_synced ? 'In Sync' : 'Drift Detected'}
+                {status.status.is_synced ? "In Sync" : "Drift Detected"}
               </span>
             </div>
 
@@ -170,7 +176,7 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
                   Recommended Action
                 </div>
                 <div className="mt-1 text-sm">
-                  {status.recommended_action.replace(/_/g, ' ')}
+                  {status.recommended_action.replace(/_/g, " ")}
                 </div>
               </div>
             ) : null}
@@ -184,7 +190,7 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
             onClick={() => setShowDiff(!showDiff)}
             className="mt-4 text-sm text-blue-600 hover:underline"
           >
-            {showDiff ? 'Hide' : 'Show'} Detailed Diff
+            {showDiff ? "Hide" : "Show"} Detailed Diff
           </button>
 
           {/* Detailed Diff */}
@@ -198,11 +204,11 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
                     ([key, value]) => (
                       <div key={key} className="text-sm">
                         <div className="text-xs opacity-70">
-                          {key.replace(/_/g, ' ')}
+                          {key.replace(/_/g, " ")}
                         </div>
                         <div className="font-medium">{formatValue(value)}</div>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>
@@ -214,13 +220,15 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
                   <div>
                     <div className="text-xs opacity-70">Stripe Customer</div>
                     <div className="font-mono text-xs">
-                      {diff.billing.stripe_customer_id || 'None'}
+                      {diff.billing.stripe_customer_id || "None"}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs opacity-70">Subscription Status</div>
+                    <div className="text-xs opacity-70">
+                      Subscription Status
+                    </div>
                     <div className="capitalize">
-                      {diff.billing.subscription_status || 'None'}
+                      {diff.billing.subscription_status || "None"}
                     </div>
                   </div>
                 </div>
@@ -229,11 +237,11 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
                     ([key, value]) => (
                       <div key={key} className="text-sm">
                         <div className="text-xs opacity-70">
-                          {key.replace(/_/g, ' ')}
+                          {key.replace(/_/g, " ")}
                         </div>
                         <div className="font-medium">{formatValue(value)}</div>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>
@@ -251,7 +259,7 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
                         className="flex items-center justify-between rounded-lg border bg-white p-2 text-sm"
                       >
                         <span className="font-medium">
-                          {d.feature.replace(/_/g, ' ')}
+                          {d.feature.replace(/_/g, " ")}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-blue-600">

@@ -52,7 +52,10 @@ function getActionColor(action: string): string {
 
 export default function AuditPanel() {
   // Manual-first UX: No polling. User triggers refresh manually.
-  const { data, error, isLoading, mutate } = useSWR("/api/audit?limit=50", fetcher);
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/audit?limit=50",
+    fetcher,
+  );
 
   if (isLoading) {
     return (
@@ -117,7 +120,9 @@ export default function AuditPanel() {
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-card/80 hover:text-foreground disabled:opacity-50"
             title="Refresh audit log"
           >
-            <RefreshCw className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </button>
           <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">

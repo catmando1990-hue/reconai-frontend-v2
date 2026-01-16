@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 type InvestorMetrics = {
   mrr_usd: number;
@@ -40,15 +40,23 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
   const [err, setErr] = React.useState<string | null>(null);
   const [metrics, setMetrics] = React.useState<InvestorMetrics | null>(null);
   const [summary, setSummary] = React.useState<InvestorSummary | null>(null);
-  const [exportResult, setExportResult] = React.useState<ExportResult | null>(null);
-  const [period, setPeriod] = React.useState<'monthly' | 'quarterly' | 'annual'>('quarterly');
-  const [exportFormat, setExportFormat] = React.useState<'json' | 'csv'>('json');
+  const [exportResult, setExportResult] = React.useState<ExportResult | null>(
+    null,
+  );
+  const [period, setPeriod] = React.useState<
+    "monthly" | "quarterly" | "annual"
+  >("quarterly");
+  const [exportFormat, setExportFormat] = React.useState<"json" | "csv">(
+    "json",
+  );
 
   const fetchMetrics = React.useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/investor/metrics`, { credentials: 'include' });
+      const res = await fetch(`${apiBase}/api/investor/metrics`, {
+        credentials: "include",
+      });
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || `HTTP ${res.status}`);
@@ -56,7 +64,7 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
       const json = await res.json();
       setMetrics(json.metrics);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load metrics');
+      setErr(e instanceof Error ? e.message : "Failed to load metrics");
     } finally {
       setLoading(false);
     }
@@ -64,7 +72,10 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
 
   const fetchSummary = React.useCallback(async () => {
     try {
-      const res = await fetch(`${apiBase}/api/investor/summary?period=${period}`, { credentials: 'include' });
+      const res = await fetch(
+        `${apiBase}/api/investor/summary?period=${period}`,
+        { credentials: "include" },
+      );
       if (!res.ok) return;
       const json = await res.json();
       setSummary(json);
@@ -79,9 +90,9 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
     setExportResult(null);
     try {
       const res = await fetch(`${apiBase}/api/investor/export`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ format: exportFormat, period }),
       });
       if (!res.ok) {
@@ -91,7 +102,7 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
       const json = await res.json();
       setExportResult(json);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to export report');
+      setErr(e instanceof Error ? e.message : "Failed to export report");
     } finally {
       setExporting(false);
     }
@@ -99,13 +110,15 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
 
   const downloadExport = () => {
     if (!exportResult) return;
-    const content = typeof exportResult.data === 'string'
-      ? exportResult.data
-      : JSON.stringify(exportResult.data, null, 2);
-    const mimeType = exportResult.format === 'csv' ? 'text/csv' : 'application/json';
+    const content =
+      typeof exportResult.data === "string"
+        ? exportResult.data
+        : JSON.stringify(exportResult.data, null, 2);
+    const mimeType =
+      exportResult.format === "csv" ? "text/csv" : "application/json";
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = exportResult.filename;
     document.body.appendChild(a);
@@ -125,15 +138,20 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">Investor Reports</div>
-          <div className="text-xs opacity-70">GAAP-style summaries and board-ready exports (read-only).</div>
+          <div className="text-xs opacity-70">
+            GAAP-style summaries and board-ready exports (read-only).
+          </div>
         </div>
         <button
           type="button"
-          onClick={() => { fetchMetrics(); fetchSummary(); }}
+          onClick={() => {
+            fetchMetrics();
+            fetchSummary();
+          }}
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -155,7 +173,9 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
             <div className="text-xs opacity-70">Active Users (30d)</div>
           </div>
           <div className="rounded-xl border p-3 text-center">
-            <div className="text-2xl font-bold">${metrics.ltv_estimate_usd}</div>
+            <div className="text-2xl font-bold">
+              ${metrics.ltv_estimate_usd}
+            </div>
             <div className="text-xs opacity-70">LTV Estimate</div>
           </div>
         </div>
@@ -181,7 +201,9 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
             <label className="text-xs opacity-70 block mb-1">Format</label>
             <select
               value={exportFormat}
-              onChange={(e) => setExportFormat(e.target.value as typeof exportFormat)}
+              onChange={(e) =>
+                setExportFormat(e.target.value as typeof exportFormat)
+              }
               className="rounded-lg border px-2 py-1 text-sm"
             >
               <option value="json">JSON</option>
@@ -194,7 +216,7 @@ export function InvestorReportsPanel({ apiBase }: { apiBase: string }) {
             disabled={exporting}
             className="rounded-xl border bg-blue-600 text-white px-4 py-2 text-sm"
           >
-            {exporting ? 'Exporting...' : 'Export Report'}
+            {exporting ? "Exporting..." : "Export Report"}
           </button>
           {exportResult ? (
             <button

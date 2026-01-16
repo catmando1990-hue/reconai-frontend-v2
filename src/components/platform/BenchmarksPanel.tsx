@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * STEP 17 + STEP 19 — Activation Benchmarks & Cohorts Panel
@@ -59,26 +59,34 @@ type CohortsResponse = {
 export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
-  const [benchmarksData, setBenchmarksData] = React.useState<BenchmarksResponse | null>(null);
-  const [cohortsData, setCohortsData] = React.useState<CohortsResponse | null>(null);
-  const [activeTab, setActiveTab] = React.useState<'benchmarks' | 'cohorts'>('benchmarks');
+  const [benchmarksData, setBenchmarksData] =
+    React.useState<BenchmarksResponse | null>(null);
+  const [cohortsData, setCohortsData] = React.useState<CohortsResponse | null>(
+    null,
+  );
+  const [activeTab, setActiveTab] = React.useState<"benchmarks" | "cohorts">(
+    "benchmarks",
+  );
 
   const fetchData = React.useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
       const [benchmarksRes, cohortsRes] = await Promise.all([
-        fetch(`${apiBase}/api/benchmarks/activation`, { credentials: 'include' }),
-        fetch(`${apiBase}/api/benchmarks/cohorts`, { credentials: 'include' }),
+        fetch(`${apiBase}/api/benchmarks/activation`, {
+          credentials: "include",
+        }),
+        fetch(`${apiBase}/api/benchmarks/cohorts`, { credentials: "include" }),
       ]);
 
-      if (!benchmarksRes.ok) throw new Error(`Benchmarks: HTTP ${benchmarksRes.status}`);
+      if (!benchmarksRes.ok)
+        throw new Error(`Benchmarks: HTTP ${benchmarksRes.status}`);
       if (!cohortsRes.ok) throw new Error(`Cohorts: HTTP ${cohortsRes.status}`);
 
       setBenchmarksData(await benchmarksRes.json());
       setCohortsData(await cohortsRes.json());
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load benchmarks data');
+      setErr(e instanceof Error ? e.message : "Failed to load benchmarks data");
     } finally {
       setLoading(false);
     }
@@ -88,15 +96,19 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
     fetchData();
   }, [fetchData]);
 
-  const tierCohorts = cohortsData?.cohorts.filter((c) => c.cohort_type === 'tier') ?? [];
-  const monthCohorts = cohortsData?.cohorts.filter((c) => c.cohort_type === 'signup_month') ?? [];
+  const tierCohorts =
+    cohortsData?.cohorts.filter((c) => c.cohort_type === "tier") ?? [];
+  const monthCohorts =
+    cohortsData?.cohorts.filter((c) => c.cohort_type === "signup_month") ?? [];
 
   return (
     <div className="rounded-2xl border p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-medium">Activation Benchmarks</div>
-          <div className="text-xs opacity-70">Time-to-first-value metrics and cohort comparison. Read-only.</div>
+          <div className="text-xs opacity-70">
+            Time-to-first-value metrics and cohort comparison. Read-only.
+          </div>
         </div>
         <button
           type="button"
@@ -104,7 +116,7 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -112,12 +124,12 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
 
       {/* Tabs */}
       <div className="mt-4 flex gap-2 border-b">
-        {(['benchmarks', 'cohorts'] as const).map((tab) => (
+        {(["benchmarks", "cohorts"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`px-3 py-2 text-sm capitalize ${activeTab === tab ? 'border-b-2 border-blue-500 font-medium' : 'opacity-70'}`}
+            className={`px-3 py-2 text-sm capitalize ${activeTab === tab ? "border-b-2 border-blue-500 font-medium" : "opacity-70"}`}
           >
             {tab}
           </button>
@@ -125,18 +137,23 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
       </div>
 
       {/* Benchmarks Tab */}
-      {activeTab === 'benchmarks' && benchmarksData ? (
+      {activeTab === "benchmarks" && benchmarksData ? (
         <div className="mt-4 space-y-4">
           {Object.entries(benchmarksData.benchmarks).map(([key, metric]) => (
             <div key={key} className="rounded-xl border p-4">
-              <div className="font-medium capitalize">{key.replace(/_/g, ' ')}</div>
+              <div className="font-medium capitalize">
+                {key.replace(/_/g, " ")}
+              </div>
 
               {/* STEP 19: Insufficient data state */}
               {metric.insufficient_data ? (
                 <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
-                  <div className="text-sm font-medium text-amber-800">Insufficient Data</div>
+                  <div className="text-sm font-medium text-amber-800">
+                    Insufficient Data
+                  </div>
                   <div className="mt-1 text-xs text-amber-600">
-                    Minimum {metric.min_required ?? 5} samples required for statistically meaningful benchmarks.
+                    Minimum {metric.min_required ?? 5} samples required for
+                    statistically meaningful benchmarks.
                   </div>
                   <div className="mt-2 text-xs text-amber-500">
                     Current sample size: {metric.sample_size}
@@ -147,25 +164,25 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
                   <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-600">
-                        {metric.median_formatted ?? '-'}
+                        {metric.median_formatted ?? "-"}
                       </div>
                       <div className="text-xs opacity-70">Median</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-medium">
-                        {metric.p25_formatted ?? '-'}
+                        {metric.p25_formatted ?? "-"}
                       </div>
                       <div className="text-xs opacity-70">25th %ile</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-medium">
-                        {metric.p75_formatted ?? '-'}
+                        {metric.p75_formatted ?? "-"}
                       </div>
                       <div className="text-xs opacity-70">75th %ile</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-medium">
-                        {metric.p90_formatted ?? '-'}
+                        {metric.p90_formatted ?? "-"}
                       </div>
                       <div className="text-xs opacity-70">90th %ile</div>
                     </div>
@@ -185,20 +202,26 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
       ) : null}
 
       {/* Cohorts Tab */}
-      {activeTab === 'cohorts' && cohortsData ? (
+      {activeTab === "cohorts" && cohortsData ? (
         <div className="mt-4 space-y-4">
           {/* By Tier */}
           <div className="rounded-xl border p-4">
             <div className="font-medium mb-3">Cohorts by Tier</div>
             <div className="space-y-2">
               {tierCohorts.map((cohort) => (
-                <div key={cohort.cohort_value} className="flex items-center justify-between rounded-lg border p-3">
+                <div
+                  key={cohort.cohort_value}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
                   <div className="flex items-center gap-3">
-                    <span className="font-medium capitalize">{cohort.cohort_value}</span>
+                    <span className="font-medium capitalize">
+                      {cohort.cohort_value}
+                    </span>
                     {/* STEP 19: Insufficient data indicator */}
                     {cohort.insufficient_data ? (
                       <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-                        {cohort.total_orgs} orgs (min {cohort.min_required ?? 3} required)
+                        {cohort.total_orgs} orgs (min {cohort.min_required ?? 3}{" "}
+                        required)
                       </span>
                     ) : (
                       <span className="text-xs opacity-70">
@@ -208,7 +231,9 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
                   </div>
                   <div className="flex items-center gap-2">
                     {cohort.insufficient_data ? (
-                      <span className="text-xs text-amber-600 italic">Insufficient data</span>
+                      <span className="text-xs text-amber-600 italic">
+                        Insufficient data
+                      </span>
                     ) : (
                       <>
                         <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -233,13 +258,17 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
             <div className="font-medium mb-3">Cohorts by Signup Month</div>
             <div className="space-y-2">
               {monthCohorts.map((cohort) => (
-                <div key={cohort.cohort_value} className="flex items-center justify-between rounded-lg border p-3">
+                <div
+                  key={cohort.cohort_value}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{cohort.cohort_value}</span>
                     {/* STEP 19: Insufficient data indicator */}
                     {cohort.insufficient_data ? (
                       <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-                        {cohort.total_orgs} orgs (min {cohort.min_required ?? 3} required)
+                        {cohort.total_orgs} orgs (min {cohort.min_required ?? 3}{" "}
+                        required)
                       </span>
                     ) : (
                       <span className="text-xs opacity-70">
@@ -249,7 +278,9 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
                   </div>
                   <div className="flex items-center gap-2">
                     {cohort.insufficient_data ? (
-                      <span className="text-xs text-amber-600 italic">Insufficient data</span>
+                      <span className="text-xs text-amber-600 italic">
+                        Insufficient data
+                      </span>
                     ) : (
                       <>
                         <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -271,13 +302,16 @@ export function BenchmarksPanel({ apiBase }: { apiBase: string }) {
 
           <div className="text-xs opacity-50 text-center">
             Advisory: Cohort data is calculated from anonymized aggregate data.
-            Cohorts with fewer than the minimum required organizations show &quot;Insufficient data&quot;.
+            Cohorts with fewer than the minimum required organizations show
+            &quot;Insufficient data&quot;.
           </div>
         </div>
       ) : null}
 
       {benchmarksData ? (
-        <div className="mt-3 text-xs opacity-50">Request ID: {benchmarksData.request_id}</div>
+        <div className="mt-3 text-xs opacity-50">
+          Request ID: {benchmarksData.request_id}
+        </div>
       ) : null}
     </div>
   );

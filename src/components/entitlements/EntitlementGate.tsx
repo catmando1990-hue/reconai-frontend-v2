@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * STEP 15 + STEP 20 — Entitlement-Driven UI Hiding & Upgrade UX Wiring
@@ -33,7 +33,7 @@ type Capabilities = {
 
 type EntitlementGateProps = {
   feature: string;
-  mode: 'hard-disable' | 'soft-hide';
+  mode: "hard-disable" | "soft-hide";
   capabilities: Capabilities | null;
   children: React.ReactNode;
   featureLabel?: string;
@@ -82,7 +82,7 @@ export function EntitlementGate({
   }
 
   // Feature is disabled
-  const label = featureLabel ?? feature.replace(/_/g, ' ');
+  const label = featureLabel ?? feature.replace(/_/g, " ");
   const message = upgradeMessage ?? `${label} is available on higher tiers.`;
 
   /**
@@ -100,11 +100,12 @@ export function EntitlementGate({
   };
 
   // Soft-hide: Feature hidden, discoverable via upgrade affordance
-  if (mode === 'soft-hide') {
+  if (mode === "soft-hide") {
     return (
       <div className="rounded-xl border border-dashed border-gray-300 p-4 text-center">
         <div className="text-sm text-gray-500">
-          <span className="font-medium capitalize">{label}</span> available with upgrade
+          <span className="font-medium capitalize">{label}</span> available with
+          upgrade
         </div>
         {/* STEP 20: Manual navigation to existing Stripe upgrade flow */}
         <a
@@ -127,10 +128,13 @@ export function EntitlementGate({
       {/* Overlay message */}
       <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
         <div className="text-center p-4">
-          <div className="text-sm font-medium text-gray-700 capitalize">{label}</div>
+          <div className="text-sm font-medium text-gray-700 capitalize">
+            {label}
+          </div>
           <div className="mt-1 text-xs text-gray-500">{message}</div>
           <div className="mt-2 text-xs text-gray-400">
-            Current tier: <span className="font-medium">{capabilities.tier_name}</span>
+            Current tier:{" "}
+            <span className="font-medium">{capabilities.tier_name}</span>
           </div>
           {/* STEP 20: Manual navigation to existing Stripe upgrade flow */}
           <a
@@ -152,7 +156,9 @@ export function EntitlementGate({
  * Manual-first: Fetches once on mount, provides manual refresh
  */
 export function useCapabilities(apiBase: string) {
-  const [capabilities, setCapabilities] = React.useState<Capabilities | null>(null);
+  const [capabilities, setCapabilities] = React.useState<Capabilities | null>(
+    null,
+  );
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -161,7 +167,7 @@ export function useCapabilities(apiBase: string) {
     setError(null);
     try {
       const res = await fetch(`${apiBase}/api/entitlements/capabilities`, {
-        credentials: 'include',
+        credentials: "include",
       });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
@@ -169,7 +175,7 @@ export function useCapabilities(apiBase: string) {
       const data = await res.json();
       setCapabilities(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to load capabilities');
+      setError(e instanceof Error ? e.message : "Failed to load capabilities");
     } finally {
       setLoading(false);
     }
@@ -194,7 +200,7 @@ export function useCapabilities(apiBase: string) {
  */
 export function isFeatureEnabled(
   capabilities: Capabilities | null,
-  feature: string
+  feature: string,
 ): boolean {
   if (!capabilities) return false;
   return capabilities.features.enabled.includes(feature);
@@ -225,7 +231,7 @@ export function UpgradePrompt({
   const isEnabled = capabilities.features.enabled.includes(feature);
   if (isEnabled) return null;
 
-  const label = featureLabel ?? feature.replace(/_/g, ' ');
+  const label = featureLabel ?? feature.replace(/_/g, " ");
 
   /**
    * STEP 20: Handle upgrade click

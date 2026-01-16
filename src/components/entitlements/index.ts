@@ -4,4 +4,4 @@ export {
   useCapabilities,
   isFeatureEnabled,
   UpgradePrompt,
-} from './EntitlementGate';
+} from "./EntitlementGate";

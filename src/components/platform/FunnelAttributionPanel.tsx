@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * STEP 23 — Activation → Revenue Funnel Attribution Panel
@@ -96,20 +96,26 @@ type RevenueResponse = {
 export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
-  const [attribution, setAttribution] = React.useState<Attribution | null>(null);
-  const [conversions, setConversions] = React.useState<ConversionResponse['conversions'] | null>(null);
+  const [attribution, setAttribution] = React.useState<Attribution | null>(
+    null,
+  );
+  const [conversions, setConversions] = React.useState<
+    ConversionResponse["conversions"] | null
+  >(null);
   const [revenue, setRevenue] = React.useState<Revenue | null>(null);
   const [requestId, setRequestId] = React.useState<string | null>(null);
-  const [activeTab, setActiveTab] = React.useState<'funnel' | 'conversion' | 'revenue'>('funnel');
+  const [activeTab, setActiveTab] = React.useState<
+    "funnel" | "conversion" | "revenue"
+  >("funnel");
 
   const fetchData = React.useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
       const [attrRes, convRes, revRes] = await Promise.all([
-        fetch(`${apiBase}/api/funnel/attribution`, { credentials: 'include' }),
-        fetch(`${apiBase}/api/funnel/conversion`, { credentials: 'include' }),
-        fetch(`${apiBase}/api/funnel/revenue`, { credentials: 'include' }),
+        fetch(`${apiBase}/api/funnel/attribution`, { credentials: "include" }),
+        fetch(`${apiBase}/api/funnel/conversion`, { credentials: "include" }),
+        fetch(`${apiBase}/api/funnel/revenue`, { credentials: "include" }),
       ]);
 
       if (!attrRes.ok) throw new Error(`Attribution: HTTP ${attrRes.status}`);
@@ -125,7 +131,7 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
       setRevenue(revData.revenue);
       setRequestId(attrData.request_id);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed to load funnel data');
+      setErr(e instanceof Error ? e.message : "Failed to load funnel data");
     } finally {
       setLoading(false);
     }
@@ -136,7 +142,7 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
   }, [fetchData]);
 
   const formatTimestamp = (ts: string | null) => {
-    if (!ts) return 'Not completed';
+    if (!ts) return "Not completed";
     try {
       return new Date(ts).toLocaleString();
     } catch {
@@ -145,9 +151,9 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -168,7 +174,7 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
           disabled={loading}
           className="rounded-xl border px-3 py-2 text-sm"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -176,15 +182,15 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
 
       {/* Tabs */}
       <div className="mt-4 flex gap-2 border-b">
-        {(['funnel', 'conversion', 'revenue'] as const).map((tab) => (
+        {(["funnel", "conversion", "revenue"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
             className={`px-3 py-2 text-sm capitalize ${
               activeTab === tab
-                ? 'border-b-2 border-blue-500 font-medium'
-                : 'opacity-70'
+                ? "border-b-2 border-blue-500 font-medium"
+                : "opacity-70"
             }`}
           >
             {tab}
@@ -193,14 +199,15 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
       </div>
 
       {/* Funnel Tab */}
-      {activeTab === 'funnel' && attribution ? (
+      {activeTab === "funnel" && attribution ? (
         <div className="mt-4 space-y-4">
           {/* Progress Overview */}
           <div className="rounded-xl border p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="font-medium">Funnel Progress</div>
               <span className="px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs">
-                {attribution.progress.completed}/{attribution.progress.total} stages
+                {attribution.progress.completed}/{attribution.progress.total}{" "}
+                stages
               </span>
             </div>
             <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -227,16 +234,16 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                           stage.completed
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-200 text-gray-500'
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-200 text-gray-500"
                         }`}
                       >
-                        {stage.completed ? '✓' : stage.order}
+                        {stage.completed ? "✓" : stage.order}
                       </div>
                       {idx < arr.length - 1 ? (
                         <div
                           className={`w-0.5 h-8 ${
-                            stage.completed ? 'bg-green-300' : 'bg-gray-200'
+                            stage.completed ? "bg-green-300" : "bg-gray-200"
                           }`}
                         />
                       ) : null}
@@ -278,15 +285,18 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
                 {Object.entries(attribution.timing.formatted).map(
                   ([key, value]) =>
                     value ? (
-                      <div key={key} className="rounded-lg border p-3 text-center">
+                      <div
+                        key={key}
+                        className="rounded-lg border p-3 text-center"
+                      >
                         <div className="text-lg font-bold text-blue-600">
                           {value}
                         </div>
                         <div className="text-xs opacity-70 capitalize">
-                          {key.replace(/_/g, ' ')}
+                          {key.replace(/_/g, " ")}
                         </div>
                       </div>
-                    ) : null
+                    ) : null,
                 )}
               </div>
             </div>
@@ -295,7 +305,7 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
       ) : null}
 
       {/* Conversion Tab */}
-      {activeTab === 'conversion' && conversions ? (
+      {activeTab === "conversion" && conversions ? (
         <div className="mt-4 space-y-4">
           {/* Overall Conversion */}
           <div className="rounded-xl border p-4">
@@ -303,19 +313,19 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">
-                  {conversions.overall.signup_to_activated ?? '-'}%
+                  {conversions.overall.signup_to_activated ?? "-"}%
                 </div>
                 <div className="text-xs opacity-70">Signup → Activated</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  {conversions.overall.signup_to_converted ?? '-'}%
+                  {conversions.overall.signup_to_converted ?? "-"}%
                 </div>
                 <div className="text-xs opacity-70">Signup → Converted</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">
-                  {conversions.overall.activated_to_converted ?? '-'}%
+                  {conversions.overall.activated_to_converted ?? "-"}%
                 </div>
                 <div className="text-xs opacity-70">Activated → Converted</div>
               </div>
@@ -334,40 +344,40 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm">
                       <span className="capitalize">
-                        {conv.from_stage.replace(/_/g, ' ')}
+                        {conv.from_stage.replace(/_/g, " ")}
                       </span>
                       <span className="mx-2 opacity-50">→</span>
                       <span className="capitalize">
-                        {conv.to_stage.replace(/_/g, ' ')}
+                        {conv.to_stage.replace(/_/g, " ")}
                       </span>
                     </div>
                     <div
                       className={`text-sm font-medium ${
                         conv.conversion_rate === 100
-                          ? 'text-green-600'
+                          ? "text-green-600"
                           : conv.conversion_rate === 0
-                          ? 'text-gray-500'
-                          : 'text-blue-600'
+                            ? "text-gray-500"
+                            : "text-blue-600"
                       }`}
                     >
                       {conv.conversion_rate !== null
                         ? `${conv.conversion_rate}%`
-                        : 'N/A'}
+                        : "N/A"}
                     </div>
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all ${
                         conv.conversion_rate === 100
-                          ? 'bg-green-500'
-                          : 'bg-blue-500'
+                          ? "bg-green-500"
+                          : "bg-blue-500"
                       }`}
                       style={{ width: `${conv.conversion_rate ?? 0}%` }}
                     />
                   </div>
                   <div className="mt-2 flex gap-4 text-xs opacity-70">
                     <span>
-                      From:{' '}
+                      From:{" "}
                       {conv.from_completed ? (
                         <span className="text-green-600">Complete</span>
                       ) : (
@@ -375,7 +385,7 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
                       )}
                     </span>
                     <span>
-                      To:{' '}
+                      To:{" "}
                       {conv.to_completed ? (
                         <span className="text-green-600">Complete</span>
                       ) : (
@@ -391,7 +401,7 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
       ) : null}
 
       {/* Revenue Tab */}
-      {activeTab === 'revenue' && revenue ? (
+      {activeTab === "revenue" && revenue ? (
         <div className="mt-4 space-y-4">
           {/* Revenue Overview */}
           <div className="rounded-xl border p-4">
@@ -400,11 +410,11 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
               <span
                 className={`px-2 py-1 rounded text-xs ${
                   revenue.is_converted
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-500'
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-500"
                 }`}
               >
-                {revenue.is_converted ? 'Converted' : 'Not Converted'}
+                {revenue.is_converted ? "Converted" : "Not Converted"}
               </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -428,7 +438,7 @@ export function FunnelAttributionPanel({ apiBase }: { apiBase: string }) {
               </div>
               <div className="text-center">
                 <div className="text-lg font-medium">
-                  {revenue.time_to_revenue.formatted ?? 'N/A'}
+                  {revenue.time_to_revenue.formatted ?? "N/A"}
                 </div>
                 <div className="text-xs opacity-70">Time to Revenue</div>
               </div>

@@ -15,6 +15,7 @@ export function RouteBackgroundWrapper({
   const pathname = usePathname() || "/";
 
   // Routes that handle their own background
+  // Note: /about and /support now use HeroBackground via this wrapper
   const skipHeroBackground =
     pathname === "/" ||
     pathname.startsWith("/sign-in") ||
@@ -24,8 +25,6 @@ export function RouteBackgroundWrapper({
     pathname.startsWith("/platform") ||
     pathname.startsWith("/how-it-works") ||
     pathname.startsWith("/packages") ||
-    pathname.startsWith("/about") ||
-    pathname.startsWith("/support") ||
     pathname.startsWith("/security") ||
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/terms") ||

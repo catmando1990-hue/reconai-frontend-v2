@@ -46,8 +46,10 @@ import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
 import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
 import SignalsPanel from "@/components/signals/SignalsPanel";
+import { CfoSnapshotStrip, CfoSnapshotData } from "@/components/dashboard/CfoSnapshotStrip";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
 import { useChartReady } from "@/lib/hooks/useChartReady";
+import { useCallback } from "react";
 import {
   LineChart,
   Line,
@@ -530,6 +532,49 @@ export default function DashboardPage() {
   const greeting = getGreeting();
   const totalSpending = spendingData.reduce((acc, item) => acc + item.value, 0);
   const [showNetWorthModal, setShowNetWorthModal] = useState(false);
+
+  // CFO Snapshot - manual refresh only (no polling)
+  const [cfoSnapshot, setCfoSnapshot] = useState<CfoSnapshotData>({});
+  const [cfoLoading, setCfoLoading] = useState(false);
+
+  const fetchCfoSnapshot = useCallback(async () => {
+    setCfoLoading(true);
+    try {
+      const data = await apiFetch<{
+        snapshot?: {
+          cash_in?: number;
+          cash_out?: number;
+          runway_months?: number;
+          top_vendor?: string;
+          last_updated?: string | null;
+        };
+        duplicates?: {
+          count?: number;
+          potential_savings?: number;
+        };
+        vendors?: Array<{ name: string; total: number }>;
+      }>("/api/dashboard/overview");
+      setCfoSnapshot({
+        cashIn: data?.snapshot?.cash_in,
+        cashOut: data?.snapshot?.cash_out,
+        runwayMonths: data?.snapshot?.runway_months,
+        duplicatesCount: data?.duplicates?.count,
+        potentialSavings: data?.duplicates?.potential_savings,
+        topVendor: data?.snapshot?.top_vendor,
+        topVendorSpend: data?.vendors?.[0]?.total,
+        lastUpdated: new Date().toISOString(),
+      });
+    } catch {
+      // Fail-closed: keep previous data, show stale indicator
+    } finally {
+      setCfoLoading(false);
+    }
+  }, []);
+
+  // Initial fetch on mount (manual, not polling)
+  useEffect(() => {
+    fetchCfoSnapshot();
+  }, [fetchCfoSnapshot]);
   const [expandedAssetCategory, setExpandedAssetCategory] = useState<
     string | null
   >(null);
@@ -647,6 +692,13 @@ export default function DashboardPage() {
               })}
             </p>
           </motion.div>
+
+          {/* CFO Snapshot Strip - Financial KPIs at a glance */}
+          <CfoSnapshotStrip
+            data={cfoSnapshot}
+            isLoading={cfoLoading}
+            onRefresh={fetchCfoSnapshot}
+          />
 
           {/* First-run acknowledgement and initial value */}
           <FirstRunSystemBanner

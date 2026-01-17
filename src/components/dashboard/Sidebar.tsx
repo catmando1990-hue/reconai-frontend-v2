@@ -21,8 +21,11 @@ import {
   LogOut,
   Home,
   HelpCircle,
+  Building2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useUserProfile } from "@/lib/user-profile-context";
+import { hasGovConEntitlement } from "@/lib/entitlements";
 
 type NavItem = {
   label: string;
@@ -107,6 +110,7 @@ function getActiveSection(pathname: string): string {
   if (pathname.startsWith("/dashboard/core")) return "Core";
   if (pathname.startsWith("/dashboard/intelligence")) return "Intelligence";
   if (pathname.startsWith("/dashboard/cfo")) return "CFO Mode";
+  if (pathname.startsWith("/dashboard/govcon")) return "GovCon";
   if (pathname.startsWith("/dashboard/settings")) return "Settings";
   return "Dashboard";
 }
@@ -115,8 +119,40 @@ export function Sidebar() {
   const pathname = usePathname() || "";
   const router = useRouter();
   const { signOut } = useClerk();
+  const { profile } = useUserProfile();
   const activeSection = getActiveSection(pathname);
   const [expanded, setExpanded] = useState<string>(activeSection);
+
+  // Check GovCon entitlement from user profile tiers
+  const showGovCon = useMemo(
+    () => hasGovConEntitlement(profile?.tiers),
+    [profile?.tiers]
+  );
+
+  // Build nav items dynamically based on entitlements
+  const navItems = useMemo(() => {
+    const items = [...NAV_ITEMS];
+
+    // Insert GovCon before Settings if user has entitlement
+    if (showGovCon) {
+      const settingsIndex = items.findIndex((item) => item.label === "Settings");
+      const govConItem: NavItem = {
+        label: "GovCon",
+        href: "/dashboard/govcon",
+        icon: Building2,
+        children: [
+          { label: "Overview", href: "/dashboard/govcon", icon: Building2 },
+        ],
+      };
+      if (settingsIndex !== -1) {
+        items.splice(settingsIndex, 0, govConItem);
+      } else {
+        items.push(govConItem);
+      }
+    }
+
+    return items;
+  }, [showGovCon]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -158,7 +194,7 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <div className="space-y-1">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               const isExpanded = expanded === item.label;
               const isActive = activeSection === item.label;

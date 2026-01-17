@@ -174,3 +174,20 @@ export function getUpgradePrompt(
 
   return messages[feature] || messages.default;
 }
+
+/**
+ * Check if user has GovCon entitlement.
+ * Canonical safe default: deny until explicitly granted.
+ */
+export function hasGovConEntitlement(
+  tiers: string[] | null | undefined,
+): boolean {
+  if (!tiers || !Array.isArray(tiers)) return false;
+
+  const normalizedTiers = tiers.map((t) => t.toLowerCase());
+  return (
+    normalizedTiers.includes("govcon") ||
+    normalizedTiers.includes("contractor") ||
+    normalizedTiers.includes("enterprise")
+  );
+}

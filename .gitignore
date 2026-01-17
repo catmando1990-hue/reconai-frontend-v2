@@ -57,6 +57,9 @@ NULL
 # Claude temp files
 tmpclaude-*
 
+# Python virtual environment (not needed for Next.js)
+/venv/
+
 # Temp / backup files
 *.tmp
 *.temp

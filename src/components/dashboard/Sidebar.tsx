@@ -126,7 +126,7 @@ export function Sidebar() {
   // Check GovCon entitlement from user profile tiers
   const showGovCon = useMemo(
     () => hasGovConEntitlement(profile?.tiers),
-    [profile?.tiers]
+    [profile?.tiers],
   );
 
   // Build nav items dynamically based on entitlements
@@ -135,18 +135,40 @@ export function Sidebar() {
 
     // Insert GovCon before Settings if user has entitlement
     if (showGovCon) {
-      const settingsIndex = items.findIndex((item) => item.label === "Settings");
+      const settingsIndex = items.findIndex(
+        (item) => item.label === "Settings",
+      );
       const govConItem: NavItem = {
         label: "GovCon",
         href: "/dashboard/govcon",
         icon: Building2,
         children: [
           { label: "Overview", href: "/dashboard/govcon", icon: Building2 },
-          { label: "Contracts", href: "/dashboard/govcon/contracts", icon: FileText },
-          { label: "Timekeeping", href: "/dashboard/govcon/timekeeping", icon: Layers },
-          { label: "Indirects", href: "/dashboard/govcon/indirects", icon: Layers },
-          { label: "Reconciliation", href: "/dashboard/govcon/reconciliation", icon: ArrowLeftRight },
-          { label: "Audit Trail", href: "/dashboard/govcon/audit", icon: ShieldCheck },
+          {
+            label: "Contracts",
+            href: "/dashboard/govcon/contracts",
+            icon: FileText,
+          },
+          {
+            label: "Timekeeping",
+            href: "/dashboard/govcon/timekeeping",
+            icon: Layers,
+          },
+          {
+            label: "Indirects",
+            href: "/dashboard/govcon/indirects",
+            icon: Layers,
+          },
+          {
+            label: "Reconciliation",
+            href: "/dashboard/govcon/reconciliation",
+            icon: ArrowLeftRight,
+          },
+          {
+            label: "Audit Trail",
+            href: "/dashboard/govcon/audit",
+            icon: ShieldCheck,
+          },
         ],
       };
       if (settingsIndex !== -1) {

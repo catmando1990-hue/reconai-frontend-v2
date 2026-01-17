@@ -29,7 +29,8 @@ const QUICK_STATS = {
 const MODULES = [
   {
     title: "Contracts",
-    description: "DCAA-compliant contract management with CLIN tracking and funding status",
+    description:
+      "DCAA-compliant contract management with CLIN tracking and funding status",
     href: "/dashboard/govcon/contracts",
     icon: FileText,
     stats: `${QUICK_STATS.activeContracts} active contracts`,
@@ -38,7 +39,8 @@ const MODULES = [
   },
   {
     title: "Timekeeping",
-    description: "Daily labor tracking with 15-min increments and approval workflow",
+    description:
+      "Daily labor tracking with 15-min increments and approval workflow",
     href: "/dashboard/govcon/timekeeping",
     icon: Clock,
     stats: `${QUICK_STATS.pendingTimesheets} pending approval`,
@@ -47,7 +49,8 @@ const MODULES = [
   },
   {
     title: "Indirect Costs",
-    description: "Overhead, G&A, and fringe pool management with FAR 31.201 allowability",
+    description:
+      "Overhead, G&A, and fringe pool management with FAR 31.201 allowability",
     href: "/dashboard/govcon/indirects",
     icon: Layers,
     stats: "3 active pools",
@@ -65,7 +68,8 @@ const MODULES = [
   },
   {
     title: "Audit Trail",
-    description: "Immutable audit log with hash chain integrity and evidence retention",
+    description:
+      "Immutable audit log with hash chain integrity and evidence retention",
     href: "/dashboard/govcon/audit",
     icon: Shield,
     stats: `${QUICK_STATS.auditEntries} entries`,
@@ -84,7 +88,8 @@ function formatCurrency(amount: number): string {
 }
 
 export default function GovConDashboardPage() {
-  const fundingPercent = (QUICK_STATS.fundedValue / QUICK_STATS.totalContractValue) * 100;
+  const fundingPercent =
+    (QUICK_STATS.fundedValue / QUICK_STATS.totalContractValue) * 100;
 
   return (
     <main className="p-6 space-y-6">
@@ -95,7 +100,8 @@ export default function GovConDashboardPage() {
           GovCon Dashboard
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          DCAA-compliant government contracting workspace with contracts, timekeeping, indirects, and audit management
+          DCAA-compliant government contracting workspace with contracts,
+          timekeeping, indirects, and audit management
         </p>
       </div>
 
@@ -103,10 +109,13 @@ export default function GovConDashboardPage() {
       <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
         <Lock className="h-5 w-5 text-blue-500 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-blue-500">ReconAI Canonical Laws Active</p>
+          <p className="text-sm font-medium text-blue-500">
+            ReconAI Canonical Laws Active
+          </p>
           <p className="text-sm text-muted-foreground">
-            All GovCon operations enforce: Advisory-only behavior • Manual-run only • Read-only execution •
-            Confidence ≥ 0.85 for AI insights • Evidence required for modifications • Fail-closed defaults
+            All GovCon operations enforce: Advisory-only behavior • Manual-run
+            only • Read-only execution • Confidence ≥ 0.85 for AI insights •
+            Evidence required for modifications • Fail-closed defaults
           </p>
         </div>
       </div>
@@ -118,7 +127,9 @@ export default function GovConDashboardPage() {
             <FileText className="h-4 w-4" />
             <span className="text-sm">Active Contracts</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{QUICK_STATS.activeContracts}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {QUICK_STATS.activeContracts}
+          </p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -158,7 +169,8 @@ export default function GovConDashboardPage() {
             {QUICK_STATS.pendingTimesheets + QUICK_STATS.openVariances}
           </p>
           <p className="text-xs text-muted-foreground">
-            {QUICK_STATS.pendingTimesheets} timesheets, {QUICK_STATS.openVariances} variances
+            {QUICK_STATS.pendingTimesheets} timesheets,{" "}
+            {QUICK_STATS.openVariances} variances
           </p>
         </div>
       </div>
@@ -183,8 +195,12 @@ export default function GovConDashboardPage() {
                   <h3 className="font-medium group-hover:text-primary transition-colors">
                     {module.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
-                  <p className={`text-sm font-medium mt-2 ${module.color}`}>{module.stats}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {module.description}
+                  </p>
+                  <p className={`text-sm font-medium mt-2 ${module.color}`}>
+                    {module.stats}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -281,12 +297,16 @@ export default function GovConDashboardPage() {
             const Icon = item.icon;
             return (
               <div key={idx} className="p-4 flex items-center gap-4">
-                <div className={`h-10 w-10 rounded-lg bg-card flex items-center justify-center border`}>
+                <div
+                  className={`h-10 w-10 rounded-lg bg-card flex items-center justify-center border`}
+                >
                   <Icon className={`h-5 w-5 ${item.color}`} />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium">{item.title}</p>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
                 <p className="text-sm text-muted-foreground">{item.time}</p>
               </div>
@@ -308,7 +328,8 @@ export default function GovConDashboardPage() {
         <div className="rounded-xl border bg-card p-4">
           <h3 className="font-medium mb-2">SF-1408 Checklist</h3>
           <p className="text-sm text-muted-foreground">
-            Preaward survey accounting system adequacy checklist for government contracting.
+            Preaward survey accounting system adequacy checklist for government
+            contracting.
           </p>
           <Link
             href="/dashboard/govcon/reconciliation"
@@ -320,7 +341,8 @@ export default function GovConDashboardPage() {
         <div className="rounded-xl border bg-card p-4">
           <h3 className="font-medium mb-2">Export Reports</h3>
           <p className="text-sm text-muted-foreground">
-            Generate DCAA-ready exports including ICS schedules, audit trail, and rate summaries.
+            Generate DCAA-ready exports including ICS schedules, audit trail,
+            and rate summaries.
           </p>
           <Link
             href="/dashboard/govcon/audit"

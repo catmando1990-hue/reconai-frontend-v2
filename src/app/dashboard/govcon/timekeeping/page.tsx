@@ -16,7 +16,12 @@ import {
   User,
 } from "lucide-react";
 
-type TimesheetStatus = "draft" | "submitted" | "approved" | "rejected" | "corrected";
+type TimesheetStatus =
+  | "draft"
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "corrected";
 
 interface TimeEntry {
   id: string;
@@ -169,33 +174,42 @@ export default function TimekeepingPage() {
 
   // Memoize grouped entries by date
   const entriesByDate = useMemo(() => {
-    return timesheet.entries.reduce((acc, entry) => {
-      if (!acc[entry.date]) {
-        acc[entry.date] = [];
-      }
-      acc[entry.date].push(entry);
-      return acc;
-    }, {} as Record<string, TimeEntry[]>);
+    return timesheet.entries.reduce(
+      (acc, entry) => {
+        if (!acc[entry.date]) {
+          acc[entry.date] = [];
+        }
+        acc[entry.date].push(entry);
+        return acc;
+      },
+      {} as Record<string, TimeEntry[]>,
+    );
   }, [timesheet.entries]);
 
   // Memoize daily totals
   const dailyTotals = useMemo(() => {
-    return Object.entries(entriesByDate).reduce((acc, [date, entries]) => {
-      acc[date] = entries.reduce((sum, e) => sum + e.hours, 0);
-      return acc;
-    }, {} as Record<string, number>);
+    return Object.entries(entriesByDate).reduce(
+      (acc, [date, entries]) => {
+        acc[date] = entries.reduce((sum, e) => sum + e.hours, 0);
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
   }, [entriesByDate]);
 
   // Memoize grouped entries by contract for summary
   const entriesByContract = useMemo(() => {
-    return timesheet.entries.reduce((acc, entry) => {
-      if (!acc[entry.contract_number]) {
-        acc[entry.contract_number] = { hours: 0, entries: [] };
-      }
-      acc[entry.contract_number].hours += entry.hours;
-      acc[entry.contract_number].entries.push(entry);
-      return acc;
-    }, {} as Record<string, { hours: number; entries: TimeEntry[] }>);
+    return timesheet.entries.reduce(
+      (acc, entry) => {
+        if (!acc[entry.contract_number]) {
+          acc[entry.contract_number] = { hours: 0, entries: [] };
+        }
+        acc[entry.contract_number].hours += entry.hours;
+        acc[entry.contract_number].entries.push(entry);
+        return acc;
+      },
+      {} as Record<string, { hours: number; entries: TimeEntry[] }>,
+    );
   }, [timesheet.entries]);
 
   // Memoize date selection handler
@@ -213,7 +227,8 @@ export default function TimekeepingPage() {
             Timekeeping
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            DCAA-compliant labor tracking with daily time entry and approval workflow
+            DCAA-compliant labor tracking with daily time entry and approval
+            workflow
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -232,10 +247,13 @@ export default function TimekeepingPage() {
       <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
         <Lock className="h-5 w-5 text-blue-500 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-blue-500">DCAA Timekeeping Requirements</p>
+          <p className="text-sm font-medium text-blue-500">
+            DCAA Timekeeping Requirements
+          </p>
           <p className="text-sm text-muted-foreground">
-            Time must be recorded daily with 15-minute increments. Corrections require evidence
-            and supervisory approval. All entries are logged to an immutable audit trail.
+            Time must be recorded daily with 15-minute increments. Corrections
+            require evidence and supervisory approval. All entries are logged to
+            an immutable audit trail.
           </p>
         </div>
       </div>
@@ -251,11 +269,14 @@ export default function TimekeepingPage() {
             {timesheet.period_start} to {timesheet.period_end}
           </p>
           <div className="flex items-center justify-center gap-2 mt-1">
-            <span className={`px-2 py-0.5 text-xs rounded-full border ${getStatusColor(timesheet.status)}`}>
+            <span
+              className={`px-2 py-0.5 text-xs rounded-full border ${getStatusColor(timesheet.status)}`}
+            >
               {timesheet.status}
             </span>
             <span className="text-sm text-muted-foreground">
-              {timesheet.total_hours} hours ({timesheet.billable_hours} billable)
+              {timesheet.total_hours} hours ({timesheet.billable_hours}{" "}
+              billable)
             </span>
           </div>
         </div>
@@ -279,21 +300,27 @@ export default function TimekeepingPage() {
             <CheckCircle className="h-4 w-4" />
             <span className="text-sm">Billable Hours</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{timesheet.billable_hours}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {timesheet.billable_hours}
+          </p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground">
             <FileText className="h-4 w-4" />
             <span className="text-sm">Contracts Charged</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{Object.keys(entriesByContract).length}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {Object.keys(entriesByContract).length}
+          </p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4" />
             <span className="text-sm">Days Logged</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{Object.keys(entriesByDate).length}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {Object.keys(entriesByDate).length}
+          </p>
         </div>
       </div>
 
@@ -324,7 +351,9 @@ export default function TimekeepingPage() {
                   <p className="text-sm font-medium">{date.getDate()}</p>
                 </div>
                 <div className="mt-2 text-center">
-                  <p className={`text-lg font-semibold ${dayTotal >= 8 ? "text-green-500" : dayTotal > 0 ? "text-yellow-500" : "text-muted-foreground"}`}>
+                  <p
+                    className={`text-lg font-semibold ${dayTotal >= 8 ? "text-green-500" : dayTotal > 0 ? "text-yellow-500" : "text-muted-foreground"}`}
+                  >
                     {dayTotal}h
                   </p>
                 </div>
@@ -333,7 +362,9 @@ export default function TimekeepingPage() {
                     <div
                       key={entry.id}
                       className={`text-xs p-1 rounded truncate ${
-                        entry.billable ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                        entry.billable
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
                       }`}
                       title={entry.description}
                     >
@@ -359,17 +390,24 @@ export default function TimekeepingPage() {
         </div>
         <div className="divide-y">
           {Object.entries(entriesByContract).map(([contractNumber, data]) => (
-            <div key={contractNumber} className="p-4 flex items-center justify-between">
+            <div
+              key={contractNumber}
+              className="p-4 flex items-center justify-between"
+            >
               <div>
-                <p className="font-mono text-sm font-medium">{contractNumber}</p>
+                <p className="font-mono text-sm font-medium">
+                  {contractNumber}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  {data.entries.length} entries across {new Set(data.entries.map((e) => e.date)).size} days
+                  {data.entries.length} entries across{" "}
+                  {new Set(data.entries.map((e) => e.date)).size} days
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-lg font-semibold">{data.hours}h</p>
                 <p className="text-xs text-muted-foreground">
-                  {((data.hours / timesheet.total_hours) * 100).toFixed(0)}% of total
+                  {((data.hours / timesheet.total_hours) * 100).toFixed(0)}% of
+                  total
                 </p>
               </div>
             </div>
@@ -380,9 +418,7 @@ export default function TimekeepingPage() {
       {/* Daily Entries Detail */}
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="font-medium">
-            Entries for {selectedDate}
-          </h2>
+          <h2 className="font-medium">Entries for {selectedDate}</h2>
           <button className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-accent transition-colors">
             <Clock className="h-4 w-4" />
             Add Entry
@@ -394,8 +430,12 @@ export default function TimekeepingPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm">{entry.contract_number}</span>
-                    <span className="text-xs text-muted-foreground">CLIN {entry.clin_number}</span>
+                    <span className="font-mono text-sm">
+                      {entry.contract_number}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      CLIN {entry.clin_number}
+                    </span>
                     <span
                       className={`px-2 py-0.5 text-xs rounded-full ${
                         entry.billable
@@ -406,7 +446,9 @@ export default function TimekeepingPage() {
                       {entry.billable ? "Billable" : "Non-Billable"}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{entry.labor_category}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {entry.labor_category}
+                  </p>
                   <p className="mt-2">{entry.description}</p>
                 </div>
                 <div className="text-right">
@@ -415,10 +457,13 @@ export default function TimekeepingPage() {
               </div>
             </div>
           ))}
-          {(!entriesByDate[selectedDate] || entriesByDate[selectedDate].length === 0) && (
+          {(!entriesByDate[selectedDate] ||
+            entriesByDate[selectedDate].length === 0) && (
             <div className="p-8 text-center">
               <Clock className="h-8 w-8 mx-auto text-muted-foreground/50" />
-              <p className="mt-2 text-muted-foreground">No entries for this date</p>
+              <p className="mt-2 text-muted-foreground">
+                No entries for this date
+              </p>
               <button className="mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                 Add Time Entry
               </button>
@@ -431,11 +476,14 @@ export default function TimekeepingPage() {
       <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
         <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-yellow-500">Timesheet Corrections</p>
+          <p className="text-sm font-medium text-yellow-500">
+            Timesheet Corrections
+          </p>
           <p className="text-sm text-muted-foreground">
-            After submission, any corrections require documented evidence and supervisory approval.
-            Corrections must include confidence score ≥ 0.85 for AI-assisted changes.
-            All modifications are permanently logged per DCAA requirements.
+            After submission, any corrections require documented evidence and
+            supervisory approval. Corrections must include confidence score ≥
+            0.85 for AI-assisted changes. All modifications are permanently
+            logged per DCAA requirements.
           </p>
         </div>
       </div>

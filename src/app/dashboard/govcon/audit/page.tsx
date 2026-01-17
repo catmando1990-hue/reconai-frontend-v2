@@ -97,7 +97,10 @@ const DEMO_ENTRIES: AuditEntry[] = [
     user_id: "user-002",
     user_name: "Jane Manager",
     user_role: "supervisor",
-    changes: { hours: { from: 8.0, to: 7.5 }, reason: "Correction per employee request" },
+    changes: {
+      hours: { from: 8.0, to: 7.5 },
+      reason: "Correction per employee request",
+    },
     evidence_hash: "f1a2b3c4d5e6",
     entry_hash: "c5a1b2d3e4f6",
     dcaa_relevant: true,
@@ -113,7 +116,10 @@ const DEMO_ENTRIES: AuditEntry[] = [
     user_id: "user-003",
     user_name: "Bob Contracts",
     user_role: "contracts_admin",
-    changes: { funded_value: { from: 1600000, to: 1800000 }, modification_number: "P00003" },
+    changes: {
+      funded_value: { from: 1600000, to: 1800000 },
+      modification_number: "P00003",
+    },
     evidence_hash: "d4e5f6a7b8c9",
     entry_hash: "d6b2c3e4f5a7",
     dcaa_relevant: true,
@@ -155,13 +161,17 @@ const DEMO_ENTRIES: AuditEntry[] = [
     timestamp: "2024-01-16T10:45:00Z",
     event_type: "variance_resolved",
     severity: "info",
-    description: "Variance VAR-001 resolved: rounding adjustment within tolerance",
+    description:
+      "Variance VAR-001 resolved: rounding adjustment within tolerance",
     entity_type: "variance",
     entity_id: "var-001",
     user_id: "user-001",
     user_name: "John Developer",
     user_role: "employee",
-    changes: { status: { from: "identified", to: "resolved" }, resolution: "Within tolerance" },
+    changes: {
+      status: { from: "identified", to: "resolved" },
+      resolution: "Within tolerance",
+    },
     evidence_hash: "a1b2c3d4e5f6",
     entry_hash: "a9e5f6b7c8d1",
     dcaa_relevant: true,
@@ -227,7 +237,9 @@ function getEventTypeLabel(type: AuditEventType): string {
 export default function AuditPage() {
   const [entries] = useState<AuditEntry[]>(DEMO_ENTRIES);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSeverity, setSelectedSeverity] = useState<AuditSeverity | "all">("all");
+  const [selectedSeverity, setSelectedSeverity] = useState<
+    AuditSeverity | "all"
+  >("all");
   const [selectedEntry, setSelectedEntry] = useState<AuditEntry | null>(null);
   const [displayCount, setDisplayCount] = useState(INITIAL_PAGE_SIZE);
 
@@ -238,7 +250,8 @@ export default function AuditPage() {
         entry.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         entry.user_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         entry.entity_id.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesSeverity = selectedSeverity === "all" || entry.severity === selectedSeverity;
+      const matchesSeverity =
+        selectedSeverity === "all" || entry.severity === selectedSeverity;
       return matchesSearch && matchesSeverity;
     });
   }, [entries, searchQuery, selectedSeverity]);
@@ -247,20 +260,25 @@ export default function AuditPage() {
   const entriesByDate = useMemo(() => {
     // Limit to displayCount for performance
     const limitedEntries = filteredEntries.slice(0, displayCount);
-    return limitedEntries.reduce((acc, entry) => {
-      const date = entry.timestamp.split("T")[0];
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(entry);
-      return acc;
-    }, {} as Record<string, AuditEntry[]>);
+    return limitedEntries.reduce(
+      (acc, entry) => {
+        const date = entry.timestamp.split("T")[0];
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(entry);
+        return acc;
+      },
+      {} as Record<string, AuditEntry[]>,
+    );
   }, [filteredEntries, displayCount]);
 
   const hasMore = displayCount < filteredEntries.length;
 
   const loadMore = useCallback(() => {
-    setDisplayCount((prev) => Math.min(prev + LOAD_MORE_SIZE, filteredEntries.length));
+    setDisplayCount((prev) =>
+      Math.min(prev + LOAD_MORE_SIZE, filteredEntries.length),
+    );
   }, [filteredEntries.length]);
 
   // Reset display count when filters change
@@ -303,10 +321,13 @@ export default function AuditPage() {
       <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
         <Lock className="h-5 w-5 text-blue-500 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-blue-500">Immutable Audit Trail</p>
+          <p className="text-sm font-medium text-blue-500">
+            Immutable Audit Trail
+          </p>
           <p className="text-sm text-muted-foreground">
-            All audit entries are cryptographically linked via hash chain. Records cannot be modified or deleted.
-            Retention policy: 6 years per FAR requirements. Evidence attached where required.
+            All audit entries are cryptographically linked via hash chain.
+            Records cannot be modified or deleted. Retention policy: 6 years per
+            FAR requirements. Evidence attached where required.
           </p>
         </div>
       </div>
@@ -344,7 +365,11 @@ export default function AuditPage() {
             <span className="text-sm">Warnings/Errors</span>
           </div>
           <p className="mt-2 text-2xl font-semibold text-yellow-500">
-            {entries.filter((e) => e.severity === "warning" || e.severity === "error").length}
+            {
+              entries.filter(
+                (e) => e.severity === "warning" || e.severity === "error",
+              ).length
+            }
           </p>
         </div>
       </div>
@@ -363,7 +388,9 @@ export default function AuditPage() {
         </div>
         <select
           value={selectedSeverity}
-          onChange={(e) => handleSeverityChange(e.target.value as AuditSeverity | "all")}
+          onChange={(e) =>
+            handleSeverityChange(e.target.value as AuditSeverity | "all")
+          }
           className="px-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
           <option value="all">All Severities</option>
@@ -408,7 +435,9 @@ export default function AuditPage() {
                         selectedEntry?.id === entry.id ? "border-primary" : ""
                       }`}
                       onClick={() =>
-                        setSelectedEntry(selectedEntry?.id === entry.id ? null : entry)
+                        setSelectedEntry(
+                          selectedEntry?.id === entry.id ? null : entry,
+                        )
                       }
                     >
                       <div className="flex items-start justify-between">
@@ -420,7 +449,7 @@ export default function AuditPage() {
                             <div className="flex items-center gap-2">
                               <span
                                 className={`px-2 py-0.5 text-xs rounded-full border ${getSeverityColor(
-                                  entry.severity
+                                  entry.severity,
                                 )}`}
                               >
                                 {entry.severity}
@@ -467,22 +496,34 @@ export default function AuditPage() {
                         <div className="mt-4 pt-4 border-t">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <p className="text-xs text-muted-foreground mb-1">Changes</p>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                Changes
+                              </p>
                               <pre className="p-2 rounded-lg bg-muted/50 text-xs overflow-x-auto">
                                 {JSON.stringify(entry.changes, null, 2)}
                               </pre>
                             </div>
                             <div>
-                              <p className="text-xs text-muted-foreground mb-1">Hashes</p>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                Hashes
+                              </p>
                               <div className="p-2 rounded-lg bg-muted/50 space-y-1">
                                 <p className="text-xs">
-                                  <span className="text-muted-foreground">Entry: </span>
-                                  <span className="font-mono">{entry.entry_hash}</span>
+                                  <span className="text-muted-foreground">
+                                    Entry:{" "}
+                                  </span>
+                                  <span className="font-mono">
+                                    {entry.entry_hash}
+                                  </span>
                                 </p>
                                 {entry.evidence_hash && (
                                   <p className="text-xs">
-                                    <span className="text-muted-foreground">Evidence: </span>
-                                    <span className="font-mono">{entry.evidence_hash}</span>
+                                    <span className="text-muted-foreground">
+                                      Evidence:{" "}
+                                    </span>
+                                    <span className="font-mono">
+                                      {entry.evidence_hash}
+                                    </span>
                                   </p>
                                 )}
                               </div>
@@ -527,13 +568,16 @@ export default function AuditPage() {
             <div>
               <p className="font-medium">Audit Log Integrity Verified</p>
               <p className="text-sm text-muted-foreground">
-                Hash chain verified • {entries.length} entries • Last verified: Just now
+                Hash chain verified • {entries.length} entries • Last verified:
+                Just now
               </p>
             </div>
           </div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Latest Entry Hash</p>
-            <p className="font-mono text-sm">{entries[0]?.entry_hash || "N/A"}</p>
+            <p className="font-mono text-sm">
+              {entries[0]?.entry_hash || "N/A"}
+            </p>
           </div>
         </div>
       </div>

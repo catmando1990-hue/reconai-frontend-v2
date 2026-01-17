@@ -34,7 +34,12 @@ type ContractType =
   | "IDIQ"
   | "BPA";
 
-type ContractStatus = "draft" | "active" | "completed" | "closed" | "terminated";
+type ContractStatus =
+  | "draft"
+  | "active"
+  | "completed"
+  | "closed"
+  | "terminated";
 
 interface Contract {
   id: string;
@@ -163,14 +168,21 @@ function getStatusColor(status: ContractStatus): string {
   }
 }
 
-function getFundingStatus(funded: number, total: number): {
+function getFundingStatus(
+  funded: number,
+  total: number,
+): {
   label: string;
   color: string;
   icon: typeof CheckCircle;
 } {
   const ratio = funded / total;
   if (ratio >= 0.9) {
-    return { label: "Fully Funded", color: "text-green-500", icon: CheckCircle };
+    return {
+      label: "Fully Funded",
+      color: "text-green-500",
+      icon: CheckCircle,
+    };
   } else if (ratio >= 0.5) {
     return { label: "Partially Funded", color: "text-yellow-500", icon: Clock };
   } else {
@@ -180,7 +192,9 @@ function getFundingStatus(funded: number, total: number): {
 
 export default function ContractsPage() {
   const [contracts] = useState<Contract[]>(DEMO_CONTRACTS);
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [displayCount, setDisplayCount] = useState(INITIAL_CONTRACT_COUNT);
 
@@ -189,7 +203,7 @@ export default function ContractsPage() {
     return contracts.filter(
       (c) =>
         c.contract_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.title.toLowerCase().includes(searchQuery.toLowerCase())
+        c.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [contracts, searchQuery]);
 
@@ -201,7 +215,9 @@ export default function ContractsPage() {
   const hasMore = displayCount < allFilteredContracts.length;
 
   const loadMore = useCallback(() => {
-    setDisplayCount((prev) => Math.min(prev + LOAD_MORE_COUNT, allFilteredContracts.length));
+    setDisplayCount((prev) =>
+      Math.min(prev + LOAD_MORE_COUNT, allFilteredContracts.length),
+    );
   }, [allFilteredContracts.length]);
 
   // Reset pagination when search changes
@@ -211,14 +227,18 @@ export default function ContractsPage() {
   }, []);
 
   // Memoize summary stats
-  const { totalValue, totalFunded, totalBilled } = useMemo(() => ({
-    totalValue: contracts.reduce((sum, c) => sum + c.total_value, 0),
-    totalFunded: contracts.reduce((sum, c) => sum + c.funded_value, 0),
-    totalBilled: contracts.reduce(
-      (sum, c) => sum + c.clins.reduce((s, clin) => s + clin.billed_to_date, 0),
-      0
-    ),
-  }), [contracts]);
+  const { totalValue, totalFunded, totalBilled } = useMemo(
+    () => ({
+      totalValue: contracts.reduce((sum, c) => sum + c.total_value, 0),
+      totalFunded: contracts.reduce((sum, c) => sum + c.funded_value, 0),
+      totalBilled: contracts.reduce(
+        (sum, c) =>
+          sum + c.clins.reduce((s, clin) => s + clin.billed_to_date, 0),
+        0,
+      ),
+    }),
+    [contracts],
+  );
 
   return (
     <main className="p-6 space-y-6">
@@ -230,7 +250,8 @@ export default function ContractsPage() {
             Contract Management
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            DCAA-compliant contract tracking with CLIN management and funding status
+            DCAA-compliant contract tracking with CLIN management and funding
+            status
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -251,8 +272,9 @@ export default function ContractsPage() {
         <div>
           <p className="text-sm font-medium text-blue-500">Advisory Mode</p>
           <p className="text-sm text-muted-foreground">
-            All contract modifications require manual approval and evidence attachment per DCAA requirements.
-            Changes are logged to an immutable audit trail.
+            All contract modifications require manual approval and evidence
+            attachment per DCAA requirements. Changes are logged to an immutable
+            audit trail.
           </p>
         </div>
       </div>
@@ -273,14 +295,18 @@ export default function ContractsPage() {
             <DollarSign className="h-4 w-4" />
             <span className="text-sm">Total Value</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{formatCurrency(totalValue)}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {formatCurrency(totalValue)}
+          </p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground">
             <DollarSign className="h-4 w-4" />
             <span className="text-sm">Funded</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{formatCurrency(totalFunded)}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {formatCurrency(totalFunded)}
+          </p>
           <p className="text-xs text-muted-foreground">
             {((totalFunded / totalValue) * 100).toFixed(1)}% of total
           </p>
@@ -290,7 +316,9 @@ export default function ContractsPage() {
             <DollarSign className="h-4 w-4" />
             <span className="text-sm">Billed to Date</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{formatCurrency(totalBilled)}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {formatCurrency(totalBilled)}
+          </p>
           <p className="text-xs text-muted-foreground">
             {((totalBilled / totalFunded) * 100).toFixed(1)}% of funded
           </p>
@@ -318,7 +346,10 @@ export default function ContractsPage() {
       {/* Contracts List */}
       <div className="space-y-4">
         {filteredContracts.map((contract) => {
-          const fundingStatus = getFundingStatus(contract.funded_value, contract.total_value);
+          const fundingStatus = getFundingStatus(
+            contract.funded_value,
+            contract.total_value,
+          );
           const FundingIcon = fundingStatus.icon;
 
           return (
@@ -336,7 +367,7 @@ export default function ContractsPage() {
                       </span>
                       <span
                         className={`px-2 py-0.5 text-xs rounded-full border ${getStatusColor(
-                          contract.status
+                          contract.status,
                         )}`}
                       >
                         {contract.status}
@@ -365,21 +396,29 @@ export default function ContractsPage() {
                 <div className="mt-4 grid grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Total Value</p>
-                    <p className="font-medium">{formatCurrency(contract.total_value)}</p>
+                    <p className="font-medium">
+                      {formatCurrency(contract.total_value)}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Funded</p>
-                    <p className="font-medium">{formatCurrency(contract.funded_value)}</p>
+                    <p className="font-medium">
+                      {formatCurrency(contract.funded_value)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Period of Performance</p>
+                    <p className="text-muted-foreground">
+                      Period of Performance
+                    </p>
                     <p className="font-medium">
                       {contract.pop_start} to {contract.pop_end}
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Funding Status</p>
-                    <p className={`font-medium flex items-center gap-1 ${fundingStatus.color}`}>
+                    <p
+                      className={`font-medium flex items-center gap-1 ${fundingStatus.color}`}
+                    >
                       <FundingIcon className="h-4 w-4" />
                       {fundingStatus.label}
                     </p>
@@ -388,7 +427,9 @@ export default function ContractsPage() {
 
                 {/* CLINs */}
                 <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm font-medium mb-2">Contract Line Items (CLINs)</p>
+                  <p className="text-sm font-medium mb-2">
+                    Contract Line Items (CLINs)
+                  </p>
                   <div className="grid gap-2">
                     {contract.clins.map((clin) => (
                       <div
@@ -400,15 +441,21 @@ export default function ContractsPage() {
                             CLIN {clin.clin_number}
                           </span>
                           <span className="text-sm">{clin.description}</span>
-                          <span className="text-xs text-muted-foreground">{clin.clin_type}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {clin.clin_type}
+                          </span>
                         </div>
                         <div className="flex items-center gap-6 text-sm">
                           <div className="text-right">
-                            <p className="text-muted-foreground text-xs">Funded</p>
+                            <p className="text-muted-foreground text-xs">
+                              Funded
+                            </p>
                             <p>{formatCurrency(clin.funded_value)}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-muted-foreground text-xs">Billed</p>
+                            <p className="text-muted-foreground text-xs">
+                              Billed
+                            </p>
                             <p>{formatCurrency(clin.billed_to_date)}</p>
                           </div>
                           <div className="w-24">
@@ -421,7 +468,11 @@ export default function ContractsPage() {
                               />
                             </div>
                             <p className="text-xs text-muted-foreground text-center mt-1">
-                              {((clin.billed_to_date / clin.funded_value) * 100).toFixed(0)}%
+                              {(
+                                (clin.billed_to_date / clin.funded_value) *
+                                100
+                              ).toFixed(0)}
+                              %
                             </p>
                           </div>
                         </div>

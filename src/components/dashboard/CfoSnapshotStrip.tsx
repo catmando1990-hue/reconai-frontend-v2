@@ -70,7 +70,8 @@ export function CfoSnapshotStrip({
   onRefresh,
 }: CfoSnapshotStripProps) {
   const netCashFlow = useMemo(() => {
-    if (data.cashIn === undefined || data.cashOut === undefined) return undefined;
+    if (data.cashIn === undefined || data.cashOut === undefined)
+      return undefined;
     return data.cashIn - data.cashOut;
   }, [data.cashIn, data.cashOut]);
 
@@ -102,20 +103,27 @@ export function CfoSnapshotStrip({
             <div className="flex items-baseline gap-2">
               <span
                 className={`font-mono text-lg font-semibold ${
-                  isPositiveCashFlow ? "text-reconai-success" : "text-reconai-error"
+                  isPositiveCashFlow
+                    ? "text-reconai-success"
+                    : "text-reconai-error"
                 }`}
               >
                 {netCashFlow !== undefined
                   ? `${isPositiveCashFlow ? "+" : ""}${formatCurrency(netCashFlow)}`
                   : "--"}
               </span>
-              {netCashFlow !== undefined && (
-                isPositiveCashFlow ? (
-                  <TrendingUp className="h-4 w-4 text-reconai-success" aria-label="Positive trend" />
+              {netCashFlow !== undefined &&
+                (isPositiveCashFlow ? (
+                  <TrendingUp
+                    className="h-4 w-4 text-reconai-success"
+                    aria-label="Positive trend"
+                  />
                 ) : (
-                  <TrendingDown className="h-4 w-4 text-reconai-error" aria-label="Negative trend" />
-                )
-              )}
+                  <TrendingDown
+                    className="h-4 w-4 text-reconai-error"
+                    aria-label="Negative trend"
+                  />
+                ))}
             </div>
           )}
           <div className="text-xs text-muted-foreground mt-1">
@@ -123,9 +131,13 @@ export function CfoSnapshotStrip({
               <div className="h-3 w-24 bg-card/10 rounded animate-pulse" />
             ) : (
               <>
-                <span className="text-reconai-success">{formatCurrency(data.cashIn)}</span>
+                <span className="text-reconai-success">
+                  {formatCurrency(data.cashIn)}
+                </span>
                 {" in / "}
-                <span className="text-reconai-error">{formatCurrency(data.cashOut)}</span>
+                <span className="text-reconai-error">
+                  {formatCurrency(data.cashOut)}
+                </span>
                 {" out"}
               </>
             )}
@@ -237,7 +249,9 @@ export function CfoSnapshotStrip({
               className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
               aria-label="Refresh dashboard data"
             >
-              <RefreshCw className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`}
+              />
               Refresh
             </button>
           )}

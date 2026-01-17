@@ -18,19 +18,19 @@
 
 // Canonical Law Constants
 export const CANONICAL_LAWS = {
-  ADVISORY_ONLY: 'advisory_only',
-  MANUAL_RUN_ONLY: 'manual_run_only',
-  READ_ONLY_MODE: 'read_only_mode',
+  ADVISORY_ONLY: "advisory_only",
+  MANUAL_RUN_ONLY: "manual_run_only",
+  READ_ONLY_MODE: "read_only_mode",
   CONFIDENCE_THRESHOLD: 0.85,
-  EVIDENCE_REQUIRED: 'evidence_required'
+  EVIDENCE_REQUIRED: "evidence_required",
 };
 
 // Execution modes
 export const EXECUTION_MODES = {
-  ADVISORY: 'advisory',      // Recommends actions, does not execute
-  MANUAL: 'manual',          // Requires human trigger
-  READ_ONLY: 'read_only',    // Can only read, not write
-  BLOCKED: 'blocked'         // Operation blocked by canonical laws
+  ADVISORY: "advisory", // Recommends actions, does not execute
+  MANUAL: "manual", // Requires human trigger
+  READ_ONLY: "read_only", // Can only read, not write
+  BLOCKED: "blocked", // Operation blocked by canonical laws
 };
 
 // Guard state - SECURITY: Always enabled, cannot be disabled
@@ -56,19 +56,21 @@ export function hasHumanTrigger(operation) {
   if (!operation) return false;
 
   const validTriggers = [
-    'user_click',
-    'user_command',
-    'explicit_approval',
-    'manual_confirmation',
-    'human_initiated',
-    'button_click',
-    'form_submit',
-    'keyboard_shortcut'
+    "user_click",
+    "user_command",
+    "explicit_approval",
+    "manual_confirmation",
+    "human_initiated",
+    "button_click",
+    "form_submit",
+    "keyboard_shortcut",
   ];
 
-  return validTriggers.includes(operation.triggerType) &&
-         operation.triggeredBy &&
-         typeof operation.triggeredBy === 'string';
+  return (
+    validTriggers.includes(operation.triggerType) &&
+    operation.triggeredBy &&
+    typeof operation.triggeredBy === "string"
+  );
 }
 
 /**
@@ -78,9 +80,10 @@ export function hasHumanTrigger(operation) {
  */
 export function validateConfidence(confidence) {
   const threshold = CANONICAL_LAWS.CONFIDENCE_THRESHOLD;
-  const passed = typeof confidence === 'number' &&
-                 confidence >= threshold &&
-                 confidence <= 1;
+  const passed =
+    typeof confidence === "number" &&
+    confidence >= threshold &&
+    confidence <= 1;
 
   return {
     passed,
@@ -89,7 +92,7 @@ export function validateConfidence(confidence) {
     deficit: passed ? 0 : Math.max(0, threshold - (confidence || 0)),
     message: passed
       ? `Confidence ${confidence} meets threshold ${threshold}`
-      : `Confidence ${confidence || 'undefined'} below threshold ${threshold}`
+      : `Confidence ${confidence || "undefined"} below threshold ${threshold}`,
   };
 }
 
@@ -99,14 +102,14 @@ export function validateConfidence(confidence) {
  * @returns {Object} - Validation result
  */
 export function validateEvidence(evidence) {
-  const requiredFields = ['source', 'timestamp', 'data'];
+  const requiredFields = ["source", "timestamp", "data"];
   const missing = [];
 
-  if (!evidence || typeof evidence !== 'object') {
+  if (!evidence || typeof evidence !== "object") {
     return {
       valid: false,
       missing: requiredFields,
-      message: 'Evidence object is required but not provided'
+      message: "Evidence object is required but not provided",
     };
   }
 
@@ -120,9 +123,10 @@ export function validateEvidence(evidence) {
     valid: missing.length === 0,
     missing,
     evidence: missing.length === 0 ? evidence : null,
-    message: missing.length === 0
-      ? 'Evidence validated successfully'
-      : `Missing required evidence fields: ${missing.join(', ')}`
+    message:
+      missing.length === 0
+        ? "Evidence validated successfully"
+        : `Missing required evidence fields: ${missing.join(", ")}`,
   };
 }
 
@@ -133,19 +137,30 @@ export function validateEvidence(evidence) {
  */
 export function isReadOnlySafe(operation) {
   const writeOperations = [
-    'write', 'update', 'delete', 'create', 'modify',
-    'insert', 'remove', 'execute', 'deploy', 'push',
-    'post', 'put', 'patch'
+    "write",
+    "update",
+    "delete",
+    "create",
+    "modify",
+    "insert",
+    "remove",
+    "execute",
+    "deploy",
+    "push",
+    "post",
+    "put",
+    "patch",
   ];
 
-  const operationType = operation?.type?.toLowerCase() || '';
-  const operationAction = operation?.action?.toLowerCase() || '';
-  const operationMethod = operation?.method?.toLowerCase() || '';
+  const operationType = operation?.type?.toLowerCase() || "";
+  const operationAction = operation?.action?.toLowerCase() || "";
+  const operationMethod = operation?.method?.toLowerCase() || "";
 
-  const isWrite = writeOperations.some(op =>
-    operationType.includes(op) ||
-    operationAction.includes(op) ||
-    operationMethod.includes(op)
+  const isWrite = writeOperations.some(
+    (op) =>
+      operationType.includes(op) ||
+      operationAction.includes(op) ||
+      operationMethod.includes(op),
   );
 
   return {
@@ -154,7 +169,7 @@ export function isReadOnlySafe(operation) {
     operationAction,
     message: isWrite
       ? `Write operation detected: ${operationType || operationAction || operationMethod}. Blocked in read-only mode.`
-      : 'Operation is read-only safe'
+      : "Operation is read-only safe",
   };
 }
 
@@ -165,22 +180,22 @@ export function isReadOnlySafe(operation) {
  * @returns {Object} - Human trigger context
  */
 export function createHumanTriggerFromEvent(event, userId) {
-  let triggerType = 'human_initiated';
+  let triggerType = "human_initiated";
 
-  if (event?.type === 'click') {
-    triggerType = 'button_click';
-  } else if (event?.type === 'submit') {
-    triggerType = 'form_submit';
-  } else if (event?.type === 'keydown' || event?.type === 'keyup') {
-    triggerType = 'keyboard_shortcut';
+  if (event?.type === "click") {
+    triggerType = "button_click";
+  } else if (event?.type === "submit") {
+    triggerType = "form_submit";
+  } else if (event?.type === "keydown" || event?.type === "keyup") {
+    triggerType = "keyboard_shortcut";
   }
 
   return {
     triggerType,
-    triggeredBy: userId || 'anonymous',
+    triggeredBy: userId || "anonymous",
     triggeredAt: new Date(),
-    eventType: event?.type || 'unknown',
-    target: event?.target?.tagName || 'unknown'
+    eventType: event?.type || "unknown",
+    target: event?.target?.tagName || "unknown",
   };
 }
 
@@ -196,17 +211,17 @@ export function enforceCanonicalGuard(operation, context = {}) {
     return {
       allowed: false,
       mode: EXECUTION_MODES.BLOCKED,
-      reason: 'SECURITY VIOLATION: Guard bypass attempted'
+      reason: "SECURITY VIOLATION: Guard bypass attempted",
     };
   }
 
   const results = {
     timestamp: new Date().toISOString(),
-    operation: operation?.id || 'unknown',
+    operation: operation?.id || "unknown",
     checks: {},
     allowed: false,
     mode: EXECUTION_MODES.BLOCKED,
-    advisoryMessage: null
+    advisoryMessage: null,
   };
 
   // Check 1: Human trigger required (Manual-run only)
@@ -215,49 +230,50 @@ export function enforceCanonicalGuard(operation, context = {}) {
     passed: hasHumanTrigger(operation),
     details: hasHumanTrigger(operation)
       ? `Human trigger verified: ${operation.triggerType}`
-      : 'No valid human trigger detected'
+      : "No valid human trigger detected",
   };
 
   // Check 2: Confidence threshold
   results.checks.confidence = {
-    name: 'confidence_threshold',
-    ...validateConfidence(context.confidence)
+    name: "confidence_threshold",
+    ...validateConfidence(context.confidence),
   };
 
   // Check 3: Evidence attachment
   results.checks.evidence = {
     name: CANONICAL_LAWS.EVIDENCE_REQUIRED,
-    ...validateEvidence(context.evidence)
+    ...validateEvidence(context.evidence),
   };
 
   // Check 4: Read-only mode
   results.checks.readOnly = {
     name: CANONICAL_LAWS.READ_ONLY_MODE,
-    ...isReadOnlySafe(operation)
+    ...isReadOnlySafe(operation),
   };
 
   // Determine overall result
-  const allChecksPassed = Object.values(results.checks).every(check =>
-    check.passed || check.valid || check.safe
+  const allChecksPassed = Object.values(results.checks).every(
+    (check) => check.passed || check.valid || check.safe,
   );
 
   if (allChecksPassed) {
     results.allowed = true;
     results.mode = EXECUTION_MODES.ADVISORY;
-    results.advisoryMessage = 'Operation validated. Providing advisory recommendation only.';
+    results.advisoryMessage =
+      "Operation validated. Providing advisory recommendation only.";
   } else {
     results.allowed = false;
     results.mode = EXECUTION_MODES.BLOCKED;
     const failedChecks = Object.entries(results.checks)
       .filter(([_, check]) => !(check.passed || check.valid || check.safe))
       .map(([name, _]) => name);
-    results.advisoryMessage = `Operation blocked. Failed checks: ${failedChecks.join(', ')}`;
+    results.advisoryMessage = `Operation blocked. Failed checks: ${failedChecks.join(", ")}`;
   }
 
   // Add to client audit trail
   clientAuditTrail.push({
     ...results,
-    auditedAt: new Date()
+    auditedAt: new Date(),
   });
 
   return results;
@@ -272,26 +288,27 @@ export function enforceCanonicalGuard(operation, context = {}) {
  */
 export function createAdvisoryResponse(operation, recommendation) {
   return {
-    type: 'advisory',
+    type: "advisory",
     autonomous: false,
     executionAllowed: false,
     recommendation: {
-      action: recommendation?.action || 'review',
-      rationale: recommendation?.rationale || 'Requires human review',
+      action: recommendation?.action || "review",
+      rationale: recommendation?.rationale || "Requires human review",
       confidence: recommendation?.confidence || 0,
-      suggestedSteps: recommendation?.steps || []
+      suggestedSteps: recommendation?.steps || [],
     },
     humanActionRequired: {
       required: true,
-      message: 'This recommendation requires explicit human approval to proceed',
-      uiAction: 'showApprovalModal'
+      message:
+        "This recommendation requires explicit human approval to proceed",
+      uiAction: "showApprovalModal",
     },
     evidence: recommendation?.evidence || null,
     warnings: [
-      'This is an advisory-only response',
-      'No autonomous execution will occur',
-      'Human approval required for any action'
-    ]
+      "This is an advisory-only response",
+      "No autonomous execution will occur",
+      "Human approval required for any action",
+    ],
   };
 }
 
@@ -308,7 +325,7 @@ export function createEvidence(source, data) {
     timestamp,
     data,
     clientGenerated: true,
-    canonicalCompliant: true
+    canonicalCompliant: true,
   };
 }
 
@@ -354,16 +371,16 @@ export function createApprovalRequest(operation, guardResult) {
     id: `approval-${Date.now()}`,
     operation,
     guardResult,
-    requiredAction: 'user_approval',
+    requiredAction: "user_approval",
     expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes
     displayMessage: guardResult.allowed
-      ? 'Operation ready for approval'
+      ? "Operation ready for approval"
       : `Operation requires attention: ${guardResult.advisoryMessage}`,
     actions: [
-      { label: 'Approve', action: 'approve', style: 'primary' },
-      { label: 'Reject', action: 'reject', style: 'danger' },
-      { label: 'Review Details', action: 'review', style: 'secondary' }
-    ]
+      { label: "Approve", action: "approve", style: "primary" },
+      { label: "Reject", action: "reject", style: "danger" },
+      { label: "Review Details", action: "review", style: "secondary" },
+    ],
   };
 }
 
@@ -381,12 +398,12 @@ export function validateBeforeApiCall(operation, context) {
     proceed: guardResult.allowed,
     guardResult,
     message: guardResult.advisoryMessage,
-    requiresApproval: !guardResult.allowed && isReadOnlySafe(operation).safe
+    requiresApproval: !guardResult.allowed && isReadOnlySafe(operation).safe,
   };
 }
 
 // Export for CommonJS compatibility if needed
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     CANONICAL_LAWS,
     EXECUTION_MODES,
@@ -403,6 +420,6 @@ if (typeof module !== 'undefined' && module.exports) {
     getCanonicalLaws,
     getExecutionModes,
     createApprovalRequest,
-    validateBeforeApiCall
+    validateBeforeApiCall,
   };
 }

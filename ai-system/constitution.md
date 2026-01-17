@@ -50,6 +50,7 @@ All AI operations must comply with the following canonical laws:
 ### Integration
 
 Use `ai-system/tools/canonical-guard.mjs` for:
+
 - Validating operations before API calls
 - Creating human trigger contexts from UI events
 - Generating advisory responses

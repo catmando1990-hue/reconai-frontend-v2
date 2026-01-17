@@ -46,7 +46,10 @@ import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
 import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
 import SignalsPanel from "@/components/signals/SignalsPanel";
-import { CfoSnapshotStrip, CfoSnapshotData } from "@/components/dashboard/CfoSnapshotStrip";
+import {
+  CfoSnapshotStrip,
+  CfoSnapshotData,
+} from "@/components/dashboard/CfoSnapshotStrip";
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
 import { useChartReady } from "@/lib/hooks/useChartReady";
 import { useCallback } from "react";

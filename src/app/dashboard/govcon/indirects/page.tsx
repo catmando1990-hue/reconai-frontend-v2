@@ -17,9 +17,17 @@ import {
 } from "lucide-react";
 
 type PoolType = "overhead" | "ga" | "fringe" | "material_handling" | "other";
-type AllocationBase = "direct_labor_dollars" | "direct_labor_hours" | "total_cost_input" | "direct_material";
+type AllocationBase =
+  | "direct_labor_dollars"
+  | "direct_labor_hours"
+  | "total_cost_input"
+  | "direct_material";
 type RateStatus = "provisional" | "final" | "negotiated" | "audited";
-type AllowabilityStatus = "allowable" | "unallowable" | "pending_review" | "partially_allowable";
+type AllowabilityStatus =
+  | "allowable"
+  | "unallowable"
+  | "pending_review"
+  | "partially_allowable";
 
 interface IndirectPool {
   id: string;
@@ -214,11 +222,14 @@ export default function IndirectsPage() {
   const [selectedPool, setSelectedPool] = useState<IndirectPool | null>(null);
 
   // Memoize summary totals
-  const { totalIndirects, totalAllowable, totalUnallowable } = useMemo(() => ({
-    totalIndirects: pools.reduce((sum, p) => sum + p.total_costs, 0),
-    totalAllowable: pools.reduce((sum, p) => sum + p.allowable_costs, 0),
-    totalUnallowable: pools.reduce((sum, p) => sum + p.unallowable_costs, 0),
-  }), [pools]);
+  const { totalIndirects, totalAllowable, totalUnallowable } = useMemo(
+    () => ({
+      totalIndirects: pools.reduce((sum, p) => sum + p.total_costs, 0),
+      totalAllowable: pools.reduce((sum, p) => sum + p.allowable_costs, 0),
+      totalUnallowable: pools.reduce((sum, p) => sum + p.unallowable_costs, 0),
+    }),
+    [pools],
+  );
 
   // Memoize filtered costs
   const poolCosts = useMemo(() => {
@@ -242,7 +253,8 @@ export default function IndirectsPage() {
             Indirect Cost Pools
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            DCAA-compliant indirect rate management with allowability tracking per FAR 31.201
+            DCAA-compliant indirect rate management with allowability tracking
+            per FAR 31.201
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -261,10 +273,13 @@ export default function IndirectsPage() {
       <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
         <Lock className="h-5 w-5 text-blue-500 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-blue-500">FAR 31.201 Compliance</p>
+          <p className="text-sm font-medium text-blue-500">
+            FAR 31.201 Compliance
+          </p>
           <p className="text-sm text-muted-foreground">
-            All indirect costs are reviewed against FAR 31.201-2 through 31.205-52 for allowability determination.
-            Rate changes require evidence and are logged to the audit trail.
+            All indirect costs are reviewed against FAR 31.201-2 through
+            31.205-52 for allowability determination. Rate changes require
+            evidence and are logged to the audit trail.
           </p>
         </div>
       </div>
@@ -283,14 +298,18 @@ export default function IndirectsPage() {
             <DollarSign className="h-4 w-4" />
             <span className="text-sm">Total Indirect Costs</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold">{formatCurrency(totalIndirects)}</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {formatCurrency(totalIndirects)}
+          </p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle className="h-4 w-4 text-green-500" />
             <span className="text-sm">Allowable</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-green-500">{formatCurrency(totalAllowable)}</p>
+          <p className="mt-2 text-2xl font-semibold text-green-500">
+            {formatCurrency(totalAllowable)}
+          </p>
           <p className="text-xs text-muted-foreground">
             {((totalAllowable / totalIndirects) * 100).toFixed(1)}% of total
           </p>
@@ -300,7 +319,9 @@ export default function IndirectsPage() {
             <AlertTriangle className="h-4 w-4 text-red-500" />
             <span className="text-sm">Unallowable</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-red-500">{formatCurrency(totalUnallowable)}</p>
+          <p className="mt-2 text-2xl font-semibold text-red-500">
+            {formatCurrency(totalUnallowable)}
+          </p>
           <p className="text-xs text-muted-foreground">
             {((totalUnallowable / totalIndirects) * 100).toFixed(1)}% of total
           </p>
@@ -315,49 +336,70 @@ export default function IndirectsPage() {
             className={`rounded-xl border bg-card p-4 cursor-pointer hover:border-primary/50 transition-colors ${
               selectedPool?.id === pool.id ? "border-primary" : ""
             }`}
-            onClick={() => handlePoolSelect(selectedPool?.id === pool.id ? null : pool)}
+            onClick={() =>
+              handlePoolSelect(selectedPool?.id === pool.id ? null : pool)
+            }
           >
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 text-xs rounded-full border ${getPoolTypeColor(pool.pool_type)}`}>
+                  <span
+                    className={`px-2 py-0.5 text-xs rounded-full border ${getPoolTypeColor(pool.pool_type)}`}
+                  >
                     {pool.pool_type.toUpperCase().replace("_", " ")}
                   </span>
-                  <span className={`px-2 py-0.5 text-xs rounded-full border ${getRateStatusColor(pool.rate_status)}`}>
+                  <span
+                    className={`px-2 py-0.5 text-xs rounded-full border ${getRateStatusColor(pool.rate_status)}`}
+                  >
                     {pool.rate_status}
                   </span>
                 </div>
                 <h3 className="mt-2 font-medium">{pool.pool_name}</h3>
-                <p className="text-sm text-muted-foreground">{pool.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {pool.description}
+                </p>
               </div>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground">Total Costs</p>
-                <p className="font-medium">{formatCurrency(pool.total_costs)}</p>
+                <p className="font-medium">
+                  {formatCurrency(pool.total_costs)}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Allowable</p>
-                <p className="font-medium text-green-500">{formatCurrency(pool.allowable_costs)}</p>
+                <p className="font-medium text-green-500">
+                  {formatCurrency(pool.allowable_costs)}
+                </p>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">Calculated Rate</p>
-                  <p className="text-lg font-semibold">{formatPercent(pool.calculated_rate)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Calculated Rate
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatPercent(pool.calculated_rate)}
+                  </p>
                 </div>
                 {pool.negotiated_rate !== null && (
                   <div className="text-right">
-                    <p className="text-xs text-muted-foreground">Negotiated Rate</p>
-                    <p className="text-lg font-semibold text-primary">{formatPercent(pool.negotiated_rate)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Negotiated Rate
+                    </p>
+                    <p className="text-lg font-semibold text-primary">
+                      {formatPercent(pool.negotiated_rate)}
+                    </p>
                   </div>
                 )}
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Base: {pool.allocation_base.replace(/_/g, " ")} ({formatCurrency(pool.base_amount)})
+                Base: {pool.allocation_base.replace(/_/g, " ")} (
+                {formatCurrency(pool.base_amount)})
               </p>
             </div>
           </div>
@@ -369,7 +411,9 @@ export default function IndirectsPage() {
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <h2 className="font-medium">
-              {selectedPool ? `${selectedPool.pool_name} - Cost Elements` : "All Indirect Costs"}
+              {selectedPool
+                ? `${selectedPool.pool_name} - Cost Elements`
+                : "All Indirect Costs"}
             </h2>
             <p className="text-sm text-muted-foreground">
               FAR 31.201 allowability determination
@@ -403,16 +447,27 @@ export default function IndirectsPage() {
             </thead>
             <tbody className="divide-y">
               {poolCosts.map((cost) => (
-                <tr key={cost.id} className="hover:bg-muted/50 transition-colors">
+                <tr
+                  key={cost.id}
+                  className="hover:bg-muted/50 transition-colors"
+                >
                   <td className="px-4 py-3 font-medium">{cost.cost_element}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{cost.description}</td>
-                  <td className="px-4 py-3 text-right font-mono">{formatCurrency(cost.amount)}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {cost.description}
+                  </td>
+                  <td className="px-4 py-3 text-right font-mono">
+                    {formatCurrency(cost.amount)}
+                  </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getAllowabilityColor(cost.allowability)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${getAllowabilityColor(cost.allowability)}`}
+                    >
                       {cost.allowability.replace(/_/g, " ")}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm font-mono">{cost.far_reference}</td>
+                  <td className="px-4 py-3 text-sm font-mono">
+                    {cost.far_reference}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -424,20 +479,28 @@ export default function IndirectsPage() {
       <div className="rounded-xl border bg-card p-4">
         <div className="flex items-center gap-2 mb-4">
           <FileText className="h-5 w-5 text-primary" />
-          <h2 className="font-medium">FAR 31 Cost Principles Quick Reference</h2>
+          <h2 className="font-medium">
+            FAR 31 Cost Principles Quick Reference
+          </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="p-3 rounded-lg bg-muted/50">
             <p className="font-medium">FAR 31.205-6</p>
-            <p className="text-muted-foreground">Compensation for personal services (subject to reasonableness)</p>
+            <p className="text-muted-foreground">
+              Compensation for personal services (subject to reasonableness)
+            </p>
           </div>
           <div className="p-3 rounded-lg bg-muted/50">
             <p className="font-medium">FAR 31.205-14</p>
-            <p className="text-muted-foreground">Entertainment costs (generally unallowable)</p>
+            <p className="text-muted-foreground">
+              Entertainment costs (generally unallowable)
+            </p>
           </div>
           <div className="p-3 rounded-lg bg-muted/50">
             <p className="font-medium">FAR 31.205-36</p>
-            <p className="text-muted-foreground">Rental costs (allowable if reasonable)</p>
+            <p className="text-muted-foreground">
+              Rental costs (allowable if reasonable)
+            </p>
           </div>
         </div>
       </div>

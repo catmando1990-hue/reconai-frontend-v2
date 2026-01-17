@@ -142,6 +142,11 @@ export function Sidebar() {
         icon: Building2,
         children: [
           { label: "Overview", href: "/dashboard/govcon", icon: Building2 },
+          { label: "Contracts", href: "/dashboard/govcon/contracts", icon: FileText },
+          { label: "Timekeeping", href: "/dashboard/govcon/timekeeping", icon: Layers },
+          { label: "Indirects", href: "/dashboard/govcon/indirects", icon: Layers },
+          { label: "Reconciliation", href: "/dashboard/govcon/reconciliation", icon: ArrowLeftRight },
+          { label: "Audit Trail", href: "/dashboard/govcon/audit", icon: ShieldCheck },
         ],
       };
       if (settingsIndex !== -1) {

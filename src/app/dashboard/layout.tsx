@@ -1,10 +1,16 @@
 import React from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
-export default async function DashboardRootLayout({
+/**
+ * Canonical /dashboard layout
+ *
+ * Note: /dashboard is not within the (dashboard) route group.
+ * This layout ensures all /dashboard/* routes inherit the same authenticated shell.
+ */
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;

@@ -7,7 +7,10 @@ import { GovConEntitlementGuard } from "@/components/dashboard/GovConEntitlement
 /**
  * GovCon Layout
  *
- * Note: /dashboard/* is wrapped by src/app/dashboard/layout.tsx.
+ * Phase 4: /dashboard/* now inherits the canonical authenticated shell from
+ * src/app/dashboard/layout.tsx (auth gate, ClerkProviderWrapper, DashboardShell).
+ *
+ * This sub-layout remains client-side only to support entitlement gating.
  */
 export default function GovConLayout({ children }: { children: ReactNode }) {
   return (

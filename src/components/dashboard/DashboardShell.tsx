@@ -50,9 +50,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         {/* Top gradient orb */}
         <div className="absolute -top-40 right-[-10%] h-[500px] w-[500px] rounded-full bg-primary/8 blur-3xl dark:bg-primary/5" />
         {/* Bottom left orb */}
-        <div className="absolute -bottom-40 left-[-5%] h-[400px] w-[400px] rounded-full bg-purple-500/8 blur-3xl dark:bg-purple-500/5" />
+        <div className="absolute -bottom-40 left-[-5%] h-[400px] w-[400px] rounded-full bg-primary/8 blur-3xl dark:bg-primary/5" />
         {/* Bottom right orb */}
-        <div className="absolute bottom-20 right-[-10%] h-[350px] w-[350px] rounded-full bg-cyan-500/8 blur-3xl dark:bg-cyan-500/5" />
+        <div className="absolute bottom-20 right-[-10%] h-[350px] w-[350px] rounded-full bg-primary/8 blur-3xl dark:bg-primary/5" />
         {/* Subtle grid pattern overlay */}
         <div
           className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]"

@@ -41,7 +41,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   return (
-    <div className="relative flex min-h-[100dvh] bg-background text-foreground overflow-x-hidden">
+    <div className="relative flex min-h-[100dvh] bg-muted text-foreground overflow-x-hidden">
       {/* Decorative background elements - matching landing page aesthetic */}
       <div
         aria-hidden="true"
@@ -68,7 +68,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-muted/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <button
             type="button"
@@ -107,11 +107,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <div className="md:hidden fixed inset-0 z-50">
           <button
             aria-label="Close menu"
-            className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-muted/60 backdrop-blur-sm"
             onClick={() => setOpen(false)}
             type="button"
           />
-          <div className="absolute left-0 top-0 h-full w-[85vw] max-w-[340px] bg-background/95 backdrop-blur-xl border-r border-border/50 shadow-2xl">
+          <div className="absolute left-0 top-0 h-full w-[85vw] max-w-[340px] bg-muted/95 backdrop-blur-xl border-r border-border/50 shadow-2xl">
             <div className="flex items-center justify-between px-4 h-14 border-b border-border/50">
               <div className="flex items-center gap-2">
                 <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">

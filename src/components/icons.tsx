@@ -31,7 +31,7 @@ export {
   Save,
   Download,
   Upload,
-  Refresh,
+  RefreshCw,
   RotateCcw,
 
   // Status & Feedback

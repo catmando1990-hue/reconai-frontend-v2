@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import DemoActionButton from "@/components/govcon/DemoActionButton";
 import ExportForDCAAButton from "@/components/govcon/ExportForDCAAButton";
+import ExportForDCAAPDFButton from "@/components/govcon/ExportForDCAAPDFButton";
 
 // Pagination constants
 const INITIAL_PAGE_SIZE = 25;
@@ -317,6 +318,9 @@ export default function AuditPage() {
             Verify Integrity
           </DemoActionButton>
           <ExportForDCAAButton
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          />
+          <ExportForDCAAPDFButton
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           />
         </div>

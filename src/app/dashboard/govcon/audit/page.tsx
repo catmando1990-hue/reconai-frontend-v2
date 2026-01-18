@@ -18,6 +18,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import DemoActionButton from "@/components/govcon/DemoActionButton";
+import ExportForDCAAButton from "@/components/govcon/ExportForDCAAButton";
 
 // Pagination constants
 const INITIAL_PAGE_SIZE = 25;
@@ -314,13 +315,9 @@ export default function AuditPage() {
             <CheckCircle className="h-4 w-4" />
             Verify Integrity
           </DemoActionButton>
-          <DemoActionButton
-            label="Export for DCAA"
+          <ExportForDCAAButton
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Download className="h-4 w-4" />
-            Export for DCAA
-          </DemoActionButton>
+          />
         </div>
       </div>
 

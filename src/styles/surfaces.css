@@ -1,0 +1,31 @@
+@layer base {
+  :root {
+    --surface-app: hsl(var(--background));
+    --surface-page: hsl(var(--card));
+    --surface-panel: hsl(var(--popover));
+    --surface-inset: hsl(var(--muted));
+
+    --border-subtle: hsl(var(--border));
+    --shadow-subtle: 0 1px 2px 0 hsl(var(--foreground) / 0.06),
+                     0 1px 1px -1px hsl(var(--foreground) / 0.08);
+  }
+}
+
+@layer utilities {
+  .surface-app {
+    background: var(--surface-app);
+  }
+  .surface-page {
+    background: var(--surface-page);
+    border: 1px solid var(--border-subtle);
+  }
+  .surface-panel {
+    background: var(--surface-panel);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-subtle);
+  }
+  .surface-inset {
+    background: var(--surface-inset);
+    border: 1px solid var(--border-subtle);
+  }
+}

@@ -5,7 +5,7 @@ import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusChip } from "@/components/dashboard/StatusChip";
-import { IntelligenceResultCard } from "@/components/IntelligenceResultCard";
+import { IntelligenceResultCard } from "@/components/shared/IntelligenceResultCard";
 
 type CatSuggestion = {
   transaction_id: string;

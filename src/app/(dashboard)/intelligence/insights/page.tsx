@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { SeverityBadge } from "@/components/dashboard/SeverityBadge";
 import { ConfidenceMeta } from "@/components/dashboard/ConfidenceMeta";
-import { useInsightsSummary } from "@/lib/hooks/useInsightsSummary";
+import { useInsightsSummary } from "@/hooks/useInsightsSummary";
 import { AI_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";

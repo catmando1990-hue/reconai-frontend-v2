@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { useCfoSnapshot } from "@/lib/hooks/useCfoSnapshot";
+import { useCfoSnapshot } from "@/hooks/useCfoSnapshot";
 import { TierGate } from "@/components/legal/TierGate";
 import { AI_DISCLAIMER, REGULATORY_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";

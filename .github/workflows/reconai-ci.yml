@@ -47,5 +47,9 @@ jobs:
       - name: Install Playwright
         run: npx playwright install --with-deps
 
-      - name: Run Playwright smoke tests
-        run: npx playwright test
+      - name: Run Playwright smoke tests (live site)
+        env:
+          PLAYWRIGHT_BASE_URL: https://www.reconaitechnology.com
+        run: |
+          echo "Running Playwright against: $PLAYWRIGHT_BASE_URL"
+          npx playwright test --project=desktop

@@ -17,6 +17,7 @@ import {
   Calendar,
   ChevronDown,
 } from "lucide-react";
+import DemoActionButton from "@/components/govcon/DemoActionButton";
 
 // Pagination constants
 const INITIAL_PAGE_SIZE = 25;
@@ -306,14 +307,20 @@ export default function AuditPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
+          <DemoActionButton
+            label="Verify Integrity"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors"
+          >
             <CheckCircle className="h-4 w-4" />
             Verify Integrity
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+          </DemoActionButton>
+          <DemoActionButton
+            label="Export for DCAA"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
             <Download className="h-4 w-4" />
             Export for DCAA
-          </button>
+          </DemoActionButton>
         </div>
       </div>
 

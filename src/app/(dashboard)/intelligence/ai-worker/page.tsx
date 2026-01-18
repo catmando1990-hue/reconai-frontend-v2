@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { ConfidenceMeta } from "@/components/dashboard/ConfidenceMeta";
 import { SeverityBadge } from "@/components/dashboard/SeverityBadge";
-import { useWorkerTasks } from "@/lib/hooks/useWorkerTasks";
+import { useWorkerTasks } from "@/hooks/useWorkerTasks";
 import {
   AI_DISCLAIMER,
   FORM_ASSISTANCE_DISCLAIMER,

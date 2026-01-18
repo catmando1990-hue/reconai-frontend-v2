@@ -1,5 +1,5 @@
-import { ConnectBankButton } from "@/components/plaid/connect-bank-button";
-import { ConnectedAccounts } from "@/components/plaid/connected-accounts";
+import { ConnectBankButton } from "@/components/plaid/ConnectBankButton";
+import { ConnectedAccounts } from "@/components/plaid/ConnectedAccounts";
 
 export default function ConnectBankPage() {
   return (

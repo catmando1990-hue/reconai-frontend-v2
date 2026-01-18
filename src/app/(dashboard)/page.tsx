@@ -50,8 +50,8 @@ import {
   CfoSnapshotStrip,
   CfoSnapshotData,
 } from "@/components/dashboard/CfoSnapshotStrip";
-import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics";
-import { useChartReady } from "@/lib/hooks/useChartReady";
+import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
+import { useChartReady } from "@/hooks/useChartReady";
 import { useCallback } from "react";
 import {
   LineChart,

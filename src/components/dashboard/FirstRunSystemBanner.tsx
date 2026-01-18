@@ -1,6 +1,6 @@
 "use client";
 
-import { useFirstRunFlag } from "@/lib/hooks/useFirstRunFlag";
+import { useFirstRunFlag } from "@/hooks/useFirstRunFlag";
 
 /**
  * One-time, calm acknowledgement line.

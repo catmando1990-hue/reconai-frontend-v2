@@ -1,5 +1,5 @@
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { AccountsPanel } from "@/components/plaid/accounts-panel";
+import { AccountsPanel } from "@/components/plaid/AccountsPanel";
 
 export default function AccountsPage() {
   return (

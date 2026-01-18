@@ -126,12 +126,12 @@ const cashFlowData = [
 ];
 
 const spendingData = [
-  { name: "Housing", value: 2400, color: "#d4a855" },
-  { name: "Transportation", value: 800, color: "#f0c060" },
-  { name: "Food & Dining", value: 650, color: "#a07830" },
-  { name: "Utilities", value: 350, color: "#4ade80" },
-  { name: "Shopping", value: 520, color: "#60a5fa" },
-  { name: "Other", value: 380, color: "#888888" },
+  { name: "Housing", value: 2400, color: "hsl(var(--chart-1))" },
+  { name: "Transportation", value: 800, color: "hsl(var(--chart-2))" },
+  { name: "Food & Dining", value: 650, color: "hsl(var(--chart-3))" },
+  { name: "Utilities", value: 350, color: "hsl(var(--chart-4))" },
+  { name: "Shopping", value: 520, color: "hsl(var(--chart-5))" },
+  { name: "Other", value: 380, color: "hsl(var(--muted-foreground))" },
 ];
 
 const transactions: Transaction[] = [

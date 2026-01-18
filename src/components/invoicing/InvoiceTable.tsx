@@ -14,7 +14,10 @@ export function InvoiceTable() {
         </thead>
         <tbody>
           <tr>
-            <td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">
+            <td
+              colSpan={4}
+              className="px-4 py-6 text-center text-muted-foreground"
+            >
               No invoices yet.
             </td>
           </tr>

@@ -12,7 +12,9 @@ export function InvoiceLineItemsTable() {
         </thead>
         <tbody>
           <tr className="border-b border-border">
-            <td className="px-4 py-2 text-muted-foreground">(Template line item)</td>
+            <td className="px-4 py-2 text-muted-foreground">
+              (Template line item)
+            </td>
             <td className="px-4 py-2 text-right text-muted-foreground">—</td>
             <td className="px-4 py-2 text-right text-muted-foreground">—</td>
             <td className="px-4 py-2 text-right text-muted-foreground">—</td>

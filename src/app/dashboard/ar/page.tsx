@@ -29,14 +29,17 @@ export default function ARPage() {
               {["0–30", "31–60", "61–90", "90+"].map((b) => (
                 <tr key={b} className="border-b border-border last:border-b-0">
                   <td className="px-4 py-2">{b} days</td>
-                  <td className="px-4 py-2 text-right text-muted-foreground">—</td>
+                  <td className="px-4 py-2 text-right text-muted-foreground">
+                    —
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p className="mt-4 text-xs text-muted-foreground">
-          Aging balances populate once invoices are issued and statuses are tracked (Phase 3B).
+          Aging balances populate once invoices are issued and statuses are
+          tracked (Phase 3B).
         </p>
       </Panel>
     </RouteShell>

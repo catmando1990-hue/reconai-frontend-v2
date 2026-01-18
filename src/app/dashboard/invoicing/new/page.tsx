@@ -9,7 +9,8 @@ export default function NewInvoicePage() {
     >
       <Panel title="Invoice setup">
         <p className="text-sm text-muted-foreground">
-          This page is intentionally stubbed until Phase 3B provides invoice models, persistence, and audit logging.
+          This page is intentionally stubbed until Phase 3B provides invoice
+          models, persistence, and audit logging.
         </p>
       </Panel>
     </RouteShell>

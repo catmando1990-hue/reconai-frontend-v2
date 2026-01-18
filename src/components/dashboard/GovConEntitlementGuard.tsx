@@ -1,10 +1,11 @@
 "use client";
 
-import { useUserProfile } from "@/lib/user-profile-context";
-import { hasGovConEntitlement } from "@/lib/entitlements";
+import type { ReactNode } from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { Building2, Lock, ArrowRight } from "lucide-react";
+import { useUserProfile } from "@/lib/user-profile-context";
+import { hasGovConEntitlement } from "@/lib/entitlements";
 
 /**
  * GovCon Entitlement Guard - Client Component
@@ -12,11 +13,7 @@ import { Building2, Lock, ArrowRight } from "lucide-react";
  * Checks GovCon entitlement before rendering children.
  * Non-entitled users see a clean upgrade panel, not an error.
  */
-export function GovConEntitlementGuard({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function GovConEntitlementGuard({ children }: { children: ReactNode }) {
   const { profile } = useUserProfile();
 
   const isEntitled = useMemo(

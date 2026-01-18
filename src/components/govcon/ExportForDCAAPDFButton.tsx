@@ -34,7 +34,12 @@ export default function ExportForDCAAPDFButton({ className }: Props) {
 
   return (
     <div className="space-y-2">
-      <button type="button" onClick={handleExport} disabled={loading} className={className}>
+      <button
+        type="button"
+        onClick={handleExport}
+        disabled={loading}
+        className={className}
+      >
         {loading ? "Exporting…" : "Export for DCAA (PDF)"}
       </button>
       {error && <div className="text-xs text-red-600">{error}</div>}

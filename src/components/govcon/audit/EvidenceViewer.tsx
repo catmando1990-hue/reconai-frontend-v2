@@ -53,8 +53,8 @@ export default function EvidenceViewer() {
     if (!needle) return items;
     return items.filter((i) =>
       [i.type, i.title, i.hash ?? "", i.source ?? ""].some((x) =>
-        x.toLowerCase().includes(needle)
-      )
+        x.toLowerCase().includes(needle),
+      ),
     );
   }, [data, q]);
 
@@ -68,7 +68,10 @@ export default function EvidenceViewer() {
       </div>
 
       <div className="rounded-lg border p-3">
-        <label className="text-xs text-muted-foreground" htmlFor="evidence-search">
+        <label
+          className="text-xs text-muted-foreground"
+          htmlFor="evidence-search"
+        >
           Search evidence
         </label>
         <input
@@ -81,12 +84,17 @@ export default function EvidenceViewer() {
       </div>
 
       {loading ? (
-        <div className="rounded-lg border p-4 text-sm text-muted-foreground">Loading…</div>
+        <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+          Loading…
+        </div>
       ) : err ? (
-        <div className="rounded-lg border p-4 text-sm text-muted-foreground">{err}</div>
+        <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+          {err}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-          No evidence found. {data?.advisory?.message ? `(${data.advisory.message})` : ""}
+          No evidence found.{" "}
+          {data?.advisory?.message ? `(${data.advisory.message})` : ""}
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
@@ -116,7 +124,8 @@ export default function EvidenceViewer() {
       )}
 
       <div className="rounded-lg border p-4 text-xs text-muted-foreground">
-        Advisory-only. Use this to locate artifacts (exports, audit events, evidence references). This does not certify compliance.
+        Advisory-only. Use this to locate artifacts (exports, audit events,
+        evidence references). This does not certify compliance.
       </div>
     </div>
   );

@@ -51,7 +51,8 @@ export default function AuditTrailVerifyPanel() {
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Audit Trail Verification</h1>
           <p className="text-sm text-muted-foreground">
-            Read-only integrity check of hash-chained audit events (if available).
+            Read-only integrity check of hash-chained audit events (if
+            available).
           </p>
         </div>
 
@@ -66,9 +67,13 @@ export default function AuditTrailVerifyPanel() {
       </div>
 
       {err ? (
-        <div className="rounded-lg border p-4 text-sm text-muted-foreground">{err}</div>
+        <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+          {err}
+        </div>
       ) : !data ? (
-        <div className="rounded-lg border p-4 text-sm text-muted-foreground">Loading…</div>
+        <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+          Loading…
+        </div>
       ) : data.status === "empty" ? (
         <div className="rounded-lg border p-4 text-sm text-muted-foreground">
           No hash-chained audit events are available to verify.{" "}
@@ -90,7 +95,8 @@ export default function AuditTrailVerifyPanel() {
               </div>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Advisory-only. A "PASS" indicator here does not certify compliance.
+              Advisory-only. A &quot;PASS&quot; indicator here does not certify
+              compliance.
             </p>
           </div>
 
@@ -111,10 +117,18 @@ export default function AuditTrailVerifyPanel() {
                   <tr key={e.id} className="border-b last:border-b-0">
                     <td className="p-3 whitespace-nowrap">{e.created_at}</td>
                     <td className="p-3 whitespace-nowrap">{e.event_type}</td>
-                    <td className="p-3 font-mono text-xs">{e.prev_hash ?? "—"}</td>
-                    <td className="p-3 font-mono text-xs">{e.event_hash ?? "—"}</td>
-                    <td className="p-3 font-mono text-xs">{e.computed_hash ?? "—"}</td>
-                    <td className="p-3 whitespace-nowrap">{e.ok ? "PASS" : "FAIL"}</td>
+                    <td className="p-3 font-mono text-xs">
+                      {e.prev_hash ?? "—"}
+                    </td>
+                    <td className="p-3 font-mono text-xs">
+                      {e.event_hash ?? "—"}
+                    </td>
+                    <td className="p-3 font-mono text-xs">
+                      {e.computed_hash ?? "—"}
+                    </td>
+                    <td className="p-3 whitespace-nowrap">
+                      {e.ok ? "PASS" : "FAIL"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -124,8 +138,9 @@ export default function AuditTrailVerifyPanel() {
       )}
 
       <div className="rounded-lg border p-4 text-xs text-muted-foreground">
-        This integrity view checks stored hash links if your audit table supports prev_hash/event_hash/payload.
-        If your current storage does not include hash chaining, this page will show an empty state.
+        This integrity view checks stored hash links if your audit table
+        supports prev_hash/event_hash/payload. If your current storage does not
+        include hash chaining, this page will show an empty state.
       </div>
     </div>
   );

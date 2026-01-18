@@ -317,12 +317,8 @@ export default function AuditPage() {
             <CheckCircle className="h-4 w-4" />
             Verify Integrity
           </DemoActionButton>
-          <ExportForDCAAButton
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          />
-          <ExportForDCAAPDFButton
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          />
+          <ExportForDCAAButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" />
+          <ExportForDCAAPDFButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" />
         </div>
       </div>
 

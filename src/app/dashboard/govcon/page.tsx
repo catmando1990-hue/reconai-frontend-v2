@@ -332,7 +332,7 @@ export default function GovConDashboardPage() {
             contracting.
           </p>
           <Link
-            href="/dashboard/govcon/reconciliation"
+            href="/dashboard/govcon/sf-1408"
             className="text-sm text-primary hover:underline mt-2 inline-block"
           >
             View Checklist →

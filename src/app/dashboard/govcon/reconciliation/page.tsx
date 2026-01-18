@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import {
   ArrowLeftRight,
   CheckCircle,
@@ -575,10 +576,13 @@ export default function ReconciliationPage() {
               </p>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
+          <Link
+            href="/dashboard/govcon/sf-1408"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors"
+          >
             <Eye className="h-4 w-4" />
             View Checklist
-          </button>
+          </Link>
         </div>
       </div>
     </main>

@@ -20,8 +20,8 @@ export function GovConEntitlementGuard({
   const { profile } = useUserProfile();
 
   const isEntitled = useMemo(
-    () => hasGovConEntitlement(profile?.tiers),
-    [profile?.tiers],
+    () => hasGovConEntitlement(profile?.tiers, profile?.role),
+    [profile?.tiers, profile?.role],
   );
 
   // Show loading state while profile is not yet available

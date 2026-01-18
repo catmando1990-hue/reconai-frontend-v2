@@ -178,10 +178,20 @@ export function getUpgradePrompt(
 /**
  * Check if user has GovCon entitlement.
  * Canonical safe default: deny until explicitly granted.
+ * Admin/owner roles have full access to all features.
  */
 export function hasGovConEntitlement(
   tiers: string[] | null | undefined,
+  role?: string | null,
 ): boolean {
+  // Admin/owner bypass - full access to all features
+  if (role) {
+    const normalizedRole = role.toLowerCase();
+    if (normalizedRole === "admin" || normalizedRole === "owner") {
+      return true;
+    }
+  }
+
   if (!tiers || !Array.isArray(tiers)) return false;
 
   const normalizedTiers = tiers.map((t) => t.toLowerCase());

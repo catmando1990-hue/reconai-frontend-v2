@@ -123,10 +123,10 @@ export function Sidebar() {
   const activeSection = getActiveSection(pathname);
   const [expanded, setExpanded] = useState<string>(activeSection);
 
-  // Check GovCon entitlement from user profile tiers
+  // Check GovCon entitlement from user profile tiers (admin/owner bypass)
   const showGovCon = useMemo(
-    () => hasGovConEntitlement(profile?.tiers),
-    [profile?.tiers],
+    () => hasGovConEntitlement(profile?.tiers, profile?.role),
+    [profile?.tiers, profile?.role],
   );
 
   // Build nav items dynamically based on entitlements

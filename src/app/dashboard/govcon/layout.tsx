@@ -1,15 +1,19 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
 import { GovConEntitlementGuard } from "@/components/dashboard/GovConEntitlementGuard";
 
-// Prevent static generation - requires UserProfileProvider at runtime
-export const dynamic = "force-dynamic";
-
 /**
- * GovCon Layout - Server Wrapper
+ * GovCon Layout - Client Component
  *
- * Wraps children in the client-side entitlement guard.
- * The guard checks GovCon entitlement before rendering.
+ * Wraps children in ClerkProviderWrapper (includes Clerk, Org, and UserProfile providers)
+ * and GovConEntitlementGuard for entitlement checking.
  */
 export default function GovConLayout({ children }: { children: ReactNode }) {
-  return <GovConEntitlementGuard>{children}</GovConEntitlementGuard>;
+  return (
+    <ClerkProviderWrapper>
+      <GovConEntitlementGuard>{children}</GovConEntitlementGuard>
+    </ClerkProviderWrapper>
+  );
 }

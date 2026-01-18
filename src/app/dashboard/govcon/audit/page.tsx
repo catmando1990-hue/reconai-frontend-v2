@@ -17,6 +17,7 @@ import {
   Calendar,
   ChevronDown,
 } from "lucide-react";
+import Link from "next/link";
 import DemoActionButton from "@/components/govcon/DemoActionButton";
 import ExportForDCAAButton from "@/components/govcon/ExportForDCAAButton";
 
@@ -319,6 +320,24 @@ export default function AuditPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           />
         </div>
+      </div>
+
+      {/* Quick Links */}
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href="/dashboard/govcon/evidence"
+          className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted"
+        >
+          <Eye className="h-4 w-4" />
+          Evidence Viewer
+        </Link>
+        <Link
+          href="/dashboard/govcon/audit/verify"
+          className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted"
+        >
+          <Hash className="h-4 w-4" />
+          Verify Hash Chain
+        </Link>
       </div>
 
       {/* Advisory Banner */}

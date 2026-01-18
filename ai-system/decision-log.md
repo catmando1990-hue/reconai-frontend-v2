@@ -20,6 +20,7 @@ Track accepted and rejected AI changes to improve future behavior.
 - Notes: Merged to main.
 
 ### Entry
+
 - Date: 2026-01-18
 - PR: #2 — Refactor/structural migration
 - Link: https://github.com/catmando1990-hue/reconai-frontend-v2/pull/2

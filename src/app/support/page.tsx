@@ -339,7 +339,7 @@ export default function SupportPage() {
                 </div>
               </div>
               <Link
-                href="/dashboard/settings"
+                href="/settings"
                 className="text-sm text-primary hover:underline"
               >
                 View System Status
@@ -492,7 +492,7 @@ export default function SupportPage() {
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                href="/dashboard"
+                href="/accounts"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
               >
                 Go to Dashboard <ArrowRight className="h-4 w-4" />

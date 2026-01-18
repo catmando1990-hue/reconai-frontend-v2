@@ -77,7 +77,7 @@ function SignUpFormContent({ redirectUrl }: { redirectUrl?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
 
-  const finalRedirectUrl = redirectUrl || "/dashboard";
+  const finalRedirectUrl = redirectUrl || "/accounts";
 
   const signUpWithOAuth = useCallback(
     async (strategy: OAuthStrategy) => {

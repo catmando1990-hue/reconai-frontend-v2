@@ -120,7 +120,7 @@ export default function PlatformPage() {
             </p>
           </div>
           <Link
-            href="/dashboard"
+            href="/accounts"
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
           >
             View Dashboard <ArrowRight className="h-4 w-4" />

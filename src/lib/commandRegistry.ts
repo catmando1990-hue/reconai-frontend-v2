@@ -32,7 +32,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "Navigate",
     hint: "Navigation",
     keywords: ["home", "overview"],
-    href: "/dashboard",
+    href: "/accounts",
     verbs: ["go", "open"],
   },
 
@@ -43,7 +43,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "Core",
     hint: "Navigation",
     keywords: ["core", "summary", "snapshot"],
-    href: "/dashboard/core/overview",
+    href: "/core/overview",
     verbs: ["go", "open"],
   },
   {
@@ -52,7 +52,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "Core",
     hint: "Navigation",
     keywords: ["transactions", "ledger", "imports"],
-    href: "/dashboard/core/transactions",
+    href: "/transactions",
     verbs: ["go", "open"],
   },
   {
@@ -61,7 +61,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "Core",
     hint: "Navigation",
     keywords: ["reports", "exports", "statements"],
-    href: "/dashboard/core/reports",
+    href: "/financial-reports",
     verbs: ["go", "open"],
   },
 
@@ -72,7 +72,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "Intelligence",
     hint: "Manual run",
     keywords: ["intelligence", "advisory", "run"],
-    href: "/dashboard/intelligence/insights",
+    href: "/intelligence/insights",
     verbs: ["go", "open", "run"],
   },
   {
@@ -81,7 +81,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "Intelligence",
     hint: "Signals",
     keywords: ["signals", "alerts", "risk"],
-    href: "/dashboard/intelligence/alerts",
+    href: "/intelligence/alerts",
     verbs: ["go", "open"],
   },
 
@@ -92,7 +92,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "CFO",
     hint: "Navigation",
     keywords: ["cfo", "overview", "kpis"],
-    href: "/dashboard/cfo/overview",
+    href: "/cfo/overview",
     verbs: ["go", "open"],
   },
   {
@@ -101,7 +101,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "CFO",
     hint: "Read-only",
     keywords: ["compliance", "audit", "controls"],
-    href: "/dashboard/cfo/compliance",
+    href: "/compliance",
     verbs: ["go", "open"],
   },
 
@@ -112,7 +112,7 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     group: "Settings",
     hint: "Preferences",
     keywords: ["settings", "preferences", "profile"],
-    href: "/dashboard/settings",
+    href: "/settings",
     verbs: ["go", "open"],
   },
 ];

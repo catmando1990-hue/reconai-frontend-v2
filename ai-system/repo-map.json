@@ -3,706 +3,502 @@
     "/": {
       "description": "",
       "dir": "src/app/(marketing)",
-      "files": [
-        "page",
-        "layout"
-      ]
+      "files": ["page", "layout"]
     },
     "/about": {
       "description": "",
       "dir": "src/app/about",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/account": {
       "description": "",
       "dir": "src/app/account",
-      "files": [
-        "page",
-        "layout"
-      ]
+      "files": ["page", "layout"]
     },
     "/accounts": {
       "description": "",
       "dir": "src/app/(dashboard)/accounts",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/admin/settings": {
       "description": "",
       "dir": "src/app/admin/settings",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/api/admin/debug-claims": {
       "description": "",
       "dir": "src/app/api/admin/debug-claims",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/admin/diagnose/[type]": {
       "description": "",
       "dir": "src/app/api/admin/diagnose/[type]",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/admin/fixes/[fixId]": {
       "description": "",
       "dir": "src/app/api/admin/fixes/[fixId]",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/admin/fixes/[fixId]/approve": {
       "description": "",
       "dir": "src/app/api/admin/fixes/[fixId]/approve",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/admin/fixes/pending": {
       "description": "",
       "dir": "src/app/api/admin/fixes/pending",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/admin/maintenance": {
       "description": "",
       "dir": "src/app/api/admin/maintenance",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/audit": {
       "description": "",
       "dir": "src/app/api/audit",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/auth/link-account": {
       "description": "",
       "dir": "src/app/api/auth/link-account",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/auth/link-clerk": {
       "description": "",
       "dir": "src/app/api/auth/link-clerk",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/checkout/create-session": {
       "description": "",
       "dir": "src/app/api/checkout/create-session",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/dashboard/metrics": {
       "description": "",
       "dir": "src/app/api/dashboard/metrics",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/diagnostics/last": {
       "description": "",
       "dir": "src/app/api/diagnostics/last",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/diagnostics/run": {
       "description": "",
       "dir": "src/app/api/diagnostics/run",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/diagnostics/status": {
       "description": "",
       "dir": "src/app/api/diagnostics/status",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/health": {
       "description": "",
       "dir": "src/app/api/health",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/intelligence/status": {
       "description": "",
       "dir": "src/app/api/intelligence/status",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/me": {
       "description": "",
       "dir": "src/app/api/me",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/plaid/accounts": {
       "description": "",
       "dir": "src/app/api/plaid/accounts",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/plaid/create-link-token": {
       "description": "",
       "dir": "src/app/api/plaid/create-link-token",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/plaid/exchange-public-token": {
       "description": "",
       "dir": "src/app/api/plaid/exchange-public-token",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/plaid/items": {
       "description": "",
       "dir": "src/app/api/plaid/items",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/plaid/status": {
       "description": "",
       "dir": "src/app/api/plaid/status",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/production/error-budget": {
       "description": "",
       "dir": "src/app/api/production/error-budget",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/production/health-checks": {
       "description": "",
       "dir": "src/app/api/production/health-checks",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/production/load-test/trigger": {
       "description": "",
       "dir": "src/app/api/production/load-test/trigger",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/production/runbooks": {
       "description": "",
       "dir": "src/app/api/production/runbooks",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/production/slos": {
       "description": "",
       "dir": "src/app/api/production/slos",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/api/proxy-export": {
       "description": "",
       "dir": "src/app/api/proxy-export",
-      "files": [
-        "route"
-      ]
+      "files": ["route"]
     },
     "/ar": {
       "description": "",
       "dir": "src/app/(dashboard)/ar",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/bills": {
       "description": "",
       "dir": "src/app/(dashboard)/bills",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/cash-flow": {
       "description": "",
       "dir": "src/app/(dashboard)/cash-flow",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/certifications": {
       "description": "",
       "dir": "src/app/(dashboard)/certifications",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/cfo-dashboard": {
       "description": "",
       "dir": "src/app/(dashboard)/cfo-dashboard",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/cfo/compliance": {
       "description": "",
       "dir": "src/app/(dashboard)/cfo/compliance",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/cfo/executive-summary": {
       "description": "",
       "dir": "src/app/(dashboard)/cfo/executive-summary",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/cfo/overview": {
       "description": "",
       "dir": "src/app/(dashboard)/cfo/overview",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/compliance": {
       "description": "",
       "dir": "src/app/(dashboard)/compliance",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/connect-bank": {
       "description": "",
       "dir": "src/app/(dashboard)/connect-bank",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/core-dashboard": {
       "description": "",
       "dir": "src/app/(dashboard)/core-dashboard",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/core/overview": {
       "description": "",
       "dir": "src/app/(dashboard)/core/overview",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/core/reports": {
       "description": "",
       "dir": "src/app/(dashboard)/core/reports",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/core/transactions": {
       "description": "",
       "dir": "src/app/(dashboard)/core/transactions",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/customers": {
       "description": "",
       "dir": "src/app/(dashboard)/customers",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/dcaa": {
       "description": "",
       "dir": "src/app/(dashboard)/dcaa",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/disclaimers": {
       "description": "",
       "dir": "src/app/disclaimers",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/financial-reports": {
       "description": "",
       "dir": "src/app/(dashboard)/financial-reports",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon",
-      "files": [
-        "page",
-        "layout"
-      ]
+      "files": ["page", "layout"]
     },
     "/govcon/audit": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/audit",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon/audit/verify": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/audit/verify",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon/contracts": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/contracts",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon/evidence": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/evidence",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon/indirects": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/indirects",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon/reconciliation": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/reconciliation",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon/sf-1408": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/sf-1408",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/govcon/timekeeping": {
       "description": "",
       "dir": "src/app/(dashboard)/govcon/timekeeping",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/home": {
       "description": "",
       "dir": "src/app/(dashboard)/home",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/how-it-works": {
       "description": "",
       "dir": "src/app/how-it-works",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/intelligence-dashboard": {
       "description": "",
       "dir": "src/app/(dashboard)/intelligence-dashboard",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/intelligence/ai-worker": {
       "description": "",
       "dir": "src/app/(dashboard)/intelligence/ai-worker",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/intelligence/alerts": {
       "description": "",
       "dir": "src/app/(dashboard)/intelligence/alerts",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/intelligence/insights": {
       "description": "",
       "dir": "src/app/(dashboard)/intelligence/insights",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/invoices": {
       "description": "",
       "dir": "src/app/(dashboard)/invoices",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/invoicing": {
       "description": "",
       "dir": "src/app/(dashboard)/invoicing",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/invoicing/new": {
       "description": "",
       "dir": "src/app/(dashboard)/invoicing/new",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/invoicing/preview": {
       "description": "",
       "dir": "src/app/(dashboard)/invoicing/preview",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/invoicing/settings": {
       "description": "",
       "dir": "src/app/(dashboard)/invoicing/settings",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/leases": {
       "description": "",
       "dir": "src/app/(dashboard)/leases",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/legal": {
       "description": "",
       "dir": "src/app/legal",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/maintenance": {
       "description": "",
       "dir": "src/app/maintenance",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/onboarding": {
       "description": "",
       "dir": "src/app/onboarding",
-      "files": [
-        "page",
-        "layout"
-      ]
+      "files": ["page", "layout"]
     },
     "/onboarding/complete": {
       "description": "",
       "dir": "src/app/onboarding/complete",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/onboarding/data": {
       "description": "",
       "dir": "src/app/onboarding/data",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/onboarding/entity": {
       "description": "",
       "dir": "src/app/onboarding/entity",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/onboarding/intent": {
       "description": "",
       "dir": "src/app/onboarding/intent",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/onboarding/processing": {
       "description": "",
       "dir": "src/app/onboarding/processing",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/packages": {
       "description": "",
       "dir": "src/app/packages",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/platform": {
       "description": "",
       "dir": "src/app/platform",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/pricing": {
       "description": "",
       "dir": "src/app/pricing",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/privacy": {
       "description": "",
       "dir": "src/app/privacy",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/properties": {
       "description": "",
       "dir": "src/app/(dashboard)/properties",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/receipts": {
       "description": "",
       "dir": "src/app/(dashboard)/receipts",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/rent-collection": {
       "description": "",
       "dir": "src/app/(dashboard)/rent-collection",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/security": {
       "description": "",
       "dir": "src/app/security",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/settings": {
       "description": "",
       "dir": "src/app/(dashboard)/settings",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/sign-in/[[...sign-in]]": {
       "description": "",
       "dir": "src/app/(auth)/sign-in/[[...sign-in]]",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/sign-in/sso-callback": {
       "description": "",
       "dir": "src/app/(auth)/sign-in/sso-callback",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/sign-up/[[...sign-up]]": {
       "description": "",
       "dir": "src/app/(auth)/sign-up/[[...sign-up]]",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/sign-up/sso-callback": {
       "description": "",
       "dir": "src/app/(auth)/sign-up/sso-callback",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/support": {
       "description": "",
       "dir": "src/app/support",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/tenants": {
       "description": "",
       "dir": "src/app/(dashboard)/tenants",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/terms": {
       "description": "",
       "dir": "src/app/terms",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/transactions": {
       "description": "",
       "dir": "src/app/(dashboard)/transactions",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/units": {
       "description": "",
       "dir": "src/app/(dashboard)/units",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/upload": {
       "description": "",
       "dir": "src/app/(dashboard)/upload",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     },
     "/vendors": {
       "description": "",
       "dir": "src/app/(dashboard)/vendors",
-      "files": [
-        "page"
-      ]
+      "files": ["page"]
     }
   },
   "components": [],

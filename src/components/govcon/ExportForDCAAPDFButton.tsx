@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { FileText } from "lucide-react";
 
 type Props = {
   className?: string;
@@ -36,7 +35,6 @@ export default function ExportForDCAAPDFButton({ className }: Props) {
   return (
     <div className="space-y-2">
       <button type="button" onClick={handleExport} disabled={loading} className={className}>
-        <FileText className="h-4 w-4" />
         {loading ? "Exporting…" : "Export for DCAA (PDF)"}
       </button>
       {error && <div className="text-xs text-red-600">{error}</div>}

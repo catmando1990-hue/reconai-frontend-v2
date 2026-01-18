@@ -15,6 +15,7 @@ import {
   FileText,
   User,
 } from "lucide-react";
+import { RouteShell } from "@/components/dashboard/RouteShell";
 
 type TimesheetStatus =
   | "draft"
@@ -154,17 +155,17 @@ const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function getStatusColor(status: TimesheetStatus): string {
   switch (status) {
     case "draft":
-      return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      return "bg-muted text-foreground border-border";
     case "submitted":
-      return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "approved":
-      return "bg-green-500/10 text-green-500 border-green-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "rejected":
-      return "bg-red-500/10 text-red-500 border-red-500/20";
+      return "bg-destructive/10 text-destructive border-destructive/20";
     case "corrected":
-      return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     default:
-      return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+      return "bg-muted text-muted-foreground border-border";
   }
 }
 
@@ -218,275 +219,283 @@ export default function TimekeepingPage() {
   }, []);
 
   return (
-    <main className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Clock className="h-6 w-6 text-primary" />
-            Timekeeping
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            DCAA-compliant labor tracking with daily time entry and approval
-            workflow
-          </p>
+    <RouteShell
+      title="Timekeeping"
+      subtitle="Daily labor tracking and approvals (manual-only)."
+    >
+      <main className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold flex items-center gap-2">
+              <Clock className="h-6 w-6 text-primary" />
+              Timekeeping
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              DCAA-compliant labor tracking with daily time entry and approval
+              workflow
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
+              <Download className="h-4 w-4" />
+              Export
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              <Send className="h-4 w-4" />
+              Submit Timesheet
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
-            <Download className="h-4 w-4" />
-            Export
+
+        {/* Advisory Banner */}
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
+          <Lock className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-primary">
+              DCAA Timekeeping Requirements
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Time must be recorded daily with 15-minute increments. Corrections
+              require evidence and supervisory approval. All entries are logged
+              to an immutable audit trail.
+            </p>
+          </div>
+        </div>
+
+        {/* Period Navigation */}
+        <div className="flex items-center justify-between p-4 rounded-xl border bg-card">
+          <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
+            <ChevronLeft className="h-4 w-4" />
+            Previous Week
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-            <Send className="h-4 w-4" />
-            Submit Timesheet
-          </button>
-        </div>
-      </div>
-
-      {/* Advisory Banner */}
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <Lock className="h-5 w-5 text-blue-500 mt-0.5" />
-        <div>
-          <p className="text-sm font-medium text-blue-500">
-            DCAA Timekeeping Requirements
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Time must be recorded daily with 15-minute increments. Corrections
-            require evidence and supervisory approval. All entries are logged to
-            an immutable audit trail.
-          </p>
-        </div>
-      </div>
-
-      {/* Period Navigation */}
-      <div className="flex items-center justify-between p-4 rounded-xl border bg-card">
-        <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
-          <ChevronLeft className="h-4 w-4" />
-          Previous Week
-        </button>
-        <div className="text-center">
-          <p className="font-medium">
-            {timesheet.period_start} to {timesheet.period_end}
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <span
-              className={`px-2 py-0.5 text-xs rounded-full border ${getStatusColor(timesheet.status)}`}
-            >
-              {timesheet.status}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {timesheet.total_hours} hours ({timesheet.billable_hours}{" "}
-              billable)
-            </span>
-          </div>
-        </div>
-        <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
-          Next Week
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            <span className="text-sm">Total Hours</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">{timesheet.total_hours}</p>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <CheckCircle className="h-4 w-4" />
-            <span className="text-sm">Billable Hours</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">
-            {timesheet.billable_hours}
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <FileText className="h-4 w-4" />
-            <span className="text-sm">Contracts Charged</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">
-            {Object.keys(entriesByContract).length}
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span className="text-sm">Days Logged</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">
-            {Object.keys(entriesByDate).length}
-          </p>
-        </div>
-      </div>
-
-      {/* Weekly Grid */}
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="font-medium">Weekly Time Entry</h2>
-        </div>
-        <div className="grid grid-cols-7 divide-x">
-          {DAYS_OF_WEEK.map((day, idx) => {
-            const date = new Date(CURRENT_WEEK_START);
-            date.setDate(date.getDate() + idx);
-            const dateStr = date.toISOString().split("T")[0];
-            const dayEntries = entriesByDate[dateStr] || [];
-            const dayTotal = dailyTotals[dateStr] || 0;
-            const isSelected = selectedDate === dateStr;
-
-            return (
-              <div
-                key={day}
-                className={`p-3 cursor-pointer hover:bg-accent/50 transition-colors ${
-                  isSelected ? "bg-primary/5" : ""
-                }`}
-                onClick={() => handleDateSelect(dateStr)}
+          <div className="text-center">
+            <p className="font-medium">
+              {timesheet.period_start} to {timesheet.period_end}
+            </p>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <span
+                className={`px-2 py-0.5 text-xs rounded-full border ${getStatusColor(timesheet.status)}`}
               >
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">{day}</p>
-                  <p className="text-sm font-medium">{date.getDate()}</p>
-                </div>
-                <div className="mt-2 text-center">
-                  <p
-                    className={`text-lg font-semibold ${dayTotal >= 8 ? "text-green-500" : dayTotal > 0 ? "text-yellow-500" : "text-muted-foreground"}`}
-                  >
-                    {dayTotal}h
-                  </p>
-                </div>
-                <div className="mt-2 space-y-1">
-                  {dayEntries.slice(0, 3).map((entry) => (
-                    <div
-                      key={entry.id}
-                      className={`text-xs p-1 rounded truncate ${
-                        entry.billable
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                      title={entry.description}
-                    >
-                      {entry.hours}h - {entry.contract_number.split("-").pop()}
-                    </div>
-                  ))}
-                  {dayEntries.length > 3 && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      +{dayEntries.length - 3} more
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Contract Summary */}
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="font-medium">Hours by Contract</h2>
-        </div>
-        <div className="divide-y">
-          {Object.entries(entriesByContract).map(([contractNumber, data]) => (
-            <div
-              key={contractNumber}
-              className="p-4 flex items-center justify-between"
-            >
-              <div>
-                <p className="font-mono text-sm font-medium">
-                  {contractNumber}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {data.entries.length} entries across{" "}
-                  {new Set(data.entries.map((e) => e.date)).size} days
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-semibold">{data.hours}h</p>
-                <p className="text-xs text-muted-foreground">
-                  {((data.hours / timesheet.total_hours) * 100).toFixed(0)}% of
-                  total
-                </p>
-              </div>
+                {timesheet.status}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {timesheet.total_hours} hours ({timesheet.billable_hours}{" "}
+                billable)
+              </span>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Daily Entries Detail */}
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="font-medium">Entries for {selectedDate}</h2>
-          <button className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-accent transition-colors">
-            <Clock className="h-4 w-4" />
-            Add Entry
+          </div>
+          <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors">
+            Next Week
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-        <div className="divide-y">
-          {(entriesByDate[selectedDate] || []).map((entry) => (
-            <div key={entry.id} className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm">
-                      {entry.contract_number}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      CLIN {entry.clin_number}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${
-                        entry.billable
-                          ? "bg-green-500/10 text-green-500"
-                          : "bg-gray-500/10 text-gray-500"
-                      }`}
-                    >
-                      {entry.billable ? "Billable" : "Non-Billable"}
-                    </span>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">Total Hours</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {timesheet.total_hours}
+            </p>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <CheckCircle className="h-4 w-4" />
+              <span className="text-sm">Billable Hours</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {timesheet.billable_hours}
+            </p>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm">Contracts Charged</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {Object.keys(entriesByContract).length}
+            </p>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span className="text-sm">Days Logged</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {Object.keys(entriesByDate).length}
+            </p>
+          </div>
+        </div>
+
+        {/* Weekly Grid */}
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="p-4 border-b">
+            <h2 className="font-medium">Weekly Time Entry</h2>
+          </div>
+          <div className="grid grid-cols-7 divide-x">
+            {DAYS_OF_WEEK.map((day, idx) => {
+              const date = new Date(CURRENT_WEEK_START);
+              date.setDate(date.getDate() + idx);
+              const dateStr = date.toISOString().split("T")[0];
+              const dayEntries = entriesByDate[dateStr] || [];
+              const dayTotal = dailyTotals[dateStr] || 0;
+              const isSelected = selectedDate === dateStr;
+
+              return (
+                <div
+                  key={day}
+                  className={`p-3 cursor-pointer hover:bg-accent/50 transition-colors ${
+                    isSelected ? "bg-primary/5" : ""
+                  }`}
+                  onClick={() => handleDateSelect(dateStr)}
+                >
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">{day}</p>
+                    <p className="text-sm font-medium">{date.getDate()}</p>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {entry.labor_category}
+                  <div className="mt-2 text-center">
+                    <p
+                      className={`text-lg font-semibold ${dayTotal >= 8 ? "text-primary" : dayTotal > 0 ? "text-foreground" : "text-muted-foreground"}`}
+                    >
+                      {dayTotal}h
+                    </p>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {dayEntries.slice(0, 3).map((entry) => (
+                      <div
+                        key={entry.id}
+                        className={`text-xs p-1 rounded truncate ${
+                          entry.billable
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                        title={entry.description}
+                      >
+                        {entry.hours}h -{" "}
+                        {entry.contract_number.split("-").pop()}
+                      </div>
+                    ))}
+                    {dayEntries.length > 3 && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        +{dayEntries.length - 3} more
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Contract Summary */}
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="p-4 border-b">
+            <h2 className="font-medium">Hours by Contract</h2>
+          </div>
+          <div className="divide-y">
+            {Object.entries(entriesByContract).map(([contractNumber, data]) => (
+              <div
+                key={contractNumber}
+                className="p-4 flex items-center justify-between"
+              >
+                <div>
+                  <p className="font-mono text-sm font-medium">
+                    {contractNumber}
                   </p>
-                  <p className="mt-2">{entry.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {data.entries.length} entries across{" "}
+                    {new Set(data.entries.map((e) => e.date)).size} days
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-semibold">{entry.hours}h</p>
+                  <p className="text-lg font-semibold">{data.hours}h</p>
+                  <p className="text-xs text-muted-foreground">
+                    {((data.hours / timesheet.total_hours) * 100).toFixed(0)}%
+                    of total
+                  </p>
                 </div>
               </div>
-            </div>
-          ))}
-          {(!entriesByDate[selectedDate] ||
-            entriesByDate[selectedDate].length === 0) && (
-            <div className="p-8 text-center">
-              <Clock className="h-8 w-8 mx-auto text-muted-foreground/50" />
-              <p className="mt-2 text-muted-foreground">
-                No entries for this date
-              </p>
-              <button className="mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                Add Time Entry
-              </button>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Correction Warning */}
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-        <div>
-          <p className="text-sm font-medium text-yellow-500">
-            Timesheet Corrections
-          </p>
-          <p className="text-sm text-muted-foreground">
-            After submission, any corrections require documented evidence and
-            supervisory approval. Corrections must include confidence score ≥
-            0.85 for AI-assisted changes. All modifications are permanently
-            logged per DCAA requirements.
-          </p>
+        {/* Daily Entries Detail */}
+        <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="p-4 border-b flex items-center justify-between">
+            <h2 className="font-medium">Entries for {selectedDate}</h2>
+            <button className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-accent transition-colors">
+              <Clock className="h-4 w-4" />
+              Add Entry
+            </button>
+          </div>
+          <div className="divide-y">
+            {(entriesByDate[selectedDate] || []).map((entry) => (
+              <div key={entry.id} className="p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm">
+                        {entry.contract_number}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        CLIN {entry.clin_number}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded-full ${
+                          entry.billable
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {entry.billable ? "Billable" : "Non-Billable"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {entry.labor_category}
+                    </p>
+                    <p className="mt-2">{entry.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold">{entry.hours}h</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(!entriesByDate[selectedDate] ||
+              entriesByDate[selectedDate].length === 0) && (
+              <div className="p-8 text-center">
+                <Clock className="h-8 w-8 mx-auto text-muted-foreground/50" />
+                <p className="mt-2 text-muted-foreground">
+                  No entries for this date
+                </p>
+                <button className="mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                  Add Time Entry
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </main>
+
+        {/* Correction Warning */}
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-muted border border-border">
+          <AlertTriangle className="h-5 w-5 text-foreground mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Timesheet Corrections
+            </p>
+            <p className="text-sm text-muted-foreground">
+              After submission, any corrections require documented evidence and
+              supervisory approval. Corrections must include confidence score ≥
+              0.85 for AI-assisted changes. All modifications are permanently
+              logged per DCAA requirements.
+            </p>
+          </div>
+        </div>
+      </main>{" "}
+    </RouteShell>
   );
 }

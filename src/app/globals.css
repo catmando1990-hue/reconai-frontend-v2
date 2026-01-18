@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "../styles/dashboard.css";
+@import "../styles/surfaces.css";
 @import "../styles/onboarding-background.css";
 @import "../styles/intelligence-hero-polish.css";
 @import "../styles/motion-tokens.css";

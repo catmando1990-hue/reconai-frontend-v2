@@ -60,7 +60,11 @@ const CORE_NAV: NavItem[] = [
     children: [
       { label: "Overview", href: "/dashboard/core", icon: Layers },
       { label: "Accounts", href: "/dashboard/core/accounts", icon: Landmark },
-      { label: "Transactions", href: "/dashboard/core/transactions", icon: ArrowLeftRight },
+      {
+        label: "Transactions",
+        href: "/dashboard/core/transactions",
+        icon: ArrowLeftRight,
+      },
     ],
   },
   {
@@ -69,8 +73,16 @@ const CORE_NAV: NavItem[] = [
     icon: Sparkles,
     children: [
       { label: "Overview", href: "/dashboard/intelligence", icon: Sparkles },
-      { label: "Expense Intelligence", href: "/dashboard/intelligence/expenses", icon: Receipt },
-      { label: "Travel Signals", href: "/dashboard/intelligence/travel", icon: Plane },
+      {
+        label: "Expense Intelligence",
+        href: "/dashboard/intelligence/expenses",
+        icon: Receipt,
+      },
+      {
+        label: "Travel Signals",
+        href: "/dashboard/intelligence/travel",
+        icon: Plane,
+      },
     ],
   },
   {
@@ -79,8 +91,16 @@ const CORE_NAV: NavItem[] = [
     icon: LineChart,
     children: [
       { label: "Overview", href: "/dashboard/cfo", icon: LineChart },
-      { label: "Executive Summary", href: "/dashboard/cfo/summary", icon: FileText },
-      { label: "Compliance View", href: "/dashboard/cfo/compliance", icon: ShieldCheck },
+      {
+        label: "Executive Summary",
+        href: "/dashboard/cfo/summary",
+        icon: FileText,
+      },
+      {
+        label: "Compliance View",
+        href: "/dashboard/cfo/compliance",
+        icon: ShieldCheck,
+      },
     ],
   },
   {
@@ -89,10 +109,22 @@ const CORE_NAV: NavItem[] = [
     icon: Receipt,
     children: [
       { label: "Invoices", href: "/dashboard/invoicing", icon: Receipt },
-      { label: "New Invoice", href: "/dashboard/invoicing/new", icon: FileText },
+      {
+        label: "New Invoice",
+        href: "/dashboard/invoicing/new",
+        icon: FileText,
+      },
       { label: "A/R Aging", href: "/dashboard/ar", icon: ArrowLeftRight },
-      { label: "Settings", href: "/dashboard/invoicing/settings", icon: Settings },
-      { label: "Template Preview", href: "/dashboard/invoicing/preview", icon: FileText },
+      {
+        label: "Settings",
+        href: "/dashboard/invoicing/settings",
+        icon: Settings,
+      },
+      {
+        label: "Template Preview",
+        href: "/dashboard/invoicing/preview",
+        icon: FileText,
+      },
     ],
   },
 ];
@@ -145,11 +177,31 @@ export function Sidebar() {
         icon: Building2,
         children: [
           { label: "Overview", href: "/dashboard/govcon", icon: Building2 },
-          { label: "Contracts", href: "/dashboard/govcon/contracts", icon: FileText },
-          { label: "Timekeeping", href: "/dashboard/govcon/timekeeping", icon: Layers },
-          { label: "Indirects", href: "/dashboard/govcon/indirects", icon: Layers },
-          { label: "Reconciliation", href: "/dashboard/govcon/reconciliation", icon: ArrowLeftRight },
-          { label: "Audit Trail", href: "/dashboard/govcon/audit", icon: ShieldCheck },
+          {
+            label: "Contracts",
+            href: "/dashboard/govcon/contracts",
+            icon: FileText,
+          },
+          {
+            label: "Timekeeping",
+            href: "/dashboard/govcon/timekeeping",
+            icon: Layers,
+          },
+          {
+            label: "Indirects",
+            href: "/dashboard/govcon/indirects",
+            icon: Layers,
+          },
+          {
+            label: "Reconciliation",
+            href: "/dashboard/govcon/reconciliation",
+            icon: ArrowLeftRight,
+          },
+          {
+            label: "Audit Trail",
+            href: "/dashboard/govcon/audit",
+            icon: ShieldCheck,
+          },
         ],
       };
 
@@ -187,7 +239,9 @@ export function Sidebar() {
               <Brain className="h-5 w-5 text-primary" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-foreground tracking-tight">ReconAI</span>
+              <span className="font-semibold text-foreground tracking-tight">
+                ReconAI
+              </span>
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Financial Intelligence
               </span>
@@ -214,9 +268,17 @@ export function Sidebar() {
                     <div key={item.label}>
                       <button
                         type="button"
-                        aria-expanded={Boolean(item.children?.length) ? isExpanded : undefined}
-                        aria-controls={Boolean(item.children?.length) ? panelId : undefined}
-                        onClick={() => setExpanded(isExpanded ? "" : item.label)}
+                        aria-expanded={
+                          Boolean(item.children?.length)
+                            ? isExpanded
+                            : undefined
+                        }
+                        aria-controls={
+                          Boolean(item.children?.length) ? panelId : undefined
+                        }
+                        onClick={() =>
+                          setExpanded(isExpanded ? "" : item.label)
+                        }
                         className={[
                           "group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                           isActive
@@ -228,13 +290,17 @@ export function Sidebar() {
                           <div
                             className={[
                               "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
-                              isActive ? "bg-primary/10" : "bg-card/50 group-hover:bg-accent",
+                              isActive
+                                ? "bg-primary/10"
+                                : "bg-card/50 group-hover:bg-accent",
                             ].join(" ")}
                           >
                             <Icon
                               className={[
                                 "h-4 w-4 transition-colors",
-                                isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+                                isActive
+                                  ? "text-primary"
+                                  : "text-muted-foreground group-hover:text-foreground",
                               ].join(" ")}
                             />
                           </div>
@@ -262,13 +328,18 @@ export function Sidebar() {
                             <div className="mt-1 ml-5 pl-4 border-l border-border/50 space-y-1">
                               {item.children.map((child) => {
                                 const ChildIcon = child.icon;
-                                const childActive = isRouteActive(pathname, child.href);
+                                const childActive = isRouteActive(
+                                  pathname,
+                                  child.href,
+                                );
 
                                 return (
                                   <Link
                                     key={child.href}
                                     href={child.href}
-                                    aria-current={childActive ? "page" : undefined}
+                                    aria-current={
+                                      childActive ? "page" : undefined
+                                    }
                                     className={[
                                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                                       childActive
@@ -276,7 +347,12 @@ export function Sidebar() {
                                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border border-transparent",
                                     ].join(" ")}
                                   >
-                                    <ChildIcon className={["h-4 w-4", childActive ? "text-primary" : ""].join(" ")} />
+                                    <ChildIcon
+                                      className={[
+                                        "h-4 w-4",
+                                        childActive ? "text-primary" : "",
+                                      ].join(" ")}
+                                    />
                                     <span>{child.label}</span>
                                   </Link>
                                 );

@@ -18,6 +18,7 @@ import {
   Lock,
   ChevronDown,
 } from "lucide-react";
+import { RouteShell } from "@/components/dashboard/RouteShell";
 
 // Pagination constants
 const INITIAL_CONTRACT_COUNT = 10;
@@ -154,17 +155,17 @@ function formatCurrency(amount: number): string {
 function getStatusColor(status: ContractStatus): string {
   switch (status) {
     case "active":
-      return "bg-green-500/10 text-green-500 border-green-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "draft":
-      return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      return "bg-muted text-foreground border-border";
     case "completed":
-      return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "closed":
-      return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+      return "bg-muted text-muted-foreground border-border";
     case "terminated":
-      return "bg-red-500/10 text-red-500 border-red-500/20";
+      return "bg-destructive/10 text-destructive border-destructive/20";
     default:
-      return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+      return "bg-muted text-muted-foreground border-border";
   }
 }
 
@@ -180,13 +181,17 @@ function getFundingStatus(
   if (ratio >= 0.9) {
     return {
       label: "Fully Funded",
-      color: "text-green-500",
+      color: "text-primary",
       icon: CheckCircle,
     };
   } else if (ratio >= 0.5) {
-    return { label: "Partially Funded", color: "text-yellow-500", icon: Clock };
+    return { label: "Partially Funded", color: "text-foreground", icon: Clock };
   } else {
-    return { label: "Low Funding", color: "text-red-500", icon: AlertTriangle };
+    return {
+      label: "Low Funding",
+      color: "text-destructive",
+      icon: AlertTriangle,
+    };
   }
 }
 
@@ -241,270 +246,276 @@ export default function ContractsPage() {
   );
 
   return (
-    <main className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            Contract Management
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            DCAA-compliant contract tracking with CLIN management and funding
-            status
-          </p>
+    <RouteShell
+      title="Contracts"
+      subtitle="DCAA-oriented contract tracking with funding visibility."
+    >
+      <main className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold flex items-center gap-2">
+              <Building2 className="h-6 w-6 text-primary" />
+              Contract Management
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              DCAA-compliant contract tracking with CLIN management and funding
+              status
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
+              <Download className="h-4 w-4" />
+              Export
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              <Plus className="h-4 w-4" />
+              New Contract
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Advisory Banner */}
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
+          <Lock className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-primary">Advisory Mode</p>
+            <p className="text-sm text-muted-foreground">
+              All contract modifications require manual approval and evidence
+              attachment per DCAA requirements. Changes are logged to an
+              immutable audit trail.
+            </p>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm">Active Contracts</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {contracts.filter((c) => c.status === "active").length}
+            </p>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <DollarSign className="h-4 w-4" />
+              <span className="text-sm">Total Value</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {formatCurrency(totalValue)}
+            </p>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <DollarSign className="h-4 w-4" />
+              <span className="text-sm">Funded</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {formatCurrency(totalFunded)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {((totalFunded / totalValue) * 100).toFixed(1)}% of total
+            </p>
+          </div>
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <DollarSign className="h-4 w-4" />
+              <span className="text-sm">Billed to Date</span>
+            </div>
+            <p className="mt-2 text-2xl font-semibold">
+              {formatCurrency(totalBilled)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {((totalBilled / totalFunded) * 100).toFixed(1)}% of funded
+            </p>
+          </div>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search contracts..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
-            <Download className="h-4 w-4" />
-            Export
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-            <Plus className="h-4 w-4" />
-            New Contract
+            <Filter className="h-4 w-4" />
+            Filters
           </button>
         </div>
-      </div>
 
-      {/* Advisory Banner */}
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <Lock className="h-5 w-5 text-blue-500 mt-0.5" />
-        <div>
-          <p className="text-sm font-medium text-blue-500">Advisory Mode</p>
-          <p className="text-sm text-muted-foreground">
-            All contract modifications require manual approval and evidence
-            attachment per DCAA requirements. Changes are logged to an immutable
-            audit trail.
-          </p>
-        </div>
-      </div>
+        {/* Contracts List */}
+        <div className="space-y-4">
+          {filteredContracts.map((contract) => {
+            const fundingStatus = getFundingStatus(
+              contract.funded_value,
+              contract.total_value,
+            );
+            const FundingIcon = fundingStatus.icon;
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <FileText className="h-4 w-4" />
-            <span className="text-sm">Active Contracts</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">
-            {contracts.filter((c) => c.status === "active").length}
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <DollarSign className="h-4 w-4" />
-            <span className="text-sm">Total Value</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">
-            {formatCurrency(totalValue)}
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <DollarSign className="h-4 w-4" />
-            <span className="text-sm">Funded</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">
-            {formatCurrency(totalFunded)}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {((totalFunded / totalValue) * 100).toFixed(1)}% of total
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <DollarSign className="h-4 w-4" />
-            <span className="text-sm">Billed to Date</span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold">
-            {formatCurrency(totalBilled)}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {((totalBilled / totalFunded) * 100).toFixed(1)}% of funded
-          </p>
-        </div>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search contracts..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
-          <Filter className="h-4 w-4" />
-          Filters
-        </button>
-      </div>
-
-      {/* Contracts List */}
-      <div className="space-y-4">
-        {filteredContracts.map((contract) => {
-          const fundingStatus = getFundingStatus(
-            contract.funded_value,
-            contract.total_value,
-          );
-          const FundingIcon = fundingStatus.icon;
-
-          return (
-            <div
-              key={contract.id}
-              className="rounded-xl border bg-card overflow-hidden hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => setSelectedContract(contract)}
-            >
-              <div className="p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-medium">
-                        {contract.contract_number}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 text-xs rounded-full border ${getStatusColor(
-                          contract.status,
-                        )}`}
-                      >
-                        {contract.status}
-                      </span>
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
-                        {contract.contract_type}
-                      </span>
-                    </div>
-                    <h3 className="mt-1 font-medium">{contract.title}</h3>
-                    {contract.prime_contractor && (
-                      <p className="text-sm text-muted-foreground">
-                        Prime: {contract.prime_contractor}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-                      <Edit3 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Total Value</p>
-                    <p className="font-medium">
-                      {formatCurrency(contract.total_value)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Funded</p>
-                    <p className="font-medium">
-                      {formatCurrency(contract.funded_value)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">
-                      Period of Performance
-                    </p>
-                    <p className="font-medium">
-                      {contract.pop_start} to {contract.pop_end}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Funding Status</p>
-                    <p
-                      className={`font-medium flex items-center gap-1 ${fundingStatus.color}`}
-                    >
-                      <FundingIcon className="h-4 w-4" />
-                      {fundingStatus.label}
-                    </p>
-                  </div>
-                </div>
-
-                {/* CLINs */}
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm font-medium mb-2">
-                    Contract Line Items (CLINs)
-                  </p>
-                  <div className="grid gap-2">
-                    {contract.clins.map((clin) => (
-                      <div
-                        key={clin.clin_number}
-                        className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <span className="font-mono text-xs bg-background px-2 py-1 rounded">
-                            CLIN {clin.clin_number}
-                          </span>
-                          <span className="text-sm">{clin.description}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {clin.clin_type}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="text-right">
-                            <p className="text-muted-foreground text-xs">
-                              Funded
-                            </p>
-                            <p>{formatCurrency(clin.funded_value)}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-muted-foreground text-xs">
-                              Billed
-                            </p>
-                            <p>{formatCurrency(clin.billed_to_date)}</p>
-                          </div>
-                          <div className="w-24">
-                            <div className="h-2 rounded-full bg-muted overflow-hidden">
-                              <div
-                                className="h-full bg-primary rounded-full"
-                                style={{
-                                  width: `${(clin.billed_to_date / clin.funded_value) * 100}%`,
-                                }}
-                              />
-                            </div>
-                            <p className="text-xs text-muted-foreground text-center mt-1">
-                              {(
-                                (clin.billed_to_date / clin.funded_value) *
-                                100
-                              ).toFixed(0)}
-                              %
-                            </p>
-                          </div>
-                        </div>
+            return (
+              <div
+                key={contract.id}
+                className="rounded-xl border bg-card overflow-hidden hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={() => setSelectedContract(contract)}
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-medium">
+                          {contract.contract_number}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 text-xs rounded-full border ${getStatusColor(
+                            contract.status,
+                          )}`}
+                        >
+                          {contract.status}
+                        </span>
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
+                          {contract.contract_type}
+                        </span>
                       </div>
-                    ))}
+                      <h3 className="mt-1 font-medium">{contract.title}</h3>
+                      {contract.prime_contractor && (
+                        <p className="text-sm text-muted-foreground">
+                          Prime: {contract.prime_contractor}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button className="p-2 rounded-lg hover:bg-accent transition-colors">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button className="p-2 rounded-lg hover:bg-accent transition-colors">
+                        <Edit3 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Total Value</p>
+                      <p className="font-medium">
+                        {formatCurrency(contract.total_value)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Funded</p>
+                      <p className="font-medium">
+                        {formatCurrency(contract.funded_value)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">
+                        Period of Performance
+                      </p>
+                      <p className="font-medium">
+                        {contract.pop_start} to {contract.pop_end}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Funding Status</p>
+                      <p
+                        className={`font-medium flex items-center gap-1 ${fundingStatus.color}`}
+                      >
+                        <FundingIcon className="h-4 w-4" />
+                        {fundingStatus.label}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* CLINs */}
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm font-medium mb-2">
+                      Contract Line Items (CLINs)
+                    </p>
+                    <div className="grid gap-2">
+                      {contract.clins.map((clin) => (
+                        <div
+                          key={clin.clin_number}
+                          className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                        >
+                          <div className="flex items-center gap-4">
+                            <span className="font-mono text-xs bg-background px-2 py-1 rounded">
+                              CLIN {clin.clin_number}
+                            </span>
+                            <span className="text-sm">{clin.description}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {clin.clin_type}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-6 text-sm">
+                            <div className="text-right">
+                              <p className="text-muted-foreground text-xs">
+                                Funded
+                              </p>
+                              <p>{formatCurrency(clin.funded_value)}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-muted-foreground text-xs">
+                                Billed
+                              </p>
+                              <p>{formatCurrency(clin.billed_to_date)}</p>
+                            </div>
+                            <div className="w-24">
+                              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                                <div
+                                  className="h-full bg-primary rounded-full"
+                                  style={{
+                                    width: `${(clin.billed_to_date / clin.funded_value) * 100}%`,
+                                  }}
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground text-center mt-1">
+                                {(
+                                  (clin.billed_to_date / clin.funded_value) *
+                                  100
+                                ).toFixed(0)}
+                                %
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {/* Load More Button */}
-        {hasMore && (
-          <div className="flex justify-center pt-4">
-            <button
-              onClick={loadMore}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
-            >
-              <ChevronDown className="h-4 w-4" />
-              Load More ({allFilteredContracts.length - displayCount} remaining)
-            </button>
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={loadMore}
+                className="flex items-center gap-2 px-6 py-3 rounded-lg border border-border hover:bg-accent transition-colors"
+              >
+                <ChevronDown className="h-4 w-4" />
+                Load More ({allFilteredContracts.length - displayCount}{" "}
+                remaining)
+              </button>
+            </div>
+          )}
+        </div>
+
+        {allFilteredContracts.length === 0 && (
+          <div className="text-center py-12">
+            <Building2 className="h-12 w-12 mx-auto text-muted-foreground/50" />
+            <p className="mt-4 text-muted-foreground">No contracts found</p>
           </div>
         )}
-      </div>
-
-      {allFilteredContracts.length === 0 && (
-        <div className="text-center py-12">
-          <Building2 className="h-12 w-12 mx-auto text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">No contracts found</p>
-        </div>
-      )}
-    </main>
+      </main>{" "}
+    </RouteShell>
   );
 }

@@ -6,7 +6,6 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
-  Download,
   Filter,
   Search,
   Lock,
@@ -211,15 +210,15 @@ function formatTimestamp(ts: string): string {
 function getSeverityColor(severity: AuditSeverity): string {
   switch (severity) {
     case "info":
-      return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "warning":
-      return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      return "bg-muted text-foreground border-border";
     case "error":
-      return "bg-red-500/10 text-red-500 border-red-500/20";
+      return "bg-destructive/10 text-destructive border-destructive/20";
     case "critical":
-      return "bg-red-600/10 text-red-600 border-red-600/20";
+      return "bg-destructive/10 text-destructive border-destructive/20";
     default:
-      return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+      return "bg-muted text-muted-foreground border-border";
   }
 }
 
@@ -341,10 +340,10 @@ export default function AuditPage() {
       </div>
 
       {/* Advisory Banner */}
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <Lock className="h-5 w-5 text-blue-500 mt-0.5" />
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
+        <Lock className="h-5 w-5 text-primary mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-blue-500">
+          <p className="text-sm font-medium text-primary">
             Immutable Audit Trail
           </p>
           <p className="text-sm text-muted-foreground">
@@ -366,10 +365,10 @@ export default function AuditPage() {
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CheckCircle className="h-4 w-4 text-primary" />
             <span className="text-sm">DCAA Relevant</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-green-500">
+          <p className="mt-2 text-2xl font-semibold text-primary">
             {entries.filter((e) => e.dcaa_relevant).length}
           </p>
         </div>
@@ -384,10 +383,10 @@ export default function AuditPage() {
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
             <span className="text-sm">Warnings/Errors</span>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-yellow-500">
+          <p className="mt-2 text-2xl font-semibold text-destructive">
             {
               entries.filter(
                 (e) => e.severity === "warning" || e.severity === "error",
@@ -486,7 +485,7 @@ export default function AuditPage() {
                                 </span>
                               )}
                               {entry.evidence_hash && (
-                                <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-500 flex items-center gap-1">
+                                <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary flex items-center gap-1">
                                   <Hash className="h-3 w-3" />
                                   Evidence
                                 </span>
@@ -585,8 +584,8 @@ export default function AuditPage() {
       <div className="rounded-xl border bg-card p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="font-medium">Audit Log Integrity Verified</p>

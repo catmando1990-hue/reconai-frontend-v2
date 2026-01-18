@@ -99,6 +99,18 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
+    label: "Invoicing",
+    href: "/dashboard/invoicing",
+    icon: Receipt,
+    children: [
+      { label: "Invoices", href: "/dashboard/invoicing", icon: Receipt },
+      { label: "New Invoice", href: "/dashboard/invoicing/new", icon: FileText },
+      { label: "A/R Aging", href: "/dashboard/ar", icon: ArrowLeftRight },
+      { label: "Settings", href: "/dashboard/invoicing/settings", icon: Settings },
+      { label: "Template Preview", href: "/dashboard/invoicing/preview", icon: FileText },
+    ],
+  },
+  {
     label: "Settings",
     href: "/dashboard/settings",
     icon: Settings,
@@ -110,6 +122,8 @@ function getActiveSection(pathname: string): string {
   if (pathname.startsWith("/dashboard/core")) return "Core";
   if (pathname.startsWith("/dashboard/intelligence")) return "Intelligence";
   if (pathname.startsWith("/dashboard/cfo")) return "CFO Mode";
+  if (pathname.startsWith("/dashboard/invoicing")) return "Invoicing";
+  if (pathname.startsWith("/dashboard/ar")) return "Invoicing";
   if (pathname.startsWith("/dashboard/govcon")) return "GovCon";
   if (pathname.startsWith("/dashboard/settings")) return "Settings";
   return "Dashboard";

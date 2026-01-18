@@ -1,19 +1,33 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { Panel } from "@/components/dashboard/Panel";
+import { InvoiceTable } from "@/components/invoicing/InvoiceTable";
 
 export default function InvoicingPage() {
   return (
-    <div className="p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoicing & Accounts Receivable</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No invoices yet. Create invoices to track accounts receivable.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <RouteShell
+      title="Invoicing"
+      subtitle="Create invoices, track customer payments, and monitor accounts receivable."
+      right={
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/invoicing/preview"
+            className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted"
+          >
+            Preview template
+          </Link>
+          <Link
+            href="/dashboard/invoicing/new"
+            className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
+            New invoice
+          </Link>
+        </div>
+      }
+    >
+      <Panel title="Invoices">
+        <InvoiceTable />
+      </Panel>
+    </RouteShell>
   );
 }

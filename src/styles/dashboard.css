@@ -1,0 +1,15 @@
+:root {
+  --dash-radius: 12px;
+  --dash-gap: 24px;
+}
+
+.dashboard-surface {
+  border-radius: var(--dash-radius);
+  padding: var(--dash-gap);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--dash-gap);
+}

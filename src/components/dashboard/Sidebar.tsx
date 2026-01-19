@@ -263,22 +263,13 @@ export function Sidebar() {
                   const isActive = activeSection === item.label;
 
                   const panelId = `nav-${item.label.replace(/\s+/g, "-").toLowerCase()}`;
+                  const hasChildren = Boolean(
+                    item.children && item.children.length > 0,
+                  );
 
                   return (
                     <div key={item.label}>
-                      <button
-                        type="button"
-                        aria-expanded={
-                          Boolean(item.children?.length)
-                            ? isExpanded
-                            : undefined
-                        }
-                        aria-controls={
-                          Boolean(item.children?.length) ? panelId : undefined
-                        }
-                        onClick={() =>
-                          setExpanded(isExpanded ? "" : item.label)
-                        }
+                      <div
                         className={[
                           "group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                           isActive
@@ -286,10 +277,23 @@ export function Sidebar() {
                             : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border border-transparent",
                         ].join(" ")}
                       >
-                        <div className="flex items-center gap-3">
+                        {/* Primary click target: navigates to the section root */}
+                        <Link
+                          href={item.href}
+                          onClick={() => {
+                            // Keep the active section expanded after navigation.
+                            if (hasChildren) setExpanded(item.label);
+                          }}
+                          aria-current={
+                            isRouteActive(pathname, item.href)
+                              ? "page"
+                              : undefined
+                          }
+                          className="flex min-w-0 flex-1 items-center gap-3"
+                        >
                           <div
                             className={[
-                              "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
                               isActive
                                 ? "bg-primary/10"
                                 : "bg-card/50 group-hover:bg-accent",
@@ -304,17 +308,32 @@ export function Sidebar() {
                               ].join(" ")}
                             />
                           </div>
-                          <span>{item.label}</span>
-                        </div>
-                        {item.children && item.children.length > 0 && (
-                          <ChevronDown
-                            className={[
-                              "h-4 w-4 transition-transform duration-200",
-                              isExpanded ? "rotate-180" : "",
-                            ].join(" ")}
-                          />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+
+                        {/* Secondary click target: expands/collapses submenu without navigation */}
+                        {hasChildren && (
+                          <button
+                            type="button"
+                            aria-expanded={isExpanded}
+                            aria-controls={panelId}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setExpanded(isExpanded ? "" : item.label);
+                            }}
+                            className="ml-2 inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-colors"
+                            title={isExpanded ? "Collapse" : "Expand"}
+                          >
+                            <ChevronDown
+                              className={[
+                                "h-4 w-4 transition-transform duration-200",
+                                isExpanded ? "rotate-180" : "",
+                              ].join(" ")}
+                            />
+                          </button>
                         )}
-                      </button>
+                      </div>
 
                       {item.children && (
                         <div

@@ -50,7 +50,11 @@ const CORE_NAV: NavItem[] = [
     icon: LayoutDashboard,
     children: [
       { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Connect Bank", href: "/connect-bank", icon: Landmark },
+      {
+        label: "Connect Bank",
+        href: "/dashboard/connect-bank",
+        icon: Landmark,
+      },
     ],
   },
   {
@@ -65,6 +69,7 @@ const CORE_NAV: NavItem[] = [
         href: "/dashboard/core/transactions",
         icon: ArrowLeftRight,
       },
+      { label: "Reports", href: "/dashboard/core/reports", icon: FileText },
     ],
   },
   {
@@ -72,15 +77,15 @@ const CORE_NAV: NavItem[] = [
     href: "/dashboard/intelligence",
     icon: Sparkles,
     children: [
-      { label: "Overview", href: "/dashboard/intelligence", icon: Sparkles },
+      { label: "Insights", href: "/dashboard/intelligence", icon: Sparkles },
       {
-        label: "Expense Intelligence",
-        href: "/dashboard/intelligence/expenses",
+        label: "Alerts",
+        href: "/dashboard/intelligence/alerts",
         icon: Receipt,
       },
       {
-        label: "Travel Signals",
-        href: "/dashboard/intelligence/travel",
+        label: "AI Worker",
+        href: "/dashboard/intelligence/ai-worker",
         icon: Plane,
       },
     ],
@@ -93,7 +98,7 @@ const CORE_NAV: NavItem[] = [
       { label: "Overview", href: "/dashboard/cfo", icon: LineChart },
       {
         label: "Executive Summary",
-        href: "/dashboard/cfo/summary",
+        href: "/dashboard/cfo/executive-summary",
         icon: FileText,
       },
       {
@@ -261,11 +266,11 @@ export function Sidebar() {
                   const Icon = item.icon;
                   const isExpanded = expanded === item.label;
                   const isActive = activeSection === item.label;
-
-                  const panelId = `nav-${item.label.replace(/\s+/g, "-").toLowerCase()}`;
-                  const hasChildren = Boolean(
+                  const canExpand = Boolean(
                     item.children && item.children.length > 0,
                   );
+
+                  const panelId = `nav-${item.label.replace(/\s+/g, "-").toLowerCase()}`;
 
                   return (
                     <div key={item.label}>
@@ -277,19 +282,13 @@ export function Sidebar() {
                             : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border border-transparent",
                         ].join(" ")}
                       >
-                        {/* Primary click target: navigates to the section root */}
                         <Link
                           href={item.href}
-                          onClick={() => {
-                            // Keep the active section expanded after navigation.
-                            if (hasChildren) setExpanded(item.label);
-                          }}
-                          aria-current={
-                            isRouteActive(pathname, item.href)
-                              ? "page"
-                              : undefined
-                          }
+                          aria-current={isActive ? "page" : undefined}
                           className="flex min-w-0 flex-1 items-center gap-3"
+                          onClick={() => {
+                            if (canExpand) setExpanded(item.label);
+                          }}
                         >
                           <div
                             className={[
@@ -311,15 +310,13 @@ export function Sidebar() {
                           <span className="truncate">{item.label}</span>
                         </Link>
 
-                        {/* Secondary click target: expands/collapses submenu without navigation */}
-                        {hasChildren && (
+                        {canExpand && (
                           <button
                             type="button"
                             aria-expanded={isExpanded}
                             aria-controls={panelId}
                             onClick={(e) => {
                               e.preventDefault();
-                              e.stopPropagation();
                               setExpanded(isExpanded ? "" : item.label);
                             }}
                             className="ml-2 inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-colors"

@@ -10,9 +10,12 @@ export default function AuthLayout({
 }) {
   return (
     <ClerkProviderWrapper>
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-full max-w-md p-6">{children}</div>
-      </div>
+      {/*
+        Auth pages render their own full-viewport background and centering.
+        This layout must NOT constrain width, otherwise background images
+        collapse into a narrow column (desktop regression).
+      */}
+      <div className="min-h-dvh w-full">{children}</div>
     </ClerkProviderWrapper>
   );
 }

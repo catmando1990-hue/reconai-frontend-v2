@@ -17,6 +17,8 @@ const CLERK_ROUTES = [
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/onboarding(.*)",
+  // Canonical dashboard entry routes
+  "/dashboard(.*)",
   // Protected dashboard routes (now under route group, keeping for legacy links)
   "/home(.*)",
   "/account(.*)",

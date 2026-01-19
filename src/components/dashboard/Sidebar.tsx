@@ -319,6 +319,15 @@ export function Sidebar() {
                       {item.children && (
                         <div
                           id={panelId}
+                          // Defensive: ensure submenu panels always participate in normal flow.
+                          // Some environments/extensions/global CSS can incorrectly apply
+                          // `position:absolute; top:0` to these collapsible grid containers,
+                          // causing "ghost" submenu text at the top of the sidebar.
+                          style={{
+                            position: "relative",
+                            top: "auto",
+                            left: "auto",
+                          }}
                           className={[
                             "grid transition-[grid-template-rows] duration-200 ease-out",
                             isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",

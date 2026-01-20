@@ -85,7 +85,7 @@ export function RouteShell({
   return (
     <div
       className={[
-        "mx-auto w-full max-w-7xl px-4 py-4 md:px-6 md:py-5 lg:px-8 lg:py-6",
+        "w-full px-4 py-4 md:px-6 md:py-5 lg:px-8 lg:py-6",
         className,
       ]
         .filter(Boolean)

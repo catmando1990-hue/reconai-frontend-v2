@@ -42,7 +42,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative min-h-[100dvh] bg-muted text-foreground overflow-x-hidden">
-      <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[1600px]">
+      <div className="relative flex min-h-[100dvh] w-full">
         {/* Desktop sidebar */}
         <div className="hidden md:block relative z-10 h-screen sticky top-0 shrink-0">
           <Sidebar />
@@ -50,7 +50,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         {/* Mobile top bar */}
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-muted/80 backdrop-blur-xl">
-          <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4">
+          <div className="flex h-14 items-center justify-between px-4">
             <button
               type="button"
               onClick={() => setOpen(true)}

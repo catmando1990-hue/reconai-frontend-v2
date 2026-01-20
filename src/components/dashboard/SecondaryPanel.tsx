@@ -14,7 +14,7 @@ interface SecondaryPanelProps {
 /**
  * SecondaryPanel — Supporting information panels.
  * Takes ~30-40% of viewport on desktop (lg:col-span-4 in 12-col grid).
- * Uses surface-inset for visual subordination to PrimaryPanel.
+ * Enterprise density: compact padding, tight spacing.
  * Optionally collapsible for dense operational modes.
  */
 export function SecondaryPanel({
@@ -32,8 +32,10 @@ export function SecondaryPanel({
     >
       <div
         className={[
-          "flex items-center justify-between px-4 py-3",
-          collapsible ? "cursor-pointer select-none" : "",
+          "flex items-center justify-between px-3 py-2.5",
+          collapsible
+            ? "cursor-pointer select-none hover:bg-muted/50 transition-colors"
+            : "",
         ].join(" ")}
         onClick={collapsible ? () => setIsCollapsed(!isCollapsed) : undefined}
         onKeyDown={
@@ -50,17 +52,19 @@ export function SecondaryPanel({
         tabIndex={collapsible ? 0 : undefined}
         aria-expanded={collapsible ? !isCollapsed : undefined}
       >
-        <h3 className="text-sm font-medium text-foreground">{title}</h3>
+        <h3 className="text-[length:var(--dash-body-size)] font-medium text-foreground">
+          {title}
+        </h3>
         {collapsible && (
           <ChevronDown
             className={[
-              "h-4 w-4 text-muted-foreground transition-transform",
+              "h-4 w-4 text-muted-foreground transition-transform duration-200",
               isCollapsed ? "-rotate-90" : "",
             ].join(" ")}
           />
         )}
       </div>
-      {!isCollapsed && <div className="px-4 pb-4">{children}</div>}
+      {!isCollapsed && <div className="px-3 pb-3">{children}</div>}
     </div>
   );
 }

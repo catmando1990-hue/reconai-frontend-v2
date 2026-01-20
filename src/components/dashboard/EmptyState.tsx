@@ -19,6 +19,7 @@ interface EmptyStateProps {
 /**
  * EmptyState — Graceful empty state display.
  * Replaces all mock/placeholder data throughout dashboard.
+ * Enterprise density: compact vertical padding.
  * Token-only styling, no hardcoded colors.
  */
 export function EmptyState({
@@ -28,16 +29,18 @@ export function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted">
-        <Icon className="h-6 w-6 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted">
+        <Icon className="h-5 w-5 text-muted-foreground" />
       </div>
-      <h3 className="text-base font-medium text-foreground">{title}</h3>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+      <h3 className="text-[length:var(--dash-body-size)] font-medium text-foreground">
+        {title}
+      </h3>
+      <p className="mt-1 max-w-xs text-[length:var(--dash-subtitle-size)] text-muted-foreground">
         {description}
       </p>
       {action && (
-        <div className="mt-4">
+        <div className="mt-3">
           {action.href ? (
             <Button asChild variant="secondary" size="sm">
               <Link href={action.href}>{action.label}</Link>

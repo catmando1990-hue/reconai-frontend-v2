@@ -1,11 +1,17 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { HeroBackground } from "@/components/layout/HeroBackground";
+import HeroBackdrop from "@/components/layout/HeroBackdrop";
 
 /**
- * Applies ReconAI hero background to dashboard routes only.
- * Auth pages, marketing pages, and homepage handle their own backgrounds.
+ * RouteBackgroundWrapper
+ *
+ * Applies variant-based hero backdrop based on route context.
+ *
+ * Rules:
+ * - Auth routes: NO hero (handled by auth layout)
+ * - Marketing routes: handled by their own page components
+ * - Dashboard/product routes: product-lite variant
  */
 export function RouteBackgroundWrapper({
   children,
@@ -14,16 +20,15 @@ export function RouteBackgroundWrapper({
 }) {
   const pathname = usePathname() || "/";
 
-  // Routes that handle their own background
-  // /about and /support use MarketingShell directly to match Home page style
-  const skipHeroBackground =
+  // Auth routes - no hero backdrop (auth layout owns background)
+  const isAuthRoute =
+    pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+
+  // Marketing routes - pages handle their own hero via HeroBackdrop directly
+  const isMarketingRoute =
     pathname === "/" ||
     pathname.startsWith("/about") ||
     pathname.startsWith("/support") ||
-    pathname.startsWith("/sign-in") ||
-    pathname.startsWith("/sign-up") ||
-    pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/dashboard") ||
     pathname.startsWith("/platform") ||
     pathname.startsWith("/how-it-works") ||
     pathname.startsWith("/packages") ||
@@ -31,9 +36,19 @@ export function RouteBackgroundWrapper({
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/terms") ||
     pathname.startsWith("/legal") ||
+    pathname.startsWith("/pricing");
+
+  // Static/utility pages - no hero
+  const isUtilityRoute =
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/dashboard") ||
     pathname.startsWith("/maintenance");
 
-  if (skipHeroBackground) return <>{children}</>;
+  // Skip hero for auth, marketing (they handle own), and utility routes
+  if (isAuthRoute || isMarketingRoute || isUtilityRoute) {
+    return <>{children}</>;
+  }
 
-  return <HeroBackground>{children}</HeroBackground>;
+  // Product/dashboard routes get product-lite variant
+  return <HeroBackdrop variant="product-lite">{children}</HeroBackdrop>;
 }

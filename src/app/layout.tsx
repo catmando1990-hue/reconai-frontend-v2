@@ -1,6 +1,5 @@
 import Providers from "@/app/providers";
 import { Footer } from "@/components/layout/Footer";
-import { RouteBackgroundWrapper } from "@/components/layout/RouteBackgroundWrapper";
 import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -70,12 +69,10 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <Providers>
-            <RouteBackgroundWrapper>
-              <div className="min-h-dvh">
-                {children}
-                <Footer />
-              </div>
-            </RouteBackgroundWrapper>
+            <div className="min-h-dvh">
+              {children}
+              <Footer />
+            </div>
           </Providers>
         </ThemeProvider>
       </body>

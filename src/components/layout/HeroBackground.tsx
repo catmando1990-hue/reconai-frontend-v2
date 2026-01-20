@@ -1,17 +1,14 @@
 "use client";
 
-import "@/styles/recon-hero-awardwinning.css";
+import HeroBackdrop from "@/components/layout/HeroBackdrop";
 
+/**
+ * @deprecated Use HeroBackdrop directly with variant prop instead.
+ *
+ * This component is kept for backwards compatibility only.
+ * Prefer: <HeroBackdrop variant="marketing|auth|product-lite">
+ */
 export function HeroBackground({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="recon-hero-v3 recon-animate">
-      <div className="focus-plane" />
-      <div className="vignette" />
-      <div className="beam" />
-      <div className="grid" />
-      <div className="noise" />
-      <div className="scanline" />
-      <div className="content">{children}</div>
-    </div>
-  );
+  // Legacy usage maps to product-lite variant for dashboard routes
+  return <HeroBackdrop variant="product-lite">{children}</HeroBackdrop>;
 }

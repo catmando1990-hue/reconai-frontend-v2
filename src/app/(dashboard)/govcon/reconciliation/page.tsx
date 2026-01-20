@@ -1,602 +1,178 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import {
-  ArrowLeftRight,
-  CheckCircle,
-  AlertTriangle,
-  Clock,
-  Download,
-  FileText,
-  Lock,
-  RefreshCw,
-  Eye,
-  ChevronDown,
-} from "lucide-react";
+import { ArrowLeftRight, Download, FileText, RefreshCw } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-
-// Pagination constants
-const INITIAL_VARIANCE_COUNT = 20;
-const LOAD_MORE_COUNT = 20;
-
-type ReconciliationType = "labor" | "indirect" | "full";
-type ReconciliationStatus =
-  | "pending"
-  | "in_progress"
-  | "completed"
-  | "approved"
-  | "failed";
-type VarianceStatus = "identified" | "under_review" | "resolved" | "escalated";
-
-interface ReconciliationRun {
-  id: string;
-  run_type: ReconciliationType;
-  fiscal_year: number;
-  period: string;
-  status: ReconciliationStatus;
-  run_date: string;
-  completed_at: string | null;
-  total_items: number;
-  variances_found: number;
-  variances_resolved: number;
-}
-
-interface Variance {
-  id: string;
-  reconciliation_id: string;
-  category: string;
-  description: string;
-  source_amount: number;
-  target_amount: number;
-  variance_amount: number;
-  variance_percent: number;
-  status: VarianceStatus;
-  assigned_to: string | null;
-  resolution_notes: string | null;
-}
-
-// Demo data
-const DEMO_RUNS: ReconciliationRun[] = [
-  {
-    id: "rec-001",
-    run_type: "labor",
-    fiscal_year: 2024,
-    period: "Q4 2024",
-    status: "completed",
-    run_date: "2024-01-15",
-    completed_at: "2024-01-15",
-    total_items: 450,
-    variances_found: 12,
-    variances_resolved: 10,
-  },
-  {
-    id: "rec-002",
-    run_type: "indirect",
-    fiscal_year: 2024,
-    period: "Q4 2024",
-    status: "in_progress",
-    run_date: "2024-01-16",
-    completed_at: null,
-    total_items: 85,
-    variances_found: 5,
-    variances_resolved: 2,
-  },
-  {
-    id: "rec-003",
-    run_type: "full",
-    fiscal_year: 2024,
-    period: "FY 2024",
-    status: "pending",
-    run_date: "2024-01-20",
-    completed_at: null,
-    total_items: 0,
-    variances_found: 0,
-    variances_resolved: 0,
-  },
-];
-
-const DEMO_VARIANCES: Variance[] = [
-  {
-    id: "var-001",
-    reconciliation_id: "rec-001",
-    category: "Direct Labor",
-    description: "Timesheet vs Payroll variance for Contract FA8750-24-C-0001",
-    source_amount: 125000,
-    target_amount: 124750,
-    variance_amount: 250,
-    variance_percent: 0.2,
-    status: "resolved",
-    assigned_to: "John Smith",
-    resolution_notes: "Rounding adjustment applied, within tolerance",
-  },
-  {
-    id: "var-002",
-    reconciliation_id: "rec-001",
-    category: "Fringe Benefits",
-    description: "Fringe allocation variance for engineering pool",
-    source_amount: 45000,
-    target_amount: 44200,
-    variance_amount: 800,
-    variance_percent: 1.78,
-    status: "under_review",
-    assigned_to: "Jane Doe",
-    resolution_notes: null,
-  },
-  {
-    id: "var-003",
-    reconciliation_id: "rec-002",
-    category: "Overhead",
-    description: "Overhead pool allocation vs GL posting",
-    source_amount: 82000,
-    target_amount: 83500,
-    variance_amount: -1500,
-    variance_percent: -1.83,
-    status: "identified",
-    assigned_to: null,
-    resolution_notes: null,
-  },
-  {
-    id: "var-004",
-    reconciliation_id: "rec-002",
-    category: "G&A",
-    description: "G&A rate application variance",
-    source_amount: 35000,
-    target_amount: 35800,
-    variance_amount: -800,
-    variance_percent: -2.29,
-    status: "escalated",
-    assigned_to: "CFO Review",
-    resolution_notes: "Requires DCAA coordination",
-  },
-];
+import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
+import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { StatusChip } from "@/components/dashboard/StatusChip";
+import { Button } from "@/components/ui/button";
+import PolicyBanner from "@/components/policy/PolicyBanner";
 
 const ICS_SCHEDULES = [
-  { schedule: "H", name: "Contract Brief", status: "complete" },
-  {
-    schedule: "I",
-    name: "Cumulative Allowable Cost Worksheet",
-    status: "in_progress",
-  },
-  { schedule: "J", name: "Subcontract Information", status: "pending" },
-  { schedule: "K", name: "Summary of Hours and Amounts", status: "complete" },
-  {
-    schedule: "L",
-    name: "Reconciliation of Contract Briefs",
-    status: "in_progress",
-  },
-  { schedule: "M", name: "Indirect Cost Pools", status: "complete" },
-  { schedule: "N", name: "Certificate of Indirect Costs", status: "pending" },
-  { schedule: "O", name: "Contract Closing", status: "pending" },
+  { schedule: "H", name: "Contract Brief" },
+  { schedule: "I", name: "Cumulative Allowable Cost Worksheet" },
+  { schedule: "J", name: "Subcontract Information" },
+  { schedule: "K", name: "Summary of Hours and Amounts" },
+  { schedule: "L", name: "Reconciliation of Contract Briefs" },
+  { schedule: "M", name: "Indirect Cost Pools" },
+  { schedule: "N", name: "Certificate of Indirect Costs" },
+  { schedule: "O", name: "Contract Closing" },
 ];
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function getReconciliationStatusColor(status: ReconciliationStatus): string {
-  switch (status) {
-    case "pending":
-      return "bg-muted text-muted-foreground border-border";
-    case "in_progress":
-      return "bg-primary/10 text-primary border-primary/20";
-    case "completed":
-      return "bg-primary/10 text-primary border-primary/20";
-    case "approved":
-      return "bg-primary/10 text-primary border-primary/20";
-    case "failed":
-      return "bg-destructive/10 text-destructive border-destructive/20";
-    default:
-      return "bg-muted text-muted-foreground border-border";
-  }
-}
-
-function getVarianceStatusColor(status: VarianceStatus): string {
-  switch (status) {
-    case "identified":
-      return "bg-muted text-foreground";
-    case "under_review":
-      return "bg-primary/10 text-primary";
-    case "resolved":
-      return "bg-primary/10 text-primary";
-    case "escalated":
-      return "bg-destructive/10 text-destructive";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
-
-function getScheduleStatusColor(status: string): string {
-  switch (status) {
-    case "complete":
-      return "text-primary";
-    case "in_progress":
-      return "text-primary";
-    case "pending":
-      return "text-muted-foreground";
-    default:
-      return "text-muted-foreground";
-  }
-}
-
 export default function ReconciliationPage() {
-  const [runs] = useState<ReconciliationRun[]>(DEMO_RUNS);
-  const [variances] = useState<Variance[]>(DEMO_VARIANCES);
-  const [selectedRun, setSelectedRun] = useState<ReconciliationRun | null>(
-    null,
-  );
-  const [varianceDisplayCount, setVarianceDisplayCount] = useState(
-    INITIAL_VARIANCE_COUNT,
-  );
-
-  // Memoize summary stats - these are computed once when data changes
-  const { totalVariances, resolvedVariances, escalatedVariances } = useMemo(
-    () => ({
-      totalVariances: variances.length,
-      resolvedVariances: variances.filter((v) => v.status === "resolved")
-        .length,
-      escalatedVariances: variances.filter((v) => v.status === "escalated")
-        .length,
-    }),
-    [variances],
-  );
-
-  // Memoize filtered variances
-  const allRunVariances = useMemo(() => {
-    return selectedRun
-      ? variances.filter((v) => v.reconciliation_id === selectedRun.id)
-      : variances;
-  }, [variances, selectedRun]);
-
-  // Paginated variances for display
-  const runVariances = useMemo(() => {
-    return allRunVariances.slice(0, varianceDisplayCount);
-  }, [allRunVariances, varianceDisplayCount]);
-
-  const hasMoreVariances = varianceDisplayCount < allRunVariances.length;
-
-  const loadMoreVariances = useCallback(() => {
-    setVarianceDisplayCount((prev) =>
-      Math.min(prev + LOAD_MORE_COUNT, allRunVariances.length),
-    );
-  }, [allRunVariances.length]);
-
-  // Reset pagination when run selection changes
-  const handleRunSelect = useCallback((run: ReconciliationRun | null) => {
-    setSelectedRun(run);
-    setVarianceDisplayCount(INITIAL_VARIANCE_COUNT);
-  }, []);
-
   return (
     <RouteShell
       title="Reconciliation"
-      subtitle="Labor + indirect reconciliation with variance review."
+      subtitle="DCAA-compliant labor and indirect cost reconciliation with ICS preparation"
+      right={
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export ICS
+          </Button>
+          <Button size="sm">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Run Reconciliation
+          </Button>
+        </div>
+      }
     >
-      <main className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <ArrowLeftRight className="h-6 w-6 text-primary" />
-              Reconciliation
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              DCAA-compliant labor and indirect cost reconciliation with ICS
-              preparation
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors">
-              <Download className="h-4 w-4" />
-              Export ICS
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-              <RefreshCw className="h-4 w-4" />
-              Run Reconciliation
-            </button>
+      <PolicyBanner
+        policy="accounting"
+        message="Reconciliation supports DCAA Incurred Cost Submission (ICS) per FAR 52.216-7. All variances must be resolved with documented evidence before final submission."
+        context="govcon"
+      />
+
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Primary Panel - Reconciliation Runs */}
+        <div className="lg:col-span-8">
+          <PrimaryPanel
+            title="Reconciliation Runs"
+            subtitle="Labor and indirect cost reconciliation history"
+            actions={
+              <Button variant="secondary" size="sm">
+                <ArrowLeftRight className="mr-2 h-4 w-4" />
+                New Run
+              </Button>
+            }
+          >
+            <EmptyState
+              icon={ArrowLeftRight}
+              title="No reconciliation runs"
+              description="Run a reconciliation to compare labor, indirect costs, and GL postings for variance detection."
+              action={{ label: "Run reconciliation" }}
+            />
+          </PrimaryPanel>
+
+          {/* Variances Panel */}
+          <div className="mt-6">
+            <PrimaryPanel
+              title="Variances"
+              subtitle="Variance analysis and resolution tracking"
+            >
+              <EmptyState
+                icon={FileText}
+                title="No variances"
+                description="Variances will appear here after a reconciliation run identifies discrepancies."
+              />
+            </PrimaryPanel>
           </div>
         </div>
 
-        {/* Advisory Banner */}
-        <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
-          <Lock className="h-5 w-5 text-primary mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-primary">
-              Incurred Cost Submission Requirements
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Reconciliation supports DCAA Incurred Cost Submission (ICS) per
-              FAR 52.216-7. All variances must be resolved with documented
-              evidence before final submission.
-            </p>
-          </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <ArrowLeftRight className="h-4 w-4" />
-              <span className="text-sm">Active Reconciliations</span>
-            </div>
-            <p className="mt-2 text-2xl font-semibold">
-              {runs.filter((r) => r.status === "in_progress").length}
-            </p>
-          </div>
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <AlertTriangle className="h-4 w-4" />
-              <span className="text-sm">Open Variances</span>
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {totalVariances - resolvedVariances}
-            </p>
-          </div>
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <CheckCircle className="h-4 w-4" />
-              <span className="text-sm">Resolved</span>
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-primary">
-              {resolvedVariances}
-            </p>
-          </div>
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-              <span className="text-sm">Escalated</span>
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-destructive">
-              {escalatedVariances}
-            </p>
-          </div>
-        </div>
-
-        {/* Reconciliation Runs */}
-        <div className="rounded-xl border bg-card overflow-hidden">
-          <div className="p-4 border-b">
-            <h2 className="font-medium">Reconciliation Runs</h2>
-          </div>
-          <div className="divide-y">
-            {runs.map((run) => (
-              <div
-                key={run.id}
-                className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
-                  selectedRun?.id === run.id ? "bg-primary/5" : ""
-                }`}
-                onClick={() =>
-                  handleRunSelect(selectedRun?.id === run.id ? null : run)
-                }
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{run.period}</span>
-                        <span
-                          className={`px-2 py-0.5 text-xs rounded-full border ${getReconciliationStatusColor(
-                            run.status,
-                          )}`}
-                        >
-                          {run.status.replace("_", " ")}
-                        </span>
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
-                          {run.run_type}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Run date: {run.run_date}
-                        {run.completed_at &&
-                          ` • Completed: ${run.completed_at}`}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Items</p>
-                      <p className="font-medium">{run.total_items}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Variances</p>
-                      <p
-                        className={`font-medium ${run.variances_found > 0 ? "text-foreground" : "text-primary"}`}
-                      >
-                        {run.variances_found}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Resolved</p>
-                      <p className="font-medium text-primary">
-                        {run.variances_resolved}
-                      </p>
-                    </div>
-                    <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-                      <Eye className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
+        {/* Secondary Panels */}
+        <div className="space-y-4 lg:col-span-4">
+          <SecondaryPanel title="Variance Summary">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Active Runs
+                </span>
+                <span className="text-lg font-semibold">0</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Variances Table */}
-        <div className="rounded-xl border bg-card overflow-hidden">
-          <div className="p-4 border-b flex items-center justify-between">
-            <div>
-              <h2 className="font-medium">
-                {selectedRun
-                  ? `Variances - ${selectedRun.period}`
-                  : "All Variances"}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Variance analysis and resolution tracking
-              </p>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Source
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Target
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Variance
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Assigned To
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {runVariances.map((variance) => (
-                  <tr
-                    key={variance.id}
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 font-medium">
-                      {variance.category}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground max-w-xs truncate">
-                      {variance.description}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">
-                      {formatCurrency(variance.source_amount)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">
-                      {formatCurrency(variance.target_amount)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span
-                        className={`font-mono ${
-                          variance.variance_amount > 0
-                            ? "text-destructive"
-                            : "text-primary"
-                        }`}
-                      >
-                        {formatCurrency(variance.variance_amount)}
-                      </span>
-                      <p className="text-xs text-muted-foreground">
-                        {variance.variance_percent > 0 ? "+" : ""}
-                        {variance.variance_percent.toFixed(2)}%
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${getVarianceStatusColor(variance.status)}`}
-                      >
-                        {variance.status.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {variance.assigned_to || "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* Load More Variances */}
-          {hasMoreVariances && (
-            <div className="p-4 border-t flex justify-center">
-              <button
-                onClick={loadMoreVariances}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors text-sm"
-              >
-                <ChevronDown className="h-4 w-4" />
-                Load More ({allRunVariances.length - varianceDisplayCount}{" "}
-                remaining)
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* ICS Schedules */}
-        <div className="rounded-xl border bg-card overflow-hidden">
-          <div className="p-4 border-b">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              <h2 className="font-medium">
-                Incurred Cost Submission Schedules
-              </h2>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              FAR 52.216-7 required schedules for cost-reimbursement contracts
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
-            {ICS_SCHEDULES.map((schedule) => (
-              <div
-                key={schedule.schedule}
-                className="p-3 rounded-lg bg-muted/50"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm font-medium">
-                    Schedule {schedule.schedule}
-                  </span>
-                  <span
-                    className={`text-xs ${getScheduleStatusColor(schedule.status)}`}
-                  >
-                    {schedule.status === "complete" && (
-                      <CheckCircle className="h-4 w-4 inline mr-1" />
-                    )}
-                    {schedule.status === "in_progress" && (
-                      <Clock className="h-4 w-4 inline mr-1" />
-                    )}
-                    {schedule.status}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {schedule.name}
-                </p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Open Variances
+                </span>
+                <span className="text-lg font-semibold">0</span>
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Resolved</span>
+                <span className="text-lg font-semibold">0</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Escalated</span>
+                <span className="text-lg font-semibold">0</span>
+              </div>
+            </div>
+          </SecondaryPanel>
 
-        {/* SF-1408 Quick Link */}
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <SecondaryPanel title="ICS Schedules">
+            <div className="space-y-2">
+              {ICS_SCHEDULES.map((schedule) => (
+                <div
+                  key={schedule.schedule}
+                  className="flex items-center justify-between p-2 rounded bg-muted/50"
+                >
+                  <div>
+                    <span className="font-mono text-xs font-medium">
+                      Schedule {schedule.schedule}
+                    </span>
+                    <p className="text-xs text-muted-foreground truncate max-w-[160px]">
+                      {schedule.name}
+                    </p>
+                  </div>
+                  <StatusChip variant="muted">Pending</StatusChip>
+                </div>
+              ))}
+            </div>
+          </SecondaryPanel>
+
+          <SecondaryPanel title="SF-1408 Preaward">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <FileText className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <p className="font-medium">SF-1408 Preaward Survey</p>
-                <p className="text-sm text-muted-foreground">
-                  Accounting system adequacy checklist for government
-                  contracting
+              <div className="min-w-0">
+                <p className="text-sm font-medium">SF-1408 Checklist</p>
+                <p className="text-xs text-muted-foreground">
+                  Accounting system adequacy for government contracting
                 </p>
+                <Link
+                  href="/govcon/sf-1408"
+                  className="text-xs text-primary hover:underline mt-1 inline-block"
+                >
+                  View checklist →
+                </Link>
               </div>
             </div>
-            <Link
-              href="/govcon/sf-1408"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors"
-            >
-              <Eye className="h-4 w-4" />
-              View Checklist
-            </Link>
-          </div>
+          </SecondaryPanel>
+
+          <SecondaryPanel title="Quick Links" collapsible>
+            <div className="space-y-2 text-sm">
+              <Link
+                href="/govcon/indirects"
+                className="block text-primary hover:underline"
+              >
+                Indirect cost pools
+              </Link>
+              <Link
+                href="/govcon/timekeeping"
+                className="block text-primary hover:underline"
+              >
+                Timekeeping
+              </Link>
+              <Link
+                href="/govcon/audit"
+                className="block text-primary hover:underline"
+              >
+                View audit trail
+              </Link>
+            </div>
+          </SecondaryPanel>
         </div>
-      </main>{" "}
+      </div>
     </RouteShell>
   );
 }

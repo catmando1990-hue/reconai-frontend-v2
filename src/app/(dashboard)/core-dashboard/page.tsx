@@ -1,107 +1,155 @@
 "use client";
 
-import { RouteShell } from "@/components/dashboard/RouteShell";
-import PolicyBanner from "@/components/policy/PolicyBanner";
 import Link from "next/link";
+import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
+import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { StatusChip } from "@/components/dashboard/StatusChip";
+import PolicyBanner from "@/components/policy/PolicyBanner";
+import { TierGate } from "@/components/legal/TierGate";
 import {
   Building2,
   ArrowLeftRight,
-  Home,
-  DoorOpen,
-  UserCheck,
-  FileSignature,
-  Wallet,
-  Wrench,
+  FileText,
+  Upload,
+  Link2,
+  Settings,
   ChevronRight,
+  BarChart3,
 } from "lucide-react";
 
 const coreModules = [
   {
+    name: "Transactions",
+    href: "/core/transactions",
+    icon: ArrowLeftRight,
+    description: "View and categorize",
+    primary: true,
+  },
+  {
     name: "Accounts",
     href: "/accounts",
     icon: Building2,
-    description: "Manage bank accounts and financial institutions",
+    description: "Connected bank accounts",
   },
   {
-    name: "Transactions",
-    href: "/transactions",
-    icon: ArrowLeftRight,
-    description: "View and categorize all transactions",
+    name: "Reports",
+    href: "/core/reports",
+    icon: BarChart3,
+    description: "Financial reports",
   },
   {
-    name: "Properties",
-    href: "/properties",
-    icon: Home,
-    description: "Manage real estate properties",
+    name: "Upload",
+    href: "/upload",
+    icon: Upload,
+    description: "Import statements",
   },
   {
-    name: "Units",
-    href: "/units",
-    icon: DoorOpen,
-    description: "Track individual rental units",
+    name: "Connect Bank",
+    href: "/connect-bank",
+    icon: Link2,
+    description: "Link new accounts",
   },
   {
-    name: "Tenants",
-    href: "/tenants",
-    icon: UserCheck,
-    description: "Manage tenant information",
-  },
-  {
-    name: "Leases",
-    href: "/leases",
-    icon: FileSignature,
-    description: "Track lease agreements",
-  },
-  {
-    name: "Rent Collection",
-    href: "/rent-collection",
-    icon: Wallet,
-    description: "Monitor rent payments",
-  },
-  {
-    name: "Maintenance",
-    href: "/maintenance",
-    icon: Wrench,
-    description: "Track maintenance requests",
+    name: "Settings",
+    href: "/settings",
+    icon: Settings,
+    description: "Preferences",
   },
 ];
 
 export default function CoreOverviewPage() {
   return (
-    <RouteShell
-      title="Core"
-      subtitle="Structured financial reality. Your operational foundation."
-    >
-      <PolicyBanner
-        policy="bookkeeping"
-        message="Transaction categorization is automated but may require review. Verify classifications before using for tax or compliance purposes."
-        context="core"
-      />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {coreModules.map((module) => {
-          const Icon = module.icon;
-          return (
-            <Link
-              key={module.href}
-              href={module.href}
-              className="group flex items-start gap-4 rounded-xl border border-border bg-card/50 p-4 transition hover:border-primary/20 hover:bg-card"
+    <TierGate tier="core" title="Core" subtitle="Structured financial reality">
+      <RouteShell
+        title="Core"
+        subtitle="Structured financial reality. Your operational foundation."
+      >
+        <PolicyBanner
+          policy="bookkeeping"
+          message="Transaction categorization is automated but may require review. Verify classifications before using for tax or compliance purposes."
+          context="core"
+        />
+
+        <div className="grid gap-6 lg:grid-cols-12">
+          {/* Primary Panel - Work Queue */}
+          <div className="lg:col-span-8">
+            <PrimaryPanel
+              title="Work Queue"
+              subtitle="Items requiring attention"
+              actions={
+                <Link
+                  href="/core/transactions"
+                  className="text-sm text-primary hover:underline"
+                >
+                  View all transactions
+                </Link>
+              }
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Icon className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
+              <EmptyState
+                icon={FileText}
+                title="No pending items"
+                description="All transactions are categorized and reconciled. Check back after new activity."
+                action={{
+                  label: "View transactions",
+                  href: "/core/transactions",
+                }}
+              />
+            </PrimaryPanel>
+          </div>
+
+          {/* Secondary Panels */}
+          <div className="space-y-4 lg:col-span-4">
+            <SecondaryPanel title="Quick Access">
+              <nav className="space-y-1">
+                {coreModules.map((module) => {
+                  const Icon = module.icon;
+                  return (
+                    <Link
+                      key={module.href}
+                      href={module.href}
+                      className={[
+                        "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition",
+                        module.primary
+                          ? "bg-primary/10 text-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ].join(" ")}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="flex-1">{module.name}</span>
+                      <ChevronRight className="h-3 w-3 opacity-0 transition group-hover:opacity-100" />
+                    </Link>
+                  );
+                })}
+              </nav>
+            </SecondaryPanel>
+
+            <SecondaryPanel title="System Status" collapsible>
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium">{module.name}</h3>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+                  <span className="text-sm text-muted-foreground">
+                    Data Sync
+                  </span>
+                  <StatusChip variant="ok">Connected</StatusChip>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {module.description}
-                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Categorization
+                  </span>
+                  <StatusChip variant="ok">Active</StatusChip>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Reconciliation
+                  </span>
+                  <StatusChip variant="muted">Pending review</StatusChip>
+                </div>
               </div>
-            </Link>
-          );
-        })}
-      </div>
-    </RouteShell>
+            </SecondaryPanel>
+          </div>
+        </div>
+      </RouteShell>
+    </TierGate>
   );
 }

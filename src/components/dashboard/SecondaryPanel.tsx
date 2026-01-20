@@ -1,0 +1,66 @@
+"use client";
+
+import { useState, type ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
+
+interface SecondaryPanelProps {
+  title: string;
+  children: ReactNode;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+  className?: string;
+}
+
+/**
+ * SecondaryPanel — Supporting information panels.
+ * Takes ~30-40% of viewport on desktop (lg:col-span-4 in 12-col grid).
+ * Uses surface-inset for visual subordination to PrimaryPanel.
+ * Optionally collapsible for dense operational modes.
+ */
+export function SecondaryPanel({
+  title,
+  children,
+  collapsible = false,
+  defaultCollapsed = false,
+  className,
+}: SecondaryPanelProps) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+
+  return (
+    <div
+      className={["surface-inset rounded-lg", className ?? ""].join(" ").trim()}
+    >
+      <div
+        className={[
+          "flex items-center justify-between px-4 py-3",
+          collapsible ? "cursor-pointer select-none" : "",
+        ].join(" ")}
+        onClick={collapsible ? () => setIsCollapsed(!isCollapsed) : undefined}
+        onKeyDown={
+          collapsible
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setIsCollapsed(!isCollapsed);
+                }
+              }
+            : undefined
+        }
+        role={collapsible ? "button" : undefined}
+        tabIndex={collapsible ? 0 : undefined}
+        aria-expanded={collapsible ? !isCollapsed : undefined}
+      >
+        <h3 className="text-sm font-medium text-foreground">{title}</h3>
+        {collapsible && (
+          <ChevronDown
+            className={[
+              "h-4 w-4 text-muted-foreground transition-transform",
+              isCollapsed ? "-rotate-90" : "",
+            ].join(" ")}
+          />
+        )}
+      </div>
+      {!isCollapsed && <div className="px-4 pb-4">{children}</div>}
+    </div>
+  );
+}

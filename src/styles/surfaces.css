@@ -1,11 +1,23 @@
 @layer base {
   :root {
-    /* Dashboard surface hierarchy (token-only, no hardcoded colors) */
+    /*
+     * Dashboard Elevation System (token-only, no hardcoded colors)
+     *
+     * Hierarchy:
+     * - surface-1: Page/app background (lowest)
+     * - surface-2: Panels, major containers
+     * - surface-3: Cards inside panels, elevated elements
+     * - surface-inset: Subordinate/recessed areas
+     */
     --surface-1: var(--background);
     --surface-2: var(--card);
     --surface-3: var(--popover);
     --surface-inset: var(--muted);
     --border-subtle: var(--border);
+
+    /* Consistent elevation radius */
+    --elevation-radius: 0.5rem;
+    --elevation-radius-lg: 0.75rem;
 
     /* Legacy aliases for backward compatibility */
     --surface-app: var(--surface-1);
@@ -15,19 +27,36 @@
 }
 
 @layer utilities {
+  /* Page background - lowest elevation */
   .surface-app {
     background: var(--surface-1);
   }
+
+  /* Panel level - main containers */
   .surface-page {
     background: var(--surface-2);
     border: 1px solid var(--border-subtle);
+    border-radius: var(--elevation-radius-lg);
   }
+
+  /* Card level - elevated elements inside panels */
   .surface-panel {
     background: var(--surface-3);
     border: 1px solid var(--border-subtle);
+    border-radius: var(--elevation-radius-lg);
   }
+
+  /* Inset level - subordinate/recessed areas */
   .surface-inset {
     background: var(--surface-inset);
     border: 1px solid var(--border-subtle);
+    border-radius: var(--elevation-radius);
+  }
+
+  /* Card inside panel - highest elevation */
+  .surface-card {
+    background: var(--surface-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--elevation-radius);
   }
 }

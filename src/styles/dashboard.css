@@ -7,6 +7,7 @@
   /* Enterprise density: tighter spacing for control plane feel */
   --dash-header-height: 3.5rem;
   --dash-panel-padding: 1rem;
+  --dash-panel-padding-sm: 0.75rem;
   --dash-panel-padding-lg: 1.25rem;
   --dash-card-gap: 0.75rem;
 
@@ -15,6 +16,11 @@
   --dash-subtitle-size: 0.8125rem;
   --dash-panel-title-size: 0.9375rem;
   --dash-body-size: 0.875rem;
+  --dash-label-size: 0.75rem;
+
+  /* KPI/Stat typography */
+  --dash-stat-value-size: 1.25rem;
+  --dash-stat-label-size: 0.6875rem;
 }
 
 .dashboard-surface {
@@ -31,14 +37,121 @@
 /* Enterprise density utilities */
 .dash-compact {
   --dash-gap: var(--dash-gap-sm);
-  --dash-panel-padding: 0.75rem;
+  --dash-panel-padding: var(--dash-panel-padding-sm);
 }
 
-/* Table density for desktop */
+/*
+ * Table Density System
+ * Consistent table styling for dashboard routes
+ */
+.dash-table {
+  width: 100%;
+  font-size: var(--dash-body-size);
+  border-collapse: collapse;
+}
+
+.dash-table th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 500;
+  font-size: var(--dash-label-size);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.dash-table th:last-child {
+  text-align: right;
+}
+
+.dash-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.dash-table td:last-child {
+  text-align: right;
+}
+
+.dash-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dash-table tbody tr:hover {
+  background: var(--muted);
+}
+
+/* Empty row styling */
+.dash-table-empty td {
+  padding: 1.5rem 0.75rem;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+/* Desktop table density */
+@media (min-width: 1024px) {
+  .dash-table th,
+  .dash-table td {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Legacy table-compact support */
 @media (min-width: 1024px) {
   .table-compact th,
   .table-compact td {
     padding: 0.5rem 0.75rem;
     font-size: var(--dash-body-size);
   }
+}
+
+/*
+ * KPI/Stat Value System
+ * Consistent styling for dashboard metrics
+ */
+.dash-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dash-stat-label {
+  font-size: var(--dash-stat-label-size);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.dash-stat-value {
+  font-size: var(--dash-stat-value-size);
+  font-weight: 600;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-stat-value[data-empty="true"] {
+  color: var(--muted-foreground);
+}
+
+.dash-stat-hint {
+  font-size: var(--dash-label-size);
+  color: var(--muted-foreground);
+}
+
+/* Stat row layout (label left, value right) */
+.dash-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.375rem 0;
+}
+
+.dash-stat-row + .dash-stat-row {
+  border-top: 1px solid var(--border);
 }

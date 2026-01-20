@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  DashTable,
+  type DashTableColumn,
+  type SeverityLevel,
+} from "@/components/dashboard/DashTable";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 type TransactionRow = {
   id: string | number;
@@ -14,6 +20,75 @@ type TransactionRow = {
   category?: string;
   duplicate?: boolean;
 };
+
+function formatCurrency(amount: string | number | undefined): string {
+  if (typeof amount === "number") {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  }
+  return amount ?? "—";
+}
+
+const columns: DashTableColumn<TransactionRow>[] = [
+  {
+    key: "date",
+    header: "Date",
+    render: (tx) => tx.date ?? "—",
+  },
+  {
+    key: "merchant",
+    header: "Merchant",
+    render: (tx) => (
+      <span className="max-w-[200px] truncate block">
+        {tx.merchant ?? tx.description ?? "—"}
+      </span>
+    ),
+  },
+  {
+    key: "amount",
+    header: "Amount",
+    align: "right",
+    render: (tx) => (
+      <span className="font-mono tabular-nums">
+        {formatCurrency(tx.amount)}
+      </span>
+    ),
+  },
+  {
+    key: "account",
+    header: "Account",
+    render: (tx) => (
+      <span className="text-muted-foreground">{tx.account ?? "—"}</span>
+    ),
+  },
+  {
+    key: "category",
+    header: "Category",
+    render: (tx) => (
+      <span className="text-muted-foreground">
+        {tx.category ?? "Uncategorized"}
+      </span>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    align: "right",
+    render: (tx) =>
+      tx.duplicate ? (
+        <span className="inline-flex items-center gap-1 text-chart-4">
+          <AlertTriangle className="h-4 w-4" />
+          <span className="text-xs">Duplicate</span>
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-chart-1">
+          <CheckCircle2 className="h-4 w-4" />
+        </span>
+      ),
+  },
+];
 
 export default function TransactionsTable() {
   const [rows, setRows] = useState<TransactionRow[]>([]);
@@ -36,96 +111,29 @@ export default function TransactionsTable() {
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="-mx-4 mt-6 px-4 sm:mx-0 sm:px-0">
-        <div className="animate-pulse space-y-3">
-          <div className="h-8 bg-card/20 rounded" />
-          <div className="h-8 bg-card/20 rounded" />
-          <div className="h-8 bg-card/20 rounded" />
-        </div>
-      </div>
-    );
-  }
-
-  if (rows.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
-        <h3 className="text-foreground font-medium mb-2">
-          No Transactions Yet
-        </h3>
-        <p className="text-muted-foreground text-sm mb-4">
-          ReconAI imports transactions automatically from your connected bank
-          accounts. Once synced, transactions appear here for categorization,
-          duplicate detection, and reconciliation.
-        </p>
-        <p className="text-muted-foreground text-xs">
-          Next step: Connect a bank account via Plaid to start importing
-          transactions.
-        </p>
-      </div>
-    );
-  }
+  const getRowSeverity = (tx: TransactionRow): SeverityLevel | undefined => {
+    if (tx.duplicate) return "warning";
+    return undefined;
+  };
 
   return (
-    <div className="-mx-4 mt-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <table className="w-full min-w-[800px] text-sm">
-        <thead>
-          <tr className="border-b border-border text-left text-muted-foreground">
-            <th className="whitespace-nowrap py-3 pr-4 font-medium">Date</th>
-            <th className="whitespace-nowrap py-3 pr-4 font-medium">
-              Merchant
-            </th>
-            <th className="whitespace-nowrap py-3 pr-4 font-medium">Amount</th>
-            <th className="whitespace-nowrap py-3 pr-4 font-medium">Account</th>
-            <th className="whitespace-nowrap py-3 pr-4 font-medium">
-              Category
-            </th>
-            <th className="whitespace-nowrap py-3 font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((tx) => (
-            <tr
-              key={tx.id}
-              className="border-b border-border/50 hover:bg-card/30 transition-colors"
-            >
-              <td className="whitespace-nowrap py-3 pr-4 text-foreground">
-                {tx.date}
-              </td>
-              <td className="max-w-[200px] truncate py-3 pr-4 text-foreground">
-                {tx.merchant ?? tx.description ?? "—"}
-              </td>
-              <td className="whitespace-nowrap py-3 pr-4 font-mono text-foreground">
-                {typeof tx.amount === "number"
-                  ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                    }).format(tx.amount)
-                  : (tx.amount ?? "—")}
-              </td>
-              <td className="whitespace-nowrap py-3 pr-4 text-muted-foreground">
-                {tx.account ?? "—"}
-              </td>
-              <td className="whitespace-nowrap py-3 pr-4 text-muted-foreground">
-                {tx.category ?? "Uncategorized"}
-              </td>
-              <td className="whitespace-nowrap py-3">
-                {tx.duplicate ? (
-                  <span className="inline-flex items-center gap-1 text-amber-500">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span className="text-xs">Duplicate</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-green-500">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="mt-6">
+      <DashTable
+        data={rows}
+        columns={columns}
+        getRowKey={(tx) => tx.id}
+        getRowSeverity={getRowSeverity}
+        loading={loading}
+        loadingRows={5}
+        className="min-w-[800px]"
+        emptyContent={
+          <EmptyState
+            title="No Transactions Yet"
+            description="ReconAI imports transactions automatically from your connected bank accounts. Once synced, transactions appear here for categorization, duplicate detection, and reconciliation."
+            action={{ label: "Connect Bank", href: "/connect-bank" }}
+          />
+        }
+      />
     </div>
   );
 }

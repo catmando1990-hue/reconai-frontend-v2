@@ -1,15 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Clock,
-  AlertTriangle,
-  Store,
-  RefreshCw,
-} from "lucide-react";
+import { DollarSign, Clock, AlertTriangle, Store } from "lucide-react";
+import { MetricRail, type Metric } from "@/components/dashboard/MetricRail";
 
 /**
  * CFO Snapshot Strip - Financial KPIs at a glance
@@ -25,6 +18,8 @@ import {
  * - aria-live="polite" for dynamic updates
  * - Semantic headings and values
  * - Color not sole indicator (icons + text)
+ *
+ * Now uses MetricRail for consistent dashboard styling.
  */
 
 export interface CfoSnapshotData {
@@ -77,184 +72,96 @@ export function CfoSnapshotStrip({
 
   const isPositiveCashFlow = netCashFlow !== undefined && netCashFlow >= 0;
 
-  // Container sizing guard: min-h prevents layout shift
+  // Build metrics array for MetricRail
+  const metrics: Metric[] = useMemo(() => {
+    const cashFlowValue =
+      netCashFlow !== undefined
+        ? `${isPositiveCashFlow ? "+" : ""}${formatCurrency(netCashFlow)}`
+        : undefined;
+
+    const cashFlowHint =
+      data.cashIn !== undefined && data.cashOut !== undefined ? (
+        <span className="flex items-center gap-1">
+          <span className="text-chart-1">{formatCurrency(data.cashIn)}</span>
+          <span>in /</span>
+          <span className="text-destructive">
+            {formatCurrency(data.cashOut)}
+          </span>
+          <span>out</span>
+        </span>
+      ) : undefined;
+
+    const duplicatesHint =
+      data.potentialSavings && data.potentialSavings > 0 ? (
+        <span className="text-chart-4">
+          ({formatCurrency(data.potentialSavings)} recoverable)
+        </span>
+      ) : undefined;
+
+    const topVendorHint =
+      data.topVendorSpend !== undefined
+        ? formatCurrency(data.topVendorSpend)
+        : undefined;
+
+    return [
+      {
+        id: "cash-flow",
+        label: "Cash Flow",
+        value: cashFlowValue,
+        icon: DollarSign,
+        trend:
+          netCashFlow !== undefined
+            ? isPositiveCashFlow
+              ? "up"
+              : "down"
+            : undefined,
+        variant:
+          netCashFlow !== undefined
+            ? isPositiveCashFlow
+              ? "success"
+              : "error"
+            : "default",
+        hint: cashFlowHint,
+      },
+      {
+        id: "runway",
+        label: "Runway",
+        value: formatRunway(data.runwayMonths),
+        icon: Clock,
+        variant:
+          data.runwayMonths !== undefined && data.runwayMonths < 6
+            ? "warning"
+            : "default",
+      },
+      {
+        id: "duplicates",
+        label: "Duplicates",
+        value: data.duplicatesCount ?? 0,
+        icon: AlertTriangle,
+        variant:
+          data.duplicatesCount && data.duplicatesCount > 0
+            ? "warning"
+            : "default",
+        hint: duplicatesHint,
+      },
+      {
+        id: "top-vendor",
+        label: "Top Vendor",
+        value: data.topVendor || "--",
+        icon: Store,
+        hint: topVendorHint,
+      },
+    ];
+  }, [data, netCashFlow, isPositiveCashFlow]);
+
   return (
-    <section
-      aria-label="CFO financial snapshot"
-      className="mb-6 rounded-xl border border-white/5 bg-card/70 backdrop-blur-sm"
-      style={{ minHeight: "80px" }} // Container sizing guard
-    >
-      <div
-        className="flex flex-wrap items-stretch gap-0 divide-x divide-white/5"
-        aria-live="polite"
-        aria-busy={isLoading}
-      >
-        {/* Cash In/Out */}
-        <div className="flex-1 min-w-[140px] p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Cash Flow
-            </span>
-          </div>
-          {isLoading ? (
-            <div className="h-6 w-20 bg-card/20 rounded animate-pulse" />
-          ) : (
-            <div className="flex items-baseline gap-2">
-              <span
-                className={`font-mono text-lg font-semibold ${
-                  isPositiveCashFlow ? "text-chart-1" : "text-destructive"
-                }`}
-              >
-                {netCashFlow !== undefined
-                  ? `${isPositiveCashFlow ? "+" : ""}${formatCurrency(netCashFlow)}`
-                  : "--"}
-              </span>
-              {netCashFlow !== undefined &&
-                (isPositiveCashFlow ? (
-                  <TrendingUp
-                    className="h-4 w-4 text-chart-1"
-                    aria-label="Positive trend"
-                  />
-                ) : (
-                  <TrendingDown
-                    className="h-4 w-4 text-destructive"
-                    aria-label="Negative trend"
-                  />
-                ))}
-            </div>
-          )}
-          <div className="text-xs text-muted-foreground mt-1">
-            {isLoading ? (
-              <div className="h-3 w-24 bg-card/10 rounded animate-pulse" />
-            ) : (
-              <>
-                <span className="text-chart-1">
-                  {formatCurrency(data.cashIn)}
-                </span>
-                {" in / "}
-                <span className="text-destructive">
-                  {formatCurrency(data.cashOut)}
-                </span>
-                {" out"}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Runway */}
-        <div className="flex-1 min-w-[120px] p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Runway
-            </span>
-          </div>
-          {isLoading ? (
-            <div className="h-6 w-16 bg-card/20 rounded animate-pulse" />
-          ) : (
-            <span
-              className={`font-mono text-lg font-semibold ${
-                data.runwayMonths !== undefined && data.runwayMonths < 6
-                  ? "text-chart-4"
-                  : "text-foreground"
-              }`}
-            >
-              {formatRunway(data.runwayMonths)}
-            </span>
-          )}
-        </div>
-
-        {/* Duplicates */}
-        <div className="flex-1 min-w-[140px] p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Duplicates
-            </span>
-          </div>
-          {isLoading ? (
-            <div className="h-6 w-12 bg-card/20 rounded animate-pulse" />
-          ) : (
-            <div className="flex items-baseline gap-2">
-              <span
-                className={`font-mono text-lg font-semibold ${
-                  data.duplicatesCount && data.duplicatesCount > 0
-                    ? "text-chart-4"
-                    : "text-foreground"
-                }`}
-              >
-                {data.duplicatesCount ?? 0}
-              </span>
-              {data.potentialSavings && data.potentialSavings > 0 && (
-                <span className="text-xs text-chart-4">
-                  ({formatCurrency(data.potentialSavings)} recoverable)
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Top Vendor */}
-        <div className="flex-1 min-w-[140px] p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Store className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Top Vendor
-            </span>
-          </div>
-          {isLoading ? (
-            <div className="h-6 w-24 bg-card/20 rounded animate-pulse" />
-          ) : (
-            <>
-              <span className="font-medium text-foreground truncate block">
-                {data.topVendor || "--"}
-              </span>
-              {data.topVendorSpend !== undefined && (
-                <span className="text-xs text-muted-foreground">
-                  {formatCurrency(data.topVendorSpend)}
-                </span>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Last Updated + Refresh */}
-        <div className="flex-1 min-w-[140px] p-4 flex flex-col justify-between">
-          <div className="flex items-center gap-2 mb-1">
-            <RefreshCw className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Updated
-            </span>
-          </div>
-          {isLoading ? (
-            <div className="h-6 w-20 bg-card/20 rounded animate-pulse" />
-          ) : (
-            <span className="text-sm text-muted-foreground">
-              {data.lastUpdated
-                ? new Date(data.lastUpdated).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })
-                : "Just now"}
-            </span>
-          )}
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              disabled={isLoading}
-              className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
-              aria-label="Refresh dashboard data"
-            >
-              <RefreshCw
-                className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </button>
-          )}
-        </div>
-      </div>
-    </section>
+    <MetricRail
+      metrics={metrics}
+      loading={isLoading}
+      onRefresh={onRefresh}
+      lastUpdated={data.lastUpdated}
+      ariaLabel="CFO financial snapshot"
+      className="mb-6"
+    />
   );
 }

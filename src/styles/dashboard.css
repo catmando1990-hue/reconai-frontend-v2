@@ -24,6 +24,17 @@
 
   /* Premium dashboard accents (token-only) */
   --dash-accent-opacity: 0.28;
+
+  /*
+   * Icon Rhythm System
+   * Consistent icon sizing across dashboard contexts.
+   * - nav: 16px (h-4 w-4) — sidebar, breadcrumbs, inline actions
+   * - header: 20px (h-5 w-5) — panel titles, action buttons
+   * - hero: 24px (h-6 w-6) — empty states, feature callouts
+   */
+  --dash-icon-nav: 1rem; /* 16px */
+  --dash-icon-header: 1.25rem; /* 20px */
+  --dash-icon-hero: 1.5rem; /* 24px */
 }
 
 /*
@@ -211,4 +222,67 @@
     );
     opacity: 0.18;
   }
+}
+
+/*
+ * Icon Rhythm Utilities
+ * Use these classes for consistent icon sizing across dashboard.
+ * Always pair with flex-shrink-0 to prevent icon compression.
+ */
+.dash-icon-nav {
+  height: var(--dash-icon-nav);
+  width: var(--dash-icon-nav);
+  flex-shrink: 0;
+}
+
+.dash-icon-header {
+  height: var(--dash-icon-header);
+  width: var(--dash-icon-header);
+  flex-shrink: 0;
+}
+
+.dash-icon-hero {
+  height: var(--dash-icon-hero);
+  width: var(--dash-icon-hero);
+  flex-shrink: 0;
+}
+
+/*
+ * Badge Discipline System
+ * Reduced badge variants for cleaner UI.
+ * Use status-based styling sparingly — prefer neutral by default.
+ */
+.dash-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.5rem;
+  font-size: var(--dash-label-size);
+  font-weight: 500;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+/* Default badge: neutral, subdued */
+.dash-badge-neutral {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+/* Status badge: only use when status differentiation is essential */
+.dash-badge-status {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+/* Count badge: for numeric indicators (notifications, counts) */
+.dash-badge-count {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: var(--primary);
+  color: var(--primary-foreground);
 }

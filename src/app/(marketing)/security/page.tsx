@@ -200,7 +200,7 @@ export default function SecurityPage() {
                 alt="Controlled, reviewable operations"
                 fill
                 sizes="(min-width: 1024px) 520px, 100vw"
-                className="object-cover"
+                className="object-cover dark:opacity-85"
               />
             </div>
           </div>

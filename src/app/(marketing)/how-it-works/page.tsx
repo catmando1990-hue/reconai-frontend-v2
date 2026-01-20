@@ -86,7 +86,7 @@ function ImgBlock({
         alt={alt}
         fill
         sizes="(min-width: 1024px) 520px, 100vw"
-        className="object-cover"
+        className="object-cover dark:opacity-90"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-background/35 via-transparent to-transparent" />
     </div>

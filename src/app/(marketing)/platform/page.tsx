@@ -102,7 +102,7 @@ export default function PlatformPage() {
               alt="Dashboard overview"
               fill
               sizes="(min-width: 1024px) 760px, 100vw"
-              className="object-cover"
+              className="object-cover dark:opacity-90"
             />
           </div>
           <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-48 sm:h-60 lg:h-72">
@@ -123,7 +123,7 @@ export default function PlatformPage() {
               alt="UI detail"
               fill
               sizes="(min-width: 640px) 50vw, 100vw"
-              className="object-cover"
+              className="object-cover dark:opacity-90"
             />
           </div>
           <div className="rounded-2xl overflow-hidden border border-border bg-card relative h-40 sm:h-48 lg:h-56">
@@ -132,7 +132,7 @@ export default function PlatformPage() {
               alt="Charts and trends"
               fill
               sizes="(min-width: 640px) 50vw, 100vw"
-              className="object-cover"
+              className="object-cover dark:opacity-90"
             />
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function PlatformPage() {
                 alt="Clean, reviewable financial operations"
                 fill
                 sizes="(min-width: 1024px) 520px, 100vw"
-                className="object-cover"
+                className="object-cover dark:opacity-85"
               />
             </div>
           </div>

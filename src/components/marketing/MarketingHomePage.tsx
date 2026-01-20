@@ -358,7 +358,7 @@ export function MarketingHomePage() {
                   src="/product-dashboard-wide.jpg"
                   alt="Modern financial intelligence dashboard"
                   fill
-                  className="object-cover"
+                  className="object-cover dark:opacity-90"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
@@ -368,7 +368,7 @@ export function MarketingHomePage() {
                     src="/product-dashboard-ui.jpg"
                     alt="Financial reporting interface"
                     fill
-                    className="object-cover"
+                    className="object-cover dark:opacity-90"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
                 </div>
@@ -377,7 +377,7 @@ export function MarketingHomePage() {
                     src="/product-charts-close.jpg"
                     alt="Charts and trend analysis"
                     fill
-                    className="object-cover"
+                    className="object-cover dark:opacity-90"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
                 </div>
@@ -421,7 +421,7 @@ export function MarketingHomePage() {
                     src="/user-owner-laptop.jpg"
                     alt="Founder working with confidence"
                     fill
-                    className="object-cover"
+                    className="object-cover dark:opacity-85"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>
@@ -430,7 +430,7 @@ export function MarketingHomePage() {
                     src="/user-success.jpg"
                     alt="Positive financial outcomes for small business owners"
                     fill
-                    className="object-cover"
+                    className="object-cover dark:opacity-85"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>

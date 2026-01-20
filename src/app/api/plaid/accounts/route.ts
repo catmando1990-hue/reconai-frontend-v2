@@ -6,11 +6,76 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://reconai-backend.onrender.com";
 
-export async function GET() {
+/**
+ * Fail-closed error envelope for consistent JSON responses
+ */
+function errorResponse(
+  code: string,
+  message: string,
+  status: number,
+  requestId?: string,
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: {
+        code,
+        message,
+        request_id: requestId || crypto.randomUUID(),
+      },
+    },
+    { status },
+  );
+}
+
+/**
+ * Safely parse JSON from response, falling back to text on failure
+ */
+async function safeParseJson(resp: Response): Promise<{
+  data: unknown;
+  isJson: boolean;
+  rawText?: string;
+}> {
+  const contentType = resp.headers.get("content-type") || "";
+  const isJsonContentType = contentType.includes("application/json");
+
+  if (!isJsonContentType) {
+    const rawText = await resp.text();
+    return { data: null, isJson: false, rawText };
+  }
+
   try {
+    const data = await resp.json();
+    return { data, isJson: true };
+  } catch {
+    const rawText = await resp.text();
+    return { data: null, isJson: false, rawText };
+  }
+}
+
+export async function GET() {
+  const requestId = crypto.randomUUID();
+
+  try {
+    // Verify env vars exist
+    if (!BACKEND_URL) {
+      console.error("[Plaid accounts] BACKEND_URL is not configured");
+      return errorResponse(
+        "CONFIG_ERROR",
+        "Backend URL is not configured",
+        500,
+        requestId,
+      );
+    }
+
     const { userId, getToken } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse(
+        "UNAUTHORIZED",
+        "Authentication required",
+        401,
+        requestId,
+      );
     }
 
     const token = await getToken();
@@ -26,23 +91,54 @@ export async function GET() {
       },
     );
 
-    const data = await resp.json();
+    const { data, isJson, rawText } = await safeParseJson(resp);
 
     if (!resp.ok) {
-      return NextResponse.json(
-        { error: data.detail || data.error || "Failed to fetch accounts" },
-        { status: resp.status },
+      // Log non-JSON responses for debugging
+      if (!isJson) {
+        console.error(
+          `[Plaid accounts] Non-JSON error response (${resp.status}):`,
+          rawText?.slice(0, 500),
+        );
+        return errorResponse(
+          "UPSTREAM_ERROR",
+          "Backend returned non-JSON response",
+          502,
+          requestId,
+        );
+      }
+
+      const errorData = data as { detail?: string; error?: string } | null;
+      const message =
+        errorData?.detail || errorData?.error || "Failed to fetch accounts";
+      return errorResponse("UPSTREAM_ERROR", message, resp.status, requestId);
+    }
+
+    // Validate response shape
+    if (!isJson) {
+      console.error(
+        "[Plaid accounts] Non-JSON success response:",
+        rawText?.slice(0, 500),
+      );
+      return errorResponse(
+        "INVALID_RESPONSE",
+        "Backend returned invalid response format",
+        502,
+        requestId,
       );
     }
 
-    // Return accounts from backend response
-    return NextResponse.json({ accounts: data.accounts || [] });
+    const accountsData = data as { accounts?: unknown[] } | null;
+
+    // Return accounts from backend response with success envelope
+    return NextResponse.json({
+      ok: true,
+      accounts: accountsData?.accounts || [],
+      request_id: requestId,
+    });
   } catch (err: unknown) {
-    console.error("Plaid accounts error:", err);
+    console.error("[Plaid accounts] Unhandled error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json(
-      { error: "Failed to fetch accounts: " + message },
-      { status: 500 },
-    );
+    return errorResponse("INTERNAL_ERROR", message, 500, requestId);
   }
 }

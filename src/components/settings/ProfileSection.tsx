@@ -4,6 +4,8 @@ import { useState } from "react";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { Button } from "@/components/ui/button";
 
+const STORAGE_KEY = "reconai_profile_settings";
+
 interface ProfileData {
   id?: string;
   name?: string;
@@ -17,9 +19,37 @@ interface ProfileData {
   mfaEnabled?: boolean;
 }
 
+interface ProfileFormData {
+  timezone: string;
+  currency: string;
+  fiscalYearStart: string;
+}
+
+function loadProfileSettings(): ProfileFormData | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function saveProfileSettings(data: ProfileFormData): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 interface ProfileSectionProps {
   profile: ProfileData | null;
-  onProfileUpdate: (data: Partial<ProfileData>) => Promise<void>;
+  onProfileUpdate?: (data: Partial<ProfileData>) => Promise<void>;
 }
 
 export function ProfileSection({
@@ -28,15 +58,24 @@ export function ProfileSection({
 }: ProfileSectionProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    timezone: profile?.timezone || "",
-    currency: profile?.currency || "",
-    fiscalYearStart: profile?.fiscalYearStart || "",
+  // Use lazy initialization to load from localStorage on first render
+  const [form, setForm] = useState<ProfileFormData>(() => {
+    const saved = loadProfileSettings();
+    return {
+      timezone: saved?.timezone || profile?.timezone || "",
+      currency: saved?.currency || profile?.currency || "",
+      fiscalYearStart: saved?.fiscalYearStart || profile?.fiscalYearStart || "",
+    };
   });
 
   const handleSave = async () => {
     setSaving(true);
-    await onProfileUpdate(form);
+    // Persist to localStorage
+    saveProfileSettings(form);
+    // Also call onProfileUpdate if provided (for future backend integration)
+    if (onProfileUpdate) {
+      await onProfileUpdate(form);
+    }
     setSaving(false);
     setEditing(false);
   };

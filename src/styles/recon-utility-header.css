@@ -64,37 +64,64 @@
   opacity: 1;
 }
 
+/* Dropdown container */
 .recon-dropdown {
   position: relative;
 }
 
+/* Dropdown trigger - add bottom padding to create hover bridge */
+.recon-dropdown > .recon-link {
+  padding-bottom: 12px;
+  margin-bottom: -8px;
+}
+
+/* Dropdown content */
 .recon-dropdown-content {
   position: absolute;
-  top: 22px;
-  left: 0;
+  top: 100%;
+  left: -8px;
+  min-width: 140px;
 
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  padding: 8px;
 
   opacity: 0;
   pointer-events: none;
-  transition: opacity 120ms ease;
-  background: none;
+  transform: translateY(-4px);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.recon-dropdown:hover .recon-dropdown-content {
+/* Show dropdown on hover */
+.recon-dropdown:hover .recon-dropdown-content,
+.recon-dropdown:focus-within .recon-dropdown-content {
   opacity: 1;
   pointer-events: auto;
+  transform: translateY(0);
 }
 
+/* Dropdown links */
 .recon-dropdown-content a {
+  display: block;
+  padding: 6px 8px;
   font-size: 13px;
-  opacity: 0.75;
-  cursor: pointer;
+  border-radius: 4px;
   color: var(--foreground);
+  opacity: 0.85;
+  transition:
+    background 100ms ease,
+    opacity 100ms ease;
 }
 
 .recon-dropdown-content a:hover {
   opacity: 1;
+  background: var(--accent);
 }

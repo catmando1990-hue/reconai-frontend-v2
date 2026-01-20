@@ -1,20 +1,36 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useMemo, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { AdminCommandStrip } from "@/components/admin/AdminCommandStrip";
 import { CommandStripV2 } from "@/components/dashboard/CommandStripV2";
-import { Menu, X, Brain } from "lucide-react";
+import { Menu, X, Brain, Maximize2, Minimize2 } from "lucide-react";
+
+/**
+ * Routes that default to focus mode (sidebar collapsed)
+ * These are immersive/perspective views that benefit from full-width content
+ */
+const FOCUS_MODE_ROUTES = [
+  "/govcon/evidence",
+  "/govcon/sf-1408",
+  "/intelligence/insights",
+  "/cfo/executive-summary",
+];
 
 function getSectionTitle(pathname: string): string {
   if (pathname.startsWith("/core")) return "Core";
   if (pathname.startsWith("/intelligence")) return "Intelligence";
   if (pathname.startsWith("/cfo")) return "CFO Mode";
+  if (pathname.startsWith("/govcon")) return "GovCon";
   if (pathname.startsWith("/settings")) return "Settings";
   if (pathname.startsWith("/home")) return "Dashboard";
   return "ReconAI";
+}
+
+function shouldDefaultToFocusMode(pathname: string): boolean {
+  return FOCUS_MODE_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -22,6 +38,31 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const title = getSectionTitle(pathname || "");
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
+
+  // Focus mode: sidebar fully collapsed for immersive views
+  // Compute whether current route should default to focus mode
+  const shouldFocus = useMemo(
+    () => shouldDefaultToFocusMode(pathname || ""),
+    [pathname],
+  );
+
+  // Initialize focus mode based on current route
+  const [focusMode, setFocusMode] = useState(() =>
+    shouldDefaultToFocusMode(pathname || ""),
+  );
+
+  // Track previous pathname to sync focus mode with route changes
+  const prevPathnameRef = useRef(pathname);
+
+  // Reset focus mode when route changes to/from focus-default routes
+  // This synchronizes component state with the router (external system)
+  useEffect(() => {
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with router state
+      setFocusMode(shouldFocus);
+    }
+  }, [pathname, shouldFocus]);
 
   // Close drawer on pathname change
   useEffect(() => {
@@ -43,10 +84,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-[100dvh] bg-muted text-foreground overflow-x-hidden">
       <div className="relative flex min-h-[100dvh] w-full">
-        {/* Desktop sidebar */}
-        <div className="hidden md:block relative z-10 h-screen sticky top-0 shrink-0">
-          <Sidebar />
-        </div>
+        {/* Desktop sidebar - conditionally hidden in focus mode */}
+        {!focusMode && (
+          <div className="hidden md:block relative z-10 h-screen sticky top-0 shrink-0">
+            <Sidebar />
+          </div>
+        )}
 
         {/* Mobile top bar */}
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-muted/80 backdrop-blur-xl">
@@ -128,7 +171,31 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Canvas */}
-          <div className="relative flex-1 bg-background md:rounded-l-3xl md:border-l md:border-border/60">
+          <div
+            className={[
+              "relative flex-1 bg-background",
+              focusMode
+                ? "md:rounded-none md:border-l-0"
+                : "md:rounded-l-3xl md:border-l md:border-border/60",
+            ].join(" ")}
+          >
+            {/* Focus mode toggle - desktop only */}
+            <div className="hidden md:block absolute top-3 right-3 z-20">
+              <button
+                type="button"
+                onClick={() => setFocusMode(!focusMode)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border/50 bg-card/80 backdrop-blur text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-all"
+                title={focusMode ? "Exit focus mode" : "Enter focus mode"}
+                aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+              >
+                {focusMode ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+
             <main className="h-full overflow-y-auto pt-14 md:pt-0">
               {children}
             </main>

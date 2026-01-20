@@ -115,14 +115,9 @@ export default function SettingsPage() {
   }, []);
 
   const handleProfileUpdate = async (data: Partial<ProfileData>) => {
-    // TODO: Implement backend PATCH /api/me endpoint
-    await new Promise((r) => setTimeout(r, 500));
+    // Profile settings now persist to localStorage in ProfileSection
+    // This handler updates local state and can be extended for backend sync
     setProfile((prev) => (prev ? { ...prev, ...data } : null));
-  };
-
-  const handlePreferencesSave = async () => {
-    // TODO: Implement backend POST /api/preferences endpoint
-    await new Promise((r) => setTimeout(r, 500));
   };
 
   return (
@@ -161,8 +156,8 @@ export default function SettingsPage() {
             onProfileUpdate={handleProfileUpdate}
           />
 
-          {/* Preferences */}
-          <PreferencesSection onSave={handlePreferencesSave} />
+          {/* Preferences - persists to localStorage */}
+          <PreferencesSection />
         </div>
 
         {/* Right Column - Secondary Settings */}

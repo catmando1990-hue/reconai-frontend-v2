@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { Button } from "@/components/ui/button";
+
+const STORAGE_KEY = "reconai_preferences";
 
 interface PreferencesData {
   landingPage: string;
@@ -11,31 +13,85 @@ interface PreferencesData {
   theme: string;
 }
 
+const DEFAULT_PREFERENCES: PreferencesData = {
+  landingPage: "Overview",
+  currencyFormat: "USD",
+  dateFormat: "MM/DD/YYYY",
+  theme: "System",
+};
+
+function loadPreferences(): PreferencesData {
+  if (typeof window === "undefined") return DEFAULT_PREFERENCES;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) };
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return DEFAULT_PREFERENCES;
+}
+
+function savePreferences(prefs: PreferencesData): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 interface PreferencesSectionProps {
   initialPreferences?: Partial<PreferencesData>;
-  onSave: (preferences: PreferencesData) => Promise<void>;
+  onSave?: (preferences: PreferencesData) => Promise<void>;
 }
 
 export function PreferencesSection({
   initialPreferences,
   onSave,
 }: PreferencesSectionProps) {
-  const [preferences, setPreferences] = useState<PreferencesData>({
-    landingPage: initialPreferences?.landingPage ?? "Overview",
-    currencyFormat: initialPreferences?.currencyFormat ?? "USD",
-    dateFormat: initialPreferences?.dateFormat ?? "MM/DD/YYYY",
-    theme: initialPreferences?.theme ?? "System",
+  // Use lazy initialization to load from localStorage on first render
+  const [preferences, setPreferences] = useState<PreferencesData>(() => {
+    const loaded = loadPreferences();
+    return {
+      ...loaded,
+      ...(initialPreferences ?? {}),
+    };
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Mark as mounted for hydration safety - localStorage is client-only
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for hydration safety with localStorage
+    setMounted(true);
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    await onSave(preferences);
+    // Persist to localStorage
+    savePreferences(preferences);
+    // Also call onSave if provided (for future backend integration)
+    if (onSave) {
+      await onSave(preferences);
+    }
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
+
+  // Don't render controls until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <SecondaryPanel title="Preferences" className="bg-card">
+        <div className="space-y-4 text-sm">
+          <div className="h-32 animate-pulse rounded bg-muted" />
+        </div>
+      </SecondaryPanel>
+    );
+  }
 
   return (
     <SecondaryPanel title="Preferences" className="bg-card">

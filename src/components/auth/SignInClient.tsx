@@ -2,7 +2,6 @@
 
 import { useSignIn, useAuth } from "@clerk/nextjs";
 import type { OAuthStrategy } from "@clerk/types";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
@@ -804,29 +803,10 @@ function SignInForm() {
 
 export default function SignInClient() {
   return (
-    <div className="relative flex min-h-dvh items-center justify-center p-4 sm:p-6 overflow-hidden">
-      {/* Base background layer - z-0 */}
-      <div className="absolute inset-0 z-0 bg-background" />
-
-      {/* Background image - z-[1] */}
-      <Image
-        src="/hero-boardroom.jpg"
-        alt=""
-        fill
-        className="z-[1] object-cover opacity-25 dark:opacity-35"
-        aria-hidden="true"
-        priority
-      />
-
-      {/* Gradient overlay - z-[2] */}
-      <div className="absolute inset-0 z-[2] bg-linear-to-b from-background/80 via-background/60 to-background/80 dark:from-background/70 dark:via-background/50 dark:to-background/70" />
-
-      {/* Content - z-10 */}
-      <div className="relative z-10">
-        <Suspense fallback={<LoadingCard />}>
-          <SignInForm />
-        </Suspense>
-      </div>
+    <div className="flex min-h-dvh items-center justify-center bg-background p-4 sm:p-6">
+      <Suspense fallback={<LoadingCard />}>
+        <SignInForm />
+      </Suspense>
     </div>
   );
 }

@@ -1,140 +1,188 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import {
-  LayoutDashboard,
-  Layers,
-  Sparkles,
-  LineChart,
-  Settings,
-  ChevronDown,
-  Landmark,
-  Receipt,
-  ArrowLeftRight,
   Brain,
-  Plane,
-  FileText,
-  ShieldCheck,
-  User,
+  Database,
+  Briefcase,
+  Building,
+  Settings,
   LogOut,
   Home,
   HelpCircle,
-  Building2,
+  LayoutDashboard,
+  Sparkles,
+  Shield,
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+  type LucideIcon,
 } from "lucide-react";
 import { useUserProfile } from "@/lib/user-profile-context";
 import { hasGovConEntitlement } from "@/lib/entitlements";
+import { MODULES, type ModuleKey } from "@/lib/dashboardNav";
 
-type NavItem = {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  children?: {
-    label: string;
-    href: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }[];
+// ─────────────────────────────────────────────────────────────────────────────
+// ICON MAPPING
+// Maps dashboardNav icon strings to Lucide components
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Home: LayoutDashboard,
+  Database,
+  Brain: Sparkles,
+  Briefcase,
+  Building,
+  Settings,
 };
 
-type NavSection = {
+function getIcon(iconName: string | undefined): LucideIcon {
+  return iconName && ICON_MAP[iconName] ? ICON_MAP[iconName] : Database;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODULE ORDER (canonical order for Tier 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const MODULE_ORDER: ModuleKey[] = [
+  "home",
+  "core",
+  "intelligence",
+  "cfo",
+  "govcon",
+  "settings",
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTEXT PANEL CONFIGURATION
+// Tier 3 shows operational context, not navigation duplication
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ContextItem {
   label: string;
-  items: NavItem[];
-};
-
-const CORE_NAV: NavItem[] = [
-  {
-    label: "Dashboard",
-    href: "/home",
-    icon: LayoutDashboard,
-    children: [
-      { label: "Overview", href: "/home", icon: LayoutDashboard },
-      { label: "Connect Bank", href: "/connect-bank", icon: Landmark },
-    ],
-  },
-  {
-    label: "Core",
-    href: "/core/overview",
-    icon: Layers,
-    children: [
-      { label: "Overview", href: "/core/overview", icon: Layers },
-      { label: "Accounts", href: "/accounts", icon: Landmark },
-      {
-        label: "Transactions",
-        href: "/core/transactions",
-        icon: ArrowLeftRight,
-      },
-      { label: "Reports", href: "/core/reports", icon: FileText },
-    ],
-  },
-  {
-    label: "Intelligence",
-    href: "/intelligence/insights",
-    icon: Sparkles,
-    children: [
-      { label: "Insights", href: "/intelligence/insights", icon: Sparkles },
-      { label: "Alerts", href: "/intelligence/alerts", icon: Receipt },
-      { label: "AI Worker", href: "/intelligence/ai-worker", icon: Plane },
-    ],
-  },
-  {
-    label: "CFO Mode",
-    href: "/cfo/overview",
-    icon: LineChart,
-    children: [
-      { label: "Overview", href: "/cfo/overview", icon: LineChart },
-      {
-        label: "Executive Summary",
-        href: "/cfo/executive-summary",
-        icon: FileText,
-      },
-      {
-        label: "Compliance View",
-        href: "/cfo/compliance",
-        icon: ShieldCheck,
-      },
-    ],
-  },
-  {
-    label: "Invoicing",
-    href: "/invoicing",
-    icon: Receipt,
-    children: [
-      { label: "Invoices", href: "/invoicing", icon: Receipt },
-      { label: "New Invoice", href: "/invoicing/new", icon: FileText },
-      { label: "A/R Aging", href: "/ar", icon: ArrowLeftRight },
-      { label: "Settings", href: "/invoicing/settings", icon: Settings },
-      { label: "Template Preview", href: "/invoicing/preview", icon: FileText },
-    ],
-  },
-];
-
-const SETTINGS_NAV: NavItem[] = [
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-    children: [{ label: "Profile", href: "/settings", icon: User }],
-  },
-];
-
-function getActiveSection(pathname: string): string {
-  if (pathname.startsWith("/core")) return "Core";
-  if (pathname.startsWith("/accounts")) return "Core";
-  if (pathname.startsWith("/transactions")) return "Core";
-  if (pathname.startsWith("/intelligence")) return "Intelligence";
-  if (pathname.startsWith("/cfo")) return "CFO Mode";
-  if (pathname.startsWith("/invoicing")) return "Invoicing";
-  if (pathname.startsWith("/ar")) return "Invoicing";
-  if (pathname.startsWith("/govcon")) return "GovCon";
-  if (pathname.startsWith("/settings")) return "Settings";
-  return "Dashboard";
+  value: string;
+  status?: "ok" | "warning" | "error" | "pending";
+  icon?: LucideIcon;
 }
 
-function isRouteActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(href + "/");
+interface ModuleContext {
+  title: string;
+  mode?: string;
+  scope?: string;
+  items: ContextItem[];
 }
+
+function getModuleContext(module: ModuleKey | null): ModuleContext | null {
+  if (!module) return null;
+
+  switch (module) {
+    case "core":
+      return {
+        title: "Core Context",
+        mode: "Operational",
+        scope: "All Accounts",
+        items: [
+          {
+            label: "Data Sync",
+            value: "Live",
+            status: "ok",
+            icon: CheckCircle2,
+          },
+          { label: "Last Refresh", value: "2m ago", icon: Clock },
+        ],
+      };
+
+    case "intelligence":
+      return {
+        title: "Intelligence Context",
+        mode: "Analysis",
+        scope: "Current Period",
+        items: [
+          { label: "Confidence", value: "≥85%", status: "ok", icon: Shield },
+          { label: "Signals", value: "Advisory", icon: AlertCircle },
+        ],
+      };
+
+    case "cfo":
+      return {
+        title: "CFO Context",
+        mode: "Executive",
+        scope: "Organization",
+        items: [
+          { label: "View", value: "Read-only", icon: Shield },
+          { label: "Period", value: "Current FY", icon: Clock },
+        ],
+      };
+
+    case "govcon":
+      return {
+        title: "GovCon Context",
+        mode: "Compliance",
+        scope: "DCAA Standards",
+        items: [
+          { label: "Audit Mode", value: "Active", status: "ok", icon: Shield },
+          {
+            label: "Hash Chain",
+            value: "Verified",
+            status: "ok",
+            icon: CheckCircle2,
+          },
+        ],
+      };
+
+    default:
+      return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getActiveModule(pathname: string): ModuleKey | null {
+  if (pathname.startsWith("/home")) return "home";
+  if (
+    pathname.startsWith("/core") ||
+    pathname.startsWith("/accounts") ||
+    pathname.startsWith("/connect-bank") ||
+    pathname.startsWith("/upload")
+  )
+    return "core";
+  if (pathname.startsWith("/intelligence")) return "intelligence";
+  if (
+    pathname.startsWith("/cfo") ||
+    pathname.startsWith("/cash-flow") ||
+    pathname.startsWith("/financial-reports")
+  )
+    return "cfo";
+  if (pathname.startsWith("/govcon")) return "govcon";
+  if (pathname.startsWith("/settings")) return "settings";
+  return null;
+}
+
+function getStatusColor(
+  status?: "ok" | "warning" | "error" | "pending",
+): string {
+  switch (status) {
+    case "ok":
+      return "text-chart-1";
+    case "warning":
+      return "text-chart-4";
+    case "error":
+      return "text-destructive";
+    case "pending":
+      return "text-muted-foreground";
+    default:
+      return "text-foreground";
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SIDEBAR COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
   const pathname = usePathname() || "";
@@ -142,244 +190,218 @@ export function Sidebar() {
   const { signOut } = useClerk();
   const { profile } = useUserProfile();
 
-  const activeSection = getActiveSection(pathname);
-  const [expanded, setExpanded] = useState<string>(activeSection);
+  const activeModule = getActiveModule(pathname);
 
   const showGovCon = useMemo(
     () => hasGovConEntitlement(profile?.tiers, profile?.role),
     [profile?.tiers, profile?.role],
   );
 
-  const sections = useMemo((): NavSection[] => {
-    const coreItems = [...CORE_NAV];
-
-    if (showGovCon) {
-      const govConItem: NavItem = {
-        label: "GovCon",
-        href: "/govcon",
-        icon: Building2,
-        children: [
-          { label: "Overview", href: "/govcon", icon: Building2 },
-          { label: "Contracts", href: "/govcon/contracts", icon: FileText },
-          { label: "Timekeeping", href: "/govcon/timekeeping", icon: Layers },
-          { label: "Indirects", href: "/govcon/indirects", icon: Layers },
-          {
-            label: "Reconciliation",
-            href: "/govcon/reconciliation",
-            icon: ArrowLeftRight,
-          },
-          { label: "Audit Trail", href: "/govcon/audit", icon: ShieldCheck },
-          { label: "SF-1408", href: "/govcon/sf-1408", icon: ShieldCheck },
-        ],
-      };
-
-      // Insert GovCon after CFO Mode to keep sectioning coherent.
-      const cfoIndex = coreItems.findIndex((i) => i.label === "CFO Mode");
-      if (cfoIndex !== -1) coreItems.splice(cfoIndex + 1, 0, govConItem);
-      else coreItems.push(govConItem);
-    }
-
-    return [
-      { label: "Workspace", items: coreItems },
-      { label: "Account", items: SETTINGS_NAV },
-    ];
+  // Build ordered modules list (filtered by entitlements)
+  const visibleModules = useMemo(() => {
+    return MODULE_ORDER.filter((key) => {
+      if (key === "govcon" && !showGovCon) return false;
+      return true;
+    });
   }, [showGovCon]);
+
+  // Get context for active module (Tier 3 - operational context, not nav)
+  const moduleContext = useMemo(() => {
+    return getModuleContext(activeModule);
+  }, [activeModule]);
 
   const handleSignOut = async () => {
     await signOut();
     router.push("/");
   };
 
-  // Always expand the active section on navigation; prevents "lost" nested nav states.
-  useEffect(() => {
-    setExpanded(activeSection);
-  }, [activeSection]);
-
   return (
-    <aside className="relative w-64 shrink-0 flex flex-col h-full overflow-hidden">
-      <div className="absolute inset-0 bg-card/80 backdrop-blur-xl border-r border-border" />
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+    <aside className="relative flex h-full overflow-hidden">
+      {/* ─────────────────────────────────────────────────────────────────────
+          TIER 1 + TIER 2: Main Sidebar Rail
+          Fixed width, contains identity + primary modules
+      ───────────────────────────────────────────────────────────────────── */}
+      <div className="relative w-56 shrink-0 flex flex-col h-full">
+        {/* Background layers */}
+        <div className="absolute inset-0 bg-card/80 backdrop-blur-xl border-r border-border" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col h-full">
-        <div className="h-16 flex items-center px-5 border-b border-border/50">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center transition-all group-hover:border-primary/40 group-hover:shadow-lg group-hover:shadow-primary/10">
-              <Brain className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-foreground tracking-tight">
-                ReconAI
-              </span>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                Financial Intelligence
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto py-4 px-3">
-          {sections.map((section) => (
-            <div key={section.label} className="mb-4">
-              <div className="px-3 pb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
-                {section.label}
+        <div className="relative z-10 flex flex-col h-full">
+          {/* ─────────────────────────────────────────────────────────────────
+              TIER 1: Workspace / Product Identity
+          ───────────────────────────────────────────────────────────────── */}
+          <div className="h-14 flex items-center px-4 border-b border-border/50">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center transition-all group-hover:border-primary/40 group-hover:shadow-lg group-hover:shadow-primary/10">
+                <Brain className="h-4 w-4 text-primary" />
               </div>
-
-              <div className="space-y-1">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  const isExpanded = expanded === item.label;
-                  const isActive = activeSection === item.label;
-
-                  const panelId = `nav-${item.label.replace(/\s+/g, "-").toLowerCase()}`;
-
-                  return (
-                    <div key={item.label}>
-                      <div
-                        className={[
-                          "group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors border",
-                          isActive
-                            ? "bg-primary/10 text-foreground border-primary/15"
-                            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-transparent",
-                        ].join(" ")}
-                      >
-                        <Link
-                          href={item.href}
-                          className="flex items-center gap-3 min-w-0 flex-1"
-                          aria-current={isActive ? "page" : undefined}
-                        >
-                          <div
-                            className={[
-                              "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
-                              isActive
-                                ? "bg-primary/10"
-                                : "bg-card/50 group-hover:bg-accent",
-                            ].join(" ")}
-                          >
-                            <Icon
-                              className={[
-                                "h-4 w-4 transition-colors",
-                                isActive
-                                  ? "text-primary"
-                                  : "text-muted-foreground group-hover:text-foreground",
-                              ].join(" ")}
-                            />
-                          </div>
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-
-                        {item.children && item.children.length > 0 && (
-                          <button
-                            type="button"
-                            aria-expanded={isExpanded}
-                            aria-controls={panelId}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setExpanded(isExpanded ? "" : item.label);
-                            }}
-                            className="ml-2 inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-                            title={isExpanded ? "Collapse" : "Expand"}
-                          >
-                            <ChevronDown
-                              className={[
-                                "h-4 w-4 transition-transform duration-200",
-                                isExpanded ? "rotate-180" : "",
-                              ].join(" ")}
-                            />
-                          </button>
-                        )}
-                      </div>
-
-                      {item.children && (
-                        <div
-                          id={panelId}
-                          style={{
-                            position: "relative",
-                            top: "auto",
-                            left: "auto",
-                          }}
-                          className={[
-                            "grid transition-[grid-template-rows] duration-200 ease-out",
-                            isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-                          ].join(" ")}
-                        >
-                          <div className="overflow-hidden">
-                            <div className="mt-1 ml-5 pl-4 border-l border-border/50 space-y-1">
-                              {item.children.map((child) => {
-                                const ChildIcon = child.icon;
-                                const childActive = isRouteActive(
-                                  pathname,
-                                  child.href,
-                                );
-
-                                return (
-                                  <Link
-                                    key={child.href}
-                                    href={child.href}
-                                    aria-current={
-                                      childActive ? "page" : undefined
-                                    }
-                                    className={[
-                                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors border",
-                                      childActive
-                                        ? "bg-primary/10 text-foreground border-primary/15"
-                                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-transparent",
-                                    ].join(" ")}
-                                  >
-                                    <ChildIcon
-                                      className={[
-                                        "h-4 w-4",
-                                        childActive ? "text-primary" : "",
-                                      ].join(" ")}
-                                    />
-                                    <span className="truncate">
-                                      {child.label}
-                                    </span>
-                                  </Link>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm text-foreground tracking-tight">
+                  ReconAI
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                  Control Plane
+                </span>
               </div>
-
-              <div className="mt-4 border-t border-border/40" />
-            </div>
-          ))}
-        </nav>
-
-        <div className="border-t border-border/50 p-4 space-y-2">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Link
-              href="/"
-              className="flex items-center justify-center h-9 w-9 rounded-lg border border-border/50 bg-card/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-colors"
-              title="Home"
-            >
-              <Home className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/support"
-              className="flex items-center justify-center h-9 w-9 rounded-lg border border-border/50 bg-card/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-colors"
-              title="Help & Support"
-            >
-              <HelpCircle className="h-4 w-4" />
             </Link>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground bg-card/50 border border-border/50 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+          {/* ─────────────────────────────────────────────────────────────────
+              TIER 2: Primary Module Rail
+              No accordion, no collapsing. Active module highlighted.
+          ───────────────────────────────────────────────────────────────── */}
+          <nav
+            className="flex-1 overflow-y-auto py-3 px-2"
+            aria-label="Primary navigation"
           >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </button>
+            <div className="space-y-0.5">
+              {visibleModules.map((moduleKey) => {
+                const moduleInfo = MODULES[moduleKey];
+                const Icon = getIcon(moduleInfo.icon);
+                const isActive = activeModule === moduleKey;
+                const href = moduleInfo.landingRoute;
+
+                return (
+                  <Link
+                    key={moduleKey}
+                    href={href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={[
+                      "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                      isActive
+                        ? "bg-primary/10 text-foreground border-l-2 border-primary -ml-0.5 pl-[calc(0.75rem-2px)]"
+                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-l-2 border-transparent -ml-0.5 pl-[calc(0.75rem-2px)]",
+                    ].join(" ")}
+                  >
+                    <div
+                      className={[
+                        "flex h-7 w-7 items-center justify-center rounded-md transition-colors",
+                        isActive
+                          ? "bg-primary/15"
+                          : "bg-muted/50 group-hover:bg-accent",
+                      ].join(" ")}
+                    >
+                      <Icon
+                        className={[
+                          "h-4 w-4 transition-colors",
+                          isActive
+                            ? "text-primary"
+                            : "text-muted-foreground group-hover:text-foreground",
+                        ].join(" ")}
+                      />
+                    </div>
+                    <span className="truncate">{moduleInfo.shortLabel}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+
+          {/* ─────────────────────────────────────────────────────────────────
+              FOOTER: Quick Actions + Sign Out
+          ───────────────────────────────────────────────────────────────── */}
+          <div className="border-t border-border/50 p-3 space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              <Link
+                href="/"
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border/50 bg-card/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-colors"
+                title="Marketing Home"
+              >
+                <Home className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/support"
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border/50 bg-card/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-colors"
+                title="Help & Support"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground bg-card/50 border border-border/50 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────────────
+          TIER 3: Context Panel (NOT navigation duplication)
+          Shows: Mode, Scope, Operational State
+          Visible only when module has meaningful context to display.
+      ───────────────────────────────────────────────────────────────────── */}
+      {moduleContext && (
+        <div className="relative w-44 shrink-0 flex flex-col h-full border-r border-border/30 bg-muted/20">
+          {/* Context header */}
+          <div className="h-14 flex flex-col justify-center px-3 border-b border-border/20">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Context
+            </span>
+            {moduleContext.mode && (
+              <span className="text-xs font-medium text-foreground">
+                {moduleContext.mode} Mode
+              </span>
+            )}
+          </div>
+
+          {/* Context content */}
+          <div className="flex-1 overflow-y-auto py-3 px-3">
+            {/* Scope indicator */}
+            {moduleContext.scope && (
+              <div className="mb-3 pb-3 border-b border-border/20">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                  Scope
+                </div>
+                <div className="text-xs font-medium text-foreground">
+                  {moduleContext.scope}
+                </div>
+              </div>
+            )}
+
+            {/* Status items */}
+            <div className="space-y-2">
+              {moduleContext.items.map((item, idx) => {
+                const ItemIcon = item.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {ItemIcon && (
+                        <ItemIcon
+                          className={`h-3 w-3 shrink-0 ${getStatusColor(item.status)}`}
+                        />
+                      )}
+                      <span className="text-[11px] text-muted-foreground truncate">
+                        {item.label}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[11px] font-medium shrink-0 ${getStatusColor(item.status)}`}
+                    >
+                      {item.value}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Context footer - visual anchor */}
+          <div className="px-3 py-2 border-t border-border/20">
+            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 text-center">
+              Read-only
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

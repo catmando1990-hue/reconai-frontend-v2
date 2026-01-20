@@ -11,6 +11,7 @@ import {
   FileText,
   CheckCircle2,
 } from "lucide-react";
+import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
 
 function Pill({
   icon: Icon,
@@ -87,48 +88,26 @@ export default function PackagesPage() {
   return (
     <main className="bg-background text-foreground">
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="relative px-6 py-20">
-          <div className="absolute inset-0">
-            <Image
-              src="/product-dashboard-wide.jpg"
-              alt="ReconAI product overview"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover opacity-12 dark:opacity-22"
-            />
-          </div>
-          <div className="absolute inset-0 bg-linear-to-b from-background/90 via-background/75 to-background/95 dark:from-background/80 dark:via-background/60 dark:to-background/90" />
-
-          <div className="relative mx-auto max-w-6xl">
-            <Pill icon={Layers} text="Packaging (No pricing shown)" />
-            <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
-              Choose the layer of ReconAI you need
-            </h1>
-            <p className="mt-4 max-w-3xl text-muted-foreground text-lg">
-              ReconAI is built in layers. Start with Core, add Intelligence for
-              pattern detection, and unlock CFO Mode for summary dashboards.
-              Each layer adds structure to your financial data.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/how-it-works"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-              >
-                See how it works <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/platform"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-              >
-                Explore platform <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MarketingHeroShell
+        imageSrc="/product-dashboard-wide.jpg"
+        imageAlt="ReconAI product overview"
+        kickerIcon={Layers}
+        kickerText="Packaging (No pricing shown)"
+        headline="Choose the layer of ReconAI you need"
+        description="ReconAI is built in layers. Start with Core, add Intelligence for pattern detection, and unlock CFO Mode for summary dashboards. Each layer adds structure to your financial data."
+        ctas={[
+          {
+            label: "See how it works",
+            href: "/how-it-works",
+            variant: "primary",
+          },
+          {
+            label: "Explore platform",
+            href: "/platform",
+            variant: "secondary",
+          },
+        ]}
+      />
 
       {/* PACKAGES */}
       <section className="mx-auto max-w-6xl px-6 py-16">

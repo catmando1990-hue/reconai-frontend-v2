@@ -12,6 +12,7 @@ import {
   Lock,
   FileText,
 } from "lucide-react";
+import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
 
 function SectionTitle({
   kicker,
@@ -87,7 +88,7 @@ function ImgBlock({
         sizes="(min-width: 1024px) 520px, 100vw"
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-linear-to-t from-background/35 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/35 via-transparent to-transparent" />
     </div>
   );
 }
@@ -96,51 +97,18 @@ export default function HowItWorksPage() {
   return (
     <main className="bg-background text-foreground">
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="relative px-6 py-20">
-          <div className="absolute inset-0">
-            <Image
-              src="/hero-boardroom.jpg"
-              alt="ReconAI in serious review environments"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover opacity-12 dark:opacity-22"
-            />
-          </div>
-          <div className="absolute inset-0 bg-linear-to-b from-background/90 via-background/75 to-background/95 dark:from-background/80 dark:via-background/60 dark:to-background/90" />
-
-          <div className="relative mx-auto max-w-6xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
-              <Layers className="h-4 w-4 text-primary" />
-              How ReconAI Works
-            </div>
-
-            <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
-              How ReconAI organizes financial data
-            </h1>
-            <p className="mt-4 max-w-3xl text-muted-foreground text-lg">
-              ReconAI categorizes transactions, detects patterns, and generates
-              structured reports. Outputs link to source records.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/platform"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-              >
-                See the Platform <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/sign-in"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-              >
-                Get Started <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MarketingHeroShell
+        imageSrc="/hero-boardroom.jpg"
+        imageAlt="ReconAI in serious review environments"
+        kickerIcon={Layers}
+        kickerText="How ReconAI Works"
+        headline="How ReconAI organizes financial data"
+        description="ReconAI categorizes transactions, detects patterns, and generates structured reports. Outputs link to source records."
+        ctas={[
+          { label: "See the Platform", href: "/platform", variant: "primary" },
+          { label: "Get Started", href: "/sign-in", variant: "secondary" },
+        ]}
+      />
 
       {/* THE FLOW */}
       <section className="mx-auto max-w-6xl px-6 py-16">

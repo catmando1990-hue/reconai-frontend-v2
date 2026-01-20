@@ -13,6 +13,7 @@ import {
   Users,
   Building2,
 } from "lucide-react";
+import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
 
 const BUCKETS = [
   {
@@ -47,65 +48,28 @@ export default function PlatformPage() {
   return (
     <main className="bg-background text-foreground">
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="relative px-4 py-12 sm:px-6 sm:py-20">
-          <Image
-            src="/product-dashboard-wide.jpg"
-            alt="ReconAI dashboard overview"
-            fill
-            className="object-cover opacity-15 dark:opacity-25"
-            priority
-          />
-          <div className="absolute inset-0 bg-linear-to-b from-background/85 via-background/70 to-background/95 dark:from-background/75 dark:via-background/55 dark:to-background/90" />
-          <div className="relative mx-auto max-w-6xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
-              <Zap className="h-4 w-4 text-primary" />
-              Platform Overview
-            </div>
-
-            <h1 className="mt-6 text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-              Financial data, organized and exportable
-            </h1>
-            <p className="mt-4 max-w-2xl text-muted-foreground text-lg">
-              ReconAI categorizes transactions, generates reports, and maintains
-              audit trails in a single system.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/sign-in"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-              >
-                Get Started <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-              >
-                How it works <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/packages"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-              >
-                Packages <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-4 text-sm text-primary">
-              <Link href="/" className="hover:underline">
-                Home
-              </Link>
-              <Link href="/security" className="hover:underline">
-                Security
-              </Link>
-              <Link href="/support" className="hover:underline">
-                Talk to Us
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MarketingHeroShell
+        imageSrc="/product-dashboard-wide.jpg"
+        imageAlt="ReconAI dashboard overview"
+        kickerIcon={Zap}
+        kickerText="Platform Overview"
+        headline="Financial data, organized and exportable"
+        description="ReconAI categorizes transactions, generates reports, and maintains audit trails in a single system."
+        ctas={[
+          { label: "Get Started", href: "/sign-in", variant: "primary" },
+          {
+            label: "How it works",
+            href: "/how-it-works",
+            variant: "secondary",
+          },
+          { label: "Packages", href: "/packages", variant: "secondary" },
+        ]}
+        navLinks={[
+          { label: "Home", href: "/" },
+          { label: "Security", href: "/security" },
+          { label: "Talk to Us", href: "/support" },
+        ]}
+      />
 
       {/* SCREENSHOTS */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16">

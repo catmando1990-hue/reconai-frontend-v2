@@ -11,6 +11,7 @@ import {
   KeyRound,
   CheckCircle2,
 } from "lucide-react";
+import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
 
 /**
  * Phase 11:
@@ -23,51 +24,22 @@ export default function SecurityPage() {
   return (
     <main className="bg-background text-foreground">
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="relative px-6 py-20">
-          <div className="absolute inset-0">
-            <Image
-              src="/security-lock.jpg"
-              alt="Security and encrypted data"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover opacity-15 dark:opacity-25"
-            />
-          </div>
-          <div className="absolute inset-0 bg-linear-to-b from-background/90 via-background/75 to-background/95 dark:from-background/80 dark:via-background/60 dark:to-background/90" />
-
-          <div className="relative mx-auto max-w-6xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-              Security &amp; Compliance
-            </div>
-
-            <h1 className="mt-6 text-4xl md:text-5xl font-extrabold tracking-tight">
-              Built for review, not vibes
-            </h1>
-            <p className="mt-4 max-w-2xl text-muted-foreground text-lg">
-              ReconAI generates structured outputs with audit trails and access
-              controls. Reports link to source transactions.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/sign-in"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-              >
-                Get Started <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/platform"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3 hover:bg-accent transition"
-              >
-                See the Platform <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MarketingHeroShell
+        imageSrc="/security-lock.jpg"
+        imageAlt="Security and encrypted data"
+        kickerIcon={ShieldCheck}
+        kickerText="Security & Compliance"
+        headline="Built for review, not vibes"
+        description="ReconAI generates structured outputs with audit trails and access controls. Reports link to source transactions."
+        ctas={[
+          { label: "Get Started", href: "/sign-in", variant: "primary" },
+          {
+            label: "See the Platform",
+            href: "/platform",
+            variant: "secondary",
+          },
+        ]}
+      />
 
       {/* PRINCIPLES */}
       <section className="mx-auto max-w-6xl px-6 py-16">

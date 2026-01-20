@@ -17,6 +17,7 @@ import {
   Layers,
 } from "lucide-react";
 import { AIVideoPreview } from "./AIVideoPreview";
+import { MarketingHeroShell } from "./MarketingHeroShell";
 import { ComplianceShieldLoop } from "@/components/dashboard/ComplianceShieldLoop";
 
 type UseCase = "solo" | "smb" | "enterprise";
@@ -77,158 +78,110 @@ export function MarketingHomePage() {
   return (
     <main className="bg-background text-foreground">
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="relative min-h-[92dvh] flex items-center justify-center px-4 py-16 sm:px-6 sm:py-24">
-          <Image
-            src="/hero-boardroom.jpg"
-            alt="Enterprise team collaborating with financial intelligence dashboards"
-            fill
-            className="object-cover opacity-25 dark:opacity-35"
-            priority
-          />
-          <Image
-            src="/hero-team-mountain.jpg"
-            alt="Leadership team alignment"
-            fill
-            className="object-cover opacity-0 dark:opacity-10"
-            style={{
-              filter: "blur(1px)",
-            }}
-          />
-
-          {/* Theme-safe overlays */}
-          <div className="absolute inset-0 bg-linear-to-b from-background/85 via-background/70 to-background/90 dark:from-background/70 dark:via-background/50 dark:to-background/80" />
-          <div className="absolute -top-40 right-[-10%] h-130 w-130 rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
-          <div className="absolute -bottom-40 left-[-10%] h-130 w-130 rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
-
-          <div className="relative z-10 mx-auto max-w-5xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
-              <Sparkles className="h-4 w-4 text-primary" />
-              {uc.subtitle}
-            </div>
-
-            <h1 className="mt-6 text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
-              Structured financial data
-              <span className="block text-primary">ready for review</span>
-            </h1>
-
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground">
-              {uc.subheadline}
-            </p>
-
-            <div className="mt-8 flex items-center justify-center">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-3xl">
-                {USE_CASES.map(({ id, title, subtitle, Icon }) => {
-                  const active = id === useCase;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setUseCase(id)}
-                      className={cx(
-                        "group flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm transition",
-                        active
-                          ? "border-primary bg-primary/10"
-                          : "border-border bg-card/60 hover:bg-accent",
-                      )}
-                      aria-pressed={active}
-                    >
-                      <Icon
-                        className={cx(
-                          "h-4 w-4",
-                          active
-                            ? "text-primary"
-                            : "text-muted-foreground group-hover:text-foreground",
-                        )}
-                      />
-                      <span
-                        className={cx(
-                          "font-medium",
-                          active ? "text-foreground" : "text-foreground",
-                        )}
-                      >
-                        {title}
-                      </span>
-                      <span className="hidden md:inline text-muted-foreground">
-                        &bull; {subtitle}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/sign-in"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
-              >
-                Get Started <ArrowRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/platform"
-                className="inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-foreground hover:bg-accent transition"
-              >
-                See the Platform <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm">
-              <Link
-                href="/how-it-works"
-                className="text-primary hover:underline"
-              >
-                How it works
-              </Link>
-              <Link href="/packages" className="text-primary hover:underline">
-                Packages
-              </Link>
-              <Link href="/security" className="text-primary hover:underline">
-                Security
-              </Link>
-            </div>
-
-            {/* AI Video Preview */}
-            <div className="mt-8 flex justify-center">
-              <AIVideoPreview />
-            </div>
-
-            {/* Proof strip */}
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              {[
-                { k: "95%+", v: "Classification accuracy target" },
-                { k: "<24h", v: "Typical setup time" },
-                { k: "Audit", v: "Traceable outputs" },
-              ].map((m) => (
-                <div
-                  key={m.k}
-                  className="rounded-2xl border border-border bg-card/70 p-5 backdrop-blur"
+      <MarketingHeroShell
+        variant="home"
+        imageSrc="/hero-boardroom.jpg"
+        imageAlt="Enterprise team collaborating with financial intelligence dashboards"
+        kickerIcon={Sparkles}
+        kickerText={uc.subtitle}
+        headline="Structured financial data"
+        headlineAccent="ready for review"
+        description={uc.subheadline}
+        ctas={[
+          { label: "Get Started", href: "/sign-in", variant: "primary" },
+          {
+            label: "See the Platform",
+            href: "/platform",
+            variant: "secondary",
+          },
+        ]}
+        navLinks={[
+          { label: "How it works", href: "/how-it-works" },
+          { label: "Packages", href: "/packages" },
+          { label: "Security", href: "/security" },
+        ]}
+      >
+        {/* Use-case toggle buttons */}
+        <div className="mt-8 flex items-center justify-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-3xl">
+            {USE_CASES.map(({ id, title, subtitle, Icon }) => {
+              const active = id === useCase;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setUseCase(id)}
+                  className={cx(
+                    "group flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm transition",
+                    active
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-card/60 hover:bg-accent",
+                  )}
+                  aria-pressed={active}
                 >
-                  <div className="text-2xl font-bold tracking-tight">{m.k}</div>
-                  <div className="mt-1 text-muted-foreground">{m.v}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              {[
-                "Structured for audit review",
-                "Access controls included",
-                "Solo to enterprise scale",
-              ].map((t) => (
-                <div
-                  key={t}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-4 py-3 backdrop-blur"
-                >
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">{t}</span>
-                </div>
-              ))}
-            </div>
+                  <Icon
+                    className={cx(
+                      "h-4 w-4",
+                      active
+                        ? "text-primary"
+                        : "text-muted-foreground group-hover:text-foreground",
+                    )}
+                  />
+                  <span
+                    className={cx(
+                      "font-medium",
+                      active ? "text-foreground" : "text-foreground",
+                    )}
+                  >
+                    {title}
+                  </span>
+                  <span className="hidden md:inline text-muted-foreground">
+                    &bull; {subtitle}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
-      </section>
+
+        {/* AI Video Preview */}
+        <div className="mt-8 flex justify-center">
+          <AIVideoPreview />
+        </div>
+
+        {/* Proof strip */}
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          {[
+            { k: "95%+", v: "Classification accuracy target" },
+            { k: "<24h", v: "Typical setup time" },
+            { k: "Audit", v: "Traceable outputs" },
+          ].map((m) => (
+            <div
+              key={m.k}
+              className="rounded-2xl border border-border bg-card/70 p-5 backdrop-blur"
+            >
+              <div className="text-2xl font-bold tracking-tight">{m.k}</div>
+              <div className="mt-1 text-muted-foreground">{m.v}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          {[
+            "Structured for audit review",
+            "Access controls included",
+            "Solo to enterprise scale",
+          ].map((t) => (
+            <div
+              key={t}
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-4 py-3 backdrop-blur"
+            >
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span className="text-muted-foreground">{t}</span>
+            </div>
+          ))}
+        </div>
+      </MarketingHeroShell>
 
       {/* TRUST STRIP + PACKAGES SECTION - Combined with shared background */}
       <section className="relative overflow-hidden">

@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { TierGate } from "@/components/legal/TierGate";
+import { ROUTES } from "@/lib/routes";
 import {
   Building2,
   ArrowLeftRight,
@@ -22,38 +23,38 @@ import {
 const coreModules = [
   {
     name: "Transactions",
-    href: "/core/transactions",
+    href: ROUTES.CORE_TRANSACTIONS,
     icon: ArrowLeftRight,
     description: "View and categorize",
     primary: true,
   },
   {
     name: "Accounts",
-    href: "/accounts",
+    href: ROUTES.ACCOUNTS,
     icon: Building2,
     description: "Connected bank accounts",
   },
   {
     name: "Reports",
-    href: "/core/reports",
+    href: ROUTES.CORE_REPORTS,
     icon: BarChart3,
     description: "Financial reports",
   },
   {
     name: "Upload",
-    href: "/upload",
+    href: ROUTES.UPLOAD,
     icon: Upload,
     description: "Import statements",
   },
   {
     name: "Connect Bank",
-    href: "/connect-bank",
+    href: ROUTES.CONNECT_BANK,
     icon: Link2,
     description: "Link new accounts",
   },
   {
     name: "Settings",
-    href: "/settings",
+    href: ROUTES.SETTINGS,
     icon: Settings,
     description: "Preferences",
   },
@@ -80,7 +81,7 @@ export default function CoreOverviewPage() {
               subtitle="Items requiring attention"
               actions={
                 <Link
-                  href="/core/transactions"
+                  href={ROUTES.CORE_TRANSACTIONS}
                   className="text-sm text-primary hover:underline"
                 >
                   View all transactions
@@ -93,7 +94,7 @@ export default function CoreOverviewPage() {
                 description="All transactions are categorized and reconciled. Check back after new activity."
                 action={{
                   label: "View transactions",
-                  href: "/core/transactions",
+                  href: ROUTES.CORE_TRANSACTIONS,
                 }}
               />
             </PrimaryPanel>

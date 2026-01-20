@@ -16,35 +16,36 @@ import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import PolicyBanner from "@/components/policy/PolicyBanner";
+import { ROUTES } from "@/lib/routes";
 
 const MODULES = [
   {
     title: "Contracts",
-    href: "/govcon/contracts",
+    href: ROUTES.GOVCON_CONTRACTS,
     icon: FileText,
     description: "DCAA-compliant contract management",
   },
   {
     title: "Timekeeping",
-    href: "/govcon/timekeeping",
+    href: ROUTES.GOVCON_TIMEKEEPING,
     icon: Clock,
     description: "Daily labor tracking",
   },
   {
     title: "Indirect Costs",
-    href: "/govcon/indirects",
+    href: ROUTES.GOVCON_INDIRECTS,
     icon: Layers,
     description: "Overhead, G&A, and fringe pools",
   },
   {
     title: "Reconciliation",
-    href: "/govcon/reconciliation",
+    href: ROUTES.GOVCON_RECONCILIATION,
     icon: ArrowLeftRight,
     description: "Labor and cost reconciliation",
   },
   {
     title: "Audit Trail",
-    href: "/govcon/audit",
+    href: ROUTES.GOVCON_AUDIT,
     icon: Shield,
     description: "Immutable audit log",
   },
@@ -57,7 +58,7 @@ export default function GovConDashboardPage() {
       subtitle="DCAA-compliant government contracting workspace"
       right={
         <Link
-          href="/govcon/audit"
+          href={ROUTES.GOVCON_AUDIT}
           className="text-sm text-primary hover:underline"
         >
           View audit trail
@@ -78,7 +79,7 @@ export default function GovConDashboardPage() {
             subtitle="Items requiring attention"
             actions={
               <Link
-                href="/govcon/reconciliation"
+                href={ROUTES.GOVCON_RECONCILIATION}
                 className="text-sm text-primary hover:underline"
               >
                 View all
@@ -91,7 +92,7 @@ export default function GovConDashboardPage() {
               description="No items require attention. Configure contracts and timekeeping to begin tracking compliance."
               action={{
                 label: "Configure contracts",
-                href: "/govcon/contracts",
+                href: ROUTES.GOVCON_CONTRACTS,
               }}
             />
           </PrimaryPanel>
@@ -157,19 +158,19 @@ export default function GovConDashboardPage() {
           <SecondaryPanel title="Quick Links" collapsible>
             <div className="space-y-2 text-sm">
               <Link
-                href="/govcon/sf-1408"
+                href={ROUTES.GOVCON_SF1408}
                 className="block text-primary hover:underline"
               >
                 SF-1408 Checklist
               </Link>
               <Link
-                href="/govcon/evidence"
+                href={ROUTES.GOVCON_EVIDENCE}
                 className="block text-primary hover:underline"
               >
                 Evidence Viewer
               </Link>
               <Link
-                href="/govcon/audit"
+                href={ROUTES.GOVCON_AUDIT}
                 className="block text-primary hover:underline"
               >
                 Export Center

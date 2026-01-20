@@ -8,6 +8,7 @@ import { TierGate } from "@/components/legal/TierGate";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { PLATFORM_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 import {
   BarChart3,
   PieChart,
@@ -20,32 +21,32 @@ import {
 const cfoModules = [
   {
     name: "Executive Summary",
-    href: "/cfo/executive-summary",
+    href: ROUTES.CFO_EXECUTIVE_SUMMARY,
     icon: FileText,
     description:
       "CFO-grade snapshot for decision-making: risks, actions, and runway posture",
   },
   {
     name: "Financial Reports",
-    href: "/financial-reports",
+    href: ROUTES.CFO_FINANCIAL_REPORTS,
     icon: BarChart3,
     description: "Financial reports and analysis tools",
   },
   {
     name: "Cash Flow",
-    href: "/cash-flow",
+    href: ROUTES.CFO_CASH_FLOW,
     icon: PieChart,
     description: "Cash flow projections and monitoring",
   },
   {
     name: "Compliance",
-    href: "/cfo/compliance",
+    href: ROUTES.CFO_COMPLIANCE,
     icon: ShieldCheck,
     description: "Audit logs, exports and evidence retention",
   },
   {
     name: "Overview",
-    href: "/cfo/overview",
+    href: ROUTES.CFO_OVERVIEW,
     icon: BarChart3,
     description: "Executive surfaces across financial posture and risk",
   },
@@ -68,7 +69,7 @@ export default function CfoOverviewPage() {
               Export Report
             </Button>
             <Button asChild size="sm">
-              <Link href="/cfo/executive-summary">Executive Summary</Link>
+              <Link href={ROUTES.CFO_EXECUTIVE_SUMMARY}>Executive Summary</Link>
             </Button>
           </div>
         }

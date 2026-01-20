@@ -79,8 +79,8 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         price_id: priceId,
         tier_key: tier,
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.reconai.dev"}/dashboard/settings?checkout=success`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.reconai.dev"}/dashboard/settings?checkout=cancelled`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.reconai.dev"}/settings?checkout=success`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.reconai.dev"}/settings?checkout=cancelled`,
       }),
     });
 

@@ -2,24 +2,24 @@
 
 ## Verification Status
 
-| Route                   | Layout | PrimaryPanel      | No Mock Data | Build |
-| ----------------------- | ------ | ----------------- | ------------ | ----- |
-| /core                   | PASS   | PASS              | PASS         | PASS  |
-| /govcon                 | PASS   | PASS              | PASS         | PASS  |
-| /govcon/audit           | PASS   | PASS              | PASS         | PASS  |
-| /govcon/contracts       | PASS   | PASS              | PASS         | PASS  |
-| /govcon/timekeeping     | PASS   | PASS              | PASS         | PASS  |
-| /govcon/indirects       | PASS   | PASS              | PASS         | PASS  |
-| /govcon/reconciliation  | PASS   | PASS              | PASS         | PASS  |
-| /intelligence           | PASS   | PASS              | PASS         | PASS  |
-| /intelligence/insights  | PASS   | PASS              | PASS         | PASS  |
-| /intelligence/ai-worker | PASS   | PASS              | PASS         | PASS  |
-| /intelligence/alerts    | PASS   | PASS              | PASS         | PASS  |
-| /cfo                    | PASS   | PASS              | PASS         | PASS  |
-| /cfo/executive-summary  | PASS   | PASS              | PASS         | PASS  |
-| /cfo/compliance         | PASS   | PASS              | PASS         | PASS  |
-| /cfo/overview           | PASS   | PASS              | PASS         | PASS  |
-| /settings               | PASS   | lg:col-span-8/4   | PASS         | PASS  |
+| Route                   | Layout | PrimaryPanel    | No Mock Data | Build |
+| ----------------------- | ------ | --------------- | ------------ | ----- |
+| /core                   | PASS   | PASS            | PASS         | PASS  |
+| /govcon                 | PASS   | PASS            | PASS         | PASS  |
+| /govcon/audit           | PASS   | PASS            | PASS         | PASS  |
+| /govcon/contracts       | PASS   | PASS            | PASS         | PASS  |
+| /govcon/timekeeping     | PASS   | PASS            | PASS         | PASS  |
+| /govcon/indirects       | PASS   | PASS            | PASS         | PASS  |
+| /govcon/reconciliation  | PASS   | PASS            | PASS         | PASS  |
+| /intelligence           | PASS   | PASS            | PASS         | PASS  |
+| /intelligence/insights  | PASS   | PASS            | PASS         | PASS  |
+| /intelligence/ai-worker | PASS   | PASS            | PASS         | PASS  |
+| /intelligence/alerts    | PASS   | PASS            | PASS         | PASS  |
+| /cfo                    | PASS   | PASS            | PASS         | PASS  |
+| /cfo/executive-summary  | PASS   | PASS            | PASS         | PASS  |
+| /cfo/compliance         | PASS   | PASS            | PASS         | PASS  |
+| /cfo/overview           | PASS   | PASS            | PASS         | PASS  |
+| /settings               | PASS   | lg:col-span-8/4 | PASS         | PASS  |
 
 ## Layout Verification
 

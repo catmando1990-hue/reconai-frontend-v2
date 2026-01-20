@@ -8,27 +8,28 @@ import { TierGate } from "@/components/legal/TierGate";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { AI_DISCLAIMER } from "@/lib/legal/disclaimers";
 import PolicyBanner from "@/components/policy/PolicyBanner";
+import { ROUTES } from "@/lib/routes";
 import { Bot, Bell, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const intelligenceModules = [
   {
     name: "AI Worker",
-    href: "/intelligence/ai-worker",
+    href: ROUTES.INTELLIGENCE_AI_WORKER,
     icon: Bot,
     description:
       "Structured assistance for repeatable finance workflows. You approve every final outcome.",
   },
   {
     name: "Alerts",
-    href: "/intelligence/alerts",
+    href: ROUTES.INTELLIGENCE_ALERTS,
     icon: Bell,
     description:
       "Signals that may require review or documentation. Always verify before acting.",
   },
   {
     name: "Insights",
-    href: "/intelligence/insights",
+    href: ROUTES.INTELLIGENCE_INSIGHTS,
     icon: Sparkles,
     description:
       "Decision-grade signals surfaced from transaction behavior and operating patterns.",
@@ -47,7 +48,7 @@ export default function IntelligenceOverviewPage() {
         subtitle="AI-powered signals and workflow assistance"
         right={
           <Button asChild size="sm">
-            <Link href="/intelligence/insights">View Insights</Link>
+            <Link href={ROUTES.INTELLIGENCE_INSIGHTS}>View Insights</Link>
           </Button>
         }
       >
@@ -136,19 +137,19 @@ export default function IntelligenceOverviewPage() {
             <SecondaryPanel title="Getting Started" collapsible>
               <div className="space-y-2 text-sm">
                 <Link
-                  href="/core/transactions"
+                  href={ROUTES.CORE_TRANSACTIONS}
                   className="block text-primary hover:underline"
                 >
                   Import transactions
                 </Link>
                 <Link
-                  href="/settings"
+                  href={ROUTES.SETTINGS}
                   className="block text-primary hover:underline"
                 >
                   Connect data sources
                 </Link>
                 <Link
-                  href="/intelligence/insights"
+                  href={ROUTES.INTELLIGENCE_INSIGHTS}
                   className="block text-primary hover:underline"
                 >
                   View insights

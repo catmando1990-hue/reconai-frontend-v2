@@ -6,7 +6,6 @@ import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { UtilityStrip } from "@/components/dashboard/UtilityStrip";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import { Button } from "@/components/ui/button";
 import PolicyBanner from "@/components/policy/PolicyBanner";
@@ -41,32 +40,7 @@ export default function IndirectsPage() {
         context="govcon"
       />
 
-      <UtilityStrip
-        searchPlaceholder="Search pools..."
-        onSearch={() => {}}
-        filters={[
-          {
-            id: "type",
-            label: "Pool Type",
-            options: [
-              { value: "overhead", label: "Overhead" },
-              { value: "ga", label: "G&A" },
-              { value: "fringe", label: "Fringe" },
-              { value: "material_handling", label: "Material Handling" },
-            ],
-          },
-          {
-            id: "status",
-            label: "Rate Status",
-            options: [
-              { value: "provisional", label: "Provisional" },
-              { value: "final", label: "Final" },
-              { value: "negotiated", label: "Negotiated" },
-              { value: "audited", label: "Audited" },
-            ],
-          },
-        ]}
-      />
+      {/* TODO: UtilityStrip with search/filters will be enabled when pools exist */}
 
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Primary Panel - Pool Management */}
@@ -89,8 +63,7 @@ export default function IndirectsPage() {
             <EmptyState
               icon={Layers}
               title="No indirect pools"
-              description="Create indirect cost pools to track overhead, G&A, fringe, and material handling rates."
-              action={{ label: "Create pool" }}
+              description="Indirect cost pool management requires backend integration. This feature is not yet available."
             />
           </PrimaryPanel>
         </div>

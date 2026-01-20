@@ -72,8 +72,7 @@ export default function ReconciliationPage() {
             <EmptyState
               icon={ArrowLeftRight}
               title="No reconciliation runs"
-              description="Run a reconciliation to compare labor, indirect costs, and GL postings for variance detection."
-              action={{ label: "Run reconciliation" }}
+              description="Reconciliation requires backend integration. Use the disabled 'Run Reconciliation' button above when available."
             />
           </PrimaryPanel>
 

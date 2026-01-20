@@ -6,7 +6,6 @@ import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { UtilityStrip } from "@/components/dashboard/UtilityStrip";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
@@ -34,6 +33,8 @@ export default function ContractsPage() {
         </div>
       }
     >
+      {/* TODO: UtilityStrip with search/filters will be enabled when contracts exist */}
+      {/*
       <UtilityStrip
         searchPlaceholder="Search contracts..."
         onSearch={() => {}}
@@ -60,6 +61,7 @@ export default function ContractsPage() {
           },
         ]}
       />
+      */}
 
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Primary Panel - Contract List */}
@@ -71,8 +73,7 @@ export default function ContractsPage() {
             <EmptyState
               icon={FileText}
               title="No contracts"
-              description="Create your first contract to begin tracking funding, CLINs, and billing status."
-              action={{ label: "Add contract" }}
+              description="Contract management requires backend integration. This feature is not yet available."
             />
           </PrimaryPanel>
         </div>

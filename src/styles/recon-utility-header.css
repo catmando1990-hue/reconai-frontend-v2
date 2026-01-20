@@ -75,6 +75,24 @@
   margin-bottom: -8px;
 }
 
+/* Dropdown trigger button styling */
+.recon-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Dropdown chevron icon */
+.recon-dropdown-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 150ms ease;
+}
+
+.recon-dropdown-chevron.open {
+  transform: rotate(180deg);
+}
+
 /* Dropdown content */
 .recon-dropdown-content {
   position: absolute;
@@ -100,9 +118,10 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Show dropdown on hover */
+/* Show dropdown on hover, focus, or when open (for click/touch) */
 .recon-dropdown:hover .recon-dropdown-content,
-.recon-dropdown:focus-within .recon-dropdown-content {
+.recon-dropdown:focus-within .recon-dropdown-content,
+.recon-dropdown-content.open {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);

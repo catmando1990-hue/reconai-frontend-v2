@@ -68,11 +68,16 @@ export default function DuplicateChargesInsight() {
   return (
     <>
       <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
-        <p className="text-sm text-muted-foreground">
-          {groups.length === 1
-            ? `${totalDuplicates} transactions may be duplicates`
-            : `${groups.length} sets of potential duplicate charges`}
-        </p>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            Demo Data
+          </span>
+          <p className="text-sm text-muted-foreground">
+            {groups.length === 1
+              ? `${totalDuplicates} transactions may be duplicates`
+              : `${groups.length} sets of potential duplicate charges`}
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowEvidence(true)}

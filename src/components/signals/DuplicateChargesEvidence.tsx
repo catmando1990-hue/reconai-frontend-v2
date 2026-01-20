@@ -88,11 +88,17 @@ export default function DuplicateChargesEvidence({
         </button>
 
         <header className="mb-6">
-          <h2 id="evidence-title" className="text-xl font-semibold">
-            Potential Duplicate Charges
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Review these transactions that may be duplicates.
+          <div className="flex items-center gap-2 mb-1">
+            <h2 id="evidence-title" className="text-xl font-semibold">
+              Potential Duplicate Charges
+            </h2>
+            <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+              Demo Data
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Sample transactions for demonstration. Connect data sources for real
+            analysis.
           </p>
         </header>
 

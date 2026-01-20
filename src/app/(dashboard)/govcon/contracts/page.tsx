@@ -5,7 +5,6 @@ import {
   Building2,
   FileText,
   DollarSign,
-  Calendar,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -197,9 +196,7 @@ function getFundingStatus(
 
 export default function ContractsPage() {
   const [contracts] = useState<Contract[]>(DEMO_CONTRACTS);
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(
-    null,
-  );
+  const [, setSelectedContract] = useState<Contract | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [displayCount, setDisplayCount] = useState(INITIAL_CONTRACT_COUNT);
 

@@ -15,6 +15,7 @@ export async function GET() {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(_req: Request) {
   try {
     const { userId, getToken } = await auth();

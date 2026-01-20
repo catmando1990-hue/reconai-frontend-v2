@@ -12,7 +12,6 @@ import {
   AlertTriangle,
   TrendingUp,
   DollarSign,
-  Calendar,
   Lock,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";

@@ -401,6 +401,7 @@ export default function SettingsPage() {
   };
 
   // Legacy function (kept for compatibility with old fixes flow)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const runBackendDiagnostic = async (
     type: "health" | "performance" | "security" | "bugs",
   ): Promise<DiagnosticResult | null> => {
@@ -421,6 +422,7 @@ export default function SettingsPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatDiagnosticResult = (result: DiagnosticResult): string => {
     const statusEmoji =
       result.status === "healthy"

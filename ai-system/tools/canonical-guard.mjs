@@ -265,8 +265,8 @@ export function enforceCanonicalGuard(operation, context = {}) {
     results.allowed = false;
     results.mode = EXECUTION_MODES.BLOCKED;
     const failedChecks = Object.entries(results.checks)
-      .filter(([_, check]) => !(check.passed || check.valid || check.safe))
-      .map(([name, _]) => name);
+      .filter(([, check]) => !(check.passed || check.valid || check.safe))
+      .map(([name]) => name);
     results.advisoryMessage = `Operation blocked. Failed checks: ${failedChecks.join(", ")}`;
   }
 

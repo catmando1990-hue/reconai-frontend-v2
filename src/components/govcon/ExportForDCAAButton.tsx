@@ -34,7 +34,7 @@ export default function ExportForDCAAButton({ className }: Props) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-    } catch (e) {
+    } catch {
       setError("Unable to export at this time.");
     } finally {
       setLoading(false);

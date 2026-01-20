@@ -8,12 +8,10 @@ import {
   AlertTriangle,
   Send,
   Download,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Lock,
   FileText,
-  User,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 

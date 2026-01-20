@@ -1,5 +1,3 @@
-import { InvoiceStatusPill } from "./InvoiceStatusPill";
-
 export function InvoiceTable() {
   return (
     <div className="border border-border rounded-lg overflow-hidden">

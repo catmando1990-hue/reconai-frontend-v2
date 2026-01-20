@@ -7,12 +7,9 @@ import {
   Calculator,
   CheckCircle,
   AlertTriangle,
-  Clock,
   Download,
   Filter,
   Lock,
-  TrendingUp,
-  BarChart3,
   FileText,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";

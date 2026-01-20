@@ -41,95 +41,99 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   return (
-    <div className="relative flex min-h-[100dvh] bg-muted text-foreground overflow-x-hidden">
-      {/* Desktop sidebar */}
-      <div className="hidden md:block relative z-10 h-screen sticky top-0">
-        <Sidebar />
-      </div>
-
-      {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-muted/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 backdrop-blur transition-all hover:bg-accent hover:border-border"
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-              <Brain className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                ReconAI
-              </span>
-              <span className="text-sm font-medium text-foreground">
-                {title}
-              </span>
-            </div>
-          </div>
-
-          <Link
-            href="/"
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 backdrop-blur px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-all"
-          >
-            Home
-          </Link>
+    <div className="relative min-h-[100dvh] bg-muted text-foreground overflow-x-hidden">
+      <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[1600px]">
+        {/* Desktop sidebar */}
+        <div className="hidden md:block relative z-10 h-screen sticky top-0 shrink-0">
+          <Sidebar />
         </div>
-      </div>
 
-      {/* Mobile drawer */}
-      {open && (
-        <div className="md:hidden fixed inset-0 z-50">
-          <button
-            aria-label="Close menu"
-            className="absolute inset-0 bg-muted/60 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-            type="button"
-          />
-          <div className="absolute left-0 top-0 h-full w-[85vw] max-w-[340px] bg-muted/95 backdrop-blur-xl border-r border-border/50 shadow-2xl">
-            <div className="flex items-center justify-between px-4 h-14 border-b border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                  <Brain className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <span className="text-sm font-semibold">Menu</span>
+        {/* Mobile top bar */}
+        <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-muted/80 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4">
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 backdrop-blur transition-all hover:bg-accent hover:border-border"
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+                <Brain className="h-4 w-4 text-primary" />
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/50 bg-card/50 hover:bg-accent hover:border-border transition-all"
-                aria-label="Close menu"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  ReconAI
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {title}
+                </span>
+              </div>
             </div>
 
-            <div className="h-[calc(100%-3.5rem)] overflow-y-auto">
-              <Sidebar />
-            </div>
+            <Link
+              href="/"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 backdrop-blur px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-all"
+            >
+              Home
+            </Link>
           </div>
         </div>
-      )}
 
-      {/* Main content area */}
-      <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
-        {/* BUILD 9: Admin command strip - only visible to admins */}
-        <div className="hidden md:block">
-          <AdminCommandStrip />
+        {/* Mobile drawer */}
+        {open && (
+          <div className="md:hidden fixed inset-0 z-50">
+            <button
+              aria-label="Close menu"
+              className="absolute inset-0 bg-muted/60 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+              type="button"
+            />
+            <div className="absolute left-0 top-0 h-full w-[85vw] max-w-[340px] bg-muted/95 backdrop-blur-xl border-r border-border/50 shadow-2xl">
+              <div className="flex items-center justify-between px-4 h-14 border-b border-border/50">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+                    <Brain className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <span className="text-sm font-semibold">Menu</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/50 bg-card/50 hover:bg-accent hover:border-border transition-all"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="h-[calc(100%-3.5rem)] overflow-y-auto">
+                <Sidebar />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main content area */}
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col">
+          {/* Desktop utility/command strips */}
+          <div className="hidden md:block">
+            <AdminCommandStrip />
+          </div>
+          <div className="hidden md:block">
+            <CommandStripV2 />
+          </div>
+
+          {/* Canvas */}
+          <div className="relative flex-1 bg-background md:rounded-l-3xl md:border-l md:border-border/60">
+            <main className="h-full overflow-y-auto pt-14 md:pt-0">
+              {children}
+            </main>
+          </div>
         </div>
-
-        {/* BUILD 21-23: Command Strip V2 - desktop only */}
-        <div className="hidden md:block">
-          <CommandStripV2 />
-        </div>
-
-        {/* Main */}
-        <main className="flex-1 overflow-y-auto pt-14 md:pt-0">{children}</main>
       </div>
     </div>
   );

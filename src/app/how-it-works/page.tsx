@@ -13,6 +13,7 @@ import {
   FileText,
 } from "lucide-react";
 import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
+import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 
 function SectionTitle({
   kicker,
@@ -96,6 +97,8 @@ function ImgBlock({
 export default function HowItWorksPage() {
   return (
     <main className="bg-background text-foreground">
+      {/* Public header with brand link */}
+      <ReconUtilityHeader />
       {/* HERO */}
       <MarketingHeroShell
         imageSrc="/hero-boardroom.jpg"

@@ -14,6 +14,7 @@ import {
   Building2,
 } from "lucide-react";
 import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
+import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 
 const BUCKETS = [
   {
@@ -47,6 +48,8 @@ const BUCKETS = [
 export default function PlatformPage() {
   return (
     <main className="bg-background text-foreground">
+      {/* Public header with brand link */}
+      <ReconUtilityHeader />
       {/* HERO */}
       <MarketingHeroShell
         imageSrc="/product-dashboard-wide.jpg"
@@ -84,7 +87,7 @@ export default function PlatformPage() {
             </p>
           </div>
           <Link
-            href="/accounts"
+            href="/dashboard"
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
           >
             View Dashboard <ArrowRight className="h-4 w-4" />

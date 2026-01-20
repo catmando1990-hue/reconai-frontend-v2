@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 
 /**
  * MarketingShell — Shared background wrapper for public marketing pages.
@@ -15,6 +16,10 @@ import * as React from "react";
 export function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="relative min-h-screen text-foreground overflow-hidden">
+      {/* Public header with brand link */}
+      <div className="relative z-20">
+        <ReconUtilityHeader />
+      </div>
       {/* Base background layer - z-0 */}
       <div className="absolute inset-0 z-0 bg-background" />
 

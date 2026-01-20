@@ -78,14 +78,14 @@ export default function Hero() {
           className="mt-10 flex flex-wrap gap-3"
         >
           <a
-            href="#demo"
+            href="/platform"
             className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black shadow-sm transition hover:opacity-90"
           >
             See the product <ArrowRight className="ml-2 h-4 w-4" />
           </a>
 
           <a
-            href="#features"
+            href="/how-it-works"
             className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/5 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
           >
             Explore features

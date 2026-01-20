@@ -1,15 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-
-export const metadata = {
-  title: "Disclaimers | ReconAI",
-  description: "ReconAI Disclaimers - Important notices about our platform",
-};
+import { MarketingShell } from "@/components/marketing";
 
 export default function DisclaimersPage() {
   return (
-    <main className="min-h-[92vh] bg-background text-foreground px-6 py-16">
-      <div className="mx-auto max-w-3xl">
+    <MarketingShell>
+      <div className="mx-auto max-w-3xl px-6 py-16">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition mb-8"
@@ -84,6 +82,6 @@ export default function DisclaimersPage() {
           </Link>
         </div>
       </div>
-    </main>
+    </MarketingShell>
   );
 }

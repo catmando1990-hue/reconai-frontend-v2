@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { MarketingShell } from "@/components/marketing";
 
 type Tier = {
   name: string;
@@ -49,64 +52,73 @@ const TIERS: Tier[] = [
 
 export default function PricingPage() {
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-12">
-      <header className="mb-10">
-        <h1 className="text-2xl font-semibold tracking-tight">Pricing</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Monthly subscription. Features scale by tier.
-        </p>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Save 15% with annual billing.
-        </p>
-      </header>
+    <MarketingShell>
+      <div className="mx-auto w-full max-w-5xl px-6 py-16">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition mb-8"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
+        <header className="mb-10">
+          <h1 className="text-2xl font-semibold tracking-tight">Pricing</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Monthly subscription. Features scale by tier.
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Save 15% with annual billing.
+          </p>
+        </header>
 
-      <section className="space-y-8">
-        {TIERS.map((t) => (
-          <article key={t.name} className="border-t border-border pt-6">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-              <h2 className="text-base font-medium">{t.name}</h2>
-              <div className="text-sm font-medium">{t.price}</div>
-            </div>
+        <section className="space-y-8">
+          {TIERS.map((t) => (
+            <article key={t.name} className="border-t border-border pt-6">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                <h2 className="text-base font-medium">{t.name}</h2>
+                <div className="text-sm font-medium">{t.price}</div>
+              </div>
 
-            <div className="mt-3 grid gap-4 sm:grid-cols-3">
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Who
+              <div className="mt-3 grid gap-4 sm:grid-cols-3">
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Who
+                  </div>
+                  <div className="mt-1 text-sm">{t.who}</div>
                 </div>
-                <div className="mt-1 text-sm">{t.who}</div>
-              </div>
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Purpose
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Purpose
+                  </div>
+                  <div className="mt-1 text-sm">{t.purpose}</div>
                 </div>
-                <div className="mt-1 text-sm">{t.purpose}</div>
-              </div>
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Why this price
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Why this price
+                  </div>
+                  <div className="mt-1 text-sm">{t.why}</div>
                 </div>
-                <div className="mt-1 text-sm">{t.why}</div>
               </div>
-            </div>
-          </article>
-        ))}
-      </section>
+            </article>
+          ))}
+        </section>
 
-      <footer className="mt-12 border-t border-border pt-6">
-        <p className="text-sm text-muted-foreground">
-          Enterprise pricing is scoped based on complexity and support
-          requirements.
-        </p>
-        <div className="mt-6">
-          <Link
-            href="/sign-in"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-          >
-            Get started
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </footer>
-    </main>
+        <footer className="mt-12 border-t border-border pt-6">
+          <p className="text-sm text-muted-foreground">
+            Enterprise pricing is scoped based on complexity and support
+            requirements.
+          </p>
+          <div className="mt-6">
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+            >
+              Get started
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </footer>
+      </div>
+    </MarketingShell>
   );
 }

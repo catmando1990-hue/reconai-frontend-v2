@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
+import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 
 /**
  * Phase 11:
@@ -23,6 +24,8 @@ import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
 export default function SecurityPage() {
   return (
     <main className="bg-background text-foreground">
+      {/* Public header with brand link */}
+      <ReconUtilityHeader />
       {/* HERO */}
       <MarketingHeroShell
         imageSrc="/security-lock.jpg"

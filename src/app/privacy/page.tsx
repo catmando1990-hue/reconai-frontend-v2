@@ -1,15 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-
-export const metadata = {
-  title: "Privacy Policy | ReconAI",
-  description: "ReconAI Privacy Policy - How we handle your data",
-};
+import { MarketingShell } from "@/components/marketing";
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-[92vh] bg-background text-foreground px-6 py-16">
-      <div className="mx-auto max-w-3xl">
+    <MarketingShell>
+      <div className="mx-auto max-w-3xl px-6 py-16">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition mb-8"
@@ -102,6 +100,6 @@ export default function PrivacyPage() {
           </Link>
         </div>
       </div>
-    </main>
+    </MarketingShell>
   );
 }

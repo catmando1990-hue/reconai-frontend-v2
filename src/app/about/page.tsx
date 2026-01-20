@@ -394,7 +394,7 @@ export default function AboutPage() {
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                href="/accounts"
+                href="/dashboard"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-primary-foreground hover:opacity-90 transition"
               >
                 Go to Dashboard <ArrowRight className="h-4 w-4" />

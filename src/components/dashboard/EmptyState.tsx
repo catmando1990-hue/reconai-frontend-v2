@@ -30,7 +30,14 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted">
+      <div
+        className={[
+          "mb-3 flex h-10 w-10 items-center justify-center",
+          "rounded-[var(--elevation-radius)]",
+          "border border-border/60 bg-muted/30 backdrop-blur-sm",
+          "shadow-sm",
+        ].join(" ")}
+      >
         <Icon className="h-5 w-5 text-muted-foreground" />
       </div>
       <h3 className="text-[length:var(--dash-body-size)] font-medium text-foreground">

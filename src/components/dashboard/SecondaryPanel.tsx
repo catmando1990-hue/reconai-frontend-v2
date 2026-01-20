@@ -28,13 +28,22 @@ export function SecondaryPanel({
 
   return (
     <div
-      className={["surface-inset rounded-lg", className ?? ""].join(" ").trim()}
+      className={[
+        "surface-inset shadow-sm",
+        "rounded-[var(--elevation-radius-lg)]",
+        "transition-transform duration-[var(--motion-standard)] ease-[var(--motion-ease)]",
+        "hover:-translate-y-[1px]",
+        className ?? "",
+      ]
+        .join(" ")
+        .trim()}
     >
+      <div className="dash-accent-divider" />
       <div
         className={[
           "flex items-center justify-between px-3 py-2.5",
           collapsible
-            ? "cursor-pointer select-none hover:bg-muted/50 transition-colors"
+            ? "cursor-pointer select-none hover:bg-muted/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             : "",
         ].join(" ")}
         onClick={collapsible ? () => setIsCollapsed(!isCollapsed) : undefined}

@@ -12,7 +12,11 @@ interface PageSurfaceProps {
 export function PageSurface({ children, className }: PageSurfaceProps) {
   return (
     <div
-      className={["surface-page rounded-lg p-4 lg:p-5", className ?? ""]
+      className={[
+        "surface-page p-4 lg:p-5 shadow-sm",
+        "rounded-[var(--elevation-radius-lg)]",
+        className ?? "",
+      ]
         .join(" ")
         .trim()}
     >

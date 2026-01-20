@@ -54,7 +54,12 @@ export function UtilityStrip({
   return (
     <div
       className={[
-        "flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card/50 px-4 py-3",
+        "flex flex-wrap items-center gap-3",
+        "rounded-[var(--elevation-radius-lg)] border border-border/60",
+        "bg-muted/20 backdrop-blur-sm",
+        "px-3 py-2 shadow-sm",
+        "transition-shadow duration-[var(--motion-standard)] ease-[var(--motion-ease)]",
+        "hover:shadow-md",
         className ?? "",
       ]
         .join(" ")
@@ -69,7 +74,7 @@ export function UtilityStrip({
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-9 w-full rounded-md border border-border bg-background/70 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           />
         </div>
       )}
@@ -87,7 +92,7 @@ export function UtilityStrip({
             id={`filter-${filter.id}`}
             value={filterValues[filter.id] ?? ""}
             onChange={(e) => handleFilterChange(filter.id, e.target.value)}
-            className="h-9 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-9 rounded-md border border-border bg-background/70 px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <option value="">All</option>
             {filter.options.map((opt) => (

@@ -25,8 +25,17 @@ export function PrimaryPanel({
 }: PrimaryPanelProps) {
   return (
     <div
-      className={["surface-panel rounded-lg", className ?? ""].join(" ").trim()}
+      className={[
+        "surface-panel shadow-sm",
+        "rounded-[var(--elevation-radius-lg)]",
+        "transition-transform duration-[var(--motion-standard)] ease-[var(--motion-ease)]",
+        "hover:-translate-y-[1px]",
+        className ?? "",
+      ]
+        .join(" ")
+        .trim()}
     >
+      <div className="dash-accent-divider" />
       {/* Header */}
       <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-border/50">
         <div className="min-w-0 flex-1">

@@ -21,6 +21,34 @@
   /* KPI/Stat typography */
   --dash-stat-value-size: 1.25rem;
   --dash-stat-label-size: 0.6875rem;
+
+  /* Premium dashboard accents (token-only) */
+  --dash-accent-opacity: 0.28;
+}
+
+/*
+ * Accent divider — restrained signature line used under headers and inside panels.
+ * Token-only: uses --primary CSS variable and transparency.
+ */
+.dash-accent-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--primary),
+    transparent
+  );
+  opacity: var(--dash-accent-opacity);
+}
+
+/*
+ * Focus ring — consistent, subtle focus treatment for keyboard navigation.
+ * Uses token-only primary.
+ */
+.dash-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 35%, transparent);
 }
 
 .dashboard-surface {
@@ -154,4 +182,33 @@
 
 .dash-stat-row + .dash-stat-row {
   border-top: 1px solid var(--border);
+}
+
+/*
+ * Accent divider utility
+ * Use as a 1px horizontal line to add subtle brand authority without hardcoded colors.
+ */
+.dash-accent-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--primary) 100%, transparent) 50%,
+    transparent
+  );
+  opacity: var(--dash-accent-opacity);
+}
+
+/* Fallback for browsers without color-mix (keeps token-only behavior) */
+@supports not (color: color-mix(in srgb, white, black)) {
+  .dash-accent-divider {
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--primary),
+      transparent
+    );
+    opacity: 0.18;
+  }
 }

@@ -102,13 +102,15 @@ export function RouteShell({
         {/* Page Header with canonical title/subtitle */}
         <PageHeader title={title} subtitle={subtitle} actions={right} />
 
+        {/* Signature accent divider (restrained) */}
+        <div className="dash-accent-divider" />
+
         {/* Module Sub-Navigation - shown on module landing pages */}
         {shouldShowSubNav && moduleKey && (
-          <div className="mt-4 mb-2 p-3 rounded-lg border border-border bg-muted/30">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-              In this module
-            </p>
-            <ModuleSubNav module={moduleKey} compact showDescriptions />
+          <div className="mt-4 mb-2 rounded-[var(--elevation-radius-lg)] border border-border/60 bg-muted/20 backdrop-blur-sm shadow-sm">
+            <div className="px-3 py-2">
+              <ModuleSubNav module={moduleKey} compact showDescriptions />
+            </div>
           </div>
         )}
 

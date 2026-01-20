@@ -91,7 +91,7 @@ export function GovConEntitlementGuard({ children }: { children: ReactNode }) {
 
             {/* Upgrade CTA */}
             <Link
-              href="/dashboard/settings"
+              href="/settings"
               className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
             >
               Upgrade to Access

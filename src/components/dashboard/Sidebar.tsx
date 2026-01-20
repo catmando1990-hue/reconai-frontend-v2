@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import {
@@ -23,7 +24,6 @@ import {
   HelpCircle,
   Building2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/lib/user-profile-context";
 import { hasGovConEntitlement } from "@/lib/entitlements";
 
@@ -46,90 +46,66 @@ type NavSection = {
 const CORE_NAV: NavItem[] = [
   {
     label: "Dashboard",
-    href: "/dashboard",
+    href: "/home",
     icon: LayoutDashboard,
     children: [
-      { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-      {
-        label: "Connect Bank",
-        href: "/dashboard/connect-bank",
-        icon: Landmark,
-      },
+      { label: "Overview", href: "/home", icon: LayoutDashboard },
+      { label: "Connect Bank", href: "/connect-bank", icon: Landmark },
     ],
   },
   {
     label: "Core",
-    href: "/dashboard/core",
+    href: "/core/overview",
     icon: Layers,
     children: [
-      { label: "Overview", href: "/dashboard/core", icon: Layers },
-      { label: "Accounts", href: "/dashboard/core/accounts", icon: Landmark },
+      { label: "Overview", href: "/core/overview", icon: Layers },
+      { label: "Accounts", href: "/accounts", icon: Landmark },
       {
         label: "Transactions",
-        href: "/dashboard/core/transactions",
+        href: "/core/transactions",
         icon: ArrowLeftRight,
       },
-      { label: "Reports", href: "/dashboard/core/reports", icon: FileText },
+      { label: "Reports", href: "/core/reports", icon: FileText },
     ],
   },
   {
     label: "Intelligence",
-    href: "/dashboard/intelligence",
+    href: "/intelligence/insights",
     icon: Sparkles,
     children: [
-      { label: "Insights", href: "/dashboard/intelligence", icon: Sparkles },
-      {
-        label: "Alerts",
-        href: "/dashboard/intelligence/alerts",
-        icon: Receipt,
-      },
-      {
-        label: "AI Worker",
-        href: "/dashboard/intelligence/ai-worker",
-        icon: Plane,
-      },
+      { label: "Insights", href: "/intelligence/insights", icon: Sparkles },
+      { label: "Alerts", href: "/intelligence/alerts", icon: Receipt },
+      { label: "AI Worker", href: "/intelligence/ai-worker", icon: Plane },
     ],
   },
   {
     label: "CFO Mode",
-    href: "/dashboard/cfo",
+    href: "/cfo/overview",
     icon: LineChart,
     children: [
-      { label: "Overview", href: "/dashboard/cfo", icon: LineChart },
+      { label: "Overview", href: "/cfo/overview", icon: LineChart },
       {
         label: "Executive Summary",
-        href: "/dashboard/cfo/executive-summary",
+        href: "/cfo/executive-summary",
         icon: FileText,
       },
       {
         label: "Compliance View",
-        href: "/dashboard/cfo/compliance",
+        href: "/cfo/compliance",
         icon: ShieldCheck,
       },
     ],
   },
   {
     label: "Invoicing",
-    href: "/dashboard/invoicing",
+    href: "/invoicing",
     icon: Receipt,
     children: [
-      { label: "Invoices", href: "/dashboard/invoicing", icon: Receipt },
-      {
-        label: "New Invoice",
-        href: "/dashboard/invoicing/new",
-        icon: FileText,
-      },
-      { label: "A/R Aging", href: "/dashboard/ar", icon: ArrowLeftRight },
-      {
-        label: "Settings",
-        href: "/dashboard/invoicing/settings",
-        icon: Settings,
-      },
-      {
-        label: "Template Preview",
-        href: "/dashboard/invoicing/preview",
-        icon: FileText,
-      },
+      { label: "Invoices", href: "/invoicing", icon: Receipt },
+      { label: "New Invoice", href: "/invoicing/new", icon: FileText },
+      { label: "A/R Aging", href: "/ar", icon: ArrowLeftRight },
+      { label: "Settings", href: "/invoicing/settings", icon: Settings },
+      { label: "Template Preview", href: "/invoicing/preview", icon: FileText },
     ],
   },
 ];
@@ -137,20 +113,22 @@ const CORE_NAV: NavItem[] = [
 const SETTINGS_NAV: NavItem[] = [
   {
     label: "Settings",
-    href: "/dashboard/settings",
+    href: "/settings",
     icon: Settings,
-    children: [{ label: "Profile", href: "/dashboard/settings", icon: User }],
+    children: [{ label: "Profile", href: "/settings", icon: User }],
   },
 ];
 
 function getActiveSection(pathname: string): string {
-  if (pathname.startsWith("/dashboard/core")) return "Core";
-  if (pathname.startsWith("/dashboard/intelligence")) return "Intelligence";
-  if (pathname.startsWith("/dashboard/cfo")) return "CFO Mode";
-  if (pathname.startsWith("/dashboard/invoicing")) return "Invoicing";
-  if (pathname.startsWith("/dashboard/ar")) return "Invoicing";
-  if (pathname.startsWith("/dashboard/govcon")) return "GovCon";
-  if (pathname.startsWith("/dashboard/settings")) return "Settings";
+  if (pathname.startsWith("/core")) return "Core";
+  if (pathname.startsWith("/accounts")) return "Core";
+  if (pathname.startsWith("/transactions")) return "Core";
+  if (pathname.startsWith("/intelligence")) return "Intelligence";
+  if (pathname.startsWith("/cfo")) return "CFO Mode";
+  if (pathname.startsWith("/invoicing")) return "Invoicing";
+  if (pathname.startsWith("/ar")) return "Invoicing";
+  if (pathname.startsWith("/govcon")) return "GovCon";
+  if (pathname.startsWith("/settings")) return "Settings";
   return "Dashboard";
 }
 
@@ -178,35 +156,20 @@ export function Sidebar() {
     if (showGovCon) {
       const govConItem: NavItem = {
         label: "GovCon",
-        href: "/dashboard/govcon",
+        href: "/govcon",
         icon: Building2,
         children: [
-          { label: "Overview", href: "/dashboard/govcon", icon: Building2 },
-          {
-            label: "Contracts",
-            href: "/dashboard/govcon/contracts",
-            icon: FileText,
-          },
-          {
-            label: "Timekeeping",
-            href: "/dashboard/govcon/timekeeping",
-            icon: Layers,
-          },
-          {
-            label: "Indirects",
-            href: "/dashboard/govcon/indirects",
-            icon: Layers,
-          },
+          { label: "Overview", href: "/govcon", icon: Building2 },
+          { label: "Contracts", href: "/govcon/contracts", icon: FileText },
+          { label: "Timekeeping", href: "/govcon/timekeeping", icon: Layers },
+          { label: "Indirects", href: "/govcon/indirects", icon: Layers },
           {
             label: "Reconciliation",
-            href: "/dashboard/govcon/reconciliation",
+            href: "/govcon/reconciliation",
             icon: ArrowLeftRight,
           },
-          {
-            label: "Audit Trail",
-            href: "/dashboard/govcon/audit",
-            icon: ShieldCheck,
-          },
+          { label: "Audit Trail", href: "/govcon/audit", icon: ShieldCheck },
+          { label: "SF-1408", href: "/govcon/sf-1408", icon: ShieldCheck },
         ],
       };
 
@@ -266,9 +229,6 @@ export function Sidebar() {
                   const Icon = item.icon;
                   const isExpanded = expanded === item.label;
                   const isActive = activeSection === item.label;
-                  const canExpand = Boolean(
-                    item.children && item.children.length > 0,
-                  );
 
                   const panelId = `nav-${item.label.replace(/\s+/g, "-").toLowerCase()}`;
 
@@ -276,23 +236,20 @@ export function Sidebar() {
                     <div key={item.label}>
                       <div
                         className={[
-                          "group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                          "group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors border",
                           isActive
-                            ? "bg-primary/10 text-foreground border border-primary/15"
-                            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border border-transparent",
+                            ? "bg-primary/10 text-foreground border-primary/15"
+                            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-transparent",
                         ].join(" ")}
                       >
                         <Link
                           href={item.href}
+                          className="flex items-center gap-3 min-w-0 flex-1"
                           aria-current={isActive ? "page" : undefined}
-                          className="flex min-w-0 flex-1 items-center gap-3"
-                          onClick={() => {
-                            if (canExpand) setExpanded(item.label);
-                          }}
                         >
                           <div
                             className={[
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+                              "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
                               isActive
                                 ? "bg-primary/10"
                                 : "bg-card/50 group-hover:bg-accent",
@@ -310,16 +267,17 @@ export function Sidebar() {
                           <span className="truncate">{item.label}</span>
                         </Link>
 
-                        {canExpand && (
+                        {item.children && item.children.length > 0 && (
                           <button
                             type="button"
                             aria-expanded={isExpanded}
                             aria-controls={panelId}
                             onClick={(e) => {
                               e.preventDefault();
+                              e.stopPropagation();
                               setExpanded(isExpanded ? "" : item.label);
                             }}
-                            className="ml-2 inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-colors"
+                            className="ml-2 inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
                             title={isExpanded ? "Collapse" : "Expand"}
                           >
                             <ChevronDown
@@ -335,10 +293,6 @@ export function Sidebar() {
                       {item.children && (
                         <div
                           id={panelId}
-                          // Defensive: ensure submenu panels always participate in normal flow.
-                          // Some environments/extensions/global CSS can incorrectly apply
-                          // `position:absolute; top:0` to these collapsible grid containers,
-                          // causing "ghost" submenu text at the top of the sidebar.
                           style={{
                             position: "relative",
                             top: "auto",
@@ -366,10 +320,10 @@ export function Sidebar() {
                                       childActive ? "page" : undefined
                                     }
                                     className={[
-                                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors border",
                                       childActive
-                                        ? "bg-primary/10 text-foreground border border-primary/15"
-                                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border border-transparent",
+                                        ? "bg-primary/10 text-foreground border-primary/15"
+                                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-transparent",
                                     ].join(" ")}
                                   >
                                     <ChildIcon
@@ -378,7 +332,9 @@ export function Sidebar() {
                                         childActive ? "text-primary" : "",
                                       ].join(" ")}
                                     />
-                                    <span>{child.label}</span>
+                                    <span className="truncate">
+                                      {child.label}
+                                    </span>
                                   </Link>
                                 );
                               })}

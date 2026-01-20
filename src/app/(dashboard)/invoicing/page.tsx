@@ -11,13 +11,13 @@ export default function InvoicingPage() {
       right={
         <div className="flex items-center gap-2">
           <Link
-            href="/dashboard/invoicing/preview"
+            href="/invoicing/preview"
             className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted"
           >
             Preview template
           </Link>
           <Link
-            href="/dashboard/invoicing/new"
+            href="/invoicing/new"
             className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
           >
             New invoice

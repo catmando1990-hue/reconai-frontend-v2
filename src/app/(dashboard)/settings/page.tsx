@@ -178,10 +178,10 @@ export default function SettingsPage() {
     if (checkout === "success") {
       setCheckoutStatus("success");
       // Clear URL param after showing message
-      window.history.replaceState({}, "", "/dashboard/settings");
+      window.history.replaceState({}, "", "/settings");
     } else if (checkout === "cancelled") {
       setCheckoutStatus("cancelled");
-      window.history.replaceState({}, "", "/dashboard/settings");
+      window.history.replaceState({}, "", "/settings");
     }
   }, [searchParams]);
 

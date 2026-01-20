@@ -9,11 +9,11 @@ import { CommandStripV2 } from "@/components/dashboard/CommandStripV2";
 import { Menu, X, Brain } from "lucide-react";
 
 function getSectionTitle(pathname: string): string {
-  if (pathname.startsWith("/dashboard/core")) return "Core";
-  if (pathname.startsWith("/dashboard/intelligence")) return "Intelligence";
-  if (pathname.startsWith("/dashboard/cfo")) return "CFO Mode";
-  if (pathname.startsWith("/dashboard/settings")) return "Settings";
-  if (pathname.startsWith("/dashboard")) return "Dashboard";
+  if (pathname.startsWith("/core")) return "Core";
+  if (pathname.startsWith("/intelligence")) return "Intelligence";
+  if (pathname.startsWith("/cfo")) return "CFO Mode";
+  if (pathname.startsWith("/settings")) return "Settings";
+  if (pathname.startsWith("/home")) return "Dashboard";
   return "ReconAI";
 }
 

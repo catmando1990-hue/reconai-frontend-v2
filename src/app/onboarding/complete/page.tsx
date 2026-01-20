@@ -16,7 +16,7 @@ export default function CompletePage() {
     state.dataSource === "bank-connect"
       ? "/connect-bank"
       : state.dataSource === "manual-upload"
-        ? "/dashboard/core/transactions"
+        ? "/core/transactions"
         : "/dashboard";
 
   return (

@@ -591,7 +591,7 @@ export default function ReconciliationPage() {
               </div>
             </div>
             <Link
-              href="/dashboard/govcon/sf-1408"
+              href="/govcon/sf-1408"
               className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors"
             >
               <Eye className="h-4 w-4" />

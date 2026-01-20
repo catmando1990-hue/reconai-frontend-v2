@@ -324,14 +324,14 @@ export default function AuditPage() {
       {/* Quick Links */}
       <div className="flex flex-wrap gap-2">
         <Link
-          href="/dashboard/govcon/evidence"
+          href="/govcon/evidence"
           className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted"
         >
           <Eye className="h-4 w-4" />
           Evidence Viewer
         </Link>
         <Link
-          href="/dashboard/govcon/audit/verify"
+          href="/govcon/audit/verify"
           className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted"
         >
           <Hash className="h-4 w-4" />

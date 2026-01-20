@@ -9,7 +9,7 @@ export default function ARPage() {
       subtitle="Monitor outstanding invoices and customer payment risk."
       right={
         <Link
-          href="/dashboard/invoicing"
+          href="/invoicing"
           className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted"
         >
           Go to invoicing

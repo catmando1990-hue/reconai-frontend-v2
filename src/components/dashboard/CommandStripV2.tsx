@@ -10,10 +10,10 @@ import {
 import { DEFAULT_COMMANDS } from "@/lib/commandRegistry";
 
 function sectionLabel(pathname: string): string {
-  if (pathname.startsWith("/dashboard/core")) return "Core";
-  if (pathname.startsWith("/dashboard/intelligence")) return "Intelligence";
-  if (pathname.startsWith("/dashboard/cfo")) return "CFO";
-  if (pathname.startsWith("/dashboard/settings")) return "Settings";
+  if (pathname.startsWith("/core")) return "Core";
+  if (pathname.startsWith("/intelligence")) return "Intelligence";
+  if (pathname.startsWith("/cfo")) return "CFO";
+  if (pathname.startsWith("/settings")) return "Settings";
   return "Dashboard";
 }
 
@@ -82,7 +82,7 @@ export function CommandStripV2() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => router.push("/dashboard/intelligence/insights")}
+            onClick={() => router.push("/intelligence/insights")}
             className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-card/40 px-3 text-xs hover:bg-card/60"
           >
             <Sparkles className="h-4 w-4" />
@@ -90,7 +90,7 @@ export function CommandStripV2() {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/dashboard/intelligence/alerts")}
+            onClick={() => router.push("/intelligence/alerts")}
             className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-card/40 px-3 text-xs hover:bg-card/60"
           >
             <Bell className="h-4 w-4" />
@@ -98,7 +98,7 @@ export function CommandStripV2() {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/dashboard/settings")}
+            onClick={() => router.push("/settings")}
             className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-card/40 px-3 text-xs hover:bg-card/60"
           >
             <Activity className="h-4 w-4" />

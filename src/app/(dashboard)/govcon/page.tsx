@@ -32,7 +32,7 @@ const MODULES = [
     title: "Contracts",
     description:
       "DCAA-compliant contract management with CLIN tracking and funding status",
-    href: "/dashboard/govcon/contracts",
+    href: "/govcon/contracts",
     icon: FileText,
     stats: `${QUICK_STATS.activeContracts} active contracts`,
     color: "text-primary",
@@ -42,7 +42,7 @@ const MODULES = [
     title: "Timekeeping",
     description:
       "Daily labor tracking with 15-min increments and approval workflow",
-    href: "/dashboard/govcon/timekeeping",
+    href: "/govcon/timekeeping",
     icon: Clock,
     stats: `${QUICK_STATS.pendingTimesheets} pending approval`,
     color: "text-primary",
@@ -52,7 +52,7 @@ const MODULES = [
     title: "Indirect Costs",
     description:
       "Overhead, G&A, and fringe pool management with FAR 31.201 allowability",
-    href: "/dashboard/govcon/indirects",
+    href: "/govcon/indirects",
     icon: Layers,
     stats: "3 active pools",
     color: "text-primary",
@@ -61,7 +61,7 @@ const MODULES = [
   {
     title: "Reconciliation",
     description: "Labor and indirect cost reconciliation with ICS preparation",
-    href: "/dashboard/govcon/reconciliation",
+    href: "/govcon/reconciliation",
     icon: ArrowLeftRight,
     stats: `${QUICK_STATS.openVariances} open variances`,
     color: "text-primary",
@@ -71,7 +71,7 @@ const MODULES = [
     title: "Audit Trail",
     description:
       "Immutable audit log with hash chain integrity and evidence retention",
-    href: "/dashboard/govcon/audit",
+    href: "/govcon/audit",
     icon: Shield,
     stats: `${QUICK_STATS.auditEntries} entries`,
     color: "text-primary",
@@ -340,7 +340,7 @@ export default function GovConDashboardPage() {
               government contracting.
             </p>
             <Link
-              href="/dashboard/govcon/sf-1408"
+              href="/govcon/sf-1408"
               className="text-sm text-primary hover:underline mt-2 inline-block"
             >
               View Checklist →
@@ -353,7 +353,7 @@ export default function GovConDashboardPage() {
               and rate summaries.
             </p>
             <Link
-              href="/dashboard/govcon/audit"
+              href="/govcon/audit"
               className="text-sm text-primary hover:underline mt-2 inline-block"
             >
               Export Center →

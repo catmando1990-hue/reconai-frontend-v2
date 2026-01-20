@@ -702,7 +702,7 @@ export default function DashboardPage() {
             title="Initial insight"
             insight="12 transactions require classification. Review them to ensure accurate reporting."
             actionLabel="Review transactions"
-            onAction={() => router.push("/dashboard/core/transactions")}
+            onAction={() => router.push("/core/transactions")}
           />
 
           {/* Phase 3A: Signal detection */}

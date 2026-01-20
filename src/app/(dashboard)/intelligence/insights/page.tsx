@@ -15,6 +15,7 @@ import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
 import { IntelligenceV1Panel } from "@/components/intelligence/IntelligenceV1Panel";
 import { Sparkles, RefreshCw } from "lucide-react";
+import { ROUTES } from "@/lib/routes";
 
 export default function IntelligenceInsightsPage() {
   const { data, isLoading, error, refetch } = useInsightsSummary();
@@ -158,19 +159,19 @@ export default function IntelligenceInsightsPage() {
             <SecondaryPanel title="Quick Links" collapsible>
               <div className="space-y-2 text-sm">
                 <Link
-                  href="/intelligence/alerts"
+                  href={ROUTES.INTELLIGENCE_ALERTS}
                   className="block text-primary hover:underline"
                 >
                   View alerts
                 </Link>
                 <Link
-                  href="/intelligence/ai-worker"
+                  href={ROUTES.INTELLIGENCE_AI_WORKER}
                   className="block text-primary hover:underline"
                 >
                   AI Worker tasks
                 </Link>
                 <Link
-                  href="/core/transactions"
+                  href={ROUTES.CORE_TRANSACTIONS}
                   className="block text-primary hover:underline"
                 >
                   Review transactions

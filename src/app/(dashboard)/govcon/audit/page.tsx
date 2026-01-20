@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Shield, CheckCircle, Hash, Eye } from "lucide-react";
+import { Shield, Hash, Eye, AlertCircle } from "lucide-react";
+import { STATUS } from "@/lib/dashboardCopy";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
@@ -14,7 +15,7 @@ export default function AuditPage() {
   return (
     <RouteShell
       title="Audit Trail"
-      subtitle="Immutable DCAA-compliant audit log with hash chain integrity"
+      subtitle="Audit log with hash chain integrity for DCAA documentation"
       right={
         <div className="flex items-center gap-2">
           <ExportForDCAAButton className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors text-sm" />
@@ -74,29 +75,37 @@ export default function AuditPage() {
         <div className="space-y-4 lg:col-span-4">
           <SecondaryPanel title="Integrity Status">
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Hash Chain Verified</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {STATUS.NOT_EVALUATED}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    All entries cryptographically linked
+                    No audit entries to verify
                   </p>
                 </div>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Entries</span>
-                  <span className="font-medium">0</span>
+                  <span className="font-medium text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">DCAA Relevant</span>
-                  <span className="font-medium">0</span>
+                  <span className="font-medium text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">With Evidence</span>
-                  <span className="font-medium">0</span>
+                  <span className="font-medium text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
               </div>
             </div>

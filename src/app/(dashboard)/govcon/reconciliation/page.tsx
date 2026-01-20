@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import { Button } from "@/components/ui/button";
 import PolicyBanner from "@/components/policy/PolicyBanner";
+import { ROUTES } from "@/lib/routes";
 
 const ICS_SCHEDULES = [
   { schedule: "H", name: "Contract Brief" },
@@ -140,7 +141,7 @@ export default function ReconciliationPage() {
                   Accounting system adequacy for government contracting
                 </p>
                 <Link
-                  href="/govcon/sf-1408"
+                  href={ROUTES.GOVCON_SF1408}
                   className="text-xs text-primary hover:underline mt-1 inline-block"
                 >
                   View checklist →
@@ -152,19 +153,19 @@ export default function ReconciliationPage() {
           <SecondaryPanel title="Quick Links" collapsible>
             <div className="space-y-2 text-sm">
               <Link
-                href="/govcon/indirects"
+                href={ROUTES.GOVCON_INDIRECTS}
                 className="block text-primary hover:underline"
               >
                 Indirect cost pools
               </Link>
               <Link
-                href="/govcon/timekeeping"
+                href={ROUTES.GOVCON_TIMEKEEPING}
                 className="block text-primary hover:underline"
               >
                 Timekeeping
               </Link>
               <Link
-                href="/govcon/audit"
+                href={ROUTES.GOVCON_AUDIT}
                 className="block text-primary hover:underline"
               >
                 View audit trail

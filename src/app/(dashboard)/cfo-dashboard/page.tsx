@@ -9,6 +9,7 @@ import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { PLATFORM_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
+import { STATUS, CTA } from "@/lib/dashboardCopy";
 import {
   BarChart3,
   PieChart,
@@ -121,20 +122,26 @@ export default function CfoOverviewPage() {
                   <span className="text-sm text-muted-foreground">
                     Cash Position
                   </span>
-                  <span className="text-xl font-semibold">—</span>
+                  <span className="text-xl font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Runway</span>
-                  <span className="text-xl font-semibold">— days</span>
+                  <span className="text-xl font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Burn Rate
                   </span>
-                  <span className="text-xl font-semibold">—/mo</span>
+                  <span className="text-xl font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground pt-2 border-t">
-                  Connect banks to populate financial metrics.
+                  {CTA.CONNECT_BANK} to populate financial metrics.
                 </p>
               </div>
             </SecondaryPanel>
@@ -145,19 +152,23 @@ export default function CfoOverviewPage() {
                   <span className="text-sm text-muted-foreground">
                     Active Risks
                   </span>
-                  <span className="text-lg font-semibold">0</span>
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Pending Actions
                   </span>
-                  <span className="text-lg font-semibold">0</span>
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Compliance Score
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {STATUS.NOT_EVALUATED}
                   </span>
-                  <span className="text-lg font-semibold">—</span>
                 </div>
               </div>
             </SecondaryPanel>

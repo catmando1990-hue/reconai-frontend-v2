@@ -78,7 +78,7 @@ export default function PageHelp({
                 {features.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-foreground mb-3 flex items-center gap-2 text-sm font-medium">
-                      <CheckCircle2 className="text-reconai-success h-4 w-4" />
+                      <CheckCircle2 className="text-chart-1 h-4 w-4" />
                       Features
                     </h3>
                     <ul className="space-y-2">

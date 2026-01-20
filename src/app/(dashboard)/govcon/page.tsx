@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { ROUTES } from "@/lib/routes";
+import { STATUS, EMPTY_STATE, CTA } from "@/lib/dashboardCopy";
 
 const MODULES = [
   {
@@ -88,10 +89,10 @@ export default function GovConDashboardPage() {
           >
             <EmptyState
               icon={ClipboardList}
-              title="Compliance queue empty"
-              description="No items require attention. Configure contracts and timekeeping to begin tracking compliance."
+              title={EMPTY_STATE.govcon.title}
+              description={EMPTY_STATE.govcon.description}
               action={{
-                label: "Configure contracts",
+                label: CTA.CONFIGURE,
                 href: ROUTES.GOVCON_CONTRACTS,
               }}
             />
@@ -106,25 +107,31 @@ export default function GovConDashboardPage() {
                 <span className="text-sm text-muted-foreground">
                   Timekeeping
                 </span>
-                <StatusChip variant="muted">Not configured</StatusChip>
+                <StatusChip variant="unknown">
+                  {STATUS.NOT_CONFIGURED}
+                </StatusChip>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Job Cost Accounting
                 </span>
-                <StatusChip variant="muted">Not configured</StatusChip>
+                <StatusChip variant="unknown">
+                  {STATUS.NOT_CONFIGURED}
+                </StatusChip>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Audit Trail
                 </span>
-                <StatusChip variant="muted">Requires setup</StatusChip>
+                <StatusChip variant="muted">{STATUS.REQUIRES_SETUP}</StatusChip>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   ICS Schedules
                 </span>
-                <StatusChip variant="muted">Not evaluated</StatusChip>
+                <StatusChip variant="unknown">
+                  {STATUS.NOT_EVALUATED}
+                </StatusChip>
               </div>
             </div>
           </SecondaryPanel>

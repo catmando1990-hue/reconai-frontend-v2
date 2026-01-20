@@ -19,6 +19,7 @@ import type { RbacSnapshot } from "@/lib/enterprise/rbac";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { ROUTES } from "@/lib/routes";
 
 export default function CfoCompliancePage() {
   const [rbac, setRbac] = useState<RbacSnapshot | null>(null);
@@ -182,19 +183,19 @@ export default function CfoCompliancePage() {
           <SecondaryPanel title="Quick Links" collapsible>
             <div className="space-y-2 text-sm">
               <Link
-                href="/cfo/executive-summary"
+                href={ROUTES.CFO_EXECUTIVE_SUMMARY}
                 className="block text-primary hover:underline"
               >
                 Executive summary
               </Link>
               <Link
-                href="/cfo/overview"
+                href={ROUTES.CFO_OVERVIEW}
                 className="block text-primary hover:underline"
               >
                 CFO overview
               </Link>
               <Link
-                href="/govcon/audit"
+                href={ROUTES.GOVCON_AUDIT}
                 className="block text-primary hover:underline"
               >
                 GovCon audit trail

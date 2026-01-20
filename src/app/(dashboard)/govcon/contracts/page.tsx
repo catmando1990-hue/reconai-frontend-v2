@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { UtilityStrip } from "@/components/dashboard/UtilityStrip";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 
 export default function ContractsPage() {
   return (
@@ -120,13 +121,13 @@ export default function ContractsPage() {
           <SecondaryPanel title="Quick Actions" collapsible>
             <div className="space-y-2">
               <Link
-                href="/govcon/audit"
+                href={ROUTES.GOVCON_AUDIT}
                 className="block text-sm text-primary hover:underline"
               >
                 View audit trail
               </Link>
               <Link
-                href="/govcon/reconciliation"
+                href={ROUTES.GOVCON_RECONCILIATION}
                 className="block text-sm text-primary hover:underline"
               >
                 Run reconciliation

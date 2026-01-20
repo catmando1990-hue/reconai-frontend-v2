@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import { Button } from "@/components/ui/button";
 import PolicyBanner from "@/components/policy/PolicyBanner";
+import { ROUTES } from "@/lib/routes";
 
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -141,13 +142,13 @@ export default function TimekeepingPage() {
           <SecondaryPanel title="Quick Links" collapsible>
             <div className="space-y-2 text-sm">
               <Link
-                href="/govcon/contracts"
+                href={ROUTES.GOVCON_CONTRACTS}
                 className="block text-primary hover:underline"
               >
                 View contracts
               </Link>
               <Link
-                href="/govcon/audit"
+                href={ROUTES.GOVCON_AUDIT}
                 className="block text-primary hover:underline"
               >
                 Timesheet audit trail

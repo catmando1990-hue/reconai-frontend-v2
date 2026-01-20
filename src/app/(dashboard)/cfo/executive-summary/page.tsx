@@ -11,6 +11,7 @@ import { TierGate } from "@/components/legal/TierGate";
 import { AI_DISCLAIMER, REGULATORY_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { FileText, RefreshCw, AlertTriangle, ChevronRight } from "lucide-react";
+import { ROUTES } from "@/lib/routes";
 
 function formatCurrency(value: number | null): string {
   if (value === null) return "—";
@@ -190,19 +191,19 @@ function ExecutiveSummaryBody() {
           <SecondaryPanel title="Quick Links" collapsible>
             <div className="space-y-2 text-sm">
               <Link
-                href="/cfo/compliance"
+                href={ROUTES.CFO_COMPLIANCE}
                 className="block text-primary hover:underline"
               >
                 View compliance
               </Link>
               <Link
-                href="/cfo/overview"
+                href={ROUTES.CFO_OVERVIEW}
                 className="block text-primary hover:underline"
               >
                 CFO overview
               </Link>
               <Link
-                href="/financial-reports"
+                href={ROUTES.CFO_FINANCIAL_REPORTS}
                 className="block text-primary hover:underline"
               >
                 Financial reports

@@ -15,6 +15,7 @@ import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
 import { Bell, RefreshCw } from "lucide-react";
+import { ROUTES } from "@/lib/routes";
 
 export default function AlertsPage() {
   const { data, isLoading, error, refetch } = useAlerts();
@@ -157,19 +158,19 @@ export default function AlertsPage() {
             <SecondaryPanel title="Quick Links" collapsible>
               <div className="space-y-2 text-sm">
                 <Link
-                  href="/intelligence/insights"
+                  href={ROUTES.INTELLIGENCE_INSIGHTS}
                   className="block text-primary hover:underline"
                 >
                   View insights
                 </Link>
                 <Link
-                  href="/intelligence/ai-worker"
+                  href={ROUTES.INTELLIGENCE_AI_WORKER}
                   className="block text-primary hover:underline"
                 >
                   AI Worker tasks
                 </Link>
                 <Link
-                  href="/core/transactions"
+                  href={ROUTES.CORE_TRANSACTIONS}
                   className="block text-primary hover:underline"
                 >
                   Review transactions

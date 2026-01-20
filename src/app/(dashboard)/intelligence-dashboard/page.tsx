@@ -9,6 +9,7 @@ import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { AI_DISCLAIMER } from "@/lib/legal/disclaimers";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { ROUTES } from "@/lib/routes";
+import { STATUS } from "@/lib/dashboardCopy";
 import { Bot, Bell, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -102,17 +103,23 @@ export default function IntelligenceOverviewPage() {
                   <span className="text-sm text-muted-foreground">
                     Insights
                   </span>
-                  <span className="text-lg font-semibold">0</span>
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Alerts</span>
-                  <span className="text-lg font-semibold">0</span>
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Pending Tasks
                   </span>
-                  <span className="text-lg font-semibold">0</span>
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {STATUS.NO_DATA}
+                  </span>
                 </div>
               </div>
             </SecondaryPanel>

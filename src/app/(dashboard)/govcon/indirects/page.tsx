@@ -10,6 +10,7 @@ import { UtilityStrip } from "@/components/dashboard/UtilityStrip";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 import { Button } from "@/components/ui/button";
 import PolicyBanner from "@/components/policy/PolicyBanner";
+import { ROUTES } from "@/lib/routes";
 
 export default function IndirectsPage() {
   return (
@@ -156,19 +157,19 @@ export default function IndirectsPage() {
           <SecondaryPanel title="Quick Links" collapsible>
             <div className="space-y-2 text-sm">
               <Link
-                href="/govcon/reconciliation"
+                href={ROUTES.GOVCON_RECONCILIATION}
                 className="block text-primary hover:underline"
               >
                 Run reconciliation
               </Link>
               <Link
-                href="/govcon/audit"
+                href={ROUTES.GOVCON_AUDIT}
                 className="block text-primary hover:underline"
               >
                 View audit trail
               </Link>
               <Link
-                href="/govcon/contracts"
+                href={ROUTES.GOVCON_CONTRACTS}
                 className="block text-primary hover:underline"
               >
                 View contracts

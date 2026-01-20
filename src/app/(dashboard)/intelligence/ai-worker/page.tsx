@@ -18,6 +18,7 @@ import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
 import { Bot, RefreshCw } from "lucide-react";
+import { ROUTES } from "@/lib/routes";
 
 export default function AiWorkerPage() {
   const { data, isLoading, error, refetch } = useWorkerTasks();
@@ -152,19 +153,19 @@ export default function AiWorkerPage() {
             <SecondaryPanel title="Quick Links" collapsible>
               <div className="space-y-2 text-sm">
                 <Link
-                  href="/intelligence/insights"
+                  href={ROUTES.INTELLIGENCE_INSIGHTS}
                   className="block text-primary hover:underline"
                 >
                   View insights
                 </Link>
                 <Link
-                  href="/intelligence/alerts"
+                  href={ROUTES.INTELLIGENCE_ALERTS}
                   className="block text-primary hover:underline"
                 >
                   View alerts
                 </Link>
                 <Link
-                  href="/settings"
+                  href={ROUTES.SETTINGS}
                   className="block text-primary hover:underline"
                 >
                   Configure workflows

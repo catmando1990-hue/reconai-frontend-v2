@@ -9,6 +9,7 @@ import { StatusChip } from "@/components/dashboard/StatusChip";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { TierGate } from "@/components/legal/TierGate";
 import { ROUTES } from "@/lib/routes";
+import { STATUS, EMPTY_STATE, CTA, PANEL_TITLE } from "@/lib/dashboardCopy";
 import {
   Building2,
   ArrowLeftRight,
@@ -90,10 +91,10 @@ export default function CoreOverviewPage() {
             >
               <EmptyState
                 icon={FileText}
-                title="No pending items"
-                description="All transactions are categorized and reconciled. Check back after new activity."
+                title={EMPTY_STATE.transactions.title}
+                description={EMPTY_STATE.transactions.description}
                 action={{
-                  label: "View transactions",
+                  label: CTA.VIEW_DETAILS,
                   href: ROUTES.CORE_TRANSACTIONS,
                 }}
               />
@@ -102,7 +103,7 @@ export default function CoreOverviewPage() {
 
           {/* Secondary Panels */}
           <div className="space-y-4 lg:col-span-4">
-            <SecondaryPanel title="Quick Access">
+            <SecondaryPanel title={PANEL_TITLE.quickAccess}>
               <nav className="space-y-1">
                 {coreModules.map((module) => {
                   const Icon = module.icon;
@@ -126,25 +127,31 @@ export default function CoreOverviewPage() {
               </nav>
             </SecondaryPanel>
 
-            <SecondaryPanel title="System Status" collapsible>
+            <SecondaryPanel title={PANEL_TITLE.systemStatus} collapsible>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Data Sync
                   </span>
-                  <StatusChip variant="ok">Connected</StatusChip>
+                  <StatusChip variant="unknown">
+                    {STATUS.NOT_CONFIGURED}
+                  </StatusChip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Categorization
                   </span>
-                  <StatusChip variant="ok">Active</StatusChip>
+                  <StatusChip variant="unknown">
+                    {STATUS.NOT_EVALUATED}
+                  </StatusChip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Reconciliation
                   </span>
-                  <StatusChip variant="muted">Pending review</StatusChip>
+                  <StatusChip variant="muted">
+                    {STATUS.REQUIRES_SETUP}
+                  </StatusChip>
                 </div>
               </div>
             </SecondaryPanel>

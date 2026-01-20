@@ -7,6 +7,10 @@ interface StatValueProps {
   label: string;
   value: string | number | null | undefined;
   emptyText?: string;
+  /** Treat 0, "$0", "$0.00" as empty (default: false) */
+  emptyWhenZero?: boolean;
+  /** Treat "" as empty (default: true) */
+  emptyWhenBlankString?: boolean;
   hint?: ReactNode;
   trend?: "up" | "down" | "neutral";
   variant?: "default" | "success" | "warning" | "error";
@@ -16,35 +20,41 @@ interface StatValueProps {
 /**
  * StatValue — Standardized KPI/stat display component.
  * Enterprise density: uses --dash-stat-* tokens for consistent sizing.
- * Handles empty states: shows emptyText when value is null/undefined/0/$0.
+ *
+ * Empty state logic:
+ * - null/undefined: always treated as empty
+ * - "" (blank string): empty by default, opt-out with emptyWhenBlankString={false}
+ * - 0, "$0", "$0.00": NOT empty by default, opt-in with emptyWhenZero={true}
+ *
  * Token-only styling, no hardcoded colors.
  */
 export function StatValue({
   label,
   value,
   emptyText = "No data",
+  emptyWhenZero = false,
+  emptyWhenBlankString = true,
   hint,
   trend,
   variant = "default",
   className,
 }: StatValueProps) {
   // Determine if value should be treated as empty
-  const isEmpty =
-    value === null ||
-    value === undefined ||
-    value === "" ||
-    value === 0 ||
-    value === "$0" ||
-    value === "$0.00";
+  const isNullish = value === null || value === undefined;
+  const isBlankString = value === "" && emptyWhenBlankString;
+  const isZeroValue =
+    emptyWhenZero && (value === 0 || value === "$0" || value === "$0.00");
 
-  // Variant-based text color
+  const isEmpty = isNullish || isBlankString || isZeroValue;
+
+  // Variant-based text color (uses theme tokens)
   const valueColorClass =
     variant === "success"
-      ? "text-reconai-success"
+      ? "text-chart-1"
       : variant === "warning"
-        ? "text-reconai-warning"
+        ? "text-chart-4"
         : variant === "error"
-          ? "text-reconai-error"
+          ? "text-destructive"
           : "";
 
   return (
@@ -56,12 +66,12 @@ export function StatValue({
       >
         {isEmpty ? emptyText : value}
         {trend === "up" && !isEmpty && (
-          <span className="ml-1 text-reconai-success" aria-label="Increasing">
+          <span className="ml-1 text-chart-1" aria-label="Increasing">
             ↑
           </span>
         )}
         {trend === "down" && !isEmpty && (
-          <span className="ml-1 text-reconai-error" aria-label="Decreasing">
+          <span className="ml-1 text-destructive" aria-label="Decreasing">
             ↓
           </span>
         )}
@@ -75,6 +85,10 @@ interface StatRowProps {
   label: string;
   value: string | number | null | undefined;
   emptyText?: string;
+  /** Treat 0, "$0", "$0.00" as empty (default: false) */
+  emptyWhenZero?: boolean;
+  /** Treat "" as empty (default: true) */
+  emptyWhenBlankString?: boolean;
   variant?: "default" | "success" | "warning" | "error";
   className?: string;
 }
@@ -82,29 +96,33 @@ interface StatRowProps {
 /**
  * StatRow — Horizontal stat display (label left, value right).
  * Uses dash-stat-row class for consistent spacing.
+ *
+ * Same empty-state logic as StatValue.
  */
 export function StatRow({
   label,
   value,
   emptyText = "—",
+  emptyWhenZero = false,
+  emptyWhenBlankString = true,
   variant = "default",
   className,
 }: StatRowProps) {
-  const isEmpty =
-    value === null ||
-    value === undefined ||
-    value === "" ||
-    value === 0 ||
-    value === "$0" ||
-    value === "$0.00";
+  const isNullish = value === null || value === undefined;
+  const isBlankString = value === "" && emptyWhenBlankString;
+  const isZeroValue =
+    emptyWhenZero && (value === 0 || value === "$0" || value === "$0.00");
 
+  const isEmpty = isNullish || isBlankString || isZeroValue;
+
+  // Variant-based text color (uses theme tokens)
   const valueColorClass =
     variant === "success"
-      ? "text-reconai-success"
+      ? "text-chart-1"
       : variant === "warning"
-        ? "text-reconai-warning"
+        ? "text-chart-4"
         : variant === "error"
-          ? "text-reconai-error"
+          ? "text-destructive"
           : "";
 
   return (
@@ -114,7 +132,7 @@ export function StatRow({
       </span>
       <span
         className={cn(
-          "text-[length:var(--dash-body-size)] font-medium font-variant-numeric-tabular-nums",
+          "text-[length:var(--dash-body-size)] font-medium tabular-nums",
           isEmpty ? "text-muted-foreground" : "text-foreground",
           !isEmpty && valueColorClass,
         )}

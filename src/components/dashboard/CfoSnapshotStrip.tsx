@@ -103,9 +103,7 @@ export function CfoSnapshotStrip({
             <div className="flex items-baseline gap-2">
               <span
                 className={`font-mono text-lg font-semibold ${
-                  isPositiveCashFlow
-                    ? "text-reconai-success"
-                    : "text-reconai-error"
+                  isPositiveCashFlow ? "text-chart-1" : "text-destructive"
                 }`}
               >
                 {netCashFlow !== undefined
@@ -115,12 +113,12 @@ export function CfoSnapshotStrip({
               {netCashFlow !== undefined &&
                 (isPositiveCashFlow ? (
                   <TrendingUp
-                    className="h-4 w-4 text-reconai-success"
+                    className="h-4 w-4 text-chart-1"
                     aria-label="Positive trend"
                   />
                 ) : (
                   <TrendingDown
-                    className="h-4 w-4 text-reconai-error"
+                    className="h-4 w-4 text-destructive"
                     aria-label="Negative trend"
                   />
                 ))}
@@ -131,11 +129,11 @@ export function CfoSnapshotStrip({
               <div className="h-3 w-24 bg-card/10 rounded animate-pulse" />
             ) : (
               <>
-                <span className="text-reconai-success">
+                <span className="text-chart-1">
                   {formatCurrency(data.cashIn)}
                 </span>
                 {" in / "}
-                <span className="text-reconai-error">
+                <span className="text-destructive">
                   {formatCurrency(data.cashOut)}
                 </span>
                 {" out"}
@@ -158,7 +156,7 @@ export function CfoSnapshotStrip({
             <span
               className={`font-mono text-lg font-semibold ${
                 data.runwayMonths !== undefined && data.runwayMonths < 6
-                  ? "text-reconai-warning"
+                  ? "text-chart-4"
                   : "text-foreground"
               }`}
             >
@@ -182,14 +180,14 @@ export function CfoSnapshotStrip({
               <span
                 className={`font-mono text-lg font-semibold ${
                   data.duplicatesCount && data.duplicatesCount > 0
-                    ? "text-reconai-warning"
+                    ? "text-chart-4"
                     : "text-foreground"
                 }`}
               >
                 {data.duplicatesCount ?? 0}
               </span>
               {data.potentialSavings && data.potentialSavings > 0 && (
-                <span className="text-xs text-reconai-warning">
+                <span className="text-xs text-chart-4">
                   ({formatCurrency(data.potentialSavings)} recoverable)
                 </span>
               )}

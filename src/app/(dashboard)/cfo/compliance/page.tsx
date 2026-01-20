@@ -71,7 +71,12 @@ export default function CfoCompliancePage() {
       title="CFO Compliance"
       subtitle="Audit logs, exports and evidence retention"
       right={
-        <Button variant="secondary" size="sm">
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled
+          title="Export coming soon"
+        >
           <Download className="mr-2 h-4 w-4" />
           Export All
         </Button>

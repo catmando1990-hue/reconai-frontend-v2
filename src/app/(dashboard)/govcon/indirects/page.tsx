@@ -19,11 +19,16 @@ export default function IndirectsPage() {
       subtitle="DCAA-compliant indirect rate management with FAR 31.201 allowability tracking"
       right={
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled
+            title="Export coming soon"
+          >
             <Download className="mr-2 h-4 w-4" />
             Export Rates
           </Button>
-          <Button size="sm">
+          <Button size="sm" disabled title="Calculate coming soon">
             <Calculator className="mr-2 h-4 w-4" />
             Calculate Rates
           </Button>
@@ -70,7 +75,12 @@ export default function IndirectsPage() {
             title="Indirect Cost Pools"
             subtitle="FAR 31.201 allowability determination"
             actions={
-              <Button variant="secondary" size="sm">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled
+                title="Add pool coming soon"
+              >
                 <Layers className="mr-2 h-4 w-4" />
                 Add Pool
               </Button>

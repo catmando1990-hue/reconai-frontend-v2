@@ -18,11 +18,16 @@ export default function ContractsPage() {
       subtitle="DCAA-compliant contract tracking with CLIN management"
       right={
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled
+            title="Export coming soon"
+          >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button size="sm">
+          <Button size="sm" disabled title="New contract coming soon">
             <Plus className="mr-2 h-4 w-4" />
             New Contract
           </Button>

@@ -27,11 +27,16 @@ export default function TimekeepingPage() {
       subtitle="DCAA-compliant labor tracking with daily time entry"
       right={
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled
+            title="Export coming soon"
+          >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button size="sm">
+          <Button size="sm" disabled title="Submit coming soon">
             <Send className="mr-2 h-4 w-4" />
             Submit Timesheet
           </Button>
@@ -46,7 +51,11 @@ export default function TimekeepingPage() {
 
       {/* Period Navigation */}
       <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50">
-        <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm">
+        <button
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm opacity-50 cursor-not-allowed"
+          disabled
+          title="Navigation coming soon"
+        >
           <ChevronLeft className="h-4 w-4" />
           Previous Week
         </button>
@@ -57,7 +66,11 @@ export default function TimekeepingPage() {
             <span className="text-sm text-muted-foreground">0 hours</span>
           </div>
         </div>
-        <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm">
+        <button
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm opacity-50 cursor-not-allowed"
+          disabled
+          title="Navigation coming soon"
+        >
           Next Week
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -70,7 +83,12 @@ export default function TimekeepingPage() {
             title="Weekly Time Entry"
             subtitle="Click a day to add or view entries"
             actions={
-              <Button variant="secondary" size="sm">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled
+                title="Add entry coming soon"
+              >
                 <Clock className="mr-2 h-4 w-4" />
                 Add Entry
               </Button>

@@ -98,7 +98,7 @@ export default function HomeDashboardPage() {
             description="Your operating overview. Displays metrics from connected accounts and surfaces priority signals."
           />
           <Button asChild size="sm">
-            <Link href="/core">Open Core</Link>
+            <Link href="/core-dashboard">Open Core</Link>
           </Button>
         </div>
       }
@@ -217,7 +217,7 @@ export default function HomeDashboardPage() {
                       {derived.bills} bills
                     </span>
                     <Button asChild size="sm" variant="secondary">
-                      <Link href="/core">
+                      <Link href="/core-dashboard">
                         Open Core <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -286,7 +286,7 @@ export default function HomeDashboardPage() {
                 variant="secondary"
                 className="w-full justify-between"
               >
-                <Link href="/intelligence">
+                <Link href="/intelligence-dashboard">
                   Run intelligence
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -296,7 +296,7 @@ export default function HomeDashboardPage() {
                 variant="secondary"
                 className="w-full justify-between"
               >
-                <Link href="/cfo">
+                <Link href="/cfo-dashboard">
                   Open CFO overview
                   <ArrowRight className="h-4 w-4" />
                 </Link>

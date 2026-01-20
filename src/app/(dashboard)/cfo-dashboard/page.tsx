@@ -65,7 +65,12 @@ export default function CfoOverviewPage() {
         subtitle="Executive clarity and defensibility tools"
         right={
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled
+              title="Export coming soon"
+            >
               <Download className="mr-2 h-4 w-4" />
               Export Report
             </Button>

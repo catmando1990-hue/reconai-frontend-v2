@@ -29,11 +29,16 @@ export default function ReconciliationPage() {
       subtitle="DCAA-compliant labor and indirect cost reconciliation with ICS preparation"
       right={
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled
+            title="Export coming soon"
+          >
             <Download className="mr-2 h-4 w-4" />
             Export ICS
           </Button>
-          <Button size="sm">
+          <Button size="sm" disabled title="Reconciliation coming soon">
             <RefreshCw className="mr-2 h-4 w-4" />
             Run Reconciliation
           </Button>
@@ -53,7 +58,12 @@ export default function ReconciliationPage() {
             title="Reconciliation Runs"
             subtitle="Labor and indirect cost reconciliation history"
             actions={
-              <Button variant="secondary" size="sm">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled
+                title="New run coming soon"
+              >
                 <ArrowLeftRight className="mr-2 h-4 w-4" />
                 New Run
               </Button>

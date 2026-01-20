@@ -7,7 +7,6 @@ import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { UtilityStrip } from "@/components/dashboard/UtilityStrip";
 import ExportForDCAAButton from "@/components/govcon/ExportForDCAAButton";
 import ExportForDCAAPDFButton from "@/components/govcon/ExportForDCAAPDFButton";
 
@@ -23,30 +22,7 @@ export default function AuditPage() {
         </div>
       }
     >
-      <UtilityStrip
-        searchPlaceholder="Search audit entries..."
-        onSearch={() => {}}
-        filters={[
-          {
-            id: "severity",
-            label: "Severity",
-            options: [
-              { value: "info", label: "Info" },
-              { value: "warning", label: "Warning" },
-              { value: "error", label: "Error" },
-            ],
-          },
-          {
-            id: "type",
-            label: "Event Type",
-            options: [
-              { value: "timesheet", label: "Timesheet" },
-              { value: "contract", label: "Contract" },
-              { value: "reconciliation", label: "Reconciliation" },
-            ],
-          },
-        ]}
-      />
+      {/* TODO: UtilityStrip with search/filters will be enabled when audit entries exist */}
 
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Primary Panel - Audit Timeline */}

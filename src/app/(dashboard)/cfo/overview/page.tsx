@@ -15,7 +15,12 @@ export default function CfoOverviewPage() {
       title="CFO Overview"
       subtitle="Executive surfaces across financial posture and risk"
       right={
-        <Button variant="secondary" size="sm">
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled
+          title="Export requires backend integration"
+        >
           <Download className="mr-2 h-4 w-4" />
           Export Report
         </Button>

@@ -81,7 +81,7 @@ export default function TimekeepingPage() {
         <div className="lg:col-span-8">
           <PrimaryPanel
             title="Weekly Time Entry"
-            subtitle="Click a day to add or view entries"
+            subtitle="Time entry will be enabled when contracts are configured"
             actions={
               <Button
                 variant="secondary"
@@ -96,10 +96,7 @@ export default function TimekeepingPage() {
           >
             <div className="grid grid-cols-7 divide-x border rounded-lg overflow-hidden">
               {DAYS_OF_WEEK.map((day, idx) => (
-                <div
-                  key={day}
-                  className="p-3 min-h-[120px] hover:bg-accent/50 transition-colors cursor-pointer"
-                >
+                <div key={day} className="p-3 min-h-[120px] opacity-50">
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground">{day}</p>
                     <p className="text-sm font-medium">{15 + idx}</p>
@@ -116,7 +113,7 @@ export default function TimekeepingPage() {
               <EmptyState
                 icon={Clock}
                 title="No time entries"
-                description="Add time entries by clicking on a day above or using the Add Entry button."
+                description="Configure contracts first, then time entries can be added."
               />
             </div>
           </PrimaryPanel>

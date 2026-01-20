@@ -12,20 +12,18 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
-import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 
 /**
- * Phase 11:
- * Security / Compliance landing page.
+ * Security page — inherits header/background from MarketingLayout.
+ * NO inline header or shell wrapper.
+ *
  * - No fake certification claims.
  * - Focus on posture: auditability, controls, data handling, transparency.
  * - Light/Dark auto-switch compatible via semantic tokens.
  */
 export default function SecurityPage() {
   return (
-    <main className="bg-background text-foreground">
-      {/* Public header with brand link */}
-      <ReconUtilityHeader />
+    <>
       {/* HERO */}
       <MarketingHeroShell
         imageSrc="/security-lock.jpg"
@@ -208,6 +206,6 @@ export default function SecurityPage() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

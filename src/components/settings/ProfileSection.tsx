@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { Button } from "@/components/ui/button";
 
@@ -52,13 +52,43 @@ interface ProfileSectionProps {
   onProfileUpdate?: (data: Partial<ProfileData>) => Promise<void>;
 }
 
+/**
+ * ProfileSection — Displays user profile info with editable preferences.
+ *
+ * PERSISTENCE MODEL:
+ * - Name, Organization, Role, User ID: READ-ONLY from Clerk API
+ * - Timezone, Currency, Fiscal Year: EDITABLE, persisted to localStorage
+ *
+ * The displayed values for editable fields ALWAYS come from localStorage
+ * (with API values as fallback), ensuring what you see is what was saved.
+ */
 export function ProfileSection({
   profile,
   onProfileUpdate,
 }: ProfileSectionProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  // Use lazy initialization to load from localStorage on first render
+  const [mounted, setMounted] = useState(false);
+
+  // Mark as mounted for hydration safety - localStorage is client-only
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for hydration safety with localStorage
+    setMounted(true);
+  }, []);
+
+  // Load saved settings, falling back to API profile values
+  const savedSettings = useMemo(() => {
+    if (!mounted) return null;
+    return loadProfileSettings();
+  }, [mounted]);
+
+  // Displayed values: localStorage takes precedence over API
+  const displayedTimezone = savedSettings?.timezone || profile?.timezone || "—";
+  const displayedCurrency = savedSettings?.currency || profile?.currency || "—";
+  const displayedFiscalYear =
+    savedSettings?.fiscalYearStart || profile?.fiscalYearStart || "—";
+
+  // Form state for editing
   const [form, setForm] = useState<ProfileFormData>(() => {
     const saved = loadProfileSettings();
     return {
@@ -183,19 +213,19 @@ export function ProfileSection({
                 <label className="text-xs text-muted-foreground">
                   Timezone
                 </label>
-                <p className="font-medium">{profile?.timezone ?? "—"}</p>
+                <p className="font-medium">{displayedTimezone}</p>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">
                   Currency
                 </label>
-                <p className="font-medium">{profile?.currency ?? "—"}</p>
+                <p className="font-medium">{displayedCurrency}</p>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">
                   Fiscal Year Start
                 </label>
-                <p className="font-medium">{profile?.fiscalYearStart ?? "—"}</p>
+                <p className="font-medium">{displayedFiscalYear}</p>
               </div>
             </div>
             <Button

@@ -12,7 +12,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
-import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 
 function Pill({
   icon: Icon,
@@ -85,11 +84,13 @@ function Card({
   );
 }
 
+/**
+ * Packages page — inherits header/background from MarketingLayout.
+ * NO inline header or shell wrapper.
+ */
 export default function PackagesPage() {
   return (
-    <main className="bg-background text-foreground">
-      {/* Public header with brand link */}
-      <ReconUtilityHeader />
+    <>
       {/* HERO */}
       <MarketingHeroShell
         imageSrc="/product-dashboard-wide.jpg"
@@ -240,6 +241,6 @@ export default function PackagesPage() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

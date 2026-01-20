@@ -59,6 +59,15 @@ function cx(...parts: Array<string | false | undefined | null>) {
   return parts.filter(Boolean).join(" ");
 }
 
+/**
+ * MarketingHomePage — Content component for the home page.
+ *
+ * NOTE: This component is rendered INSIDE MarketingLayout which provides:
+ * - MarketingShell (with header, background, and <main> wrapper)
+ *
+ * Therefore, this component does NOT wrap in its own <main> tag.
+ * Content is rendered directly into the parent layout.
+ */
 export function MarketingHomePage() {
   const [useCase, setUseCase] = useState<UseCase>("smb");
   const [showSticky, setShowSticky] = useState(false);
@@ -76,7 +85,7 @@ export function MarketingHomePage() {
   }, []);
 
   return (
-    <main className="bg-background text-foreground">
+    <>
       {/* HERO */}
       <MarketingHeroShell
         variant="home"
@@ -458,6 +467,6 @@ export function MarketingHomePage() {
           </div>
         </div>
       </div>
-    </main>
+    </>
   );
 }

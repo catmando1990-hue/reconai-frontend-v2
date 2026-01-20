@@ -14,7 +14,6 @@ import {
   Building2,
 } from "lucide-react";
 import { MarketingHeroShell } from "@/components/marketing/MarketingHeroShell";
-import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
 
 const BUCKETS = [
   {
@@ -45,11 +44,13 @@ const BUCKETS = [
   },
 ];
 
+/**
+ * Platform page — inherits header/background from MarketingLayout.
+ * NO inline header or shell wrapper.
+ */
 export default function PlatformPage() {
   return (
-    <main className="bg-background text-foreground">
-      {/* Public header with brand link */}
-      <ReconUtilityHeader />
+    <>
       {/* HERO */}
       <MarketingHeroShell
         imageSrc="/product-dashboard-wide.jpg"
@@ -254,6 +255,6 @@ export default function PlatformPage() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

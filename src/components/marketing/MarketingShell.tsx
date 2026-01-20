@@ -12,6 +12,9 @@ import ReconUtilityHeader from "@/components/layout/ReconUtilityHeader";
  * - No images (lightweight)
  * - No polling/timers
  * - Dashboard-only: false (this is for public pages)
+ *
+ * Uses bg-app-canvas as base (charcoal in dark mode) with decorative
+ * overlays to create the marketing visual treatment.
  */
 export function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
@@ -20,8 +23,8 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
       <div className="relative z-20">
         <ReconUtilityHeader />
       </div>
-      {/* Base background layer - z-0 */}
-      <div className="absolute inset-0 z-0 bg-background" />
+      {/* Base background layer - z-0 (canvas level) */}
+      <div className="absolute inset-0 z-0 bg-app-canvas" />
 
       {/* Animated blur orbs - z-[1] above base, below gradient */}
       <div className="absolute -top-40 right-[-10%] z-[1] h-96 w-96 rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
@@ -29,7 +32,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
       <div className="absolute top-1/3 left-1/4 z-[1] h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
 
       {/* Theme-safe gradient overlay - z-[2] above orbs, below content */}
-      <div className="absolute inset-0 z-[2] bg-linear-to-b from-background/95 via-background/80 to-background/95 dark:from-background/90 dark:via-background/70 dark:to-background/90" />
+      <div className="absolute inset-0 z-[2] bg-linear-to-b from-app-canvas/95 via-app-canvas/80 to-app-canvas/95 dark:from-app-canvas/90 dark:via-app-canvas/70 dark:to-app-canvas/90" />
 
       {/* Content - z-10 above all decorative layers */}
       <div className="relative z-10">{children}</div>

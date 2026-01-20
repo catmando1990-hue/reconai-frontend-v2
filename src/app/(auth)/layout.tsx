@@ -4,12 +4,11 @@ import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
 export const dynamic = "force-dynamic";
 
 /**
- * Auth layout - owns its background surface.
- * CANONICAL RULE: Layouts own backgrounds, not pages. Body must never be visible.
+ * Auth layout - owns the app canvas for auth routes.
+ * CANONICAL RULE: Layouts own backgrounds, not pages.
  *
- * Note: Auth pages (SignInClient, SignUpClient) also apply bg-background for
- * their centering containers. This is redundant but harmless - the layout
- * ensures coverage for SSO callback pages and any future auth routes.
+ * Uses bg-app-canvas (charcoal in dark mode) so auth forms (surfaces)
+ * appear to float on a lighter backdrop.
  */
 export default function AuthLayout({
   children,
@@ -18,7 +17,7 @@ export default function AuthLayout({
 }) {
   return (
     <ClerkProviderWrapper>
-      <div className="min-h-dvh w-full bg-background text-foreground">
+      <div className="min-h-dvh w-full bg-app-canvas text-foreground">
         {children}
       </div>
     </ClerkProviderWrapper>

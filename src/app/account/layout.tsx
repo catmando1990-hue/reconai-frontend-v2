@@ -4,8 +4,11 @@ import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
 export const dynamic = "force-dynamic";
 
 /**
- * Account layout - owns its background surface.
- * CANONICAL RULE: Layouts own backgrounds, not pages. Body must never be visible.
+ * Account layout - owns the app canvas for account routes.
+ * CANONICAL RULE: Layouts own backgrounds, not pages.
+ *
+ * Uses bg-app-canvas (charcoal in dark mode) so account cards (surfaces)
+ * appear to float on a lighter backdrop.
  */
 export default function AccountLayout({
   children,
@@ -14,7 +17,7 @@ export default function AccountLayout({
 }) {
   return (
     <ClerkProviderWrapper>
-      <div className="min-h-dvh bg-background text-foreground">{children}</div>
+      <div className="min-h-dvh bg-app-canvas text-foreground">{children}</div>
     </ClerkProviderWrapper>
   );
 }

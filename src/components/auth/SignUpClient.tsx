@@ -617,7 +617,7 @@ function SignUpForm() {
 
 export default function SignUpClient() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4 sm:p-6">
+    <div className="flex min-h-dvh items-center justify-center bg-app-canvas p-4 sm:p-6">
       <Suspense fallback={<LoadingCard />}>
         <SignUpForm />
       </Suspense>

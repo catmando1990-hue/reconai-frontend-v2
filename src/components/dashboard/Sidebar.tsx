@@ -221,18 +221,14 @@ export function Sidebar() {
           TIER 1 + TIER 2: Main Sidebar Rail
           Fixed width, contains identity + primary modules
       ───────────────────────────────────────────────────────────────────── */}
-      <div className="relative w-56 shrink-0 flex flex-col h-full">
-        {/* Background layers */}
-        <div className="absolute inset-0 bg-card/80 backdrop-blur-xl border-r border-border" />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col h-full">
+      <div className="relative w-56 shrink-0 flex flex-col h-full bg-background border-r border-border">
+        <div className="flex flex-col h-full">
           {/* ─────────────────────────────────────────────────────────────────
               TIER 1: Workspace / Product Identity
           ───────────────────────────────────────────────────────────────── */}
-          <div className="h-14 flex items-center px-4 border-b border-border/50">
+          <div className="h-14 flex items-center px-4 border-b border-border">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center transition-all group-hover:border-primary/40 group-hover:shadow-lg group-hover:shadow-primary/10">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center transition-colors group-hover:border-primary/40">
                 <Brain className="h-4 w-4 text-primary" />
               </div>
               <div className="flex flex-col">
@@ -301,18 +297,18 @@ export function Sidebar() {
           {/* ─────────────────────────────────────────────────────────────────
               FOOTER: Quick Actions + Sign Out
           ───────────────────────────────────────────────────────────────── */}
-          <div className="border-t border-border/50 p-3 space-y-2">
+          <div className="border-t border-border p-3 space-y-2">
             <div className="flex items-center justify-center gap-2">
               <Link
                 href="/"
-                className="flex items-center justify-center h-8 w-8 rounded-md border border-border/50 bg-card/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                 title="Marketing Home"
               >
                 <Home className="h-4 w-4" />
               </Link>
               <Link
                 href="/support"
-                className="flex items-center justify-center h-8 w-8 rounded-md border border-border/50 bg-card/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                 title="Help & Support"
               >
                 <HelpCircle className="h-4 w-4" />
@@ -322,7 +318,7 @@ export function Sidebar() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground bg-card/50 border border-border/50 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground bg-muted border border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
             >
               <LogOut className="h-4 w-4" />
               Sign out
@@ -337,9 +333,9 @@ export function Sidebar() {
           Visible only when module has meaningful context to display.
       ───────────────────────────────────────────────────────────────────── */}
       {moduleContext && (
-        <div className="relative w-44 shrink-0 flex flex-col h-full border-r border-border/30 bg-muted/20">
+        <div className="relative w-44 shrink-0 flex flex-col h-full border-r border-border bg-muted/50">
           {/* Context header */}
-          <div className="h-14 flex flex-col justify-center px-3 border-b border-border/20">
+          <div className="h-14 flex flex-col justify-center px-3 border-b border-border">
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
               Context
             </span>
@@ -354,7 +350,7 @@ export function Sidebar() {
           <div className="flex-1 overflow-y-auto py-3 px-3">
             {/* Scope indicator */}
             {moduleContext.scope && (
-              <div className="mb-3 pb-3 border-b border-border/20">
+              <div className="mb-3 pb-3 border-b border-border">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
                   Scope
                 </div>
@@ -395,7 +391,7 @@ export function Sidebar() {
           </div>
 
           {/* Context footer - visual anchor */}
-          <div className="px-3 py-2 border-t border-border/20">
+          <div className="px-3 py-2 border-t border-border">
             <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 text-center">
               Read-only
             </div>

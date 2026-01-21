@@ -87,13 +87,14 @@ export default function HomeDashboardPage() {
         ? "attention"
         : "ok";
 
-    // CFO Snapshot - pass null for unavailable data
+    /**
+     * CFO Snapshot - Only pass metrics with real backend data.
+     * P1 FIX: Removed undefined metrics (runway, potentialSavings, topVendor)
+     * that were displaying misleading "--" values.
+     */
     const cfoSnapshot: CfoSnapshotData = {
       cashIn: totalInvoicePaid ?? undefined,
       cashOut: totalBillPaid ?? undefined,
-      runwayMonths: undefined,
-      potentialSavings: undefined,
-      topVendorSpend: undefined,
     };
 
     return {

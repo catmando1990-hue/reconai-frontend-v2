@@ -80,18 +80,23 @@ function getModuleContext(module: ModuleKey | null): ModuleContext | null {
 
   switch (module) {
     case "core":
+      /**
+       * P1 FIX: Removed misleading static timestamps and "Live" claims.
+       * "Last Refresh: 2m ago" was hardcoded, implying real-time data.
+       * "Data Sync: Live" claimed live sync that doesn't exist.
+       * Now shows honest, static context information only.
+       */
       return {
         title: "Core Context",
         mode: "Operational",
         scope: "All Accounts",
         items: [
           {
-            label: "Data Sync",
-            value: "Live",
-            status: "ok",
+            label: "Data Mode",
+            value: "On-demand",
             icon: CheckCircle2,
           },
-          { label: "Last Refresh", value: "2m ago", icon: Clock },
+          { label: "Refresh", value: "Manual", icon: Clock },
         ],
       };
 

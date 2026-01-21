@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { DollarSign, Clock, AlertTriangle, Store } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { MetricRail, type Metric } from "@/components/dashboard/MetricRail";
 
 /**
@@ -12,6 +12,10 @@ import { MetricRail, type Metric } from "@/components/dashboard/MetricRail";
  * - Manual-refresh: no polling/timers; user clicks to refresh
  * - Advisory-only: metrics are informational
  * - Fail-closed: empty/error states show fallback UI
+ *
+ * P1 FIX: Only displays metrics backed by real backend data.
+ * Removed: Runway, Duplicates, Top Vendor (not implemented in backend).
+ * Displaying undefined metrics as "--" is ambiguous and misleading.
  *
  * ACCESSIBILITY:
  * - aria-label on section
@@ -25,11 +29,11 @@ import { MetricRail, type Metric } from "@/components/dashboard/MetricRail";
 export interface CfoSnapshotData {
   cashIn?: number;
   cashOut?: number;
-  runwayMonths?: number;
-  duplicatesCount?: number;
-  potentialSavings?: number;
-  topVendor?: string;
-  topVendorSpend?: number;
+  // P1 REMOVED: runwayMonths - not implemented in backend
+  // P1 REMOVED: duplicatesCount - requires real signal detection
+  // P1 REMOVED: potentialSavings - requires real signal detection
+  // P1 REMOVED: topVendor - not implemented in backend
+  // P1 REMOVED: topVendorSpend - not implemented in backend
   lastUpdated?: string | null;
 }
 
@@ -49,15 +53,7 @@ function formatCurrency(value: number | undefined): string {
   }).format(value);
 }
 
-function formatRunway(months: number | undefined): string {
-  if (months === undefined || months === null) return "--";
-  if (months >= 12) {
-    const years = Math.floor(months / 12);
-    const remaining = months % 12;
-    return remaining > 0 ? `${years}y ${remaining.toFixed(0)}m` : `${years}y+`;
-  }
-  return `${months.toFixed(1)}mo`;
-}
+// P1 REMOVED: formatRunway - metric not backed by backend data
 
 export function CfoSnapshotStrip({
   data,
@@ -72,7 +68,13 @@ export function CfoSnapshotStrip({
 
   const isPositiveCashFlow = netCashFlow !== undefined && netCashFlow >= 0;
 
-  // Build metrics array for MetricRail
+  /**
+   * P1 FIX: Only show Cash Flow metric - the only metric with real backend data.
+   * REMOVED metrics (were showing misleading "--"):
+   * - Runway: Not implemented in backend
+   * - Duplicates: Requires real signal detection (not mock data)
+   * - Top Vendor: Not implemented in backend
+   */
   const metrics: Metric[] = useMemo(() => {
     const cashFlowValue =
       netCashFlow !== undefined
@@ -90,18 +92,6 @@ export function CfoSnapshotStrip({
           <span>out</span>
         </span>
       ) : undefined;
-
-    const duplicatesHint =
-      data.potentialSavings && data.potentialSavings > 0 ? (
-        <span className="text-chart-4">
-          ({formatCurrency(data.potentialSavings)} recoverable)
-        </span>
-      ) : undefined;
-
-    const topVendorHint =
-      data.topVendorSpend !== undefined
-        ? formatCurrency(data.topVendorSpend)
-        : undefined;
 
     return [
       {
@@ -123,36 +113,11 @@ export function CfoSnapshotStrip({
             : "default",
         hint: cashFlowHint,
       },
-      {
-        id: "runway",
-        label: "Runway",
-        value: formatRunway(data.runwayMonths),
-        icon: Clock,
-        variant:
-          data.runwayMonths !== undefined && data.runwayMonths < 6
-            ? "warning"
-            : "default",
-      },
-      {
-        id: "duplicates",
-        label: "Duplicates",
-        value: data.duplicatesCount ?? 0,
-        icon: AlertTriangle,
-        variant:
-          data.duplicatesCount && data.duplicatesCount > 0
-            ? "warning"
-            : "default",
-        hint: duplicatesHint,
-      },
-      {
-        id: "top-vendor",
-        label: "Top Vendor",
-        value: data.topVendor || "--",
-        icon: Store,
-        hint: topVendorHint,
-      },
+      // P1 REMOVED: runway - not backed by backend data
+      // P1 REMOVED: duplicates - requires real signal detection
+      // P1 REMOVED: top-vendor - not backed by backend data
     ];
-  }, [data, netCashFlow, isPositiveCashFlow]);
+  }, [data.cashIn, data.cashOut, netCashFlow, isPositiveCashFlow]);
 
   return (
     <MetricRail

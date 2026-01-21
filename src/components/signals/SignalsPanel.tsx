@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { AlertTriangle, ChevronRight, X, RefreshCw } from "lucide-react";
+import { AlertTriangle, ChevronRight, X, RefreshCw, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 
@@ -20,7 +20,18 @@ type Signal = {
   explanation?: string;
 };
 
+/**
+ * P1 FIX: New response format with explicit mode labeling.
+ * Backend now returns { mode: "demo" | "live", signals: Signal[], disclaimer?: string }
+ */
+type SignalsResponse = {
+  mode: "demo" | "live";
+  signals: Signal[];
+  disclaimer?: string | null;
+};
+
 type SignalEvidence = {
+  mode?: "demo" | "live";
   rule: string;
   entity_id: string;
   transactions?: Array<{
@@ -29,6 +40,7 @@ type SignalEvidence = {
     merchant?: string;
     amount?: number;
   }>;
+  disclaimer?: string | null;
 };
 
 /**
@@ -38,6 +50,9 @@ type SignalEvidence = {
  * - NO AUTO-EXECUTION: Requires manual "Fetch Signals" button click
  * - ADVISORY ONLY: Read-only display with evidence viewer
  * - CONFIDENCE CONTRACT: Filters signals below 0.85 confidence threshold
+ *
+ * P1 FIX: Now displays explicit demo mode labeling when backend returns demo data.
+ * No signal may appear without a truthful provenance label.
  */
 export default function SignalsPanel() {
   const [signals, setSignals] = useState<Signal[]>([]);
@@ -47,6 +62,9 @@ export default function SignalsPanel() {
   const [evidence, setEvidence] = useState<SignalEvidence | null>(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // P1 FIX: Track demo mode status from backend
+  const [isDemo, setIsDemo] = useState(false);
+  const [disclaimer, setDisclaimer] = useState<string | null>(null);
 
   // Manual fetch - NO AUTO-EXECUTION
   const fetchSignals = async () => {
@@ -55,9 +73,25 @@ export default function SignalsPanel() {
     setError(null);
 
     try {
-      const data = await apiFetch<Signal[]>("/api/signals");
+      // P1 FIX: Handle new response format with mode labeling
+      const response = await apiFetch<SignalsResponse>("/api/signals");
+
+      // Handle both old array format and new object format for backwards compatibility
+      let signalsData: Signal[];
+      if (Array.isArray(response)) {
+        // Legacy format - treat as live (no demo label)
+        signalsData = response;
+        setIsDemo(false);
+        setDisclaimer(null);
+      } else {
+        // New format with explicit mode
+        signalsData = response.signals ?? [];
+        setIsDemo(response.mode === "demo");
+        setDisclaimer(response.disclaimer ?? null);
+      }
+
       // Apply confidence threshold filter
-      const filteredSignals = (data ?? []).filter(
+      const filteredSignals = signalsData.filter(
         (s) => (s.confidence ?? 0) >= CONFIDENCE_THRESHOLD,
       );
       setSignals(filteredSignals);
@@ -104,6 +138,13 @@ export default function SignalsPanel() {
         <div className="flex items-center gap-2 text-sm font-medium text-foreground">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           Signals (Advisory)
+          {/* P1 FIX: Explicit demo mode label when backend returns demo data */}
+          {isDemo && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-600 dark:text-purple-400">
+              <FlaskConical className="h-3 w-3" />
+              Demo
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <StatusChip variant={status.tone}>{status.label}</StatusChip>
@@ -129,6 +170,13 @@ export default function SignalsPanel() {
         Manual-run only. Results filtered to confidence &ge;{" "}
         {CONFIDENCE_THRESHOLD * 100}%.
       </p>
+
+      {/* P1 FIX: Display disclaimer when in demo mode */}
+      {isDemo && disclaimer && (
+        <div className="mb-4 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-xs text-purple-600 dark:text-purple-400">
+          {disclaimer}
+        </div>
+      )}
 
       {/* Error state */}
       {error && <p className="text-sm text-destructive mb-3">{error}</p>}
@@ -261,6 +309,13 @@ export default function SignalsPanel() {
             ) : (
               <div className="text-sm text-muted-foreground">
                 No evidence available.
+              </div>
+            )}
+
+            {/* P1 FIX: Show demo disclaimer in evidence modal if present */}
+            {evidence?.mode === "demo" && evidence?.disclaimer && (
+              <div className="mt-4 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-xs text-purple-600 dark:text-purple-400">
+                {evidence.disclaimer}
               </div>
             )}
 

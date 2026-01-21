@@ -32,7 +32,14 @@ function fmtMoney(v: number | null, ccy: string | null) {
 async function fetchAccounts() {
   const r = await fetch("/api/plaid/accounts");
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j?.error || "Failed to load accounts");
+  if (!r.ok) {
+    // Handle nested error objects from backend
+    const errMsg =
+      typeof j?.error === "string"
+        ? j.error
+        : j?.error?.message || j?.detail || "Failed to load accounts";
+    throw new Error(errMsg);
+  }
   return (j.accounts || []) as Account[];
 }
 

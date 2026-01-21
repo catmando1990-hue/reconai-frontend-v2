@@ -80,16 +80,14 @@ export async function GET() {
 
     const token = await getToken();
 
-    const resp = await fetch(
-      `${BACKEND_URL}/accounts?user_id=${encodeURIComponent(userId)}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+    // Use the new authenticated /api/plaid/items endpoint
+    const resp = await fetch(`${BACKEND_URL}/api/plaid/items`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-    );
+    });
 
     const { data, isJson, rawText } = await safeParseJson(resp);
 
@@ -128,12 +126,43 @@ export async function GET() {
       );
     }
 
-    const accountsData = data as { accounts?: unknown[] } | null;
+    // The /api/plaid/items endpoint returns { items: [...] }
+    // Transform items into a flat accounts-like structure for the UI
+    const itemsData = data as {
+      items?: Array<{
+        item_id: string;
+        institution_id?: string;
+        institution_name?: string;
+        status?: string;
+        last_synced_at?: string;
+        error_code?: string;
+        error_message?: string;
+      }>;
+    } | null;
+
+    // Map items to account-like objects for display
+    const accounts = (itemsData?.items || []).map((item) => ({
+      item_id: item.item_id,
+      account_id: item.item_id, // Use item_id as account_id for now
+      institution_name: item.institution_name || "Unknown Institution",
+      name: item.institution_name || "Connected Account",
+      official_name: null,
+      type: "depository",
+      subtype: null,
+      mask: null,
+      balance_current: null,
+      balance_available: null,
+      iso_currency_code: "USD",
+      status: item.status,
+      last_synced_at: item.last_synced_at,
+      error_code: item.error_code,
+      error_message: item.error_message,
+    }));
 
     // Return accounts from backend response with success envelope
     return NextResponse.json({
       ok: true,
-      accounts: accountsData?.accounts || [],
+      accounts,
       request_id: requestId,
     });
   } catch (err: unknown) {

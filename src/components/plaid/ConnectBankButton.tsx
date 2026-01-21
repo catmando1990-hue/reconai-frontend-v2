@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { PlaidLinkError, usePlaidLink } from "react-plaid-link";
 
 type LinkTokenResponse = {
@@ -41,6 +42,9 @@ async function postJSON<T>(url: string, body?: unknown): Promise<T> {
 }
 
 export function ConnectBankButton() {
+  const searchParams = useSearchParams();
+  // Check for OAuth redirect state (from /plaid/oauth callback)
+  const oauthStateId = searchParams.get("oauth_state_id");
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loadingToken, setLoadingToken] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -108,7 +112,7 @@ export function ConnectBankButton() {
   );
 
   const config = useMemo(() => {
-    return {
+    const baseConfig = {
       token: linkToken,
       onSuccess,
       onExit: (err: PlaidLinkError | null) => {
@@ -123,9 +127,27 @@ export function ConnectBankButton() {
         }
       },
     };
-  }, [linkToken, onSuccess]);
+
+    // If resuming from OAuth redirect, include the redirect URI
+    // This tells Plaid Link to continue the OAuth flow
+    if (oauthStateId) {
+      return {
+        ...baseConfig,
+        receivedRedirectUri: window.location.href,
+      };
+    }
+
+    return baseConfig;
+  }, [linkToken, onSuccess, oauthStateId]);
 
   const { open, ready } = usePlaidLink(config);
+
+  // Auto-open Link when resuming from OAuth redirect
+  useEffect(() => {
+    if (oauthStateId && ready && linkToken) {
+      open();
+    }
+  }, [oauthStateId, ready, linkToken, open]);
 
   const disabled = !ready || loadingToken || busy || !linkToken;
 

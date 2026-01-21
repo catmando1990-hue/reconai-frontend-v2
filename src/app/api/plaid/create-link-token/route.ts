@@ -17,11 +17,12 @@ export async function POST() {
     const token = await getToken();
 
     // Build OAuth redirect URI from request headers
+    // IMPORTANT: This URI must EXACTLY match what's configured in the Plaid Dashboard
     const headersList = await headers();
     const host = headersList.get("host") || "www.reconaitechnology.com";
     const protocol = host.includes("localhost") ? "http" : "https";
-    // Use the same path structure as the current page
-    const redirectUri = `${protocol}://${host}/connect-bank`;
+    // Use /plaid/oauth path to match Plaid Dashboard configuration
+    const redirectUri = `${protocol}://${host}/plaid/oauth`;
 
     const resp = await fetch(`${BACKEND_URL}/link-token`, {
       method: "POST",

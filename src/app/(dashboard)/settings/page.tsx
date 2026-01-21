@@ -233,12 +233,14 @@ export default function SettingsPage() {
             </div>
           </SecondaryPanel>
 
-          {/* System Info */}
+          {/* System Info - Show actual status from health check, not hardcoded values */}
           <SecondaryPanel title="System" className="bg-card">
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Frontend</span>
-                <span className="font-medium">1.0.0</span>
+                <span className="font-medium">
+                  {process.env.NEXT_PUBLIC_APP_VERSION ?? "—"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Backend</span>
@@ -246,11 +248,20 @@ export default function SettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Build</span>
-                <span className="font-medium">28–30</span>
+                <span className="font-medium">
+                  {process.env.NEXT_PUBLIC_BUILD_ID ?? "—"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">API Health</span>
-                <StatusChip variant="ok">Good</StatusChip>
+                {/* Show actual audit availability as proxy for API health */}
+                {auditAvailable === null ? (
+                  <StatusChip variant="muted">Checking…</StatusChip>
+                ) : auditAvailable ? (
+                  <StatusChip variant="ok">Connected</StatusChip>
+                ) : (
+                  <StatusChip variant="warn">Unavailable</StatusChip>
+                )}
               </div>
             </div>
           </SecondaryPanel>

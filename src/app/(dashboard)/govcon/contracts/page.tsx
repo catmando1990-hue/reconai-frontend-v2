@@ -1,147 +1,62 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, Plus, Download } from "lucide-react";
+import { FileText } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
-import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { StatusChip } from "@/components/dashboard/StatusChip";
-import { Button } from "@/components/ui/button";
+import { STATUS } from "@/lib/dashboardCopy";
 import { ROUTES } from "@/lib/routes";
 
+/**
+ * GovCon Contracts Page
+ *
+ * CANONICAL LAWS COMPLIANCE:
+ * - No hardcoded zeros - show STATUS.NOT_CONFIGURED when no backend data
+ * - No placeholder summaries - section doesn't render without real data
+ * - Fail-closed: if backend unavailable, show explicit unavailable state
+ */
 export default function ContractsPage() {
+  // Backend integration not available - show honest empty state only
+  // No fake summaries with hardcoded zeros
+
   return (
     <RouteShell
       title="Contracts"
       subtitle="DCAA-compliant contract tracking with CLIN management"
-      right={
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled
-            title="Export coming soon"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button size="sm" disabled title="New contract coming soon">
-            <Plus className="mr-2 h-4 w-4" />
-            New Contract
-          </Button>
-        </div>
-      }
     >
-      {/* TODO: UtilityStrip with search/filters will be enabled when contracts exist */}
-      {/*
-      <UtilityStrip
-        searchPlaceholder="Search contracts..."
-        onSearch={() => {}}
-        filters={[
-          {
-            id: "status",
-            label: "Status",
-            options: [
-              { value: "active", label: "Active" },
-              { value: "draft", label: "Draft" },
-              { value: "completed", label: "Completed" },
-              { value: "closed", label: "Closed" },
-            ],
-          },
-          {
-            id: "type",
-            label: "Type",
-            options: [
-              { value: "FFP", label: "FFP" },
-              { value: "CPFF", label: "CPFF" },
-              { value: "T&M", label: "T&M" },
-              { value: "IDIQ", label: "IDIQ" },
-            ],
-          },
-        ]}
-      />
-      */}
-
-      <div className="grid gap-6 lg:grid-cols-12">
-        {/* Primary Panel - Contract List */}
-        <div className="lg:col-span-8">
-          <PrimaryPanel
-            title="Contract List"
-            subtitle="All government contracts and CLINs"
-          >
-            <EmptyState
-              icon={FileText}
-              title="No contracts"
-              description="Contract management requires backend integration. This feature is not yet available."
-            />
-          </PrimaryPanel>
+      {/* Single honest empty state - no fake summary panels */}
+      <PrimaryPanel
+        title="Contract Management"
+        subtitle={STATUS.NOT_CONFIGURED}
+      >
+        <EmptyState
+          icon={FileText}
+          title="No contracts"
+          description="Contract management requires backend integration. Connect your contract data source to track DCAA-compliant contracts and CLINs."
+        />
+        <div className="mt-4 pt-4 border-t border-border">
+          <p className="text-xs text-muted-foreground">
+            When configured, this page will display: contract list, CLIN
+            tracking, funding status, and billing summaries.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <Link
+              href={ROUTES.GOVCON_AUDIT}
+              className="text-xs text-primary hover:underline"
+            >
+              View audit trail
+            </Link>
+            <span className="text-xs text-muted-foreground">•</span>
+            <Link
+              href={ROUTES.GOVCON}
+              className="text-xs text-primary hover:underline"
+            >
+              GovCon overview
+            </Link>
+          </div>
         </div>
-
-        {/* Secondary Panels */}
-        <div className="space-y-4 lg:col-span-4">
-          <SecondaryPanel title="Contract Summary">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Active Contracts
-                </span>
-                <span className="text-lg font-semibold">0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Total Value
-                </span>
-                <span className="text-lg font-semibold">$0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Funded</span>
-                <span className="text-lg font-semibold">$0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Billed to Date
-                </span>
-                <span className="text-lg font-semibold">$0</span>
-              </div>
-            </div>
-          </SecondaryPanel>
-
-          <SecondaryPanel title="Funding Status">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Funding Rate
-                </span>
-                <StatusChip variant="muted">N/A</StatusChip>
-              </div>
-              <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full w-0 bg-primary rounded-full" />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Funding status will display when contracts are added.
-              </p>
-            </div>
-          </SecondaryPanel>
-
-          <SecondaryPanel title="Quick Actions" collapsible>
-            <div className="space-y-2">
-              <Link
-                href={ROUTES.GOVCON_AUDIT}
-                className="block text-sm text-primary hover:underline"
-              >
-                View audit trail
-              </Link>
-              <Link
-                href={ROUTES.GOVCON_RECONCILIATION}
-                className="block text-sm text-primary hover:underline"
-              >
-                Run reconciliation
-              </Link>
-            </div>
-          </SecondaryPanel>
-        </div>
-      </div>
+      </PrimaryPanel>
     </RouteShell>
   );
 }

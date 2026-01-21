@@ -1,38 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { Layers, Calculator, Download } from "lucide-react";
+import { Layers } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { StatusChip } from "@/components/dashboard/StatusChip";
-import { Button } from "@/components/ui/button";
 import PolicyBanner from "@/components/policy/PolicyBanner";
+import { STATUS } from "@/lib/dashboardCopy";
 import { ROUTES } from "@/lib/routes";
 
+/**
+ * GovCon Indirect Costs Page
+ *
+ * CANONICAL LAWS COMPLIANCE:
+ * - No hardcoded zeros - show STATUS.NOT_CONFIGURED when no backend data
+ * - No fake rate summaries or progress bars
+ * - No disabled buttons with "coming soon" - either functional or absent
+ * - Fail-closed: if backend unavailable, show explicit unavailable state
+ */
 export default function IndirectsPage() {
+  // Backend integration not available - show honest empty state only
+  // No fake summaries with hardcoded zeros
+
   return (
     <RouteShell
       title="Indirect Costs"
       subtitle="DCAA-compliant indirect rate management with FAR 31.201 allowability tracking"
-      right={
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled
-            title="Export coming soon"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export Rates
-          </Button>
-          <Button size="sm" disabled title="Calculate coming soon">
-            <Calculator className="mr-2 h-4 w-4" />
-            Calculate Rates
-          </Button>
-        </div>
-      }
     >
       <PolicyBanner
         policy="accounting"
@@ -40,80 +34,44 @@ export default function IndirectsPage() {
         context="govcon"
       />
 
-      {/* TODO: UtilityStrip with search/filters will be enabled when pools exist */}
-
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Primary Panel - Pool Management */}
         <div className="lg:col-span-8">
           <PrimaryPanel
             title="Indirect Cost Pools"
-            subtitle="FAR 31.201 allowability determination"
-            actions={
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled
-                title="Add pool coming soon"
-              >
-                <Layers className="mr-2 h-4 w-4" />
-                Add Pool
-              </Button>
-            }
+            subtitle={STATUS.NOT_CONFIGURED}
           >
             <EmptyState
               icon={Layers}
               title="No indirect pools"
-              description="Indirect cost pool management requires backend integration. This feature is not yet available."
+              description="Indirect cost pool management requires backend integration. Connect your cost accounting data source to track FAR 31.201 allowability."
             />
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                When configured, this page will display: cost pool management,
+                allowability determination, rate calculations, and audit trail.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Link
+                  href={ROUTES.GOVCON_CONTRACTS}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Configure contracts
+                </Link>
+                <span className="text-xs text-muted-foreground">•</span>
+                <Link
+                  href={ROUTES.GOVCON_AUDIT}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Audit trail
+                </Link>
+              </div>
+            </div>
           </PrimaryPanel>
         </div>
 
-        {/* Secondary Panels */}
+        {/* Secondary Panel - FAR Reference Only (static reference content, not fake data) */}
         <div className="space-y-4 lg:col-span-4">
-          <SecondaryPanel title="Rate Summary">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Total Pools
-                </span>
-                <span className="text-lg font-semibold">0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Indirect Costs
-                </span>
-                <span className="text-lg font-semibold">$0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Allowable</span>
-                <span className="text-lg font-semibold">$0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Unallowable
-                </span>
-                <span className="text-lg font-semibold">$0</span>
-              </div>
-            </div>
-          </SecondaryPanel>
-
-          <SecondaryPanel title="Allowability Posture">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Allowability Rate
-                </span>
-                <StatusChip variant="muted">N/A</StatusChip>
-              </div>
-              <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full w-0 bg-primary rounded-full" />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Allowability posture will display when pools are added.
-              </p>
-            </div>
-          </SecondaryPanel>
-
           <SecondaryPanel title="FAR Reference" collapsible>
             <div className="space-y-2 text-sm">
               <div className="p-2 rounded bg-muted/50">

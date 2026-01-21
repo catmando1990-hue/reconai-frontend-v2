@@ -1,47 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Clock,
-  Send,
-  Download,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-} from "lucide-react";
+import { Clock } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
-import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { StatusChip } from "@/components/dashboard/StatusChip";
-import { Button } from "@/components/ui/button";
 import PolicyBanner from "@/components/policy/PolicyBanner";
+import { STATUS } from "@/lib/dashboardCopy";
 import { ROUTES } from "@/lib/routes";
 
-const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
+/**
+ * GovCon Timekeeping Page
+ *
+ * CANONICAL LAWS COMPLIANCE:
+ * - No hardcoded zeros - show STATUS.NOT_CONFIGURED when no backend data
+ * - No fake weekly grids with placeholder "0h" values
+ * - No disabled buttons with "coming soon" - either functional or absent
+ * - Fail-closed: if backend unavailable, show explicit unavailable state
+ */
 export default function TimekeepingPage() {
+  // Backend integration not available - show honest empty state only
+  // No fake summaries, grids, or navigation with hardcoded zeros
+
   return (
     <RouteShell
       title="Timekeeping"
       subtitle="DCAA-compliant labor tracking with daily time entry"
-      right={
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled
-            title="Export coming soon"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button size="sm" disabled title="Submit coming soon">
-            <Send className="mr-2 h-4 w-4" />
-            Submit Timesheet
-          </Button>
-        </div>
-      }
     >
       <PolicyBanner
         policy="accounting"
@@ -49,129 +33,38 @@ export default function TimekeepingPage() {
         context="govcon"
       />
 
-      {/* Period Navigation */}
-      <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50">
-        <button
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm opacity-50 cursor-not-allowed"
-          disabled
-          title="Navigation coming soon"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Previous Week
-        </button>
-        <div className="text-center">
-          <p className="font-medium">Current Period</p>
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <StatusChip variant="muted">Draft</StatusChip>
-            <span className="text-sm text-muted-foreground">0 hours</span>
+      {/* Single honest empty state - no fake grids or summaries */}
+      <PrimaryPanel
+        title="Time Entry"
+        subtitle={STATUS.NOT_CONFIGURED}
+      >
+        <EmptyState
+          icon={Clock}
+          title="No time entries"
+          description="Timekeeping requires contracts to be configured first. Connect your contract data source to enable DCAA-compliant time tracking."
+        />
+        <div className="mt-4 pt-4 border-t border-border">
+          <p className="text-xs text-muted-foreground">
+            When configured, this page will display: weekly time grid, daily
+            entry forms, contract allocation, and timesheet submission workflow.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <Link
+              href={ROUTES.GOVCON_CONTRACTS}
+              className="text-xs text-primary hover:underline"
+            >
+              Configure contracts
+            </Link>
+            <span className="text-xs text-muted-foreground">•</span>
+            <Link
+              href={ROUTES.GOVCON_AUDIT}
+              className="text-xs text-primary hover:underline"
+            >
+              Audit trail
+            </Link>
           </div>
         </div>
-        <button
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm opacity-50 cursor-not-allowed"
-          disabled
-          title="Navigation coming soon"
-        >
-          Next Week
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-12">
-        {/* Primary Panel - Weekly Grid */}
-        <div className="lg:col-span-8">
-          <PrimaryPanel
-            title="Weekly Time Entry"
-            subtitle="Time entry will be enabled when contracts are configured"
-            actions={
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled
-                title="Add entry coming soon"
-              >
-                <Clock className="mr-2 h-4 w-4" />
-                Add Entry
-              </Button>
-            }
-          >
-            <div className="grid grid-cols-7 divide-x border rounded-lg overflow-hidden">
-              {DAYS_OF_WEEK.map((day, idx) => (
-                <div key={day} className="p-3 min-h-[120px] opacity-50">
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground">{day}</p>
-                    <p className="text-sm font-medium">{15 + idx}</p>
-                  </div>
-                  <div className="mt-2 text-center">
-                    <p className="text-lg font-semibold text-muted-foreground">
-                      0h
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 text-center">
-              <EmptyState
-                icon={Clock}
-                title="No time entries"
-                description="Configure contracts first, then time entries can be added."
-              />
-            </div>
-          </PrimaryPanel>
-        </div>
-
-        {/* Secondary Panels */}
-        <div className="space-y-4 lg:col-span-4">
-          <SecondaryPanel title="Hours Summary">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Total Hours
-                </span>
-                <span className="text-lg font-semibold">0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Billable</span>
-                <span className="text-lg font-semibold">0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Contracts</span>
-                <span className="text-lg font-semibold">0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Days Logged
-                </span>
-                <span className="text-lg font-semibold">0</span>
-              </div>
-            </div>
-          </SecondaryPanel>
-
-          <SecondaryPanel title="Hours by Contract">
-            <EmptyState
-              icon={FileText}
-              title="No contract hours"
-              description="Time entries will be grouped by contract here."
-            />
-          </SecondaryPanel>
-
-          <SecondaryPanel title="Quick Links" collapsible>
-            <div className="space-y-2 text-sm">
-              <Link
-                href={ROUTES.GOVCON_CONTRACTS}
-                className="block text-primary hover:underline"
-              >
-                View contracts
-              </Link>
-              <Link
-                href={ROUTES.GOVCON_AUDIT}
-                className="block text-primary hover:underline"
-              >
-                Timesheet audit trail
-              </Link>
-            </div>
-          </SecondaryPanel>
-        </div>
-      </div>
+      </PrimaryPanel>
     </RouteShell>
   );
 }

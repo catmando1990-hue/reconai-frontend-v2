@@ -14,11 +14,22 @@ import { AI_DISCLAIMER, REGULATORY_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
-import { Bell, RefreshCw } from "lucide-react";
+import { Bell, RefreshCw, FlaskConical } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
+import { STATUS } from "@/lib/dashboardCopy";
 
 export default function AlertsPage() {
   const { data, isLoading, error, refetch } = useAlerts();
+
+  // P0 FIX: Check for demo mode flag from fetcher
+  const isDemo = (data as { _isDemo?: boolean })?._isDemo ?? false;
+  const demoDisclaimer = (data as { _demoDisclaimer?: string })?._demoDisclaimer;
+
+  // P0 FIX: Helper to format counts - show "—" for null/undefined, not 0
+  const formatCount = (count: number | null | undefined): string => {
+    if (count === null || count === undefined) return STATUS.NO_DATA;
+    return String(count);
+  };
 
   return (
     <TierGate tier="intelligence" title="Alerts">
@@ -26,23 +37,39 @@ export default function AlertsPage() {
         title="Alerts"
         subtitle="Signals that may require review or documentation. Always verify before acting."
         right={
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => void refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* P0 FIX: Show Demo badge when data is from mock */}
+            {isDemo && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-600 dark:text-purple-400">
+                <FlaskConical className="h-3 w-3" />
+                Demo
+              </span>
+            )}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void refetch()}
+              disabled={isLoading}
+            >
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+          </div>
         }
       >
         <div className="space-y-2">
           <DisclaimerNotice>{AI_DISCLAIMER}</DisclaimerNotice>
           <DisclaimerNotice>{REGULATORY_DISCLAIMER}</DisclaimerNotice>
         </div>
+
+        {/* P0 FIX: Show demo disclaimer when in demo mode */}
+        {isDemo && demoDisclaimer && (
+          <div className="mt-2 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-xs text-purple-600 dark:text-purple-400">
+            {demoDisclaimer}
+          </div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Primary Panel - Alerts List */}
@@ -110,23 +137,34 @@ export default function AlertsPage() {
                   <span className="text-sm text-muted-foreground">
                     Total Alerts
                   </span>
+                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
                   <span className="text-lg font-semibold">
-                    {data?.items?.length ?? 0}
+                    {formatCount(data?.items?.length)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">New</span>
+                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
                   <span className="text-lg font-semibold">
-                    {data?.items?.filter((a) => a.status === "new").length ?? 0}
+                    {data?.items
+                      ? formatCount(
+                          data.items.filter((a) => a.status === "new").length
+                        )
+                      : STATUS.NO_DATA}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Resolved
                   </span>
+                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
                   <span className="text-lg font-semibold">
-                    {data?.items?.filter((a) => a.status === "resolved")
-                      .length ?? 0}
+                    {data?.items
+                      ? formatCount(
+                          data.items.filter((a) => a.status === "resolved")
+                            .length
+                        )
+                      : STATUS.NO_DATA}
                   </span>
                 </div>
               </div>

@@ -114,25 +114,43 @@ export function OverviewSnapshot({ className }: { className?: string }) {
         : "System open",
     },
     {
+      // P0 FIX: Don't coerce null/undefined to 0 - show "—" for unknown values
       label: "Signals (24h)",
-      value: system ? String(system.signals_24h ?? 0) : loading ? "…" : "—",
+      value: system
+        ? system.signals_24h !== null && system.signals_24h !== undefined
+          ? String(system.signals_24h)
+          : "—"
+        : loading
+          ? "…"
+          : "—",
       chip: {
         label: system
-          ? (system.signals_24h ?? 0) > 0
-            ? "Review"
-            : "Quiet"
+          ? system.signals_24h !== null && system.signals_24h !== undefined
+            ? system.signals_24h > 0
+              ? "Review"
+              : "Quiet"
+            : "Unknown"
           : "—",
         variant: system
-          ? (system.signals_24h ?? 0) > 0
-            ? "warn"
-            : "ok"
+          ? system.signals_24h !== null && system.signals_24h !== undefined
+            ? system.signals_24h > 0
+              ? "warn"
+              : "ok"
+            : "unknown"
           : "muted",
       },
       sub: "Server-side signals surface",
     },
     {
+      // P0 FIX: Don't coerce null/undefined to 0 - show "—" for unknown values
       label: "Audit Events",
-      value: system ? String(system.audit_total ?? 0) : loading ? "…" : "—",
+      value: system
+        ? system.audit_total !== null && system.audit_total !== undefined
+          ? String(system.audit_total)
+          : "—"
+        : loading
+          ? "…"
+          : "—",
       chip: { label: "Read-only", variant: "muted" },
       sub: "Compliance trail",
     },

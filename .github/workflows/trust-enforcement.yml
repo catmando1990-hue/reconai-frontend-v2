@@ -1,0 +1,106 @@
+# Phase 6: Automated Trust Enforcement
+# This workflow runs on every PR and push to prevent trust violations
+
+name: Trust Enforcement
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  trust-check:
+    name: Trust Violation Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Trust Check
+        run: npx ts-node scripts/trust-check.ts
+
+      - name: Check for hardcoded status
+        run: |
+          echo "Checking for hardcoded positive status..."
+          ! grep -rn 'status\s*[:=]\s*"healthy"' src/ --include="*.ts" --include="*.tsx" | grep -v 'switch\|case\|if\|===\|Label\|variant' || {
+            echo "❌ BLOCKED: Hardcoded 'healthy' status found"
+            exit 1
+          }
+          echo "✅ No hardcoded status violations"
+
+      - name: Check for Live indicators
+        run: |
+          echo "Checking for fabricated 'Live' indicators..."
+          ! grep -rn '"Data Sync.*Live"' src/ --include="*.tsx" || {
+            echo "❌ BLOCKED: 'Data Sync: Live' indicator found"
+            exit 1
+          }
+          ! grep -rn '"Last Refresh.*ago"' src/ --include="*.tsx" || {
+            echo "❌ BLOCKED: Hardcoded timestamp found"
+            exit 1
+          }
+          echo "✅ No fabricated live indicators"
+
+      - name: Check for deprecated Plaid v1
+        run: |
+          echo "Checking for deprecated Plaid v1 endpoints..."
+          ! grep -rn '"/link-token"' src/ --include="*.ts" --include="*.tsx" || {
+            echo "❌ BLOCKED: Deprecated /link-token endpoint used"
+            exit 1
+          }
+          ! grep -rn '"/exchange-public-token"' src/ --include="*.ts" --include="*.tsx" | grep -v 'api/plaid' || {
+            echo "❌ BLOCKED: Deprecated /exchange-public-token endpoint used"
+            exit 1
+          }
+          echo "✅ No deprecated Plaid v1 usage"
+
+      - name: Verify status contracts exist
+        run: |
+          echo "Verifying status contracts..."
+          test -f src/types/status-contracts.ts || {
+            echo "❌ BLOCKED: status-contracts.ts missing"
+            exit 1
+          }
+          test -f src/lib/fail-closed-guards.ts || {
+            echo "❌ BLOCKED: fail-closed-guards.ts missing"
+            exit 1
+          }
+          echo "✅ Status contracts present"
+
+  build-check:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: trust-check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint

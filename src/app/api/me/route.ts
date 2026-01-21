@@ -90,12 +90,16 @@ export async function GET() {
       name:
         [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
         undefined,
+      firstName: user?.first_name,
+      lastName: user?.last_name,
       organizationName: org?.name,
       orgId: org?.id,
       orgSlug: org?.slug,
       tier: org?.tier,
       isPersonalWorkspace: org?.is_personal_workspace || false,
       role: permissions?.role,
+      // P0: Profile completion status from backend (single source of truth)
+      profileCompleted: Boolean(user?.profile_completed),
       timezone: undefined, // Not provided by backend yet
       currency: undefined, // Not provided by backend yet
       fiscalYearStart: undefined, // Not provided by backend yet

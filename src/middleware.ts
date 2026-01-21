@@ -19,6 +19,7 @@ const CLERK_ROUTES = [
   "/sign-up(.*)",
   "/onboarding(.*)",
   "/mfa-setup(.*)",
+  "/complete-profile(.*)",
   // Canonical dashboard entry routes
   "/dashboard(.*)",
   // Protected dashboard routes (now under route group, keeping for legacy links)
@@ -63,16 +64,18 @@ const CLERK_ROUTES = [
   "/api/checkout(.*)",
   "/api/proxy-export(.*)",
   "/api/production(.*)",
+  "/api/profile(.*)",
 ];
 
 // Routes that need auth enforcement (subset of CLERK_ROUTES)
-// Excludes auth flow routes and MFA setup (user needs to complete setup first)
+// Excludes auth flow routes, MFA setup, and profile completion (user needs to complete these first)
 const PROTECTED_PREFIXES = CLERK_ROUTES.filter(
   (r) =>
     !r.startsWith("/sign-in") &&
     !r.startsWith("/sign-up") &&
     !r.startsWith("/onboarding") &&
-    !r.startsWith("/mfa-setup"),
+    !r.startsWith("/mfa-setup") &&
+    !r.startsWith("/complete-profile"),
 );
 
 // Routes that require MFA to be enabled (all protected routes)
@@ -120,6 +123,11 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
 
   // Allow MFA setup page (user needs to complete setup)
   if (pathname.startsWith("/mfa-setup")) {
+    return NextResponse.next();
+  }
+
+  // Allow profile completion page (user needs to complete profile)
+  if (pathname.startsWith("/complete-profile")) {
     return NextResponse.next();
   }
 

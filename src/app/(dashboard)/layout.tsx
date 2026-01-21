@@ -4,6 +4,43 @@ import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
 
+// Backend URL for profile status check
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://reconai-backend.onrender.com";
+
+/**
+ * P0: Check profile completion status from backend (single source of truth)
+ * FAIL-OPEN: If status check fails, allow access (don't block users due to network issues)
+ * The profile completion page will also check and redirect if needed.
+ */
+async function checkProfileCompleted(token: string | null): Promise<boolean | null> {
+  if (!token) return null;
+
+  try {
+    const resp = await fetch(`${BACKEND_URL}/api/profile/status`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!resp.ok) {
+      console.warn("Profile status check failed:", resp.status);
+      return null;
+    }
+
+    const data = await resp.json();
+    return data.profileCompleted === true;
+  } catch (err) {
+    console.warn("Profile status check error:", err);
+    return null; // Fail-open on network error
+  }
+}
+
 /**
  * Responsive dashboard shell:
  * - md+: 3-tier sidebar (rail + context + content)
@@ -13,13 +50,18 @@ import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
  * - Defense-in-depth check for MFA enrollment
  * - Redirects to MFA setup if user has no MFA enabled
  * - Works alongside middleware MFA check
+ *
+ * P0 PROFILE COMPLETION:
+ * - Checks backend for profile_completed status
+ * - Redirects to /complete-profile if not completed
+ * - Single source of truth is backend database
  */
 export default async function DashboardGroupLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
+  const { userId, getToken } = await auth();
 
   if (!userId) {
     redirect("/sign-in?redirect_url=/dashboard");
@@ -37,6 +79,17 @@ export default async function DashboardGroupLayout({
       // Redirect to MFA setup page
       redirect("/mfa-setup?redirect_url=/dashboard");
     }
+  }
+
+  // P0 PROFILE COMPLETION: Check backend status (single source of truth)
+  // Only check if we have a valid token
+  const token = await getToken();
+  const profileCompleted = await checkProfileCompleted(token);
+
+  // Redirect to profile completion if explicitly incomplete
+  // Fail-open: null means we couldn't check, so allow access
+  if (profileCompleted === false) {
+    redirect("/complete-profile?redirect_url=/home");
   }
 
   return (

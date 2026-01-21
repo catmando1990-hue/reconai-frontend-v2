@@ -3,62 +3,69 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 
-interface DashboardMetrics {
+/**
+ * Dashboard metrics interface with nullable fields for fail-closed behavior.
+ * null = data unavailable (unknown state), NOT zero.
+ */
+export interface DashboardMetrics {
   counts: {
-    invoices: number;
-    bills: number;
-    customers: number;
-    vendors: number;
+    invoices: number | null;
+    bills: number | null;
+    customers: number | null;
+    vendors: number | null;
   };
   summary: {
-    totalInvoiced: number;
-    totalInvoicePaid: number;
-    totalInvoiceDue: number;
-    totalBilled: number;
-    totalBillPaid: number;
-    totalBillDue: number;
+    totalInvoiced: number | null;
+    totalInvoicePaid: number | null;
+    totalInvoiceDue: number | null;
+    totalBilled: number | null;
+    totalBillPaid: number | null;
+    totalBillDue: number | null;
   };
   invoicesByStatus: {
-    paid: number;
-    pending: number;
-    overdue: number;
-    draft: number;
+    paid: number | null;
+    pending: number | null;
+    overdue: number | null;
+    draft: number | null;
   };
   billsByStatus: {
-    paid: number;
-    pending: number;
-    overdue: number;
-    draft: number;
+    paid: number | null;
+    pending: number | null;
+    overdue: number | null;
+    draft: number | null;
   };
 }
 
-// Empty metrics for fallback
-const emptyMetrics: DashboardMetrics = {
+/**
+ * FAIL-CLOSED: null metrics indicate unknown state.
+ * UI must display "Unknown" or similar, NOT fake zeros.
+ */
+const failClosedMetrics: DashboardMetrics = {
   counts: {
-    invoices: 0,
-    bills: 0,
-    customers: 0,
-    vendors: 0,
+    invoices: null,
+    bills: null,
+    customers: null,
+    vendors: null,
   },
   summary: {
-    totalInvoiced: 0,
-    totalInvoicePaid: 0,
-    totalInvoiceDue: 0,
-    totalBilled: 0,
-    totalBillPaid: 0,
-    totalBillDue: 0,
+    totalInvoiced: null,
+    totalInvoicePaid: null,
+    totalInvoiceDue: null,
+    totalBilled: null,
+    totalBillPaid: null,
+    totalBillDue: null,
   },
   invoicesByStatus: {
-    paid: 0,
-    pending: 0,
-    overdue: 0,
-    draft: 0,
+    paid: null,
+    pending: null,
+    overdue: null,
+    draft: null,
   },
   billsByStatus: {
-    paid: 0,
-    pending: 0,
-    overdue: 0,
-    draft: 0,
+    paid: null,
+    pending: null,
+    overdue: null,
+    draft: null,
   },
 };
 
@@ -77,9 +84,9 @@ export function useDashboardMetrics() {
         const data = await apiFetch<DashboardMetrics>("/api/dashboard/metrics");
         if (alive) setMetrics(data);
       } catch {
-        // Silent failure: use empty metrics
+        // FAIL-CLOSED: Use null metrics, not fake zeros
         if (alive) {
-          setMetrics(emptyMetrics);
+          setMetrics(failClosedMetrics);
           setError(new Error("Failed to load dashboard metrics"));
         }
       } finally {

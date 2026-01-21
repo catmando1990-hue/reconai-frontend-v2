@@ -7,7 +7,6 @@ import PageHelp from "@/components/dashboard/PageHelp";
 import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
 import FirstValueCallout from "@/components/dashboard/FirstValueCallout";
 import SignalsPanel from "@/components/signals/SignalsPanel";
-import DuplicateChargesInsight from "@/components/signals/DuplicateChargesInsight";
 import {
   CfoSnapshotStrip,
   type CfoSnapshotData,
@@ -23,9 +22,15 @@ import {
   Building2,
   AlertTriangle,
   CheckCircle2,
+  HelpCircle,
 } from "lucide-react";
 
-function formatCurrency(value: number): string {
+/**
+ * Format currency value. Returns "--" for null (unknown state).
+ * FAIL-CLOSED: null means unknown, displayed explicitly.
+ */
+function formatCurrency(value: number | null): string {
+  if (value === null) return "--";
   try {
     return new Intl.NumberFormat(undefined, {
       style: "currency",
@@ -37,9 +42,12 @@ function formatCurrency(value: number): string {
   }
 }
 
-function clampNonNeg(n: number): number {
-  if (!Number.isFinite(n)) return 0;
-  return Math.max(0, n);
+/**
+ * Format count value. Returns "--" for null (unknown state).
+ */
+function formatCount(value: number | null): string {
+  if (value === null) return "--";
+  return value.toString();
 }
 
 export default function HomeDashboardPage() {
@@ -47,25 +55,42 @@ export default function HomeDashboardPage() {
 
   const derived = useMemo(() => {
     const m = metrics;
-    const totalInvoiced = clampNonNeg(m?.summary.totalInvoiced ?? 0);
-    const totalInvoicePaid = clampNonNeg(m?.summary.totalInvoicePaid ?? 0);
-    const totalInvoiceDue = clampNonNeg(m?.summary.totalInvoiceDue ?? 0);
 
-    const totalBilled = clampNonNeg(m?.summary.totalBilled ?? 0);
-    const totalBillPaid = clampNonNeg(m?.summary.totalBillPaid ?? 0);
-    const totalBillDue = clampNonNeg(m?.summary.totalBillDue ?? 0);
+    // FAIL-CLOSED: Preserve null values, don't convert to fake zeros
+    const totalInvoiced = m?.summary.totalInvoiced ?? null;
+    const totalInvoicePaid = m?.summary.totalInvoicePaid ?? null;
+    const totalInvoiceDue = m?.summary.totalInvoiceDue ?? null;
 
-    const invoices = clampNonNeg(m?.counts.invoices ?? 0);
-    const bills = clampNonNeg(m?.counts.bills ?? 0);
-    const customers = clampNonNeg(m?.counts.customers ?? 0);
-    const vendors = clampNonNeg(m?.counts.vendors ?? 0);
+    const totalBilled = m?.summary.totalBilled ?? null;
+    const totalBillPaid = m?.summary.totalBillPaid ?? null;
+    const totalBillDue = m?.summary.totalBillDue ?? null;
 
-    const health: "ok" | "attention" =
-      totalInvoiceDue > 0 || totalBillDue > 0 ? "attention" : "ok";
+    const invoices = m?.counts.invoices ?? null;
+    const bills = m?.counts.bills ?? null;
+    const customers = m?.counts.customers ?? null;
+    const vendors = m?.counts.vendors ?? null;
 
+    /**
+     * FAIL-CLOSED Health Status Logic:
+     * - "unknown": Required data is null (cannot determine health)
+     * - "ok": Data exists AND no outstanding amounts due
+     * - "attention": Data exists AND amounts are due
+     *
+     * We NEVER report "ok" when data is unavailable.
+     */
+    const canDetermineHealth =
+      totalInvoiceDue !== null && totalBillDue !== null;
+
+    const health: "ok" | "attention" | "unknown" = !canDetermineHealth
+      ? "unknown"
+      : totalInvoiceDue > 0 || totalBillDue > 0
+        ? "attention"
+        : "ok";
+
+    // CFO Snapshot - pass null for unavailable data
     const cfoSnapshot: CfoSnapshotData = {
-      cashIn: totalInvoicePaid,
-      cashOut: totalBillPaid,
+      cashIn: totalInvoicePaid ?? undefined,
+      cashOut: totalBillPaid ?? undefined,
       runwayMonths: undefined,
       potentialSavings: undefined,
       topVendorSpend: undefined,
@@ -114,7 +139,12 @@ export default function HomeDashboardPage() {
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            {derived.health === "ok" ? (
+            {derived.health === "unknown" ? (
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium">
+                <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                Status unavailable
+              </span>
+            ) : derived.health === "ok" ? (
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
                 No outstanding due items detected
@@ -185,7 +215,7 @@ export default function HomeDashboardPage() {
 
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      {derived.invoices} invoices
+                      {formatCount(derived.invoices)} invoices
                     </span>
                     <Button asChild size="sm" variant="secondary">
                       <Link href="/invoicing">
@@ -214,7 +244,7 @@ export default function HomeDashboardPage() {
 
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      {derived.bills} bills
+                      {formatCount(derived.bills)} bills
                     </span>
                     <Button asChild size="sm" variant="secondary">
                       <Link href="/core-dashboard">
@@ -232,7 +262,7 @@ export default function HomeDashboardPage() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="mt-1 text-xl font-semibold tracking-tight">
-                    {derived.customers}
+                    {formatCount(derived.customers)}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
                     Active customer records
@@ -245,7 +275,7 @@ export default function HomeDashboardPage() {
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="mt-1 text-xl font-semibold tracking-tight">
-                    {derived.vendors}
+                    {formatCount(derived.vendors)}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
                     Active vendor records
@@ -255,7 +285,11 @@ export default function HomeDashboardPage() {
             </CardContent>
           </Card>
 
-          <DuplicateChargesInsight />
+          {/* REMOVED: DuplicateChargesInsight - P0 Fix #3
+           * Mock duplicate data was being displayed in production UI.
+           * Component uses hardcoded MOCK_TRANSACTIONS, not backend truth.
+           * Removed from Dashboard Home per fail-closed requirements.
+           */}
           <SignalsPanel />
         </div>
 

@@ -18,6 +18,7 @@ export const ROUTES = {
   ACCOUNTS: "/accounts",
   CONNECT_BANK: "/connect-bank",
   UPLOAD: "/upload",
+  DOCUMENTS: "/documents",
 
   // Intelligence
   INTELLIGENCE: "/intelligence-dashboard",

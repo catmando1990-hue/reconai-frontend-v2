@@ -149,6 +149,18 @@ export const NAV: Record<Route, NavEntry> = {
     icon: "Upload",
     order: 6,
   },
+  [ROUTES.DOCUMENTS]: {
+    displayTitle: "Documents",
+    shortLabel: "Documents",
+    subtitle: "All uploaded documents and their processing status",
+    module: "core",
+    breadcrumb: [
+      ["Core", ROUTES.CORE],
+      ["Documents", null],
+    ],
+    icon: "FileText",
+    order: 7,
+  },
 
   // ─────────────────────────────────────────
   // INTELLIGENCE MODULE

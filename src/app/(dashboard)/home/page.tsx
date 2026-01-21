@@ -56,19 +56,42 @@ export default function HomeDashboardPage() {
   const derived = useMemo(() => {
     const m = metrics;
 
-    // FAIL-CLOSED: Preserve null values, don't convert to fake zeros
-    const totalInvoiced = m?.summary.totalInvoiced ?? null;
-    const totalInvoicePaid = m?.summary.totalInvoicePaid ?? null;
-    const totalInvoiceDue = m?.summary.totalInvoiceDue ?? null;
+    /**
+     * P0 FIX: Check availability BEFORE accessing any nested fields.
+     * If metrics are unavailable, return early with safe defaults.
+     * This prevents "Cannot read properties of undefined" crashes.
+     */
+    if (!m?.available) {
+      return {
+        metricsAvailable: false,
+        totalInvoiced: null,
+        totalInvoicePaid: null,
+        totalInvoiceDue: null,
+        totalBilled: null,
+        totalBillPaid: null,
+        totalBillDue: null,
+        invoices: null,
+        bills: null,
+        customers: null,
+        vendors: null,
+        health: "unknown" as const,
+        cfoSnapshot: {} as CfoSnapshotData,
+      };
+    }
 
-    const totalBilled = m?.summary.totalBilled ?? null;
-    const totalBillPaid = m?.summary.totalBillPaid ?? null;
-    const totalBillDue = m?.summary.totalBillDue ?? null;
+    // SAFE: metrics.available === true, all nested objects exist
+    const totalInvoiced = m.summary.totalInvoiced;
+    const totalInvoicePaid = m.summary.totalInvoicePaid;
+    const totalInvoiceDue = m.summary.totalInvoiceDue;
 
-    const invoices = m?.counts.invoices ?? null;
-    const bills = m?.counts.bills ?? null;
-    const customers = m?.counts.customers ?? null;
-    const vendors = m?.counts.vendors ?? null;
+    const totalBilled = m.summary.totalBilled;
+    const totalBillPaid = m.summary.totalBillPaid;
+    const totalBillDue = m.summary.totalBillDue;
+
+    const invoices = m.counts.invoices;
+    const bills = m.counts.bills;
+    const customers = m.counts.customers;
+    const vendors = m.counts.vendors;
 
     /**
      * FAIL-CLOSED Health Status Logic:
@@ -98,6 +121,7 @@ export default function HomeDashboardPage() {
     };
 
     return {
+      metricsAvailable: true,
       totalInvoiced,
       totalInvoicePaid,
       totalInvoiceDue,
@@ -162,7 +186,7 @@ export default function HomeDashboardPage() {
                 Loading metrics…
               </span>
             )}
-            {!isLoading && error && (
+            {!isLoading && (error || !derived.metricsAvailable) && (
               <span className="text-xs text-muted-foreground">
                 Metrics unavailable. Showing safe defaults.
               </span>

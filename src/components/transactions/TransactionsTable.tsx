@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import {
   DashTable,
@@ -90,11 +91,22 @@ const columns: DashTableColumn<TransactionRow>[] = [
   },
 ];
 
+/**
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook for org context and auth headers
+ * - Gates fetch behind isLoaded to prevent fetching before Clerk is ready
+ */
 export default function TransactionsTable() {
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
   const [rows, setRows] = useState<TransactionRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
+    if (!authReady) return;
+
     let alive = true;
     (async () => {
       try {
@@ -109,7 +121,7 @@ export default function TransactionsTable() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [authReady, apiFetch]);
 
   const getRowSeverity = (tx: TransactionRow): SeverityLevel | undefined => {
     if (tx.duplicate) return "warning";

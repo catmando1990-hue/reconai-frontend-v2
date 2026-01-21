@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
 import { AlertTriangle, ChevronRight, X, RefreshCw, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/dashboard/StatusChip";
@@ -51,10 +51,13 @@ type SignalEvidence = {
  * - ADVISORY ONLY: Read-only display with evidence viewer
  * - CONFIDENCE CONTRACT: Filters signals below 0.85 confidence threshold
  *
+ * P0 FIX: Auth Propagation - Uses useApi() hook for org context and auth headers
  * P1 FIX: Now displays explicit demo mode labeling when backend returns demo data.
  * No signal may appear without a truthful provenance label.
  */
 export default function SignalsPanel() {
+  const { apiFetch } = useApi();
+
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(false);
   const [ran, setRan] = useState(false);

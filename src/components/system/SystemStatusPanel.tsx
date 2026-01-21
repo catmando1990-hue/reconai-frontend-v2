@@ -1,7 +1,8 @@
 "use client";
 
 import useSWR from "swr";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import {
   Activity,
   Database,
@@ -23,12 +24,20 @@ interface SystemStatusData {
 /**
  * BUILD 11: System health status panel for admin dashboard.
  * Manual refresh only - no polling.
- * Uses authenticated apiFetch.
+ *
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook which includes org context and auth headers
+ * - Gates SWR key behind isLoaded to prevent fetching before Clerk is ready
+ * - Prevents 401 errors from race condition where fetch runs before auth
  */
 export default function SystemStatusPanel() {
-  // Manual-first UX: No polling. User triggers refresh manually.
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
+  // P0 FIX: Only provide SWR key when auth is ready
+  // When key is null, SWR will not fetch
   const { data, error, isLoading, mutate } = useSWR<SystemStatusData>(
-    "/api/system/status",
+    authReady ? "/api/system/status" : null,
     apiFetch,
     {
       revalidateOnFocus: false,

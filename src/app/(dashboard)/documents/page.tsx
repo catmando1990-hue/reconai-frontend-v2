@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import {
   FileText,
   AlertCircle,
@@ -194,13 +195,21 @@ function getActionStyle(action: string): string {
 /**
  * DocumentAuditTrail - Expandable audit trail for a document
  * Fetches audit data on-demand when expanded (single fetch, no polling)
+ *
+ * P0 FIX: Auth Propagation - Uses useApi() hook for org context and auth headers
  */
 function DocumentAuditTrail({ documentId }: { documentId: string }) {
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
   const [auditData, setAuditData] = useState<AuditResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
+    if (!authReady) return;
+
     let alive = true;
 
     (async () => {
@@ -225,7 +234,7 @@ function DocumentAuditTrail({ documentId }: { documentId: string }) {
     return () => {
       alive = false;
     };
-  }, [documentId]);
+  }, [documentId, authReady, apiFetch]);
 
   if (loading) {
     return (
@@ -409,12 +418,23 @@ function DocumentRow({ doc }: { doc: Document }) {
   );
 }
 
+/**
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook for org context and auth headers
+ * - Gates fetch behind isLoaded to prevent fetching before Clerk is ready
+ */
 export default function DocumentsPage() {
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
+    if (!authReady) return;
+
     let alive = true;
 
     (async () => {
@@ -438,7 +458,7 @@ export default function DocumentsPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [authReady, apiFetch]);
 
   return (
     <RouteShell

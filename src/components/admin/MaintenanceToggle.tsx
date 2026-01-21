@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import { Wrench } from "lucide-react";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 
@@ -9,16 +10,26 @@ import { StatusChip } from "@/components/dashboard/StatusChip";
  * BUILD 9/18: Admin-only maintenance toggle control.
  * Uses authenticated apiFetch to toggle maintenance mode.
  * BUILD 18: Remove hardcoded colors; rely on semantic tokens.
+ *
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook for org context and auth headers
+ * - Gates fetch behind isLoaded to prevent fetching before Clerk is ready
  */
 export default function MaintenanceToggle() {
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
+    if (!authReady) return;
+
     apiFetch<{ ok: boolean; enabled: boolean }>("/api/maintenance/status")
       .then((res) => setEnabled(res.enabled))
       .catch(() => setEnabled(null));
-  }, []);
+  }, [authReady, apiFetch]);
 
   if (enabled === null) return null;
 

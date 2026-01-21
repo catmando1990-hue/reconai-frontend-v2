@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   StatusChip,
@@ -43,12 +44,28 @@ function healthVariant(ok?: boolean): StatusVariant {
   return ok ? "ok" : "warn";
 }
 
+/**
+ * OverviewSnapshot - Operational telemetry display
+ *
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook which includes org context and auth headers
+ * - Gates fetch behind isLoaded from useOrg() to ensure Clerk session is ready
+ * - Prevents 401 errors from race condition where fetch runs before Clerk initializes
+ */
 export function OverviewSnapshot({ className }: { className?: string }) {
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
   const [system, setSystem] = useState<SystemStatus | null>(null);
   const [txs, setTxs] = useState<TxRow[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
+    if (!authReady) {
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {
@@ -74,7 +91,7 @@ export function OverviewSnapshot({ className }: { className?: string }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authReady, apiFetch]);
 
   const txCount = txs?.length ?? 0;
   const dupCount = useMemo(

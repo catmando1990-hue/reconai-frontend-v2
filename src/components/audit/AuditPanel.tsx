@@ -1,7 +1,8 @@
 "use client";
 
 import useSWR from "swr";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import { Clock, FileText, User, ChevronRight, RefreshCw } from "lucide-react";
 
 interface AuditEntry {
@@ -19,8 +20,6 @@ interface AuditResponse {
   total: number;
   filtered_count: number;
 }
-
-const fetcher = (url: string) => apiFetch<AuditResponse>(url);
 
 function formatTimestamp(ts: string): string {
   const date = new Date(ts);
@@ -50,11 +49,19 @@ function getActionColor(action: string): string {
   return "text-blue-400 bg-blue-500/10";
 }
 
+/**
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook for org context and auth headers
+ * - Gates SWR key behind isLoaded to prevent fetching before Clerk is ready
+ */
 export default function AuditPanel() {
-  // Manual-first UX: No polling. User triggers refresh manually.
-  const { data, error, isLoading, mutate } = useSWR(
-    "/api/audit?limit=50",
-    fetcher,
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
+  // P0 FIX: Only provide SWR key when auth is ready
+  const { data, error, isLoading, mutate } = useSWR<AuditResponse>(
+    authReady ? "/api/audit?limit=50" : null,
+    apiFetch,
   );
 
   if (isLoading) {

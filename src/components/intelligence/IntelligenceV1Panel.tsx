@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusChip } from "@/components/dashboard/StatusChip";
@@ -38,7 +38,12 @@ const THRESHOLD = 0.85;
 // re-fetching the same data on subsequent runs.
 const CACHE_KEY = "intelligence_v1_cache";
 
+/**
+ * P0 FIX: Auth Propagation - Uses useApi() hook for org context and auth headers
+ */
 export function IntelligenceV1Panel() {
+  const { apiFetch } = useApi();
+
   const [running, setRunning] = useState(false);
   const [ran, setRan] = useState(false);
   const [cat, setCat] = useState<CatSuggestion[] | null>(null);

@@ -16,12 +16,21 @@ import {
   type ExportPackRequest,
 } from "@/components/enterprise/ExportPackRequestPanel";
 import type { RbacSnapshot } from "@/lib/enterprise/rbac";
-import { apiFetch } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 
+/**
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook for org context and auth headers
+ * - Gates fetch behind isLoaded to prevent fetching before Clerk is ready
+ */
 export default function CfoCompliancePage() {
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
   const [rbac, setRbac] = useState<RbacSnapshot | null>(null);
   const [policy, setPolicy] = useState<RetentionPolicyView | null>(null);
   const [exportResult, setExportResult] = useState<{
@@ -30,6 +39,9 @@ export default function CfoCompliancePage() {
   } | null>(null);
 
   useEffect(() => {
+    // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
+    if (!authReady) return;
+
     apiFetch<RbacSnapshot>("/api/rbac")
       .then((data) => {
         setRbac(data);
@@ -45,7 +57,7 @@ export default function CfoCompliancePage() {
       .catch(() => {
         setPolicy(null);
       });
-  }, []);
+  }, [authReady, apiFetch]);
 
   async function handleExport(req: ExportPackRequest) {
     try {

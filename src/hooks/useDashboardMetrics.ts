@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { apiFetch } from "@/lib/api";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 
 /**
  * Dashboard metrics interface with nullable fields for fail-closed behavior.
@@ -69,15 +70,48 @@ const failClosedMetrics: DashboardMetrics = {
   },
 };
 
+/**
+ * useDashboardMetrics - Fetches dashboard metrics with proper auth gating.
+ *
+ * P0 FIX: Auth Propagation
+ * - Uses useApi() hook which includes org context
+ * - Gates fetch behind isLoaded from useOrg() to ensure Clerk session is ready
+ * - Does NOT fetch until authentication is confirmed ready
+ * - Prevents 401 errors from race condition where fetch runs before Clerk initializes
+ */
 export function useDashboardMetrics() {
+  const { apiFetch } = useApi();
+  const { isLoaded: authReady } = useOrg();
+
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  const fetchMetrics = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await apiFetch<DashboardMetrics>("/api/dashboard/metrics");
+      setMetrics(data);
+    } catch {
+      // FAIL-CLOSED: Use null metrics, not fake zeros
+      setMetrics(failClosedMetrics);
+      setError(new Error("Failed to load dashboard metrics"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiFetch]);
+
   useEffect(() => {
+    // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
+    // This prevents 401 errors from fetch running before session is available
+    if (!authReady) {
+      return;
+    }
+
     let alive = true;
 
-    const fetchMetrics = async () => {
+    const doFetch = async () => {
       try {
         setIsLoading(true);
         if (alive) setError(null);
@@ -94,11 +128,14 @@ export function useDashboardMetrics() {
       }
     };
 
-    fetchMetrics();
+    void doFetch();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [authReady, apiFetch]);
 
-  return { metrics, isLoading, error };
+  return useMemo(
+    () => ({ metrics, isLoading, error, refetch: fetchMetrics }),
+    [metrics, isLoading, error, fetchMetrics]
+  );
 }

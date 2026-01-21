@@ -1,7 +1,7 @@
 "use client";
 
 import { useSignIn, useAuth } from "@clerk/nextjs";
-import type { OAuthStrategy } from "@clerk/types";
+import type { OAuthStrategy, SignInResource } from "@clerk/types";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { MFAVerification } from "./MFAVerification";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -65,7 +66,8 @@ type SignInStep =
   | "email_code"
   | "phone_code"
   | "forgot_password"
-  | "reset_password";
+  | "reset_password"
+  | "second_factor";
 
 function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
   const router = useRouter();
@@ -207,8 +209,8 @@ function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
           await setActive({ session: result.createdSessionId });
           router.push(finalRedirectUrl);
         } else if (result.status === "needs_second_factor") {
-          // Handle 2FA if needed
-          setError("Two-factor authentication required");
+          // Proceed to MFA verification step
+          setStep("second_factor");
         }
       } catch (err: unknown) {
         const clerkError = err as { errors?: Array<{ message: string }> };
@@ -772,6 +774,22 @@ function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
           </form>
         </CardContent>
       </Card>
+    );
+  }
+
+  // Second factor (MFA) verification step
+  if (step === "second_factor" && signIn) {
+    return (
+      <MFAVerification
+        signInResource={signIn as SignInResource}
+        redirectUrl={finalRedirectUrl}
+        onBack={() => {
+          setStep("start");
+          setError(null);
+          setPassword("");
+          setCode("");
+        }}
+      />
     );
   }
 

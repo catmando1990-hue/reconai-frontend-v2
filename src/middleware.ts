@@ -9,6 +9,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * - Public/marketing routes bypass Clerk entirely (ZERO overhead)
  * - Auth routes (sign-in, sign-up) use Clerk for auth flow
  * - BUILD 8: Maintenance mode enforcement (fail-open)
+ * - P0 MFA: Two-factor authentication enforcement (fail-closed)
  */
 
 // Routes that require Clerk middleware (authenticated + auth flow)
@@ -17,6 +18,7 @@ const CLERK_ROUTES = [
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/onboarding(.*)",
+  "/mfa-setup(.*)",
   // Canonical dashboard entry routes
   "/dashboard(.*)",
   // Protected dashboard routes (now under route group, keeping for legacy links)
@@ -64,12 +66,21 @@ const CLERK_ROUTES = [
 ];
 
 // Routes that need auth enforcement (subset of CLERK_ROUTES)
+// Excludes auth flow routes and MFA setup (user needs to complete setup first)
 const PROTECTED_PREFIXES = CLERK_ROUTES.filter(
   (r) =>
     !r.startsWith("/sign-in") &&
     !r.startsWith("/sign-up") &&
-    !r.startsWith("/onboarding"),
+    !r.startsWith("/onboarding") &&
+    !r.startsWith("/mfa-setup"),
 );
+
+// Routes that require MFA to be enabled (all protected routes)
+const MFA_REQUIRED_ROUTES = PROTECTED_PREFIXES.filter(
+  (r) => !r.startsWith("/api/"),
+);
+
+const requiresMFA = createRouteMatcher(MFA_REQUIRED_ROUTES);
 
 const requiresClerk = createRouteMatcher(CLERK_ROUTES);
 const isProtectedRoute = createRouteMatcher(PROTECTED_PREFIXES);
@@ -102,6 +113,16 @@ async function checkMaintenanceMode(): Promise<boolean> {
 const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
+  // Allow maintenance page itself
+  if (pathname.startsWith("/maintenance")) {
+    return NextResponse.next();
+  }
+
+  // Allow MFA setup page (user needs to complete setup)
+  if (pathname.startsWith("/mfa-setup")) {
+    return NextResponse.next();
+  }
+
   // Maintenance mode enforcement — PROTECTED ROUTES ONLY
   if (isProtectedRoute(req)) {
     const maintenanceMode = await checkMaintenanceMode();
@@ -123,9 +144,38 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
     }
   }
 
-  // Allow maintenance page itself
-  if (pathname.startsWith("/maintenance")) {
-    return NextResponse.next();
+  // P0 MFA ENFORCEMENT — Dashboard routes require MFA (fail-closed)
+  // This checks if user has MFA enabled via Clerk session claims
+  if (requiresMFA(req)) {
+    const { sessionClaims, userId } = await auth();
+
+    // If user is authenticated, check MFA status
+    if (userId) {
+      // Clerk stores MFA status in session claims when configured
+      // Check if user has completed second factor verification
+      const publicMetadata = sessionClaims?.publicMetadata as
+        | Record<string, unknown>
+        | undefined;
+
+      // Check Clerk's built-in two-factor verification status
+      // When MFA is required at Clerk level, sessions without MFA won't be issued
+      // This is a defense-in-depth check for users who enrolled but haven't verified
+      const hasMFAEnabled = Boolean(
+        publicMetadata?.mfaEnabled ||
+        sessionClaims?.["two_factor_enabled"] ||
+        sessionClaims?.["mfa"]
+      );
+
+      // If MFA enforcement is enabled and user doesn't have MFA, redirect to setup
+      const enforceMFA = process.env.NEXT_PUBLIC_ENFORCE_MFA === "true";
+
+      if (enforceMFA && !hasMFAEnabled) {
+        const url = req.nextUrl.clone();
+        url.pathname = "/mfa-setup";
+        url.searchParams.set("redirect_url", pathname);
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
   // Protected routes are handled by server-side auth() in layouts

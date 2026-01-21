@@ -1,196 +1,119 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  CheckCircle2,
   ShieldCheck,
   Lock,
-  Sparkles,
   LineChart,
   FileText,
-  Users,
-  Building2,
-  Briefcase,
   Layers,
+  Shield,
 } from "lucide-react";
-import { AIVideoPreview } from "./AIVideoPreview";
-import { MarketingHeroShell } from "./MarketingHeroShell";
 import { ComplianceShieldLoop } from "@/components/dashboard/ComplianceShieldLoop";
-
-type UseCase = "solo" | "smb" | "enterprise";
-
-const USE_CASES: Array<{
-  id: UseCase;
-  title: string;
-  subtitle: string;
-  Icon: React.ComponentType<{ className?: string }>;
-  subheadline: string;
-}> = [
-  {
-    id: "solo",
-    title: "Solo",
-    subtitle: "Structured outputs",
-    Icon: Briefcase,
-    subheadline:
-      "Categorizes transactions, generates reports, and organizes financial data in one place.",
-  },
-  {
-    id: "smb",
-    title: "Small Business",
-    subtitle: "Consistent records",
-    Icon: Users,
-    subheadline:
-      "Applies consistent classification across accounts. Outputs are structured for review.",
-  },
-  {
-    id: "enterprise",
-    title: "Enterprise",
-    subtitle: "Traceable outputs",
-    Icon: Building2,
-    subheadline:
-      "Surfaces cost structures, flags unclassified items, and generates audit-trail documentation.",
-  },
-];
-
-function cx(...parts: Array<string | false | undefined | null>) {
-  return parts.filter(Boolean).join(" ");
-}
 
 /**
  * MarketingHomePage — Content component for the home page.
  *
+ * DESIGN DISCIPLINE: Authority Frame Hero
+ * - Static foreground content in single control frame
+ * - No dynamic kickers, no use-case toggles, no embedded video
+ * - Single H1, single CTA, simplified proof strip
+ * - Background preserved unchanged
+ *
  * NOTE: This component is rendered INSIDE MarketingLayout which provides:
  * - MarketingShell (with header, background, and <main> wrapper)
- *
- * Therefore, this component does NOT wrap in its own <main> tag.
- * Content is rendered directly into the parent layout.
  */
 export function MarketingHomePage() {
-  const [useCase, setUseCase] = useState<UseCase>("smb");
-  const [showSticky, setShowSticky] = useState(false);
-
-  const uc = USE_CASES.find((u) => u.id === useCase)!;
-
-  // Sticky CTA: show after scroll
-  useEffect(() => {
-    const onScroll = () => {
-      setShowSticky(window.scrollY > 520);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
     <>
-      {/* HERO */}
-      <MarketingHeroShell
-        variant="home"
-        imageSrc="/hero-boardroom.jpg"
-        imageAlt="Enterprise team collaborating with financial intelligence dashboards"
-        kickerIcon={Sparkles}
-        kickerText={uc.subtitle}
-        headline="Structured financial data"
-        headlineAccent="ready for review"
-        description={uc.subheadline}
-        ctas={[
-          { label: "Get Started", href: "/sign-in", variant: "primary" },
-          {
-            label: "See the Platform",
-            href: "/platform",
-            variant: "secondary",
-          },
-        ]}
-        navLinks={[
-          { label: "How it works", href: "/how-it-works" },
-          { label: "Packages", href: "/packages" },
-          { label: "Security", href: "/security" },
-        ]}
-      >
-        {/* Use-case toggle buttons */}
-        <div className="mt-8 flex items-center justify-center">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-3xl">
-            {USE_CASES.map(({ id, title, subtitle, Icon }) => {
-              const active = id === useCase;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setUseCase(id)}
-                  className={cx(
-                    "group flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm transition",
-                    active
-                      ? "border-primary bg-primary/10"
-                      : "border-border bg-card/60 hover:bg-accent",
-                  )}
-                  aria-pressed={active}
+      {/* ================================================================
+          HERO SECTION — AUTHORITY FRAME DESIGN
+          ================================================================
+          Structure:
+          1. Background layer (unchanged)
+          2. Overlay gradient (normalized, z-10)
+          3. Authority frame + proof strip (z-20)
+          ================================================================ */}
+      <section className="relative isolate overflow-hidden border-b border-border">
+        {/* Background image - UNCHANGED from original */}
+        <div className="absolute inset-0 -z-20">
+          <Image
+            src="/hero-boardroom.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-15 dark:opacity-25"
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Overlay gradient - NORMALIZED (z-10) */}
+        <div
+          className="absolute inset-0 z-10 bg-gradient-to-b from-background/20 via-background/40 to-background/80 pointer-events-none"
+          aria-hidden="true"
+        />
+
+        {/* Foreground content container (z-20) */}
+        <div className="relative z-20 flex min-h-[80dvh] items-center justify-center px-4 py-16 sm:px-6 sm:py-24">
+          <div className="mx-auto w-full max-w-3xl">
+            {/* ============================================================
+                AUTHORITY FRAME — Single container for all hero messaging
+                ============================================================ */}
+            <div className="rounded-2xl border border-border bg-card/85 backdrop-blur-md p-8 md:p-10">
+              {/* Kicker - Static, non-interactive */}
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/50 px-4 py-2 text-sm text-muted-foreground">
+                <Shield className="h-4 w-4 text-primary" />
+                Financial System of Record
+              </div>
+
+              {/* Headline - Single H1 on page */}
+              <h1 className="mt-6 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.1]">
+                Structured financial data
+                <span className="block text-primary">you can defend</span>
+              </h1>
+
+              {/* Description - Factual, non-promotional */}
+              <p className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
+                ReconAI organizes transactions, surfaces patterns, and produces
+                audit-ready outputs. Every result traces to source evidence.
+                No silent actions. No inferred data.
+              </p>
+
+              {/* Primary CTA - Single button only */}
+              <div className="mt-8">
+                <Link
+                  href="/sign-in"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-medium text-primary-foreground hover:opacity-90 transition-opacity"
                 >
-                  <Icon
-                    className={cx(
-                      "h-4 w-4",
-                      active
-                        ? "text-primary"
-                        : "text-muted-foreground group-hover:text-foreground",
-                    )}
-                  />
-                  <span
-                    className={cx(
-                      "font-medium",
-                      active ? "text-foreground" : "text-foreground",
-                    )}
-                  >
-                    {title}
-                  </span>
-                  <span className="hidden md:inline text-muted-foreground">
-                    &bull; {subtitle}
-                  </span>
-                </button>
-              );
-            })}
+                  Access Dashboard
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* ============================================================
+                PROOF STRIP — Below authority frame, still inside hero
+                ============================================================ */}
+            <ul className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <li className="flex items-center gap-3 rounded-xl border border-border bg-card/70 backdrop-blur px-4 py-3">
+                <FileText className="h-5 w-5 text-primary shrink-0" />
+                <span className="text-sm font-medium">Audit-Ready</span>
+              </li>
+              <li className="flex items-center gap-3 rounded-xl border border-border bg-card/70 backdrop-blur px-4 py-3">
+                <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+                <span className="text-sm font-medium">Manual-First</span>
+              </li>
+              <li className="flex items-center gap-3 rounded-xl border border-border bg-card/70 backdrop-blur px-4 py-3">
+                <Lock className="h-5 w-5 text-primary shrink-0" />
+                <span className="text-sm font-medium">Encrypted</span>
+              </li>
+            </ul>
           </div>
         </div>
-
-        {/* AI Video Preview */}
-        <div className="mt-8 flex justify-center">
-          <AIVideoPreview />
-        </div>
-
-        {/* Proof strip */}
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-          {[
-            { k: "95%+", v: "Classification accuracy target" },
-            { k: "<24h", v: "Typical setup time" },
-            { k: "Audit", v: "Traceable outputs" },
-          ].map((m) => (
-            <div
-              key={m.k}
-              className="rounded-2xl border border-border bg-card/70 p-5 backdrop-blur"
-            >
-              <div className="text-2xl font-bold tracking-tight">{m.k}</div>
-              <div className="mt-1 text-muted-foreground">{m.v}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-          {[
-            "Structured for audit review",
-            "Access controls included",
-            "Solo to enterprise scale",
-          ].map((t) => (
-            <div
-              key={t}
-              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-4 py-3 backdrop-blur"
-            >
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span className="text-muted-foreground">{t}</span>
-            </div>
-          ))}
-        </div>
-      </MarketingHeroShell>
+      </section>
 
       {/* TRUST STRIP + PACKAGES SECTION - Combined with shared background */}
       <section className="relative overflow-hidden">
@@ -279,7 +202,7 @@ export function MarketingHomePage() {
               },
               {
                 title: "Intelligence",
-                icon: Sparkles,
+                icon: Layers,
                 desc: "Pattern detection, alerts, and classification suggestions.",
               },
               {
@@ -440,33 +363,7 @@ export function MarketingHomePage() {
         </div>
       </section>
 
-      {/* STICKY CTA (tasteful) */}
-      <div
-        className={cx(
-          "fixed inset-x-0 bottom-4 z-50 mx-auto max-w-3xl px-4 transition-all",
-          showSticky
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-4 pointer-events-none",
-        )}
-        aria-hidden={!showSticky}
-      >
-        <div className="rounded-2xl border border-border bg-card/80 backdrop-blur p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
-          <div className="text-sm">
-            <div className="font-medium">View the dashboard</div>
-            <div className="text-muted-foreground">
-              Sign in to access your data.
-            </div>
-          </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Link
-              href="/sign-in"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-primary-foreground hover:opacity-90 transition"
-            >
-              Get Started <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* STICKY CTA REMOVED — Per design discipline requirements */}
     </>
   );
 }

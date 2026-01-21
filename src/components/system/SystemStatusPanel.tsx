@@ -101,11 +101,11 @@ export default function SystemStatusPanel() {
         </span>
       </div>
 
-      {/* Last Plaid Sync */}
+      {/* Last Plaid Sync - P1 FIX: Show "Unknown" when data unavailable */}
       <div className="flex items-center gap-1.5">
         <Clock className="h-3 w-3 text-muted-foreground" />
         <span className="text-muted-foreground">
-          Plaid: {formatTimestamp(data.last_plaid_sync)}
+          Plaid: {data.last_plaid_sync ? formatTimestamp(data.last_plaid_sync) : "Unknown"}
         </span>
       </div>
 

@@ -27,11 +27,21 @@ interface ProfileData {
   mfaEnabled?: boolean;
 }
 
+/**
+ * P1 FIX: Updated PlaidData interface to match new honest status contract.
+ * Status is now based on actual backend item data.
+ */
 interface PlaidData {
-  environment?: string;
+  environment?: string | null;
   institutions?: unknown[];
-  lastSync?: string;
-  status?: "healthy" | "reauth" | "disconnected";
+  lastSync?: string | null;
+  // P1 FIX: New honest status values
+  status?: "active" | "login_required" | "error" | "unknown" | "not_connected";
+  // New fields from status contract
+  items_count?: number | null;
+  last_synced_at?: string | null;
+  has_items?: boolean;
+  source?: "backend_items" | "backend_hardening" | "unknown";
 }
 
 interface IntelData {

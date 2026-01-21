@@ -2,12 +2,50 @@
 
 import { useEffect, useState } from "react";
 
+/**
+ * P1 FIX: Item status is now based on actual backend values.
+ * Status values match the PlaidItemStatus enum from backend.
+ */
+type ItemStatus = "active" | "login_required" | "error" | string;
+
 type Item = {
   item_id: string;
-  status: string;
+  status: ItemStatus;
   created_at: string;
   updated_at: string;
 };
+
+/**
+ * P1 FIX: Get human-readable status label with honest representation.
+ */
+function getStatusLabel(status: ItemStatus): string {
+  switch (status) {
+    case "active":
+      return "Active";
+    case "login_required":
+      return "Needs Re-auth";
+    case "error":
+      return "Error";
+    default:
+      return status || "Unknown";
+  }
+}
+
+/**
+ * P1 FIX: Get status color class for visual indication.
+ */
+function getStatusColorClass(status: ItemStatus): string {
+  switch (status) {
+    case "active":
+      return "text-green-600 dark:text-green-400";
+    case "login_required":
+      return "text-amber-600 dark:text-amber-400";
+    case "error":
+      return "text-red-600 dark:text-red-400";
+    default:
+      return "text-muted-foreground";
+  }
+}
 
 export function ConnectedAccounts() {
   const [items, setItems] = useState<Item[] | null>(null);
@@ -79,7 +117,9 @@ export function ConnectedAccounts() {
               {items.map((it) => (
                 <tr key={it.item_id} className="border-b last:border-b-0">
                   <td className="py-2 pr-4 font-mono text-xs">{it.item_id}</td>
-                  <td className="py-2 pr-4">{it.status}</td>
+                  <td className={`py-2 pr-4 ${getStatusColorClass(it.status)}`}>
+                    {getStatusLabel(it.status)}
+                  </td>
                   <td className="whitespace-nowrap py-2 pr-4">
                     {new Date(it.created_at).toLocaleString()}
                   </td>

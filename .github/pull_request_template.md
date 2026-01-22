@@ -23,7 +23,7 @@
 
 ## Contract Changes
 
-<!-- If you modified /api/core/state, /api/cfo/*, or /api/intelligence/*, check these boxes -->
+<!-- If you modified /api/core/state, /api/cfo/*, /api/intelligence/*, or /api/govcon/*, check these boxes -->
 
 ### CORE State Contract
 
@@ -50,6 +50,16 @@
   - [ ] All tests still pass with `assertValidIntelligenceState()`
   - [ ] Coordinated with backend team on schema changes
   - [ ] Updated `VALID_INTELLIGENCE_LIFECYCLE_STATUSES` if enum changed
+
+### GovCon Contract (DCAA Compliance)
+
+- [ ] Did `/api/govcon/*` contract change? If yes:
+  - [ ] Updated `tests/fixtures/govcon-state-factory.ts` to match new schema
+  - [ ] Updated `SUPPORTED_GOVCON_VERSIONS` if breaking change
+  - [ ] All tests still pass with `assertValidGovConState()`
+  - [ ] Coordinated with backend team on schema changes
+  - [ ] Updated `VALID_GOVCON_LIFECYCLE_STATUSES` if enum changed
+  - [ ] Verified DCAA compliance requirements preserved (evidence, audit trail)
 
 ## Testing
 

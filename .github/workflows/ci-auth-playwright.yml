@@ -48,7 +48,7 @@ jobs:
         run: npm install -D ts-node typescript @clerk/clerk-sdk-node
 
       - name: Seed Clerk auth session
-        run: npx ts-node --esm scripts/seed-playwright-auth.ts
+        run: npx ts-node-esm scripts/seed-playwright-auth.ts
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_CI_USER_ID: ${{ secrets.CLERK_CI_USER_ID }}

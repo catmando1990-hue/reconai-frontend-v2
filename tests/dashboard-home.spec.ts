@@ -1,9 +1,26 @@
 import { test, expect, type Page, type Route } from "@playwright/test";
 
+// Import canonical factories - ALL tests MUST use these
+import {
+  emptyOrgState,
+  partialOrgState,
+  fullOrgState,
+  withSyncRunning,
+  withSyncFailed,
+  withUnknownSyncVersion,
+  withMissingSyncVersion,
+  withNullSync,
+  withExtendedTransactions,
+  assertValidCoreState,
+} from "./fixtures/core-state-factory";
+
+import type { CoreState } from "@/hooks/useCoreState";
+
 /**
  * CORE State-of-Business Dashboard Tests
  *
  * P0 FIX: Tests now use single /api/core/state endpoint
+ * PART 1 FIX: All tests use canonical coreStateFactory - NO inline mocks
  *
  * Tests three organization states:
  * 1. Empty org - No data, should show "No Financial Data Yet"
@@ -26,199 +43,31 @@ import { test, expect, type Page, type Route } from "@playwright/test";
 const skipInUnauthenticatedEnv =
   !process.env.PLAYWRIGHT_AUTH_BYPASS && !process.env.CI;
 
-// Mock CORE state responses
+// Canonical mock states from factory - mirrors backend schema exactly
 const MOCK_CORE_STATE = {
-  // Empty org - no data at all
-  empty: {
-    available: false,
-    request_id: "test-empty",
-    fetched_at: new Date().toISOString(),
-    sync: {
-      version: "1",
-      status: "never",
-      started_at: null,
-      last_successful_at: null,
-      error_reason: null,
-    },
-    live_state: {
-      unpaid_invoices: null,
-      unpaid_bills: null,
-      bank_sync: null,
-    },
-    evidence: {
-      invoices: null,
-      bills: null,
-      customers: null,
-      vendors: null,
-      recent_transactions: null,
-    },
-  },
-
-  // Partial org - some data, bank connected
-  partial: {
-    available: true,
-    request_id: "test-partial",
-    fetched_at: new Date().toISOString(),
-    sync: {
-      version: "1",
-      status: "success",
-      started_at: null,
-      last_successful_at: new Date().toISOString(),
-      error_reason: null,
-    },
-    live_state: {
-      unpaid_invoices: {
-        count: 2,
-        total_due: 2500,
-        items: [
-          {
-            id: "inv1",
-            customer_name: "Acme Corp",
-            amount_due: 1500,
-            due_date: null,
-            is_overdue: false,
-          },
-          {
-            id: "inv2",
-            customer_name: "Beta Inc",
-            amount_due: 1000,
-            due_date: null,
-            is_overdue: false,
-          },
-        ],
-      },
-      unpaid_bills: null,
-      bank_sync: {
-        status: "healthy",
-        last_synced_at: new Date().toISOString(),
-        items_needing_attention: 0,
-      },
-    },
-    evidence: {
-      invoices: {
-        total_count: 5,
-        total_amount: 10000,
-        paid_amount: 7500,
-        due_amount: 2500,
-        by_status: { paid: 3, pending: 2, overdue: 0, draft: 0 },
-      },
-      bills: {
-        total_count: 3,
-        total_amount: 5000,
-        paid_amount: 5000,
-        due_amount: 0,
-        by_status: { paid: 3, pending: 0, overdue: 0 },
-      },
-      customers: null, // Partially available
-      vendors: null,
-      recent_transactions: null,
-    },
-  },
-
-  // Full org - all data, attention items
-  full: {
-    available: true,
-    request_id: "test-full",
-    fetched_at: new Date().toISOString(),
-    sync: {
-      version: "1",
-      status: "success",
-      started_at: null,
-      last_successful_at: new Date().toISOString(),
-      error_reason: null,
-    },
-    live_state: {
-      unpaid_invoices: {
-        count: 5,
-        total_due: 25000,
-        items: [
-          {
-            id: "inv1",
-            customer_name: "Acme Corp",
-            amount_due: 10000,
-            due_date: "2024-01-01",
-            is_overdue: true,
-          },
-          {
-            id: "inv2",
-            customer_name: "Beta Inc",
-            amount_due: 8000,
-            due_date: null,
-            is_overdue: false,
-          },
-        ],
-      },
-      unpaid_bills: {
-        count: 3,
-        total_due: 10000,
-        items: [
-          {
-            id: "bill1",
-            vendor_name: "Vendor A",
-            amount_due: 5000,
-            due_date: "2024-01-01",
-            is_overdue: true,
-          },
-        ],
-      },
-      bank_sync: {
-        status: "error",
-        last_synced_at: new Date(
-          Date.now() - 48 * 60 * 60 * 1000,
-        ).toISOString(),
-        items_needing_attention: 2,
-      },
-    },
-    evidence: {
-      invoices: {
-        total_count: 25,
-        total_amount: 150000,
-        paid_amount: 125000,
-        due_amount: 25000,
-        by_status: { paid: 20, pending: 3, overdue: 2, draft: 0 },
-      },
-      bills: {
-        total_count: 18,
-        total_amount: 80000,
-        paid_amount: 70000,
-        due_amount: 10000,
-        by_status: { paid: 15, pending: 2, overdue: 1 },
-      },
-      customers: { total_count: 12 },
-      vendors: { total_count: 8 },
-      recent_transactions: {
-        count: 5,
-        items: [
-          {
-            id: "tx1",
-            date: "2024-01-15",
-            amount: -500,
-            merchant_name: "Office Supplies",
-          },
-          {
-            id: "tx2",
-            date: "2024-01-14",
-            amount: 1200,
-            merchant_name: "Client Payment",
-          },
-        ],
-      },
-    },
-  },
-};
+  empty: emptyOrgState(),
+  partial: partialOrgState(),
+  full: fullOrgState(),
+} as const;
 
 /**
  * Setup API mocking for /api/core/state
+ * Uses canonical factory states - validates schema before mocking.
  */
 async function setupCoreStateMock(
   page: Page,
   state: keyof typeof MOCK_CORE_STATE,
 ) {
+  const mockState = MOCK_CORE_STATE[state];
+
+  // PART 2: Validate schema before using in tests
+  assertValidCoreState(mockState, `setupCoreStateMock(${state})`);
+
   await page.route("**/api/core/state", async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(MOCK_CORE_STATE[state]),
+      body: JSON.stringify(mockState),
     });
   });
 
@@ -228,6 +77,37 @@ async function setupCoreStateMock(
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ id: "user_test", name: "Test User" }),
+    });
+  });
+}
+
+/**
+ * Setup API mocking with custom CoreState.
+ * Validates schema before mocking.
+ */
+async function setupCustomCoreStateMock(
+  page: Page,
+  state: CoreState | Record<string, unknown>,
+  skipValidation: boolean = false,
+) {
+  // Validate unless explicitly skipped (for invalid state tests)
+  if (!skipValidation) {
+    assertValidCoreState(state, "setupCustomCoreStateMock");
+  }
+
+  await page.route("**/api/core/state", async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(state),
+    });
+  });
+
+  await page.route("**/api/me", async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ id: "user_test" }),
     });
   });
 }
@@ -566,30 +446,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows sync banner when status is 'running'", async ({ page }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.partial,
-            sync: {
-              version: "1",
-              status: "running",
-              started_at: new Date().toISOString(),
-              last_successful_at: null,
-              error_reason: null,
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create running sync state
+      const runningState = withSyncRunning();
+      await setupCustomCoreStateMock(page, runningState);
 
       await page.goto("/home");
 
@@ -599,30 +458,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows error badge when status is 'failed'", async ({ page }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.partial,
-            sync: {
-              version: "1",
-              status: "failed",
-              started_at: new Date(Date.now() - 10000).toISOString(),
-              last_successful_at: null,
-              error_reason: "Connection timeout",
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create failed sync state
+      const failedState = withSyncFailed("Connection timeout");
+      await setupCustomCoreStateMock(page, failedState);
 
       await page.goto("/home");
 
@@ -637,61 +475,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
 
   test.describe("Evidence Density", () => {
     test("recent activity shows max 3 items", async ({ page }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.full,
-            evidence: {
-              ...MOCK_CORE_STATE.full.evidence,
-              recent_transactions: {
-                count: 10,
-                items: [
-                  {
-                    id: "tx1",
-                    date: "2024-01-15",
-                    amount: -500,
-                    merchant_name: "Merchant 1",
-                  },
-                  {
-                    id: "tx2",
-                    date: "2024-01-14",
-                    amount: 1200,
-                    merchant_name: "Merchant 2",
-                  },
-                  {
-                    id: "tx3",
-                    date: "2024-01-13",
-                    amount: -300,
-                    merchant_name: "Merchant 3",
-                  },
-                  {
-                    id: "tx4",
-                    date: "2024-01-12",
-                    amount: 800,
-                    merchant_name: "Merchant 4",
-                  },
-                  {
-                    id: "tx5",
-                    date: "2024-01-11",
-                    amount: -150,
-                    merchant_name: "Merchant 5",
-                  },
-                ],
-              },
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create state with 5 transactions
+      const stateWithManyTx = withExtendedTransactions(5);
+      await setupCustomCoreStateMock(page, stateWithManyTx);
 
       await page.goto("/home");
 
@@ -713,37 +499,14 @@ test.describe("CORE State-of-Business Dashboard", () => {
      * P0 FIX: Frontend MUST fail-closed on unknown or missing sync versions.
      * The SUPPORTED_SYNC_VERSIONS list is explicit and maintained in useCoreState.ts.
      * Unknown versions = invalid state = render NOTHING for CORE widgets.
+     *
+     * PART 1 FIX: Uses canonical factory functions for invalid states.
      */
 
     test("fails closed when sync version is missing", async ({ page }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            available: true,
-            request_id: "test-no-version",
-            fetched_at: new Date().toISOString(),
-            sync: {
-              // version field MISSING - should fail closed
-              status: "success",
-              started_at: null,
-              last_successful_at: new Date().toISOString(),
-              error_reason: null,
-            },
-            live_state: MOCK_CORE_STATE.partial.live_state,
-            evidence: MOCK_CORE_STATE.partial.evidence,
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create invalid state with missing version
+      const invalidState = withMissingSyncVersion();
+      await setupCustomCoreStateMock(page, invalidState, true); // Skip validation for invalid state
 
       await page.goto("/home");
 
@@ -757,34 +520,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("fails closed when sync version is unknown", async ({ page }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            available: true,
-            request_id: "test-unknown-version",
-            fetched_at: new Date().toISOString(),
-            sync: {
-              version: "999", // Unknown version - should fail closed
-              status: "success",
-              started_at: null,
-              last_successful_at: new Date().toISOString(),
-              error_reason: null,
-            },
-            live_state: MOCK_CORE_STATE.partial.live_state,
-            evidence: MOCK_CORE_STATE.partial.evidence,
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create invalid state with unknown version
+      const invalidState = withUnknownSyncVersion();
+      await setupCustomCoreStateMock(page, invalidState, true); // Skip validation for invalid state
 
       await page.goto("/home");
 
@@ -800,30 +538,8 @@ test.describe("CORE State-of-Business Dashboard", () => {
     test("renders data when sync version is supported (v1)", async ({
       page,
     }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.partial,
-            sync: {
-              version: "1", // Supported version
-              status: "success",
-              started_at: null,
-              last_successful_at: new Date().toISOString(),
-              error_reason: null,
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use canonical partial state which has version "1"
+      await setupCoreStateMock(page, "partial");
 
       await page.goto("/home");
 
@@ -837,28 +553,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("fails closed when sync object is null", async ({ page }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            available: true,
-            request_id: "test-null-sync",
-            fetched_at: new Date().toISOString(),
-            sync: null, // Null sync object - should fail closed
-            live_state: MOCK_CORE_STATE.partial.live_state,
-            evidence: MOCK_CORE_STATE.partial.evidence,
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create invalid state with null sync
+      const invalidState = withNullSync();
+      await setupCustomCoreStateMock(page, invalidState, true); // Skip validation for invalid state
 
       await page.goto("/home");
 
@@ -870,31 +567,8 @@ test.describe("CORE State-of-Business Dashboard", () => {
     test("SyncBanner only renders for running/failed - never for success/never", async ({
       page,
     }) => {
-      // Test success status - banner should NOT render
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.partial,
-            sync: {
-              version: "1",
-              status: "success",
-              started_at: null,
-              last_successful_at: new Date().toISOString(),
-              error_reason: null,
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use canonical partial state which has status: "success"
+      await setupCoreStateMock(page, "partial");
 
       await page.goto("/home");
 
@@ -918,34 +592,14 @@ test.describe("CORE State-of-Business Dashboard", () => {
      * - LiveState (priority=100) ALWAYS precedes SyncBanner (priority=80)
      * - SyncBanner renders in subordinate slot, NEVER in header root
      * - Test fails if hierarchy is inverted
+     *
+     * PART 1 FIX: Uses canonical factory functions for all states.
      */
 
     test("Live State precedes Sync Banner in DOM order", async ({ page }) => {
-      // Setup state with both Live State attention items AND sync running
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.full,
-            sync: {
-              version: "1",
-              status: "running", // Will show sync banner
-              started_at: new Date().toISOString(),
-              last_successful_at: null,
-              error_reason: null,
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create full org with sync running
+      const fullWithRunning = withSyncRunning(fullOrgState());
+      await setupCustomCoreStateMock(page, fullWithRunning);
 
       await page.goto("/home");
 
@@ -989,30 +643,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
     test("Sync Banner renders in subordinate slot, not header", async ({
       page,
     }) => {
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.partial,
-            sync: {
-              version: "1",
-              status: "failed",
-              started_at: new Date(Date.now() - 10000).toISOString(),
-              last_successful_at: null,
-              error_reason: "Test error",
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create failed sync state
+      const failedState = withSyncFailed("Test error");
+      await setupCustomCoreStateMock(page, failedState);
 
       await page.goto("/home");
 
@@ -1041,30 +674,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
       // This test verifies that even with CSS flexbox reverse or other tricks,
       // the DOM order is what matters for accessibility and structure
 
-      await page.route("**/api/core/state", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            ...MOCK_CORE_STATE.full,
-            sync: {
-              version: "1",
-              status: "running",
-              started_at: new Date().toISOString(),
-              last_successful_at: null,
-              error_reason: null,
-            },
-          }),
-        });
-      });
-
-      await page.route("**/api/me", async (route: Route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ id: "user_test" }),
-        });
-      });
+      // Use factory to create full org with sync running
+      const fullWithRunning = withSyncRunning(fullOrgState());
+      await setupCustomCoreStateMock(page, fullWithRunning);
 
       await page.goto("/home");
 

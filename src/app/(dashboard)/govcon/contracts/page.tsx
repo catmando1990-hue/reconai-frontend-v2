@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { STATUS } from "@/lib/dashboardCopy";
 import { ROUTES } from "@/lib/routes";
@@ -25,11 +24,12 @@ export default function ContractsPage() {
       title="Contracts"
       subtitle="DCAA-compliant contract tracking with CLIN management"
     >
-      {/* Single honest empty state - no fake summary panels */}
-      <PrimaryPanel
-        title="Contract Management"
-        subtitle={STATUS.NOT_CONFIGURED}
-      >
+      {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">Contract Management</h2>
+          <p className="text-sm text-muted-foreground">{STATUS.NOT_CONFIGURED}</p>
+        </div>
         <EmptyState
           icon={FileText}
           title="No contracts"
@@ -56,7 +56,7 @@ export default function ContractsPage() {
             </Link>
           </div>
         </div>
-      </PrimaryPanel>
+      </div>
     </RouteShell>
   );
 }

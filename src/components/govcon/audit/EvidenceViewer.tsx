@@ -74,12 +74,13 @@ export default function EvidenceViewer() {
         >
           Search evidence
         </label>
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
         <input
           id="evidence-search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Filter by type, title, hash, source…"
-          className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none"
+          className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none"
         />
       </div>
 

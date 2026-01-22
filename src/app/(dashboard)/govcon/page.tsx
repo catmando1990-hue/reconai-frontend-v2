@@ -18,7 +18,6 @@ import {
   Info,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusChip } from "@/components/dashboard/StatusChip";
@@ -131,25 +130,26 @@ function LifecycleStatusBanner({
   }
 
   // No evidence state - CRITICAL for DCAA compliance
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
   if (lifecycle === "no_evidence" || (lifecycle === "success" && !hasEvidence)) {
     return (
       <div
         data-testid="govcon-lifecycle-banner"
         data-lifecycle="no_evidence"
-        className="rounded-lg border border-orange-500/30 bg-orange-500/10 p-4"
+        className="rounded-lg border border-border bg-muted p-4"
       >
         <div className="flex items-start gap-3">
-          <FileWarning className="h-5 w-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
+          <FileWarning className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
+            <p className="text-sm font-medium text-foreground">
               Evidence required for documentation
             </p>
-            <p className="mt-1 text-xs text-orange-600 dark:text-orange-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {reasonMessage || "Attach supporting documentation to proceed."}
             </p>
             <Link
               href={ROUTES.GOVCON_EVIDENCE}
-              className="inline-block mt-2 text-xs font-medium text-orange-700 dark:text-orange-300 hover:underline"
+              className="inline-block mt-2 text-xs font-medium text-primary hover:underline"
             >
               Go to Evidence Viewer →
             </Link>
@@ -160,21 +160,22 @@ function LifecycleStatusBanner({
   }
 
   // Pending state - show loading indicator
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
   if (lifecycle === "pending") {
     return (
       <div
         data-testid="govcon-lifecycle-banner"
         data-lifecycle="pending"
-        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
+        className="rounded-lg border border-border bg-muted p-4"
       >
         <div className="flex items-start gap-3">
-          <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin shrink-0 mt-0.5" />
+          <Loader2 className="h-5 w-5 text-muted-foreground animate-spin shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            <p className="text-sm font-medium text-foreground">
               Loading documentation status…
             </p>
             {reasonMessage && (
-              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {reasonMessage}
               </p>
             )}
@@ -185,20 +186,21 @@ function LifecycleStatusBanner({
   }
 
   // Stale state - show warning with reason
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
   if (lifecycle === "stale") {
     return (
       <div
         data-testid="govcon-lifecycle-banner"
         data-lifecycle="stale"
-        className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4"
+        className="rounded-lg border border-border bg-muted p-4"
       >
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+          <AlertTriangle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+            <p className="text-sm font-medium text-foreground">
               Documentation may be outdated
             </p>
-            <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
             </p>
             {onRetry && (
@@ -219,19 +221,20 @@ function LifecycleStatusBanner({
   }
 
   // Failed state - show error with reason (REQUIRED)
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
   return (
     <div
       data-testid="govcon-lifecycle-banner"
       data-lifecycle="failed"
-      className="rounded-lg border border-red-500/30 bg-red-500/10 p-4"
+      className="rounded-lg border border-border bg-muted p-4"
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+        <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+          <p className="text-sm font-medium text-foreground">
             Documentation unavailable
           </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             {reasonMessage || `Error: ${reasonCode || "unknown"}`}
           </p>
           {onRetry && (
@@ -385,17 +388,18 @@ export default function GovConDashboardPage() {
       />
 
       {/* ADVISORY DISCLAIMER - Required for UI clarity */}
-      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
+      <div className="rounded-lg border border-border bg-muted p-3">
         <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-blue-700 dark:text-blue-300">
-            <span className="font-medium">Advisory only.</span> This workspace
+          <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">Advisory only.</span> This workspace
             assists with documentation collection and organization. It does not
             certify DCAA compliance or replace professional accounting review.
             See{" "}
             <Link
               href={ROUTES.GOVCON_SF1408}
-              className="underline hover:no-underline"
+              className="text-primary underline hover:no-underline"
             >
               SF-1408 reference
             </Link>{" "}
@@ -405,20 +409,23 @@ export default function GovConDashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Primary Panel - Documentation Queue */}
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
         <div className="lg:col-span-8">
-          <PrimaryPanel
-            title="Documentation Queue"
-            subtitle="Items requiring attention"
-            actions={
+          <div className="rounded-lg border border-border bg-card p-6">
+            <div className="mb-4 flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Documentation Queue</h2>
+                <p className="text-sm text-muted-foreground">
+                  Items requiring attention
+                </p>
+              </div>
               <Link
                 href={ROUTES.GOVCON_RECONCILIATION}
                 className="text-sm text-primary hover:underline"
               >
                 View all
               </Link>
-            }
-          >
+            </div>
             {/* P0 FIX: Lifecycle-based rendering */}
             {isLoading ? (
               <p className="text-sm text-muted-foreground">
@@ -445,10 +452,10 @@ export default function GovConDashboardPage() {
             ) : isSuccess && data?.snapshot ? (
               /* SUCCESS with evidence: Render documentation queue */
               <div className="space-y-4" data-testid="govcon-compliance-content">
-                {/* Lifecycle indicator - NEUTRAL blue, not green */}
+                {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-700 dark:text-blue-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                     Documented
                   </span>
                   <span>
@@ -480,7 +487,7 @@ export default function GovConDashboardPage() {
                 }}
               />
             )}
-          </PrimaryPanel>
+          </div>
         </div>
 
         {/* Secondary Panels */}
@@ -530,9 +537,10 @@ export default function GovConDashboardPage() {
                   </p>
                 </div>
               )}
+              {/* BACKGROUND NORMALIZATION: No decorative colors */}
               {lifecycle === "success" && !hasEvidence && (
                 <div className="pt-2 border-t">
-                  <p className="text-xs text-orange-600 dark:text-orange-400">
+                  <p className="text-xs text-muted-foreground">
                     Evidence required for documentation
                   </p>
                 </div>

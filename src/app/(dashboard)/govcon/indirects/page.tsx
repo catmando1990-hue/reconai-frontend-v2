@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Layers } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import PolicyBanner from "@/components/policy/PolicyBanner";
@@ -35,12 +34,13 @@ export default function IndirectsPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Primary Panel - Pool Management */}
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
         <div className="lg:col-span-8">
-          <PrimaryPanel
-            title="Indirect Cost Pools"
-            subtitle={STATUS.NOT_CONFIGURED}
-          >
+          <div className="rounded-lg border border-border bg-card p-6">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Indirect Cost Pools</h2>
+              <p className="text-sm text-muted-foreground">{STATUS.NOT_CONFIGURED}</p>
+            </div>
             <EmptyState
               icon={Layers}
               title="No indirect pools"
@@ -67,26 +67,26 @@ export default function IndirectsPage() {
                 </Link>
               </div>
             </div>
-          </PrimaryPanel>
+          </div>
         </div>
 
         {/* Secondary Panel - FAR Reference Only (static reference content, not fake data) */}
         <div className="space-y-4 lg:col-span-4">
           <SecondaryPanel title="FAR Reference" collapsible>
             <div className="space-y-2 text-sm">
-              <div className="p-2 rounded bg-muted/50">
+              <div className="p-2 rounded bg-muted">
                 <p className="font-medium">FAR 31.205-6</p>
                 <p className="text-xs text-muted-foreground">
                   Compensation (subject to reasonableness)
                 </p>
               </div>
-              <div className="p-2 rounded bg-muted/50">
+              <div className="p-2 rounded bg-muted">
                 <p className="font-medium">FAR 31.205-14</p>
                 <p className="text-xs text-muted-foreground">
                   Entertainment (generally unallowable)
                 </p>
               </div>
-              <div className="p-2 rounded bg-muted/50">
+              <div className="p-2 rounded bg-muted">
                 <p className="font-medium">FAR 31.205-36</p>
                 <p className="text-xs text-muted-foreground">
                   Rental costs (allowable if reasonable)

@@ -32,8 +32,9 @@ export default function DemoActionButton({
       <button type="button" onClick={handleClick} className={className}>
         {children ?? label}
       </button>
+      {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
       {msg && (
-        <div className="absolute top-full left-0 mt-1 text-xs text-muted-foreground bg-background border rounded px-2 py-1 whitespace-nowrap z-10">
+        <div className="absolute top-full left-0 mt-1 text-xs text-muted-foreground bg-card border border-border rounded px-2 py-1 whitespace-nowrap z-10">
           {msg}
         </div>
       )}

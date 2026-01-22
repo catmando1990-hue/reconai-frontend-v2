@@ -15,7 +15,6 @@ import {
   Info,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import ExportForDCAAButton from "@/components/govcon/ExportForDCAAButton";
@@ -152,11 +151,12 @@ export default function AuditPage() {
       }
     >
       {/* ADVISORY DISCLAIMER */}
-      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
+      <div className="rounded-lg border border-border bg-muted p-3">
         <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-blue-700 dark:text-blue-300">
-            <span className="font-medium">Advisory only.</span> This audit trail
+          <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">Advisory only.</span> This audit trail
             documents system events for reference purposes. It does not certify
             DCAA compliance or replace professional audit review.
           </p>
@@ -164,20 +164,23 @@ export default function AuditPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Primary Panel - Audit Timeline */}
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
         <div className="lg:col-span-8">
-          <PrimaryPanel
-            title="Audit Timeline"
-            subtitle="Chronological record of system events"
-            actions={
+          <div className="rounded-lg border border-border bg-card p-6">
+            <div className="mb-4 flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Audit Timeline</h2>
+                <p className="text-sm text-muted-foreground">
+                  Chronological record of system events
+                </p>
+              </div>
               <Link
                 href="/govcon/audit/verify"
                 className="text-sm text-primary hover:underline"
               >
                 View hash chain
               </Link>
-            }
-          >
+            </div>
             {/* P0 FIX: Lifecycle-based rendering */}
             {isLoading ? (
               <p className="text-sm text-muted-foreground">
@@ -185,14 +188,15 @@ export default function AuditPage() {
               </p>
             ) : lifecycle === "failed" ? (
               /* Failed state - show error with reason */
-              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+              /* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */
+              <div className="rounded-lg border border-border bg-muted p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                    <p className="text-sm font-medium text-foreground">
                       Audit trail unavailable
                     </p>
-                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {reasonMessage || `Error: ${reasonCode || "unknown"}`}
                     </p>
                     <Button
@@ -210,10 +214,10 @@ export default function AuditPage() {
             ) : isSuccess && auditEntries !== null && auditEntries > 0 ? (
               /* SUCCESS: Render audit entries */
               <div className="space-y-4" data-testid="audit-timeline-content">
-                {/* Lifecycle indicator - NEUTRAL blue, not green */}
+                {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-700 dark:text-blue-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                     Recorded
                   </span>
                   <span>
@@ -243,7 +247,7 @@ export default function AuditPage() {
                 description="Audit entries will appear here as system events occur. All modifications are automatically logged."
               />
             )}
-          </PrimaryPanel>
+          </div>
         </div>
 
         {/* Secondary Panels */}
@@ -251,53 +255,15 @@ export default function AuditPage() {
           <SecondaryPanel title="Documentation Status">
             <div className="space-y-4">
               {/* P0 FIX: Show explicit status based on lifecycle */}
-              {/* HIERARCHY: No green - use blue for "documented" state */}
-              <div
-                className={`flex items-center gap-3 p-3 rounded-lg ${
-                  integrityStatus.variant === "documented"
-                    ? "bg-blue-500/10"
-                    : integrityStatus.variant === "warn"
-                      ? "bg-yellow-500/10"
-                      : integrityStatus.variant === "error"
-                        ? "bg-red-500/10"
-                        : "bg-muted/50"
-                }`}
-              >
-                <div
-                  className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                    integrityStatus.variant === "documented"
-                      ? "bg-blue-500/20"
-                      : integrityStatus.variant === "warn"
-                        ? "bg-yellow-500/20"
-                        : integrityStatus.variant === "error"
-                          ? "bg-red-500/20"
-                          : "bg-muted"
-                  }`}
-                >
+              {/* BACKGROUND NORMALIZATION: No decorative colors - use bg-muted */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                <div className="h-10 w-10 rounded-lg flex items-center justify-center border border-border bg-card">
                   <IntegrityIcon
-                    className={`h-5 w-5 ${
-                      integrityStatus.variant === "documented"
-                        ? "text-blue-600 dark:text-blue-400"
-                        : integrityStatus.variant === "warn"
-                          ? "text-yellow-600 dark:text-yellow-400"
-                          : integrityStatus.variant === "error"
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-muted-foreground"
-                    } ${integrityStatus.icon === Loader2 ? "animate-spin" : ""}`}
+                    className={`h-5 w-5 text-muted-foreground ${integrityStatus.icon === Loader2 ? "animate-spin" : ""}`}
                   />
                 </div>
                 <div>
-                  <p
-                    className={`text-sm font-medium ${
-                      integrityStatus.variant === "documented"
-                        ? "text-blue-700 dark:text-blue-300"
-                        : integrityStatus.variant === "warn"
-                          ? "text-yellow-700 dark:text-yellow-300"
-                          : integrityStatus.variant === "error"
-                            ? "text-red-700 dark:text-red-300"
-                            : "text-muted-foreground"
-                    }`}
-                  >
+                  <p className="text-sm font-medium text-foreground">
                     {integrityStatus.label}
                   </p>
                   <p className="text-xs text-muted-foreground">

@@ -57,12 +57,13 @@ export default function SF1408ChecklistViewer() {
         >
           Search checklist items
         </label>
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
         <input
           id="sf1408-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Type to filter..."
-          className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none"
+          className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none"
         />
       </div>
 

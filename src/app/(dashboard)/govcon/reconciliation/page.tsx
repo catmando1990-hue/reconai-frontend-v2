@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowLeftRight, Download, FileText, RefreshCw } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusChip } from "@/components/dashboard/StatusChip";
@@ -52,12 +51,16 @@ export default function ReconciliationPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Primary Panel - Reconciliation Runs */}
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
         <div className="lg:col-span-8">
-          <PrimaryPanel
-            title="Reconciliation Runs"
-            subtitle="Labor and indirect cost reconciliation history"
-            actions={
+          <div className="rounded-lg border border-border bg-card p-6">
+            <div className="mb-4 flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Reconciliation Runs</h2>
+                <p className="text-sm text-muted-foreground">
+                  Labor and indirect cost reconciliation history
+                </p>
+              </div>
               <Button
                 variant="secondary"
                 size="sm"
@@ -67,27 +70,29 @@ export default function ReconciliationPage() {
                 <ArrowLeftRight className="mr-2 h-4 w-4" />
                 New Run
               </Button>
-            }
-          >
+            </div>
             <EmptyState
               icon={ArrowLeftRight}
               title="No reconciliation runs"
               description="Reconciliation requires backend integration. Use the disabled 'Run Reconciliation' button above when available."
             />
-          </PrimaryPanel>
+          </div>
 
           {/* Variances Panel */}
           <div className="mt-6">
-            <PrimaryPanel
-              title="Variances"
-              subtitle="Variance analysis and resolution tracking"
-            >
+            <div className="rounded-lg border border-border bg-card p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">Variances</h2>
+                <p className="text-sm text-muted-foreground">
+                  Variance analysis and resolution tracking
+                </p>
+              </div>
               <EmptyState
                 icon={FileText}
                 title="No variances"
                 description="Variances will appear here after a reconciliation run identifies discrepancies."
               />
-            </PrimaryPanel>
+            </div>
           </div>
         </div>
 
@@ -130,7 +135,7 @@ export default function ReconciliationPage() {
               {ICS_SCHEDULES.map((schedule) => (
                 <div
                   key={schedule.schedule}
-                  className="flex items-center justify-between p-2 rounded bg-muted/50"
+                  className="flex items-center justify-between p-2 rounded bg-muted"
                 >
                   <div>
                     <span className="font-mono text-xs font-medium">
@@ -147,9 +152,10 @@ export default function ReconciliationPage() {
           </SecondaryPanel>
 
           <SecondaryPanel title="SF-1408 Preaward">
+            {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <FileText className="h-5 w-5 text-primary" />
+              <div className="h-10 w-10 rounded-lg border border-border bg-muted flex items-center justify-center shrink-0">
+                <FileText className="h-5 w-5 text-muted-foreground" />
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium">SF-1408 Checklist</p>

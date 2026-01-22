@@ -16,6 +16,11 @@ interface SecondaryPanelProps {
  * Takes ~30-40% of viewport on desktop (lg:col-span-4 in 12-col grid).
  * Enterprise density: compact padding, tight spacing.
  * Optionally collapsible for dense operational modes.
+ *
+ * BACKGROUND NORMALIZATION:
+ * - Uses bg-card (supporting sections)
+ * - Borders over shadows
+ * - No decorative colors
  */
 export function SecondaryPanel({
   title,
@@ -29,10 +34,7 @@ export function SecondaryPanel({
   return (
     <div
       className={[
-        "surface-inset shadow-sm",
-        "rounded-[var(--elevation-radius-lg)]",
-        "transition-transform duration-[var(--motion-standard)] ease-[var(--motion-ease)]",
-        "hover:-translate-y-[1px]",
+        "rounded-lg border border-border bg-card",
         className ?? "",
       ]
         .join(" ")

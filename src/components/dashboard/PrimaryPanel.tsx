@@ -15,6 +15,11 @@ interface PrimaryPanelProps {
  * Takes ~60-70% of viewport on desktop (lg:col-span-8 in 12-col grid).
  * Enterprise density: tighter padding, compact header.
  * Exactly ONE PrimaryPanel per page — enforced by convention.
+ *
+ * BACKGROUND NORMALIZATION:
+ * - Uses bg-background (ONLY primary truth block per page)
+ * - Borders over shadows
+ * - No decorative colors
  */
 export function PrimaryPanel({
   title,
@@ -26,10 +31,7 @@ export function PrimaryPanel({
   return (
     <div
       className={[
-        "surface-panel shadow-sm",
-        "rounded-[var(--elevation-radius-lg)]",
-        "transition-transform duration-[var(--motion-standard)] ease-[var(--motion-ease)]",
-        "hover:-translate-y-[1px]",
+        "rounded-lg border border-border bg-background",
         className ?? "",
       ]
         .join(" ")

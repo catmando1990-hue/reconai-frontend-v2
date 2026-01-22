@@ -51,6 +51,12 @@ function healthVariant(ok?: boolean): StatusVariant {
  * - Uses useApi() hook which includes org context and auth headers
  * - Gates fetch behind isLoaded from useOrg() to ensure Clerk session is ready
  * - Prevents 401 errors from race condition where fetch runs before Clerk initializes
+ *
+ * BACKGROUND NORMALIZATION:
+ * - Card wrapper uses bg-background (primary truth block)
+ * - Inner tiles use bg-muted (subordinate)
+ * - Borders over shadows
+ * - No decorative colors
  */
 export function OverviewSnapshot({ className }: { className?: string }) {
   const { apiFetch } = useApi();
@@ -199,7 +205,7 @@ export function OverviewSnapshot({ className }: { className?: string }) {
   ];
 
   return (
-    <Card className={cn("border bg-card/50", className)}>
+    <Card className={cn("border border-border bg-background", className)}>
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold">
           Operational Snapshot
@@ -213,7 +219,7 @@ export function OverviewSnapshot({ className }: { className?: string }) {
           {tiles.map((t) => (
             <div
               key={t.label}
-              className="rounded-xl border border-border/70 bg-background/40 p-4 transition-shadow hover:shadow-sm"
+              className="rounded-lg border border-border bg-muted p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="text-xs font-medium text-muted-foreground">

@@ -3,6 +3,14 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+/**
+ * PlaceholderSurface — Staged feature placeholder.
+ *
+ * BACKGROUND NORMALIZATION:
+ * - Uses bg-background (primary truth block)
+ * - Borders over shadows
+ * - No decorative colors
+ */
 export function PlaceholderSurface(props: {
   title: string;
   subtitle?: string;
@@ -11,7 +19,7 @@ export function PlaceholderSurface(props: {
   const { title, subtitle, bullets } = props;
 
   return (
-    <Card className="border bg-card/50">
+    <Card className="border border-border bg-background">
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
         {subtitle ? (

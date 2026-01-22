@@ -114,7 +114,7 @@ export default function CoreOverviewPage() {
                       className={[
                         "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition",
                         module.primary
-                          ? "bg-primary/10 text-foreground"
+                          ? "bg-muted text-foreground font-medium"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       ].join(" ")}
                     >

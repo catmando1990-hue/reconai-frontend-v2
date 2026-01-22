@@ -43,6 +43,15 @@ import {
  * - Priority ordering enforced in code, not CSS
  * - LiveState (priority=100) ALWAYS precedes SyncBanner (priority=80)
  * - Banners mount in subordinate slot, never header root
+ * - No z-index tricks - DOM order determines visual hierarchy
+ *
+ * BACKGROUND NORMALIZATION (NON-NEGOTIABLE):
+ * - Page canvas: Inherits bg-muted from DashboardShell
+ * - CORE Live State: bg-background (ONLY instance in entire page)
+ * - All other sections (Evidence, Navigation): bg-card
+ * - Cards inside sections: bg-muted (subordinate to section wrapper)
+ * - Borders over shadows
+ * - No gradients, no decorative colors
  *
  * STRUCTURE:
  * 1. Live State (top) - What needs attention NOW (auto-populated)
@@ -100,29 +109,30 @@ function LiveStateSection({ liveState }: LiveStateProps) {
     return null;
   }
 
+  // PART 1: CORE Live State uses bg-background (only instance)
   return (
     <div
       data-testid="live-state-section"
       data-priority={SECTION_PRIORITY.LIVE_STATE}
-      className="space-y-4"
+      className="rounded-lg border border-border bg-background p-4"
     >
-      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide mb-4">
         Requires Attention
       </h2>
 
       <div className="flex flex-wrap gap-3">
-        {/* Unpaid Invoices */}
+        {/* Unpaid Invoices - border only, no decorative background */}
         {hasUnpaidInvoices && (
           <Link
             href="/invoicing"
-            className="inline-flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <FileText className="h-4 w-4" />
+            <FileText className="h-4 w-4 text-muted-foreground" />
             <span>
               {unpaid_invoices.count} unpaid invoice
               {unpaid_invoices.count !== 1 ? "s" : ""}
               {overdueInvoiceCount > 0 && (
-                <span className="ml-1 text-red-600 dark:text-red-400">
+                <span className="ml-1 text-muted-foreground">
                   ({overdueInvoiceCount} overdue)
                 </span>
               )}
@@ -133,18 +143,18 @@ function LiveStateSection({ liveState }: LiveStateProps) {
           </Link>
         )}
 
-        {/* Unpaid Bills */}
+        {/* Unpaid Bills - border only, no decorative background */}
         {hasUnpaidBills && (
           <Link
             href="/core-dashboard"
-            className="inline-flex items-center gap-2 rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2.5 text-sm font-medium text-orange-700 dark:text-orange-300 hover:bg-orange-500/20 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <Receipt className="h-4 w-4" />
+            <Receipt className="h-4 w-4 text-muted-foreground" />
             <span>
               {unpaid_bills.count} unpaid bill
               {unpaid_bills.count !== 1 ? "s" : ""}
               {overdueBillCount > 0 && (
-                <span className="ml-1 text-red-600 dark:text-red-400">
+                <span className="ml-1 text-muted-foreground">
                   ({overdueBillCount} overdue)
                 </span>
               )}
@@ -155,17 +165,17 @@ function LiveStateSection({ liveState }: LiveStateProps) {
           </Link>
         )}
 
-        {/* Bank Sync Error */}
+        {/* Bank Sync Error - border only, no decorative background */}
         {hasBankError && (
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-500/20 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <Banknote className="h-4 w-4" />
+            <Banknote className="h-4 w-4 text-muted-foreground" />
             <span>Bank connection error</span>
             {bank_sync?.items_needing_attention &&
               bank_sync.items_needing_attention > 0 && (
-                <span className="text-xs">
+                <span className="text-xs text-muted-foreground">
                   ({bank_sync.items_needing_attention} item
                   {bank_sync.items_needing_attention !== 1 ? "s" : ""})
                 </span>
@@ -173,13 +183,13 @@ function LiveStateSection({ liveState }: LiveStateProps) {
           </Link>
         )}
 
-        {/* Bank Sync Stale */}
+        {/* Bank Sync Stale - border only, no decorative background */}
         {hasBankStale && !hasBankError && (
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-2.5 text-sm font-medium text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/20 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4 text-muted-foreground" />
             <span>Bank sync stale (&gt;24h)</span>
           </Link>
         )}
@@ -223,36 +233,37 @@ function EvidenceSection({ evidence }: EvidenceProps) {
     return null;
   }
 
+  // PART 1: Evidence section uses bg-card wrapper
   return (
-    <div className="space-y-4">
+    <div
+      data-testid="evidence-section"
+      data-priority={SECTION_PRIORITY.EVIDENCE}
+      className="rounded-lg border border-border bg-card p-4 space-y-4"
+    >
       <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
         Financial Evidence
       </h2>
 
-      {/* Invoice and Bill Summary Cards */}
+      {/* Invoice and Bill Summary Cards - no decorative colors */}
       {(hasInvoices || hasBills) && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Invoices Card - only if data exists */}
           {hasInvoices && (
-            <Card className="border-border/60 bg-card">
+            <Card className="border-border bg-muted">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                      <FileText className="h-4 w-4 text-primary" />
+                      <FileText className="h-4 w-4 text-muted-foreground" />
                       Invoicing
                     </div>
                     <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">
                       {formatCurrency(invoices.total_amount)}
                     </div>
-                    <div className="mt-2 flex items-center gap-3 text-sm">
-                      <span className="text-emerald-600 dark:text-emerald-400">
-                        Paid {formatCurrency(invoices.paid_amount)}
-                      </span>
+                    <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
+                      <span>Paid {formatCurrency(invoices.paid_amount)}</span>
                       {invoices.due_amount > 0 && (
-                        <span className="text-amber-600 dark:text-amber-400">
-                          Due {formatCurrency(invoices.due_amount)}
-                        </span>
+                        <span>Due {formatCurrency(invoices.due_amount)}</span>
                       )}
                     </div>
                   </div>
@@ -278,25 +289,21 @@ function EvidenceSection({ evidence }: EvidenceProps) {
 
           {/* Bills Card - only if data exists */}
           {hasBills && (
-            <Card className="border-border/60 bg-card">
+            <Card className="border-border bg-muted">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                      <Receipt className="h-4 w-4 text-primary" />
+                      <Receipt className="h-4 w-4 text-muted-foreground" />
                       Bills
                     </div>
                     <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">
                       {formatCurrency(bills.total_amount)}
                     </div>
-                    <div className="mt-2 flex items-center gap-3 text-sm">
-                      <span className="text-emerald-600 dark:text-emerald-400">
-                        Paid {formatCurrency(bills.paid_amount)}
-                      </span>
+                    <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
+                      <span>Paid {formatCurrency(bills.paid_amount)}</span>
                       {bills.due_amount > 0 && (
-                        <span className="text-amber-600 dark:text-amber-400">
-                          Due {formatCurrency(bills.due_amount)}
-                        </span>
+                        <span>Due {formatCurrency(bills.due_amount)}</span>
                       )}
                     </div>
                   </div>
@@ -324,7 +331,7 @@ function EvidenceSection({ evidence }: EvidenceProps) {
       {(hasCustomers || hasVendors) && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {hasCustomers && (
-            <Card className="border-border/60 bg-card">
+            <Card className="border-border bg-muted">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -342,7 +349,7 @@ function EvidenceSection({ evidence }: EvidenceProps) {
           )}
 
           {hasVendors && (
-            <Card className="border-border/60 bg-card">
+            <Card className="border-border bg-muted">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -363,7 +370,7 @@ function EvidenceSection({ evidence }: EvidenceProps) {
 
       {/* Recent Activity - only if data exists, max 3 items */}
       {hasTransactions && (
-        <Card className="border-border/60 bg-card">
+        <Card className="border-border bg-muted">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
@@ -383,7 +390,7 @@ function EvidenceSection({ evidence }: EvidenceProps) {
               {recent_transactions.items.slice(0, 3).map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between py-2 border-b border-border/40 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-border last:border-0"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">
@@ -393,10 +400,8 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                       {new Date(tx.date).toLocaleDateString()}
                     </div>
                   </div>
-                  <div
-                    className={`text-sm font-medium ${tx.amount < 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
-                  >
-                    {formatCurrency(Math.abs(tx.amount))}
+                  <div className="text-sm font-medium text-foreground">
+                    {tx.amount < 0 ? "-" : "+"}{formatCurrency(Math.abs(tx.amount))}
                   </div>
                 </div>
               ))}
@@ -427,8 +432,13 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
     return null;
   }
 
+  // PART 1: Navigation section uses bg-card wrapper
   return (
-    <div className="space-y-4">
+    <div
+      data-testid="navigation-section"
+      data-priority={SECTION_PRIORITY.NAVIGATION}
+      className="rounded-lg border border-border bg-card p-4 space-y-4"
+    >
       <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
         Quick Actions
       </h2>
@@ -437,7 +447,7 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
         <Button
           asChild
           variant="outline"
-          className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
+          className="h-auto py-4 justify-start border-border bg-muted hover:bg-background"
         >
           <Link
             href="/core/transactions"
@@ -455,7 +465,7 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
         <Button
           asChild
           variant="outline"
-          className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
+          className="h-auto py-4 justify-start border-border bg-muted hover:bg-background"
         >
           <Link
             href="/intelligence-dashboard"
@@ -471,7 +481,7 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
         <Button
           asChild
           variant="outline"
-          className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
+          className="h-auto py-4 justify-start border-border bg-muted hover:bg-background"
         >
           <Link
             href="/cfo-dashboard"
@@ -544,29 +554,29 @@ function SyncBanner({ sync }: SyncBannerProps) {
     return null;
   }
 
-  // Running state - small inline banner
+  // Running state - border only, no decorative background
   if (sync.status === "running") {
     return (
       <div
         data-testid="sync-banner"
         data-sync-status="running"
-        className="inline-flex items-center gap-2 rounded-md bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 text-sm text-blue-700 dark:text-blue-300"
+        className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground"
       >
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         <span>Syncing financial data…</span>
       </div>
     );
   }
 
-  // Failed state - warning badge with error reason
+  // Failed state - border only, no decorative background
   if (sync.status === "failed") {
     return (
       <div
         data-testid="sync-banner"
         data-sync-status="failed"
-        className="inline-flex items-center gap-2 rounded-md bg-red-500/10 border border-red-500/30 px-3 py-1.5 text-sm text-red-700 dark:text-red-300"
+        className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground"
       >
-        <AlertCircle className="h-3.5 w-3.5" />
+        <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
         <span>
           Sync failed{sync.error_reason ? `: ${sync.error_reason}` : ""}
         </span>
@@ -585,16 +595,16 @@ export default function HomeDashboardPage() {
   // P0 FIX: Single fetch for all CORE data - NO manual triggers
   const { state, isLoading, hasEvidence } = useCoreState();
 
-  // Loading state
+  // Loading state - border only, no decorative backgrounds
   if (isLoading) {
     return (
       <RouteShell title="Dashboard" subtitle="Loading state-of-business...">
         <div className="space-y-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-16 bg-card/30 rounded-lg" />
+            <div className="h-16 rounded-lg border border-border bg-muted" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="h-40 bg-card/30 rounded-xl" />
-              <div className="h-40 bg-card/30 rounded-xl" />
+              <div className="h-40 rounded-lg border border-border bg-muted" />
+              <div className="h-40 rounded-lg border border-border bg-muted" />
             </div>
           </div>
         </div>
@@ -620,10 +630,10 @@ export default function HomeDashboardPage() {
       >
         <FirstRunSystemBanner />
 
-        {/* Single honest notice - no fake widgets, no placeholders */}
-        <Card className="border-border/60 bg-card">
+        {/* Single honest notice - border only, no decorative backgrounds */}
+        <Card className="border-border bg-card">
           <CardContent className="p-8 text-center">
-            <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+            <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
               No Financial Data Yet
             </h3>

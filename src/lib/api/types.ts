@@ -114,3 +114,94 @@ export type CfoSnapshotResponse = {
   /** Snapshot data - only valid when lifecycle is "success" */
   snapshot: CfoSnapshot | null;
 };
+
+// =============================================================================
+// GOVCON COMPLIANCE TYPES
+// =============================================================================
+
+/**
+ * GovCon Lifecycle Status
+ * - success: Data is valid, evidence attached, ready for display
+ * - pending: Compliance check in progress
+ * - failed: Compliance check failed, reason_code required
+ * - stale: Data exists but may be outdated
+ * - no_evidence: Data exists but lacks required evidence
+ */
+export type GovConLifecycleStatus =
+  | "success"
+  | "pending"
+  | "failed"
+  | "stale"
+  | "no_evidence";
+
+/**
+ * GovCon Reason Codes - Required for non-success lifecycle states
+ * Provides explicit context for compliance status
+ */
+export type GovConReasonCode =
+  | "no_contracts"
+  | "no_timesheets"
+  | "missing_evidence"
+  | "evidence_expired"
+  | "audit_incomplete"
+  | "configuration_required"
+  | "dcaa_validation_failed"
+  | "backend_timeout"
+  | "unknown";
+
+/**
+ * Evidence attachment - REQUIRED for DCAA compliance
+ */
+export type GovConEvidence = {
+  id: string;
+  type: "timesheet" | "invoice" | "contract" | "approval" | "audit_log";
+  filename: string;
+  hash: string; // SHA-256
+  uploaded_at: string; // ISO8601
+  verified: boolean;
+};
+
+/**
+ * DCAA Readiness Item
+ */
+export type DcaaReadinessItem = {
+  id: string;
+  category:
+    | "timekeeping"
+    | "job_cost"
+    | "audit_trail"
+    | "ics_schedules"
+    | "indirect_rates";
+  status: "compliant" | "non_compliant" | "not_evaluated" | "pending";
+  last_checked: string | null; // ISO8601
+  evidence_count: number;
+  issues: string[];
+};
+
+/**
+ * GovCon Compliance Snapshot
+ */
+export type GovConSnapshot = {
+  as_of: string; // ISO8601
+  active_contracts: number | null;
+  pending_timesheets: number | null;
+  audit_entries: number | null;
+  dcaa_readiness: DcaaReadinessItem[];
+  evidence_attached: GovConEvidence[];
+};
+
+export type GovConSnapshotResponse = {
+  /** Version of GovCon contract - frontend validates against supported versions */
+  govcon_version: string;
+  /** Lifecycle status - REQUIRED for rendering decisions */
+  lifecycle: GovConLifecycleStatus;
+  /** Reason code - REQUIRED when lifecycle is not "success" */
+  reason_code: GovConReasonCode | null;
+  /** Human-readable reason message */
+  reason_message: string | null;
+  generated_at: string; // ISO8601
+  /** Snapshot data - only valid when lifecycle is "success" */
+  snapshot: GovConSnapshot | null;
+  /** Evidence REQUIRED for compliance - fail-closed if missing */
+  has_evidence: boolean;
+};

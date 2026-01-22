@@ -1,27 +1,27 @@
-name: CI (Playwright Auth)
+name: ci-auth-playwright
 
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  playwright-auth:
+  auth-playwright:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
 
+    # Job-level env so every step (and Playwright workers) inherit it.
     env:
-      # Optional: define PLAYWRIGHT_BASE_URL as a GitHub variable (e.g. https://www.reconaitechnology.com)
-      PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL }}
-      PLAYWRIGHT_AUTH: "true"
-
-      # Credentials for a dedicated CI test user in Clerk.
+      # Prefer Actions Variables; fall back to Secrets.
+      PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL || secrets.PLAYWRIGHT_BASE_URL }}
+      # These MUST be Secrets (credentials).
       E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
       E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -29,31 +29,45 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: Install deps
         run: npm ci
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Fail-closed if auth secrets are missing
+      - name: Fail-closed if required secrets/vars missing
+        shell: bash
         run: |
           set -euo pipefail
+          if [ -z "${PLAYWRIGHT_BASE_URL:-}" ]; then
+            echo "Missing PLAYWRIGHT_BASE_URL (set as Actions Variable or Secret)" >&2
+            exit 1
+          fi
           if [ -z "${E2E_CLERK_USER_EMAIL:-}" ]; then
-            echo "Missing GitHub Secret: E2E_CLERK_USER_EMAIL" >&2
+            echo "Missing E2E_CLERK_USER_EMAIL (Actions Secret)" >&2
             exit 1
           fi
           if [ -z "${E2E_CLERK_USER_PASSWORD:-}" ]; then
-            echo "Missing GitHub Secret: E2E_CLERK_USER_PASSWORD" >&2
+            echo "Missing E2E_CLERK_USER_PASSWORD (Actions Secret)" >&2
             exit 1
           fi
 
-      - name: Run authenticated tests (ci-auth)
-        run: npx playwright test --project=ci-auth
+      # Hard-bind into GITHUB_ENV so every subsequent process sees them (belt + suspenders).
+      - name: Export E2E env to runner environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PLAYWRIGHT_BASE_URL=${PLAYWRIGHT_BASE_URL}" >> "$GITHUB_ENV"
+          echo "E2E_CLERK_USER_EMAIL=${E2E_CLERK_USER_EMAIL}" >> "$GITHUB_ENV"
+          echo "E2E_CLERK_USER_PASSWORD=${E2E_CLERK_USER_PASSWORD}" >> "$GITHUB_ENV"
 
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-auth
-          path: playwright-report
-          retention-days: 7
+      - name: "Sanity check: Node can read env"
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "['PLAYWRIGHT_BASE_URL','E2E_CLERK_USER_EMAIL','E2E_CLERK_USER_PASSWORD'].forEach((k)=>{if(!process.env[k]){console.error('Missing '+k);process.exit(1)}});console.log('env ok')"
+
+      - name: Run authenticated Playwright tests
+        env:
+          PLAYWRIGHT_AUTH: '1'
+        run: npx playwright test --project=ci-auth

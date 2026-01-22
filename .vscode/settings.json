@@ -9,5 +9,8 @@
         "copilot/claude-sonnet-4"
       ]
     }
-  }
+  },
+  "claudeCode.environmentVariables": [
+    
+  ]
 }

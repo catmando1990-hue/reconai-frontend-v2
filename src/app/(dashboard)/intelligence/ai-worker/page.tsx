@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { ConfidenceMeta } from "@/components/dashboard/ConfidenceMeta";
@@ -48,12 +47,16 @@ export default function AiWorkerPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* Primary Panel - Task Queue */}
+          {/* BACKGROUND NORMALIZATION: Intelligence is ADVISORY (no bg-background) */}
+          {/* Main content uses bg-card, inner items use bg-muted */}
           <div className="lg:col-span-8">
-            <PrimaryPanel
-              title="Task Queue"
-              subtitle="AI-assisted workflow tasks awaiting your approval"
-            >
+            <div className="rounded-lg border border-border bg-card p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">Task Queue</h2>
+                <p className="text-sm text-muted-foreground">
+                  AI-assisted workflow tasks awaiting your approval
+                </p>
+              </div>
               {isLoading ? (
                 <p className="text-sm text-muted-foreground">Loading tasks…</p>
               ) : error ? (
@@ -72,7 +75,7 @@ export default function AiWorkerPage() {
                   {data.items.map((t) => (
                     <div
                       key={t.id}
-                      className="rounded-lg border border-border bg-background p-4"
+                      className="rounded-lg border border-border bg-muted p-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2 min-w-0 flex-1">
@@ -108,7 +111,7 @@ export default function AiWorkerPage() {
                   description="As you connect data sources and enable workflows, tasks will appear here."
                 />
               )}
-            </PrimaryPanel>
+            </div>
           </div>
 
           {/* Secondary Panels */}

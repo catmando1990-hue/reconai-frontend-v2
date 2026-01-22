@@ -130,8 +130,9 @@ export function IntelligenceV1Panel() {
     return { label: "Complete", tone: "ok" as const };
   }, [ran, error, cached]);
 
+  // BACKGROUND NORMALIZATION: Intelligence is ADVISORY - uses bg-card
   return (
-    <Card className="border bg-card/50">
+    <Card className="border border-border bg-card">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">

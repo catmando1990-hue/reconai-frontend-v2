@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { ConfidenceMeta } from "@/components/dashboard/ConfidenceMeta";
@@ -40,8 +39,9 @@ export default function AlertsPage() {
         right={
           <div className="flex items-center gap-2">
             {/* P0 FIX: Show Demo badge when data is from mock */}
+            {/* BACKGROUND NORMALIZATION: No decorative colors */}
             {isDemo && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-600 dark:text-purple-400">
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 <FlaskConical className="h-3 w-3" />
                 Demo
               </span>
@@ -66,19 +66,24 @@ export default function AlertsPage() {
         </div>
 
         {/* P0 FIX: Show demo disclaimer when in demo mode */}
+        {/* BACKGROUND NORMALIZATION: No decorative colors */}
         {isDemo && demoDisclaimer && (
-          <div className="mt-2 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-xs text-purple-600 dark:text-purple-400">
+          <div className="mt-2 rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
             {demoDisclaimer}
           </div>
         )}
 
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* Primary Panel - Alerts List */}
+          {/* BACKGROUND NORMALIZATION: Intelligence is ADVISORY (no bg-background) */}
+          {/* Main content uses bg-card, inner items use bg-muted */}
           <div className="lg:col-span-8">
-            <PrimaryPanel
-              title="Active Alerts"
-              subtitle="Signals requiring review or documentation"
-            >
+            <div className="rounded-lg border border-border bg-card p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">Active Alerts</h2>
+                <p className="text-sm text-muted-foreground">
+                  Signals requiring review or documentation
+                </p>
+              </div>
               {isLoading ? (
                 <p className="text-sm text-muted-foreground">Loading alerts…</p>
               ) : error ? (
@@ -97,7 +102,7 @@ export default function AlertsPage() {
                   {data.items.map((item) => (
                     <div
                       key={item.id}
-                      className="rounded-lg border border-border bg-background p-4"
+                      className="rounded-lg border border-border bg-muted p-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2 min-w-0 flex-1">
@@ -136,7 +141,7 @@ export default function AlertsPage() {
                   description="As transactions and rules accumulate, ReconAI will surface review items here."
                 />
               )}
-            </PrimaryPanel>
+            </div>
           </div>
 
           {/* Secondary Panels */}
@@ -183,19 +188,19 @@ export default function AlertsPage() {
 
             <SecondaryPanel title="Alert Types">
               <div className="space-y-3 text-sm">
-                <div className="p-2 rounded bg-muted/50">
+                <div className="p-2 rounded border border-border bg-muted">
                   <p className="font-medium">Anomaly Detection</p>
                   <p className="text-xs text-muted-foreground">
                     Unusual patterns in transaction data
                   </p>
                 </div>
-                <div className="p-2 rounded bg-muted/50">
+                <div className="p-2 rounded border border-border bg-muted">
                   <p className="font-medium">Compliance Risk</p>
                   <p className="text-xs text-muted-foreground">
                     Potential regulatory or policy issues
                   </p>
                 </div>
-                <div className="p-2 rounded bg-muted/50">
+                <div className="p-2 rounded border border-border bg-muted">
                   <p className="font-medium">Data Quality</p>
                   <p className="text-xs text-muted-foreground">
                     Missing or inconsistent data fields

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SeverityBadge } from "@/components/dashboard/SeverityBadge";
@@ -48,6 +47,10 @@ interface LifecycleStatusBannerProps {
   onRetry?: () => void;
 }
 
+/**
+ * BACKGROUND NORMALIZATION: Lifecycle banners use border-only styling
+ * No decorative colors - borders over backgrounds
+ */
 function LifecycleStatusBanner({
   lifecycle,
   reasonCode,
@@ -59,22 +62,22 @@ function LifecycleStatusBanner({
     return null;
   }
 
-  // Pending state - show loading indicator
+  // Pending state - show loading indicator (border only)
   if (lifecycle === "pending") {
     return (
       <div
         data-testid="intelligence-lifecycle-banner"
         data-lifecycle="pending"
-        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
+        className="rounded-lg border border-border bg-muted p-4"
       >
         <div className="flex items-start gap-3">
-          <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin shrink-0 mt-0.5" />
+          <Loader2 className="h-5 w-5 text-muted-foreground animate-spin shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            <p className="text-sm font-medium text-foreground">
               Computing insights…
             </p>
             {reasonMessage && (
-              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {reasonMessage}
               </p>
             )}
@@ -84,21 +87,21 @@ function LifecycleStatusBanner({
     );
   }
 
-  // Stale state - show warning with reason
+  // Stale state - show warning with reason (border only)
   if (lifecycle === "stale") {
     return (
       <div
         data-testid="intelligence-lifecycle-banner"
         data-lifecycle="stale"
-        className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4"
+        className="rounded-lg border border-border bg-muted p-4"
       >
         <div className="flex items-start gap-3">
-          <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+          <Clock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+            <p className="text-sm font-medium text-foreground">
               Insights data is stale
             </p>
-            <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
             </p>
             {onRetry && (
@@ -118,20 +121,20 @@ function LifecycleStatusBanner({
     );
   }
 
-  // Failed state - show error with reason (REQUIRED)
+  // Failed state - show error with reason (border only)
   return (
     <div
       data-testid="intelligence-lifecycle-banner"
       data-lifecycle="failed"
-      className="rounded-lg border border-red-500/30 bg-red-500/10 p-4"
+      className="rounded-lg border border-border bg-muted p-4"
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+        <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+          <p className="text-sm font-medium text-foreground">
             Insights unavailable
           </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             {reasonMessage || `Error: ${reasonCode || "unknown"}`}
           </p>
           {onRetry && (
@@ -179,8 +182,9 @@ export default function IntelligenceInsightsPage() {
         right={
           <div className="flex items-center gap-2">
             {/* P0 FIX: Show Demo badge when data is from mock */}
+            {/* BACKGROUND NORMALIZATION: No decorative colors */}
             {isDemo && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-medium text-purple-600 dark:text-purple-400">
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 <FlaskConical className="h-3 w-3" />
                 Demo
               </span>
@@ -202,19 +206,24 @@ export default function IntelligenceInsightsPage() {
         <DisclaimerNotice>{AI_DISCLAIMER}</DisclaimerNotice>
 
         {/* P0 FIX: Show demo disclaimer when in demo mode */}
+        {/* BACKGROUND NORMALIZATION: No decorative colors */}
         {isDemo && demoDisclaimer && (
-          <div className="mb-4 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-xs text-purple-600 dark:text-purple-400">
+          <div className="mb-4 rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
             {demoDisclaimer}
           </div>
         )}
 
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* Primary Panel - Insights List */}
+          {/* BACKGROUND NORMALIZATION: Intelligence is ADVISORY (no bg-background) */}
+          {/* Main content uses bg-card, inner items use bg-muted */}
           <div className="lg:col-span-8">
-            <PrimaryPanel
-              title="Active Insights"
-              subtitle="AI-generated signals requiring review"
-            >
+            <div className="rounded-lg border border-border bg-card p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">Active Insights</h2>
+                <p className="text-sm text-muted-foreground">
+                  AI-generated signals requiring review
+                </p>
+              </div>
               {/* P0 FIX: Lifecycle-based rendering */}
               {isLoading ? (
                 <p className="text-sm text-muted-foreground">
@@ -231,10 +240,10 @@ export default function IntelligenceInsightsPage() {
               ) : isSuccess && data?.items?.length ? (
                 /* SUCCESS: Render insights data */
                 <div className="space-y-4" data-testid="insights-content">
-                  {/* Lifecycle indicator - inline with insights */}
+                  {/* Lifecycle indicator - inline with insights (no decorative colors) */}
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-green-700 dark:text-green-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
+                      <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                       Live
                     </span>
                     <span>
@@ -248,7 +257,7 @@ export default function IntelligenceInsightsPage() {
                   {data.items.map((item) => (
                     <div
                       key={item.id}
-                      className="rounded-lg border border-border bg-background p-4"
+                      className="rounded-lg border border-border bg-muted p-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2 min-w-0 flex-1">
@@ -258,7 +267,7 @@ export default function IntelligenceInsightsPage() {
                               severity={severityFromConfidence(item.confidence)}
                             />
                             {/* Source label: communicates HOW the insight was generated */}
-                            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">
                               {item.source === "rules"
                                 ? "Rule-based"
                                 : item.source === "ml"
@@ -294,7 +303,7 @@ export default function IntelligenceInsightsPage() {
                   description="Connect a bank and upload transactions to generate signals."
                 />
               )}
-            </PrimaryPanel>
+            </div>
 
             {/* Intelligence V1 Panel */}
             <div className="mt-6">

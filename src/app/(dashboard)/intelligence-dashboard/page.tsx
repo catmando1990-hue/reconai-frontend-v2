@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { TierGate } from "@/components/legal/TierGate";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
@@ -61,12 +60,16 @@ export default function IntelligenceOverviewPage() {
         <DisclaimerNotice>{AI_DISCLAIMER}</DisclaimerNotice>
 
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* Primary Panel - Intelligence Modules */}
+          {/* BACKGROUND NORMALIZATION: Intelligence is ADVISORY (no bg-background) */}
+          {/* Main content uses bg-card, inner items use bg-muted */}
           <div className="lg:col-span-8">
-            <PrimaryPanel
-              title="Intelligence Modules"
-              subtitle="Select a module to explore AI-powered capabilities"
-            >
+            <div className="rounded-lg border border-border bg-card p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">Intelligence Modules</h2>
+                <p className="text-sm text-muted-foreground">
+                  Select a module to explore AI-powered capabilities
+                </p>
+              </div>
               <div className="space-y-3">
                 {intelligenceModules.map((module) => {
                   const Icon = module.icon;
@@ -74,10 +77,10 @@ export default function IntelligenceOverviewPage() {
                     <Link
                       key={module.href}
                       href={module.href}
-                      className="group flex items-start gap-4 rounded-lg border border-border bg-background p-4 transition hover:border-primary/20 hover:bg-card"
+                      className="group flex items-start gap-4 rounded-lg border border-border bg-muted p-4 transition hover:bg-card"
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <Icon className="h-5 w-5 text-primary" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-card">
+                        <Icon className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -92,7 +95,7 @@ export default function IntelligenceOverviewPage() {
                   );
                 })}
               </div>
-            </PrimaryPanel>
+            </div>
           </div>
 
           {/* Secondary Panels */}

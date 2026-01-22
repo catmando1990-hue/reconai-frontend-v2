@@ -46,6 +46,9 @@ next-env.d.ts
 # clerk configuration (can include secrets)
 /.clerk/
 
+# Playwright auth state (local + CI)
+/playwright/.clerk/
+
 # Claude local settings (machine-specific)
 .claude/settings.local.json
 

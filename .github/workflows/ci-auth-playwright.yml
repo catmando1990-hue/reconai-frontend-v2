@@ -1,43 +1,23 @@
-# Authenticated Playwright CI Lane
-#
-# PURPOSE: Run full dashboard E2E tests with real Clerk authentication
-# SECURITY: Uses Clerk backend SDK, not UI automation. Fails closed on any error.
-#
-# REQUIREMENTS:
-# - CLERK_SECRET_KEY (GitHub Secret)
-# - CLERK_CI_USER_ID (GitHub Secret) - dedicated CI test user
-#
-# This workflow does NOT weaken authentication. It creates a real session
-# for a dedicated CI user via Clerk's backend API.
-
-name: CI Authenticated Playwright
+name: CI (Playwright Auth)
 
 on:
   workflow_dispatch:
-    inputs:
-      target_url:
-        description: "Target URL for tests"
-        required: false
-        default: "https://www.reconaitechnology.com"
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: ["main"]
 
 jobs:
-  auth-playwright:
-    name: Authenticated E2E Tests
+  playwright-auth:
     runs-on: ubuntu-latest
-    # Only run if secrets are available (not on forks)
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    # CANONICAL: Promote secrets to job-level env with explicit empty-string guard
+    timeout-minutes: 20
+
     env:
-      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-      CLERK_CI_USER_ID: ${{ secrets.CLERK_CI_USER_ID || '' }}
-      PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.target_url || 'https://www.reconaitechnology.com' }}
-      # CI Auth lane explicitly expects an authenticated browser context.
-      # Tests use this to avoid skipping suites that require auth.
-      PLAYWRIGHT_AUTH: "1"
+      # Optional: define PLAYWRIGHT_BASE_URL as a GitHub variable (e.g. https://www.reconaitechnology.com)
+      PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL }}
+      PLAYWRIGHT_AUTH: "true"
+
+      # Credentials for a dedicated CI test user in Clerk.
+      E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+      E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -52,53 +32,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Clerk SDK (CI only)
-        run: npm install -D @clerk/clerk-sdk-node
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
-      - name: Guard required secrets
-        shell: bash
+      - name: Fail-closed if auth secrets are missing
         run: |
           set -euo pipefail
-          if [[ -z "${CLERK_SECRET_KEY:-}" ]]; then
-            echo "[ci-auth] FAIL: Missing CLERK_SECRET_KEY (GitHub Secret)" >&2
+          if [ -z "${E2E_CLERK_USER_EMAIL:-}" ]; then
+            echo "Missing GitHub Secret: E2E_CLERK_USER_EMAIL" >&2
             exit 1
           fi
-          if [[ -z "${CLERK_CI_USER_ID:-}" ]]; then
-            echo "[ci-auth] FAIL: Missing CLERK_CI_USER_ID (GitHub Secret)" >&2
-            echo "[ci-auth] Create a dedicated CI user in Clerk, then add its user_id as the CLERK_CI_USER_ID secret." >&2
+          if [ -z "${E2E_CLERK_USER_PASSWORD:-}" ]; then
+            echo "Missing GitHub Secret: E2E_CLERK_USER_PASSWORD" >&2
             exit 1
           fi
 
-      - name: Seed Clerk auth session
-        id: seed_auth
-        run: node scripts/seed-playwright-auth.mjs
-        # CANONICAL: Uses job-level env (CLERK_SECRET_KEY, CLERK_CI_USER_ID, PLAYWRIGHT_BASE_URL)
-
-      - name: Verify Playwright auth state
-        shell: bash
-        run: >
-          scripts/ci/check-playwright-auth-state.sh
-          "${{ steps.seed_auth.outputs.seeded }}"
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Playwright (authenticated)
+      - name: Run authenticated tests (ci-auth)
         run: npx playwright test --project=ci-auth
-        # CANONICAL: Uses job-level PLAYWRIGHT_BASE_URL
 
-      - name: Upload test results
-        if: failure()
+      - name: Upload Playwright report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
-
-      - name: Upload traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces
-          path: test-results/
+          name: playwright-report-auth
+          path: playwright-report
           retention-days: 7

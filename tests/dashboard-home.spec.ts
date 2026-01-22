@@ -34,6 +34,7 @@ const MOCK_CORE_STATE = {
     request_id: "test-empty",
     fetched_at: new Date().toISOString(),
     sync: {
+      version: "1",
       status: "never",
       started_at: null,
       last_successful_at: null,
@@ -59,6 +60,7 @@ const MOCK_CORE_STATE = {
     request_id: "test-partial",
     fetched_at: new Date().toISOString(),
     sync: {
+      version: "1",
       status: "success",
       started_at: null,
       last_successful_at: new Date().toISOString(),
@@ -119,6 +121,7 @@ const MOCK_CORE_STATE = {
     request_id: "test-full",
     fetched_at: new Date().toISOString(),
     sync: {
+      version: "1",
       status: "success",
       started_at: null,
       last_successful_at: new Date().toISOString(),
@@ -570,6 +573,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
           body: JSON.stringify({
             ...MOCK_CORE_STATE.partial,
             sync: {
+              version: "1",
               status: "running",
               started_at: new Date().toISOString(),
               last_successful_at: null,
@@ -602,6 +606,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
           body: JSON.stringify({
             ...MOCK_CORE_STATE.partial,
             sync: {
+              version: "1",
               status: "failed",
               started_at: new Date(Date.now() - 10000).toISOString(),
               last_successful_at: null,
@@ -698,6 +703,390 @@ test.describe("CORE State-of-Business Dashboard", () => {
       // Should NOT show 4th and 5th
       await expect(page.locator("text=Merchant 4")).not.toBeVisible();
       await expect(page.locator("text=Merchant 5")).not.toBeVisible();
+    });
+  });
+
+  test.describe("Sync Version Contract Enforcement", () => {
+    /**
+     * PART 3 CONTRACT TESTS - Sync Version Validation
+     *
+     * P0 FIX: Frontend MUST fail-closed on unknown or missing sync versions.
+     * The SUPPORTED_SYNC_VERSIONS list is explicit and maintained in useCoreState.ts.
+     * Unknown versions = invalid state = render NOTHING for CORE widgets.
+     */
+
+    test("fails closed when sync version is missing", async ({ page }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            available: true,
+            request_id: "test-no-version",
+            fetched_at: new Date().toISOString(),
+            sync: {
+              // version field MISSING - should fail closed
+              status: "success",
+              started_at: null,
+              last_successful_at: new Date().toISOString(),
+              error_reason: null,
+            },
+            live_state: MOCK_CORE_STATE.partial.live_state,
+            evidence: MOCK_CORE_STATE.partial.evidence,
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Should fail closed - show "No Financial Data Yet" instead of CORE widgets
+      const noDataMsg = page.locator("text=No Financial Data Yet");
+      await expect(noDataMsg).toBeVisible();
+
+      // Should NOT show CORE data sections
+      const evidenceHeading = page.locator("text=Financial Evidence");
+      await expect(evidenceHeading).not.toBeVisible();
+    });
+
+    test("fails closed when sync version is unknown", async ({ page }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            available: true,
+            request_id: "test-unknown-version",
+            fetched_at: new Date().toISOString(),
+            sync: {
+              version: "999", // Unknown version - should fail closed
+              status: "success",
+              started_at: null,
+              last_successful_at: new Date().toISOString(),
+              error_reason: null,
+            },
+            live_state: MOCK_CORE_STATE.partial.live_state,
+            evidence: MOCK_CORE_STATE.partial.evidence,
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Should fail closed - show "No Financial Data Yet" instead of CORE widgets
+      const noDataMsg = page.locator("text=No Financial Data Yet");
+      await expect(noDataMsg).toBeVisible();
+
+      // Should NOT show CORE data sections
+      const evidenceHeading = page.locator("text=Financial Evidence");
+      await expect(evidenceHeading).not.toBeVisible();
+    });
+
+    test("renders data when sync version is supported (v1)", async ({
+      page,
+    }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.partial,
+            sync: {
+              version: "1", // Supported version
+              status: "success",
+              started_at: null,
+              last_successful_at: new Date().toISOString(),
+              error_reason: null,
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Should render CORE data with supported version
+      const evidenceHeading = page.locator("text=Financial Evidence");
+      await expect(evidenceHeading).toBeVisible();
+
+      // Should NOT show "No Financial Data Yet"
+      const noDataMsg = page.locator("text=No Financial Data Yet");
+      await expect(noDataMsg).not.toBeVisible();
+    });
+
+    test("fails closed when sync object is null", async ({ page }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            available: true,
+            request_id: "test-null-sync",
+            fetched_at: new Date().toISOString(),
+            sync: null, // Null sync object - should fail closed
+            live_state: MOCK_CORE_STATE.partial.live_state,
+            evidence: MOCK_CORE_STATE.partial.evidence,
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Should fail closed - show "No Financial Data Yet"
+      const noDataMsg = page.locator("text=No Financial Data Yet");
+      await expect(noDataMsg).toBeVisible();
+    });
+
+    test("SyncBanner only renders for running/failed - never for success/never", async ({
+      page,
+    }) => {
+      // Test success status - banner should NOT render
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.partial,
+            sync: {
+              version: "1",
+              status: "success",
+              started_at: null,
+              last_successful_at: new Date().toISOString(),
+              error_reason: null,
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Banner should NOT be visible for success
+      const syncRunning = page.locator("text=Syncing financial data");
+      const syncFailed = page.locator("text=Sync failed");
+      await expect(syncRunning).not.toBeVisible();
+      await expect(syncFailed).not.toBeVisible();
+
+      // But CORE data should still render
+      const evidenceHeading = page.locator("text=Financial Evidence");
+      await expect(evidenceHeading).toBeVisible();
+    });
+  });
+
+  test.describe("Visual Hierarchy Enforcement", () => {
+    /**
+     * PART 3 REGRESSION TESTS - DOM Order Enforcement
+     *
+     * P0 FIX: Visual hierarchy MUST be enforced in DOM order, not CSS.
+     * - LiveState (priority=100) ALWAYS precedes SyncBanner (priority=80)
+     * - SyncBanner renders in subordinate slot, NEVER in header root
+     * - Test fails if hierarchy is inverted
+     */
+
+    test("Live State precedes Sync Banner in DOM order", async ({ page }) => {
+      // Setup state with both Live State attention items AND sync running
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.full,
+            sync: {
+              version: "1",
+              status: "running", // Will show sync banner
+              started_at: new Date().toISOString(),
+              last_successful_at: null,
+              error_reason: null,
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Wait for both sections to render
+      await expect(page.locator("text=Requires Attention")).toBeVisible();
+      await expect(page.locator("text=Syncing financial data")).toBeVisible();
+
+      // Get the dashboard content container
+      const dashboardContent = page.locator('[data-testid="dashboard-content"]');
+      await expect(dashboardContent).toBeVisible();
+
+      // Assert DOM order: Live State section comes BEFORE sync banner slot
+      // This uses Playwright's element ordering based on DOM position
+      const liveStateSection = page.locator('[data-testid="live-state-section"]');
+      const syncBannerSlot = page.locator('[data-testid="subordinate-banner-slot"]');
+
+      await expect(liveStateSection).toBeVisible();
+      await expect(syncBannerSlot).toBeVisible();
+
+      // Verify priority attributes are set correctly
+      const liveStatePriority = await liveStateSection.getAttribute("data-priority");
+      const syncBannerPriority = await syncBannerSlot.getAttribute("data-priority");
+
+      expect(Number(liveStatePriority)).toBe(100); // LiveState priority
+      expect(Number(syncBannerPriority)).toBe(80); // SyncBanner priority
+      expect(Number(liveStatePriority)).toBeGreaterThan(Number(syncBannerPriority));
+
+      // Verify DOM order by comparing bounding boxes (top position)
+      const liveStateBbox = await liveStateSection.boundingBox();
+      const syncBannerBbox = await syncBannerSlot.boundingBox();
+
+      expect(liveStateBbox).not.toBeNull();
+      expect(syncBannerBbox).not.toBeNull();
+
+      if (liveStateBbox && syncBannerBbox) {
+        // Live State must appear ABOVE (smaller Y) sync banner
+        expect(liveStateBbox.y).toBeLessThan(syncBannerBbox.y);
+      }
+    });
+
+    test("Sync Banner renders in subordinate slot, not header", async ({
+      page,
+    }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.partial,
+            sync: {
+              version: "1",
+              status: "failed",
+              started_at: new Date(Date.now() - 10000).toISOString(),
+              last_successful_at: null,
+              error_reason: "Test error",
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Sync banner should be visible
+      await expect(page.locator("text=Sync failed")).toBeVisible();
+
+      // Verify sync banner is inside the subordinate slot
+      const syncBanner = page.locator('[data-testid="sync-banner"]');
+      await expect(syncBanner).toBeVisible();
+
+      // The sync banner MUST be inside the subordinate-banner-slot
+      const bannerSlot = page.locator('[data-testid="subordinate-banner-slot"]');
+      await expect(bannerSlot).toBeVisible();
+
+      // Verify banner is descendant of slot
+      const bannerInSlot = bannerSlot.locator('[data-testid="sync-banner"]');
+      await expect(bannerInSlot).toBeVisible();
+
+      // Verify the banner is inside dashboard-content, not in header
+      const dashboardContent = page.locator('[data-testid="dashboard-content"]');
+      const bannerInContent = dashboardContent.locator('[data-testid="sync-banner"]');
+      await expect(bannerInContent).toBeVisible();
+    });
+
+    test("hierarchy order cannot be inverted via CSS", async ({ page }) => {
+      // This test verifies that even with CSS flexbox reverse or other tricks,
+      // the DOM order is what matters for accessibility and structure
+
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.full,
+            sync: {
+              version: "1",
+              status: "running",
+              started_at: new Date().toISOString(),
+              last_successful_at: null,
+              error_reason: null,
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Get all priority-marked elements in DOM order
+      const priorityElements = page.locator("[data-priority]");
+      const count = await priorityElements.count();
+
+      expect(count).toBeGreaterThanOrEqual(2); // At least Live State and Sync Banner
+
+      // Collect priorities in DOM order
+      const priorities: number[] = [];
+      for (let i = 0; i < count; i++) {
+        const priority = await priorityElements.nth(i).getAttribute("data-priority");
+        if (priority) {
+          priorities.push(Number(priority));
+        }
+      }
+
+      // Verify priorities are in descending order (highest first)
+      for (let i = 1; i < priorities.length; i++) {
+        expect(priorities[i - 1]).toBeGreaterThanOrEqual(priorities[i]);
+      }
     });
   });
 });

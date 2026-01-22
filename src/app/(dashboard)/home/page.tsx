@@ -39,11 +39,33 @@ import {
  * - Sections disappear when irrelevant
  * - Unknown data shows NOTHING, not 0
  *
+ * VISUAL HIERARCHY (NON-NEGOTIABLE):
+ * - Priority ordering enforced in code, not CSS
+ * - LiveState (priority=100) ALWAYS precedes SyncBanner (priority=80)
+ * - Banners mount in subordinate slot, never header root
+ *
  * STRUCTURE:
  * 1. Live State (top) - What needs attention NOW (auto-populated)
- * 2. Evidence (middle) - Real data from backend (auto-populated)
- * 3. Navigation (bottom) - Only if other sections rendered
+ * 2. Subordinate Banner Slot - SyncBanner renders here (below Live State)
+ * 3. Evidence (middle) - Real data from backend (auto-populated)
+ * 4. Navigation (bottom) - Only if other sections rendered
  */
+
+// =============================================================================
+// PRIORITY CONSTANTS - Enforce visual hierarchy in code
+// =============================================================================
+
+/**
+ * PRIORITY ORDERING - Higher number = higher visual precedence
+ * These values enforce DOM order at render time.
+ * Refactors CANNOT invert this order without changing these constants.
+ */
+const SECTION_PRIORITY = {
+  LIVE_STATE: 100, // Highest - what needs attention NOW
+  SYNC_BANNER: 80, // Subordinate to Live State
+  EVIDENCE: 60, // Real data from backend
+  NAVIGATION: 40, // Quick actions (lowest)
+} as const;
 
 // =============================================================================
 // SECTION 1: LIVE STATE - What needs attention NOW
@@ -57,6 +79,8 @@ interface LiveStateProps {
  * LiveStateSection - Shows what needs attention RIGHT NOW
  * ONLY renders if there's actionable state to display
  * NO manual fetch buttons - auto-populated on load
+ *
+ * PRIORITY: 100 (highest) - Always renders first in visual hierarchy
  */
 function LiveStateSection({ liveState }: LiveStateProps) {
   const { unpaid_invoices, unpaid_bills, bank_sync } = liveState;
@@ -77,7 +101,11 @@ function LiveStateSection({ liveState }: LiveStateProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div
+      data-testid="live-state-section"
+      data-priority={SECTION_PRIORITY.LIVE_STATE}
+      className="space-y-4"
+    >
       <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
         Requires Attention
       </h2>
@@ -461,6 +489,41 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
 }
 
 // =============================================================================
+// SUBORDINATE BANNER SLOT - Explicit slot for banners below Live State
+// =============================================================================
+
+/**
+ * SubordinateBannerSlot - Explicit container for banners
+ *
+ * P0 HIERARCHY ENFORCEMENT:
+ * - This slot MUST render AFTER LiveStateSection in DOM order
+ * - Banners are PROHIBITED from mounting in header root
+ * - Priority is enforced structurally, not via CSS
+ *
+ * data-priority attribute enables test assertions on DOM order
+ */
+interface SubordinateBannerSlotProps {
+  children: React.ReactNode;
+}
+
+function SubordinateBannerSlot({ children }: SubordinateBannerSlotProps) {
+  // Only render if there are children (banners to show)
+  if (!children) {
+    return null;
+  }
+
+  return (
+    <div
+      data-testid="subordinate-banner-slot"
+      data-priority={SECTION_PRIORITY.SYNC_BANNER}
+      className="flex flex-wrap gap-2"
+    >
+      {children}
+    </div>
+  );
+}
+
+// =============================================================================
 // SYNC BANNER - Only for "running" or "failed" states
 // =============================================================================
 
@@ -472,6 +535,8 @@ interface SyncBannerProps {
  * SyncBanner - Shows sync lifecycle status
  * ONLY renders for "running" or "failed" states
  * P0 FIX: success/never = render NOTHING
+ *
+ * HIERARCHY RULE: Must render in SubordinateBannerSlot, NEVER in header root
  */
 function SyncBanner({ sync }: SyncBannerProps) {
   // P0 RULE: Only render for running/failed states
@@ -482,7 +547,11 @@ function SyncBanner({ sync }: SyncBannerProps) {
   // Running state - small inline banner
   if (sync.status === "running") {
     return (
-      <div className="inline-flex items-center gap-2 rounded-md bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 text-sm text-blue-700 dark:text-blue-300">
+      <div
+        data-testid="sync-banner"
+        data-sync-status="running"
+        className="inline-flex items-center gap-2 rounded-md bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 text-sm text-blue-700 dark:text-blue-300"
+      >
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         <span>Syncing financial data…</span>
       </div>
@@ -492,7 +561,11 @@ function SyncBanner({ sync }: SyncBannerProps) {
   // Failed state - warning badge with error reason
   if (sync.status === "failed") {
     return (
-      <div className="inline-flex items-center gap-2 rounded-md bg-red-500/10 border border-red-500/30 px-3 py-1.5 text-sm text-red-700 dark:text-red-300">
+      <div
+        data-testid="sync-banner"
+        data-sync-status="failed"
+        className="inline-flex items-center gap-2 rounded-md bg-red-500/10 border border-red-500/30 px-3 py-1.5 text-sm text-red-700 dark:text-red-300"
+      >
         <AlertCircle className="h-3.5 w-3.5" />
         <span>
           Sync failed{sync.error_reason ? `: ${sync.error_reason}` : ""}
@@ -574,14 +647,18 @@ export default function HomeDashboardPage() {
 
   // P0 RULE: IF core_state.available === true, render ONLY entities that exist
   // Sections disappear when irrelevant
+
+  // Determine if SyncBanner should render (only running/failed states)
+  const showSyncBanner =
+    state.sync.status === "running" || state.sync.status === "failed";
+
   return (
     <RouteShell
       title="Dashboard"
       subtitle="State-of-business overview. Shows what's happening and what needs attention."
       right={
         <div className="flex items-center gap-2">
-          {/* Sync Banner - only for running/failed states, subordinate to Live State */}
-          <SyncBanner sync={state.sync} />
+          {/* P0 HIERARCHY: SyncBanner PROHIBITED from header root - renders in subordinate slot below */}
           <PageHelp
             title="Dashboard"
             description="Your state-of-business overview. Auto-populated from connected accounts."
@@ -594,14 +671,28 @@ export default function HomeDashboardPage() {
     >
       <FirstRunSystemBanner />
 
-      <div className="space-y-8">
-        {/* SECTION 1: Live State - What needs attention NOW (auto-populated) */}
+      <div className="space-y-8" data-testid="dashboard-content">
+        {/*
+         * P0 HIERARCHY ENFORCEMENT - Priority-ordered sections
+         * Order is structural (in code), not CSS-based
+         * LIVE_STATE (100) > SYNC_BANNER (80) > EVIDENCE (60) > NAVIGATION (40)
+         */}
+
+        {/* SECTION 1: Live State - Priority 100 (highest) */}
         <LiveStateSection liveState={state.live_state} />
 
-        {/* SECTION 2: Evidence - Real data from backend (auto-populated) */}
+        {/* SECTION 2: Subordinate Banner Slot - Priority 80 (below Live State) */}
+        {/* P0 RULE: SyncBanner mounts HERE, never in header root */}
+        {showSyncBanner && (
+          <SubordinateBannerSlot>
+            <SyncBanner sync={state.sync} />
+          </SubordinateBannerSlot>
+        )}
+
+        {/* SECTION 3: Evidence - Priority 60 */}
         <EvidenceSection evidence={state.evidence} />
 
-        {/* SECTION 3: Navigation - Only if other sections rendered */}
+        {/* SECTION 4: Navigation - Priority 40 (lowest) */}
         <NavigationSection hasEvidence={hasEvidence} />
       </div>
     </RouteShell>

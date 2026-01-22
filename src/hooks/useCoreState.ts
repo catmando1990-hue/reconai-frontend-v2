@@ -93,12 +93,49 @@ export interface CoreEvidence {
   } | null;
 }
 
+/**
+ * SUPPORTED SYNC VERSIONS
+ * Frontend will FAIL-CLOSED on unknown or missing versions.
+ * Add new versions here when backend contract changes.
+ */
+export const SUPPORTED_SYNC_VERSIONS = ["1"] as const;
+export type SupportedSyncVersion = (typeof SUPPORTED_SYNC_VERSIONS)[number];
+
 /** Sync lifecycle state */
 export interface CoreSyncState {
+  /** Version of sync contract - REQUIRED for rendering */
+  version: string;
   status: "running" | "failed" | "success" | "never";
   started_at: string | null;
   last_successful_at: string | null;
   error_reason: string | null;
+}
+
+/**
+ * Type guard: Check if sync version is supported
+ * FAIL-CLOSED: Unknown versions are rejected
+ */
+export function isSupportedSyncVersion(
+  version: unknown
+): version is SupportedSyncVersion {
+  return (
+    typeof version === "string" &&
+    SUPPORTED_SYNC_VERSIONS.includes(version as SupportedSyncVersion)
+  );
+}
+
+/**
+ * Validate sync state has supported version
+ * Returns false if version is missing or unknown
+ */
+export function isValidSyncState(sync: unknown): sync is CoreSyncState {
+  if (!sync || typeof sync !== "object") return false;
+  const s = sync as Record<string, unknown>;
+  return (
+    isSupportedSyncVersion(s.version) &&
+    typeof s.status === "string" &&
+    ["running", "failed", "success", "never"].includes(s.status)
+  );
 }
 
 // Full CORE state response
@@ -124,13 +161,16 @@ export interface CoreState {
 }
 
 /**
- * FAIL-CLOSED: Default state when data unavailable
+ * FAIL-CLOSED: Default state when data unavailable or invalid
+ * Note: version "1" is used for fail-closed state to pass validation
+ * but available=false ensures no data renders
  */
 const failClosedState: CoreState = {
   available: false,
   request_id: "",
   fetched_at: "",
   sync: {
+    version: "1",
     status: "never",
     started_at: null,
     last_successful_at: null,
@@ -186,9 +226,19 @@ export function useCoreState() {
 
       const response = await apiFetch<CoreState>("/api/core/state");
 
-      if (response && typeof response.available === "boolean") {
+      // FAIL-CLOSED: Validate response structure AND sync version
+      if (
+        response &&
+        typeof response.available === "boolean" &&
+        isValidSyncState(response.sync)
+      ) {
         setState(response);
       } else {
+        // Unknown or missing sync version = fail-closed
+        console.warn(
+          "[useCoreState] Invalid response or unsupported sync version, failing closed",
+          { syncVersion: response?.sync?.version }
+        );
         setState(failClosedState);
       }
     } catch (err) {
@@ -218,9 +268,19 @@ export function useCoreState() {
         const response = await apiFetch<CoreState>("/api/core/state");
 
         if (alive) {
-          if (response && typeof response.available === "boolean") {
+          // FAIL-CLOSED: Validate response structure AND sync version
+          if (
+            response &&
+            typeof response.available === "boolean" &&
+            isValidSyncState(response.sync)
+          ) {
             setState(response);
           } else {
+            // Unknown or missing sync version = fail-closed
+            console.warn(
+              "[useCoreState] Invalid response or unsupported sync version, failing closed",
+              { syncVersion: response?.sync?.version }
+            );
             setState(failClosedState);
           }
         }

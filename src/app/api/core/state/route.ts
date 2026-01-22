@@ -72,6 +72,8 @@ export interface CoreStateResponse {
 
   /** Sync lifecycle - only render UI for "running" or "failed" states */
   sync: {
+    /** Version of sync contract - frontend validates against supported versions */
+    version: string;
     status: "running" | "failed" | "success" | "never";
     started_at: string | null;
     last_successful_at: string | null;
@@ -158,6 +160,9 @@ export interface CoreStateResponse {
   };
 }
 
+/** Current sync contract version */
+const SYNC_VERSION = "1";
+
 /**
  * Fail-closed response - returned when data cannot be fetched
  */
@@ -167,6 +172,7 @@ function failClosedResponse(requestId: string): CoreStateResponse {
     request_id: requestId,
     fetched_at: new Date().toISOString(),
     sync: {
+      version: SYNC_VERSION,
       status: "never",
       started_at: null,
       last_successful_at: null,
@@ -446,6 +452,7 @@ export async function GET() {
     // In production, this would come from a sync jobs table
     // For now, derive from data availability
     const syncStatus: CoreStateResponse["sync"] = {
+      version: SYNC_VERSION,
       status: hasAnyData ? "success" : "never",
       started_at: null,
       last_successful_at: hasAnyData ? new Date().toISOString() : null,

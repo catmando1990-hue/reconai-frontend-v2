@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { assertNoAuthRedirect } from "./fixtures/test-helpers";
 
 /**
  * Settings Enforcement Tests
@@ -18,6 +19,8 @@ test.describe("Settings Page Enforcement", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to settings page
     await page.goto("/settings", { waitUntil: "domcontentloaded" });
+    // Fail fast if redirected to sign-in
+    assertNoAuthRedirect(page);
   });
 
   test("should show loading state initially", async ({ page }) => {
@@ -49,7 +52,7 @@ test.describe("Settings Page Enforcement", () => {
       });
     });
 
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     // Should show the lifecycle banner
     const banner = page.locator('[data-testid="settings-lifecycle-banner"]');
@@ -91,7 +94,7 @@ test.describe("Settings Page Enforcement", () => {
       });
     });
 
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     // Should fail closed - show error state or banner
     // The page should NOT render the main settings content optimistically
@@ -135,7 +138,7 @@ test.describe("Settings Page Enforcement", () => {
       });
     });
 
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     // Find the danger zone buttons (if visible)
     const unlinkButton = page.locator('button:has-text("Unlink Bank Account")');
@@ -178,7 +181,7 @@ test.describe("Settings Page Enforcement", () => {
       });
     });
 
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     // Find the danger zone buttons (if visible)
     const unlinkButton = page.locator('button:has-text("Unlink Bank Account")');
@@ -221,7 +224,7 @@ test.describe("Settings Page Enforcement", () => {
       });
     });
 
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     // Find and click the unlink button (if visible)
     const unlinkButton = page.locator('button:has-text("Unlink Bank Account")');

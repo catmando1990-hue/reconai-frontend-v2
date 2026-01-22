@@ -35,8 +35,10 @@ console.log(`[Playwright] baseURL: ${baseURL} (isRemote: ${isRemote}, isAuth: ${
 
 export default defineConfig({
   testDir: "./tests",
-  timeout: 60_000,
+  timeout: 45_000,
+  expect: { timeout: 10_000 },
   retries: 1,
+  reporter: [["html", { open: "never" }]],
   use: {
     baseURL,
     trace: "retain-on-failure",

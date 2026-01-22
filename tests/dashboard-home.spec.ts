@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Route } from "@playwright/test";
+import { assertNoAuthRedirect } from "./fixtures/test-helpers";
 
 // Import canonical factories - ALL tests MUST use these
 import {
@@ -51,6 +52,14 @@ const MOCK_CORE_STATE = {
   partial: partialOrgState(),
   full: fullOrgState(),
 } as const;
+
+/**
+ * Navigate to /home with fail-fast auth redirect check.
+ */
+async function gotoHome(page: Page): Promise<void> {
+  await page.goto("/home", { waitUntil: "domcontentloaded" });
+  assertNoAuthRedirect(page);
+}
 
 /**
  * Setup API mocking for /api/core/state
@@ -129,7 +138,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     test("shows 'No Financial Data Yet' when available=false", async ({
       page,
     }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show single honest notice - no fake widgets
       const noDataMsg = page.locator("text=No Financial Data Yet");
@@ -141,7 +150,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("does not show Live State section", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // "Requires Attention" heading should not exist
       const attentionHeading = page.locator("text=Requires Attention");
@@ -149,7 +158,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("does not show Evidence section", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // "Financial Evidence" heading should not exist
       const evidenceHeading = page.locator("text=Financial Evidence");
@@ -157,7 +166,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("does not show Navigation section", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // "Quick Actions" heading should not exist
       const navHeading = page.locator("text=Quick Actions");
@@ -165,8 +174,8 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("does not show hardcoded zeros or dashes", async ({ page }) => {
-      await page.goto("/home");
-      await page.waitForLoadState("networkidle");
+      await gotoHome(page);
+      await page.waitForLoadState("domcontentloaded");
 
       const pageContent = await page.textContent("body");
 
@@ -195,7 +204,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     test("shows Financial Evidence section with available data", async ({
       page,
     }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show "Financial Evidence" heading
       const evidenceHeading = page.locator("text=Financial Evidence");
@@ -207,7 +216,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows Live State with unpaid invoices", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show attention section
       const attentionHeading = page.locator("text=Requires Attention");
@@ -219,7 +228,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows Navigation section when data exists", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show "Quick Actions" heading
       const navHeading = page.locator("text=Quick Actions");
@@ -231,7 +240,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("does not show customer/vendor when null", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Customer and vendor cards should not render when null
       const customersCard = page.locator("text=Customers").first();
@@ -245,7 +254,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     test("data appears on load - no manual fetch required", async ({
       page,
     }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Data should appear automatically - no "Fetch" button for CORE
       await expect(page.locator("text=Invoicing")).toBeVisible();
@@ -264,7 +273,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows all three sections", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // All three section headings should be visible
       await expect(page.locator("text=Requires Attention")).toBeVisible();
@@ -273,7 +282,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows unpaid invoices with overdue count", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show unpaid invoices with overdue indicator
       const unpaidInvoices = page.locator("text=5 unpaid invoices");
@@ -285,7 +294,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows bank connection error", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show bank error chip
       const bankError = page.locator("text=Bank connection error");
@@ -293,7 +302,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows customer and vendor counts", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show customer count
       const customersCard = page.locator("text=Customers");
@@ -309,7 +318,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("shows recent activity", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show recent activity section
       const recentActivity = page.locator("text=Recent Activity");
@@ -321,7 +330,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     });
 
     test("attention chips link to correct pages", async ({ page }) => {
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Unpaid invoices chip should link to /invoicing
       const invoicesLink = page.locator('a:has-text("unpaid invoices")');
@@ -354,8 +363,8 @@ test.describe("CORE State-of-Business Dashboard", () => {
         });
       });
 
-      await page.goto("/home");
-      await page.waitForLoadState("networkidle");
+      await gotoHome(page);
+      await page.waitForLoadState("domcontentloaded");
 
       // Should only fetch once
       expect(fetchCount).toBe(1);
@@ -387,8 +396,8 @@ test.describe("CORE State-of-Business Dashboard", () => {
         }
       });
 
-      await page.goto("/home");
-      await page.waitForLoadState("networkidle");
+      await gotoHome(page);
+      await page.waitForLoadState("domcontentloaded");
 
       // Should NOT have separate fetches for invoices, bills, etc.
       const coreFetches = fetchedEndpoints.filter(
@@ -404,7 +413,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
 
     test("cards readable at a glance - proper contrast", async ({ page }) => {
       await setupCoreStateMock(page, "full");
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Check that key elements are visible (implies readable)
       const invoiceAmount = page.locator("text=$150,000");
@@ -422,7 +431,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     }) => {
       // Default mocks use status: "success"
       await setupCoreStateMock(page, "full");
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should NOT show sync banner
       const syncRunning = page.locator("text=Syncing financial data");
@@ -437,7 +446,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
     }) => {
       // Empty org has sync.status: "never"
       await setupCoreStateMock(page, "empty");
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should NOT show sync banner
       const syncRunning = page.locator("text=Syncing financial data");
@@ -452,7 +461,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const runningState = withSyncRunning();
       await setupCustomCoreStateMock(page, runningState);
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show running banner
       const syncRunning = page.locator("text=Syncing financial data");
@@ -464,7 +473,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const failedState = withSyncFailed("Connection timeout");
       await setupCustomCoreStateMock(page, failedState);
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show error badge with reason
       const syncFailed = page.locator("text=Sync failed");
@@ -481,7 +490,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const stateWithManyTx = withExtendedTransactions(5);
       await setupCustomCoreStateMock(page, stateWithManyTx);
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should show only first 3 merchants
       await expect(page.locator("text=Merchant 1")).toBeVisible();
@@ -510,7 +519,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const invalidState = withMissingSyncVersion();
       await setupCustomCoreStateMock(page, invalidState, true); // Skip validation for invalid state
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should fail closed - show "No Financial Data Yet" instead of CORE widgets
       const noDataMsg = page.locator("text=No Financial Data Yet");
@@ -526,7 +535,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const invalidState = withUnknownSyncVersion();
       await setupCustomCoreStateMock(page, invalidState, true); // Skip validation for invalid state
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should fail closed - show "No Financial Data Yet" instead of CORE widgets
       const noDataMsg = page.locator("text=No Financial Data Yet");
@@ -543,7 +552,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       // Use canonical partial state which has version "1"
       await setupCoreStateMock(page, "partial");
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should render CORE data with supported version
       const evidenceHeading = page.locator("text=Financial Evidence");
@@ -559,7 +568,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const invalidState = withNullSync();
       await setupCustomCoreStateMock(page, invalidState, true); // Skip validation for invalid state
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Should fail closed - show "No Financial Data Yet"
       const noDataMsg = page.locator("text=No Financial Data Yet");
@@ -572,7 +581,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       // Use canonical partial state which has status: "success"
       await setupCoreStateMock(page, "partial");
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Banner should NOT be visible for success
       const syncRunning = page.locator("text=Syncing financial data");
@@ -603,7 +612,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const fullWithRunning = withSyncRunning(fullOrgState());
       await setupCustomCoreStateMock(page, fullWithRunning);
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Wait for both sections to render
       await expect(page.locator("text=Requires Attention")).toBeVisible();
@@ -649,7 +658,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const failedState = withSyncFailed("Test error");
       await setupCustomCoreStateMock(page, failedState);
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Sync banner should be visible
       await expect(page.locator("text=Sync failed")).toBeVisible();
@@ -680,7 +689,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
       const fullWithRunning = withSyncRunning(fullOrgState());
       await setupCustomCoreStateMock(page, fullWithRunning);
 
-      await page.goto("/home");
+      await gotoHome(page);
 
       // Get all priority-marked elements in DOM order
       const priorityElements = page.locator("[data-priority]");

@@ -1,4 +1,4 @@
-#!/usr/bin/env npx ts-node
+#!/usr/bin/env -S npx ts-node --esm
 /**
  * Seed authenticated Playwright storage state using Clerk backend SDK.
  *
@@ -10,7 +10,7 @@
  *
  * USAGE (CI only):
  *   npm install -D @clerk/clerk-sdk-node
- *   CLERK_SECRET_KEY=sk_xxx CLERK_CI_USER_ID=user_xxx npx ts-node scripts/seed-playwright-auth.ts
+ *   CLERK_SECRET_KEY=sk_xxx CLERK_CI_USER_ID=user_xxx npx ts-node --esm scripts/seed-playwright-auth.ts
  *
  * NOTE: @clerk/clerk-sdk-node is installed at CI runtime, not in package.json.
  * This keeps the dependency out of the production bundle.

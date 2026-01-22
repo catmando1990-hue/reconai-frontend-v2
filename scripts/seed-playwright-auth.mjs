@@ -2,10 +2,10 @@
 /**
  * Seed authenticated Playwright storage state using Clerk backend SDK.
  *
- * LIFECYCLE STATES:
- * - FAIL: Missing CLERK_SECRET_KEY or PLAYWRIGHT_BASE_URL (required secrets)
- * - SKIP: Missing CLERK_CI_USER_ID (auth seeding is optional on forks/PRs)
- * - SUCCESS: Auth state seeded successfully
+ * LIFECYCLE STATES (CANONICAL):
+ * - FAIL: Missing CLERK_SECRET_KEY, PLAYWRIGHT_BASE_URL, or GITHUB_OUTPUT
+ * - SKIP: Missing CLERK_CI_USER_ID → emits seeded=false
+ * - SUCCESS: Auth state seeded → emits seeded=true
  *
  * SECURITY:
  * - Uses Clerk backend SDK (not UI automation)
@@ -20,8 +20,10 @@
  * NOTE: @clerk/clerk-sdk-node is installed at CI runtime, not in package.json.
  * This keeps the dependency out of the production bundle.
  */
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as fsp from "node:fs/promises";
+import * as path from "node:path";
+import process from "node:process";
 
 // Fail-closed helper
 function fatal(msg) {
@@ -30,17 +32,22 @@ function fatal(msg) {
 }
 
 // Environment validation - FAIL-CLOSED for required secrets
-const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
-const CLERK_CI_USER_ID = process.env.CLERK_CI_USER_ID;
-const PLAYWRIGHT_BASE_URL = process.env.PLAYWRIGHT_BASE_URL;
+const {
+  CLERK_SECRET_KEY,
+  CLERK_CI_USER_ID,
+  PLAYWRIGHT_BASE_URL,
+  GITHUB_OUTPUT,
+} = process.env;
 
 if (!CLERK_SECRET_KEY) fatal("Missing CLERK_SECRET_KEY");
 if (!PLAYWRIGHT_BASE_URL) fatal("Missing PLAYWRIGHT_BASE_URL");
+if (!GITHUB_OUTPUT) fatal("Missing GITHUB_OUTPUT");
 
 // Explicit lifecycle: auth seeding is optional but gated
 // Allows CI to pass on forks/PRs where CLERK_CI_USER_ID is not available
 if (!CLERK_CI_USER_ID) {
   console.log("[seed-playwright-auth] SKIP: CLERK_CI_USER_ID not set");
+  await fsp.appendFile(GITHUB_OUTPUT, "seeded=false\n");
   process.exit(0);
 }
 
@@ -132,6 +139,10 @@ async function run() {
   console.log("[seed-playwright-auth] Auth storage state written:", outPath);
   console.log("[seed-playwright-auth] Domain:", domain);
   console.log("[seed-playwright-auth] Secure:", isSecure);
+
+  // Emit explicit lifecycle output
+  await fsp.appendFile(GITHUB_OUTPUT, "seeded=true\n");
+
   console.log("[seed-playwright-auth] SUCCESS");
 }
 

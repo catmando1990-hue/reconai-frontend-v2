@@ -48,6 +48,7 @@ jobs:
         run: npm install -D @clerk/clerk-sdk-node
 
       - name: Seed Clerk auth session
+        id: seed_auth
         run: node scripts/seed-playwright-auth.mjs
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
@@ -56,7 +57,9 @@ jobs:
 
       - name: Verify Playwright auth state
         shell: bash
-        run: scripts/ci/check-playwright-auth-state.sh
+        run: >
+          scripts/ci/check-playwright-auth-state.sh
+          "${{ steps.seed_auth.outputs.seeded }}"
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

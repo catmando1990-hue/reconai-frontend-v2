@@ -49,12 +49,15 @@ export default defineConfig({
   },
   projects: [
     // CI-only: fast, deterministic smoke tests (<3 min total)
+    // CANONICAL: ci-smoke runs unauthenticated by default, explicit storageState contract
     {
       name: "ci-smoke",
       testDir: "./tests/ci",
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },
+        // Explicit: unauthenticated unless PLAYWRIGHT_AUTH=true
+        ...(isAuthenticated ? {} : { storageState: undefined }),
       },
     },
     // Full regression: all tests, all viewports (manual/nightly)

@@ -43,22 +43,12 @@ jobs:
         shell: bash
         run: scripts/ci/check-core-contract.sh
 
-      - name: Verify CORE fixture updates for contract changes
-        if: steps.core-contract-changes.outputs.contract_changed == 'true'
-        run: |
-          if [ "${{ steps.core-contract-changes.outputs.fixture_changed }}" != "true" ]; then
-            echo "❌ BLOCKED: CORE contract changed but fixtures not updated!"
-            echo ""
-            echo "CORE State contract files were modified. Check for:"
-            echo "  - src/hooks/useCoreState.tsx"
-            echo "  - src/lib/api/types.ts"
-            echo ""
-            echo "You MUST update the test fixtures to match:"
-            echo "  - tests/fixtures/core-state-factory.ts"
-            echo ""
-            exit 1
-          fi
-          echo "✅ CORE contract changed AND fixtures updated - compliance verified"
+      - name: Enforce CORE contract parity
+        shell: bash
+        run: >
+          scripts/ci/enforce-core-contract.sh
+          "${{ steps.core-contract-changes.outputs.contract_changed }}"
+          "${{ steps.core-contract-changes.outputs.fixture_changed }}"
 
       # =========================================================================
       # CFO CONTRACT ENFORCEMENT

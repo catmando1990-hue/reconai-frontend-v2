@@ -45,11 +45,11 @@ jobs:
         run: npm run build
 
       - name: Install Playwright
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
       - name: Run Playwright smoke tests (live site)
         env:
           PLAYWRIGHT_BASE_URL: https://www.reconaitechnology.com
         run: |
           echo "Running Playwright against: $PLAYWRIGHT_BASE_URL"
-          npx playwright test --project=desktop
+          npx playwright test --project=ci-smoke

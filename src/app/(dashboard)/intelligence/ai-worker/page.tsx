@@ -86,7 +86,16 @@ export default function AiWorkerPage() {
                           <p className="text-sm text-muted-foreground">
                             {t.summary}
                           </p>
-                          <ConfidenceMeta confidence={t.confidence} />
+                          {/* HIERARCHY: Confidence prominent + freshness inline */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <ConfidenceMeta confidence={t.confidence} />
+                            <span className="text-muted-foreground/60">•</span>
+                            <span>
+                              {t.created_at
+                                ? new Date(t.created_at).toLocaleString()
+                                : "Time unknown"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -110,24 +119,29 @@ export default function AiWorkerPage() {
                   <span className="text-sm text-muted-foreground">
                     Total Tasks
                   </span>
-                  <span className="text-lg font-semibold">
-                    {data?.items?.length ?? 0}
+                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
+                  <span className="text-lg font-medium">
+                    {data?.items?.length ?? "No data"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Queued</span>
-                  <span className="text-lg font-semibold">
-                    {data?.items?.filter((t) => t.status === "queued").length ??
-                      0}
+                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
+                  <span className="text-lg font-medium">
+                    {data?.items
+                      ? data.items.filter((t) => t.status === "queued").length
+                      : "No data"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Complete
                   </span>
-                  <span className="text-lg font-semibold">
-                    {data?.items?.filter((t) => t.status === "complete")
-                      .length ?? 0}
+                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
+                  <span className="text-lg font-medium">
+                    {data?.items
+                      ? data.items.filter((t) => t.status === "complete").length
+                      : "No data"}
                   </span>
                 </div>
               </div>

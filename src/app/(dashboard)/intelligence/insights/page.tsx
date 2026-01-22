@@ -251,17 +251,36 @@ export default function IntelligenceInsightsPage() {
                       className="rounded-lg border border-border bg-background p-4"
                     >
                       <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1 min-w-0">
+                        <div className="space-y-2 min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-medium">{item.title}</h3>
                             <SeverityBadge
                               severity={severityFromConfidence(item.confidence)}
                             />
+                            {/* Source label: communicates HOW the insight was generated */}
+                            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                              {item.source === "rules"
+                                ? "Rule-based"
+                                : item.source === "ml"
+                                  ? "ML model"
+                                  : item.source === "llm"
+                                    ? "AI-generated"
+                                    : "Hybrid"}
+                            </span>
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {item.summary}
                           </p>
-                          <ConfidenceMeta confidence={item.confidence} />
+                          {/* HIERARCHY: Confidence prominent + freshness inline */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <ConfidenceMeta confidence={item.confidence} />
+                            <span className="text-muted-foreground/60">•</span>
+                            <span>
+                              {item.created_at
+                                ? new Date(item.created_at).toLocaleString()
+                                : "Time unknown"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -114,7 +114,16 @@ export default function AlertsPage() {
                           <p className="text-sm text-muted-foreground">
                             {item.summary}
                           </p>
-                          <ConfidenceMeta confidence={item.confidence} />
+                          {/* HIERARCHY: Confidence prominent + freshness inline */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <ConfidenceMeta confidence={item.confidence} />
+                            <span className="text-muted-foreground/60">•</span>
+                            <span>
+                              {item.created_at
+                                ? new Date(item.created_at).toLocaleString()
+                                : "Time unknown"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -139,14 +148,15 @@ export default function AlertsPage() {
                     Total Alerts
                   </span>
                   {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
-                  <span className="text-lg font-semibold">
+                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
+                  <span className="text-lg font-medium">
                     {formatCount(data?.items?.length)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">New</span>
-                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
-                  <span className="text-lg font-semibold">
+                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
+                  <span className="text-lg font-medium">
                     {data?.items
                       ? formatCount(
                           data.items.filter((a) => a.status === "new").length,
@@ -158,8 +168,8 @@ export default function AlertsPage() {
                   <span className="text-sm text-muted-foreground">
                     Resolved
                   </span>
-                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
-                  <span className="text-lg font-semibold">
+                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
+                  <span className="text-lg font-medium">
                     {data?.items
                       ? formatCount(
                           data.items.filter((a) => a.status === "resolved")

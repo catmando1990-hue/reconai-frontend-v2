@@ -101,7 +101,7 @@ export function PreferencesSection({
             Dashboard Landing Page
           </label>
           <select
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm"
             value={preferences.landingPage}
             onChange={(e) =>
               setPreferences((p) => ({ ...p, landingPage: e.target.value }))
@@ -118,7 +118,7 @@ export function PreferencesSection({
             Currency Format
           </label>
           <select
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm"
             value={preferences.currencyFormat}
             onChange={(e) =>
               setPreferences((p) => ({ ...p, currencyFormat: e.target.value }))
@@ -134,7 +134,7 @@ export function PreferencesSection({
             Date Format
           </label>
           <select
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm"
             value={preferences.dateFormat}
             onChange={(e) =>
               setPreferences((p) => ({ ...p, dateFormat: e.target.value }))
@@ -150,7 +150,7 @@ export function PreferencesSection({
             Theme
           </label>
           <select
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm"
             value={preferences.theme}
             onChange={(e) =>
               setPreferences((p) => ({ ...p, theme: e.target.value }))

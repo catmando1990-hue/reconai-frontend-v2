@@ -303,7 +303,7 @@ export function DiagnosticsSection() {
               {healthChecks.map((check) => (
                 <div
                   key={check.name}
-                  className="flex items-center justify-between rounded p-2 bg-muted/50 text-sm"
+                  className="flex items-center justify-between rounded p-2 bg-muted text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <div
@@ -327,7 +327,7 @@ export function DiagnosticsSection() {
         <SecondaryPanel title="Performance Metrics" className="bg-card">
           <div className="grid grid-cols-2 gap-3">
             {performanceMetrics.avgResponseTime && (
-              <div className="rounded bg-muted/50 p-3">
+              <div className="rounded bg-muted p-3">
                 <div className="text-xl font-bold">
                   {performanceMetrics.avgResponseTime}ms
                 </div>
@@ -337,7 +337,7 @@ export function DiagnosticsSection() {
               </div>
             )}
             {performanceMetrics.memoryUsage && (
-              <div className="rounded bg-muted/50 p-3">
+              <div className="rounded bg-muted p-3">
                 <div className="text-xl font-bold">
                   {performanceMetrics.memoryUsage}
                 </div>
@@ -366,7 +366,8 @@ export function DiagnosticsSection() {
             <div className="max-h-[50vh] overflow-y-auto p-4">
               {modalStep === "confirm" && (
                 <div className="space-y-4">
-                  <div className="rounded border-2 border-primary/50 bg-primary/10 p-4">
+                  {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
+                  <div className="rounded border-2 border-border bg-muted p-4">
                     <h3 className="font-semibold text-sm">
                       Admin Confirmation Required
                     </h3>
@@ -413,8 +414,9 @@ export function DiagnosticsSection() {
                 <div className="space-y-4">
                   {result ? (
                     <>
+                      {/* BACKGROUND NORMALIZATION: No decorative colors - use bg-muted */}
                       <div
-                        className={`rounded p-3 ${result.ok ? "bg-primary/10" : "bg-destructive/10"}`}
+                        className="rounded p-3 bg-muted"
                       >
                         <div className="flex items-center gap-2">
                           <span
@@ -441,7 +443,7 @@ export function DiagnosticsSection() {
                             {result.findings.map((f, i) => (
                               <div
                                 key={i}
-                                className="text-xs p-2 rounded bg-muted/50"
+                                className="text-xs p-2 rounded bg-muted"
                               >
                                 <span className="font-medium">
                                   {f.component}:
@@ -457,8 +459,9 @@ export function DiagnosticsSection() {
                       </div>
                     </>
                   ) : (
-                    <div className="rounded p-3 bg-destructive/10">
-                      <p className="text-sm text-destructive">
+                    /* BACKGROUND NORMALIZATION: No decorative colors - use bg-muted */
+                    <div className="rounded p-3 bg-muted">
+                      <p className="text-sm text-muted-foreground">
                         {confirmError || "Diagnostic failed"}
                       </p>
                     </div>

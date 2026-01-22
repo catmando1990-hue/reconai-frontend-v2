@@ -141,7 +141,7 @@ export function ProfileSection({
                 Timezone
               </label>
               <select
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm"
                 value={form.timezone}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, timezone: e.target.value }))
@@ -160,7 +160,7 @@ export function ProfileSection({
                 Currency
               </label>
               <select
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm"
                 value={form.currency}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, currency: e.target.value }))
@@ -178,7 +178,7 @@ export function ProfileSection({
                 Fiscal Year Start
               </label>
               <select
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm"
                 value={form.fiscalYearStart}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, fiscalYearStart: e.target.value }))

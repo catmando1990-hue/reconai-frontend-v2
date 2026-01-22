@@ -212,9 +212,10 @@ export default function SettingsPage() {
       )}
 
       {/* Checkout status message - full width */}
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
       {checkoutStatus === "success" && (
-        <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 mb-6">
-          <p className="text-sm font-medium">
+        <div className="rounded-lg border border-border bg-muted p-4 mb-6">
+          <p className="text-sm font-medium text-foreground">
             Payment successful! Your plan is being updated.
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -223,7 +224,7 @@ export default function SettingsPage() {
         </div>
       )}
       {checkoutStatus === "cancelled" && (
-        <div className="rounded-lg border border-border bg-muted/50 p-4 mb-6">
+        <div className="rounded-lg border border-border bg-muted p-4 mb-6">
           <p className="text-sm text-muted-foreground">
             Checkout was cancelled. No changes were made to your plan.
           </p>
@@ -231,15 +232,16 @@ export default function SettingsPage() {
       )}
 
       {/* PART 3: Policy acknowledgement banner (if not acknowledged) */}
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
       {settingsSuccess && !hasPolicyAcknowledged && (
-        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 mb-6">
+        <div className="rounded-lg border border-border bg-muted p-4 mb-6">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+            <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+              <p className="text-sm font-medium text-foreground">
                 Policy acknowledgement required
               </p>
-              <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Please acknowledge the terms of service and data policy to enable
                 account management features.
               </p>
@@ -376,48 +378,51 @@ export default function SettingsPage() {
               </div>
             </SecondaryPanel>
 
-            {/* PART 3: Danger Zone - Destructive Actions */}
-            <SecondaryPanel title="Danger Zone" className="bg-card">
-              <div className="space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  These actions require confirmation and cannot be easily undone.
-                </p>
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
-                    onClick={() => handleDestructiveAction("UNLINK_BANK")}
-                    disabled={!hasPolicyAcknowledged}
-                  >
-                    Unlink Bank Account
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
-                    onClick={() => handleDestructiveAction("CLEAR_CACHE")}
-                    disabled={!hasPolicyAcknowledged}
-                  >
-                    Clear All Cache
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
-                    onClick={() => handleDestructiveAction("REVOKE_ACCESS")}
-                    disabled={!hasPolicyAcknowledged}
-                  >
-                    Revoke Third-Party Access
-                  </Button>
-                </div>
-                {!hasPolicyAcknowledged && (
-                  <p className="text-xs text-muted-foreground italic">
-                    Acknowledge the policy above to enable these actions.
+            {/* PART 2 & 3: Danger Zone - Destructive Actions */}
+            {/* DESTRUCTIVE ZONE ENFORCEMENT: Stronger border, additional spacing, no colored backgrounds */}
+            <div className="mt-4 pt-4">
+              <SecondaryPanel title="Danger Zone" className="bg-card border-2 border-dashed border-border">
+                <div className="space-y-4">
+                  <p className="text-xs text-muted-foreground">
+                    These actions require confirmation and cannot be easily undone.
                   </p>
-                )}
-              </div>
-            </SecondaryPanel>
+                  <div className="space-y-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-dashed"
+                      onClick={() => handleDestructiveAction("UNLINK_BANK")}
+                      disabled={!hasPolicyAcknowledged}
+                    >
+                      Unlink Bank Account
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-dashed"
+                      onClick={() => handleDestructiveAction("CLEAR_CACHE")}
+                      disabled={!hasPolicyAcknowledged}
+                    >
+                      Clear All Cache
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-dashed"
+                      onClick={() => handleDestructiveAction("REVOKE_ACCESS")}
+                      disabled={!hasPolicyAcknowledged}
+                    >
+                      Revoke Third-Party Access
+                    </Button>
+                  </div>
+                  {!hasPolicyAcknowledged && (
+                    <p className="text-xs text-muted-foreground italic">
+                      Acknowledge the policy above to enable these actions.
+                    </p>
+                  )}
+                </div>
+              </SecondaryPanel>
+            </div>
           </div>
 
           {/* Admin-Only Diagnostics - Full Width */}

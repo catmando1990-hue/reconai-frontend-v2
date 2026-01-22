@@ -86,16 +86,18 @@ export function DestructiveActionConfirmation({
         {/* Body */}
         <div className="p-4 space-y-4">
           {/* Warning */}
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-            <p className="text-sm font-medium text-red-700 dark:text-red-300">
+          {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
+          <div className="rounded-lg border border-border bg-muted p-4">
+            <p className="text-sm font-medium text-foreground">
               {actionConfig.description}
             </p>
           </div>
 
           {/* Policy Acknowledgement */}
+          {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
           {!hasPolicyAcknowledged && (
-            <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
-              <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
+            <div className="rounded-lg border border-border bg-muted p-4">
+              <p className="text-sm text-muted-foreground mb-3">
                 You must acknowledge the terms of service and data policy before
                 performing destructive actions.
               </p>

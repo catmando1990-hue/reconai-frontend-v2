@@ -34,21 +34,22 @@ export function SettingsLifecycleBanner({
   }
 
   // Pending state - show loading indicator
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
   if (lifecycle === "pending") {
     return (
       <div
         data-testid="settings-lifecycle-banner"
         data-lifecycle="pending"
-        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
+        className="rounded-lg border border-border bg-muted p-4"
       >
         <div className="flex items-start gap-3">
-          <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin shrink-0 mt-0.5" />
+          <Loader2 className="h-5 w-5 text-muted-foreground animate-spin shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            <p className="text-sm font-medium text-foreground">
               Loading settings…
             </p>
             {reasonMessage && (
-              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {reasonMessage}
               </p>
             )}
@@ -59,20 +60,21 @@ export function SettingsLifecycleBanner({
   }
 
   // Stale state - show warning with reason
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
   if (lifecycle === "stale") {
     return (
       <div
         data-testid="settings-lifecycle-banner"
         data-lifecycle="stale"
-        className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4"
+        className="rounded-lg border border-border bg-muted p-4"
       >
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+          <AlertTriangle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+            <p className="text-sm font-medium text-foreground">
               Settings may be outdated
             </p>
-            <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
             </p>
             {onRetry && (
@@ -93,19 +95,20 @@ export function SettingsLifecycleBanner({
   }
 
   // Failed state - show error with reason (REQUIRED)
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
   return (
     <div
       data-testid="settings-lifecycle-banner"
       data-lifecycle="failed"
-      className="rounded-lg border border-red-500/30 bg-red-500/10 p-4"
+      className="rounded-lg border border-border bg-muted p-4"
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+        <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+          <p className="text-sm font-medium text-foreground">
             Settings unavailable
           </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             {reasonMessage || `Error: ${reasonCode || "unknown"}`}
           </p>
           {onRetry && (

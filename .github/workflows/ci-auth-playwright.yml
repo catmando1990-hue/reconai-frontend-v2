@@ -44,11 +44,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install ts-node (CI determinism)
-        run: npm install -D ts-node typescript @clerk/clerk-sdk-node
+      - name: Install Clerk SDK (CI only)
+        run: npm install -D @clerk/clerk-sdk-node
 
       - name: Seed Clerk auth session
-        run: npx ts-node-esm scripts/seed-playwright-auth.ts
+        run: node scripts/seed-playwright-auth.mjs
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_CI_USER_ID: ${{ secrets.CLERK_CI_USER_ID }}

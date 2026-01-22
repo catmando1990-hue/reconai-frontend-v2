@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx ts-node-esm
+#!/usr/bin/env node
 /**
  * Seed authenticated Playwright storage state using Clerk backend SDK.
  *
@@ -10,7 +10,7 @@
  *
  * USAGE (CI only):
  *   npm install -D @clerk/clerk-sdk-node
- *   CLERK_SECRET_KEY=sk_xxx CLERK_CI_USER_ID=user_xxx npx ts-node-esm scripts/seed-playwright-auth.ts
+ *   CLERK_SECRET_KEY=sk_xxx CLERK_CI_USER_ID=user_xxx node scripts/seed-playwright-auth.mjs
  *
  * NOTE: @clerk/clerk-sdk-node is installed at CI runtime, not in package.json.
  * This keeps the dependency out of the production bundle.
@@ -34,13 +34,12 @@ if (!CLERK_CI_USER_ID) {
   process.exit(1);
 }
 
-// Dynamic require to avoid TypeScript errors when package not installed
+// Dynamic import to handle package not installed
 // The package is installed at CI runtime via: npm install -D @clerk/clerk-sdk-node
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getClerkClient(): Promise<any> {
+async function getClerkClient() {
   try {
     const clerkSdk = await import("@clerk/clerk-sdk-node");
-    return clerkSdk.createClerkClient({ secretKey: CLERK_SECRET_KEY! });
+    return clerkSdk.createClerkClient({ secretKey: CLERK_SECRET_KEY });
   } catch {
     console.error(
       "[seed-playwright-auth] FATAL: @clerk/clerk-sdk-node not installed",
@@ -52,7 +51,7 @@ async function getClerkClient(): Promise<any> {
   }
 }
 
-async function run(): Promise<void> {
+async function run() {
   console.log("[seed-playwright-auth] Starting Clerk session seeding...");
   console.log("[seed-playwright-auth] Target URL:", PLAYWRIGHT_BASE_URL);
   console.log("[seed-playwright-auth] CI User ID:", CLERK_CI_USER_ID);
@@ -62,7 +61,7 @@ async function run(): Promise<void> {
   // Try to get an existing active session first
   console.log("[seed-playwright-auth] Checking for existing sessions...");
 
-  let sessionToken: string;
+  let sessionToken;
 
   try {
     // Create a sign-in token for the CI user
@@ -70,7 +69,7 @@ async function run(): Promise<void> {
     console.log("[seed-playwright-auth] Creating sign-in token...");
 
     const signInToken = await clerk.signInTokens.createSignInToken({
-      userId: CLERK_CI_USER_ID!,
+      userId: CLERK_CI_USER_ID,
       expiresInSeconds: 600, // 10 minutes
     });
 
@@ -81,11 +80,10 @@ async function run(): Promise<void> {
     sessionToken = signInToken.token;
     console.log("[seed-playwright-auth] Sign-in token created successfully");
   } catch (err) {
-    const error = err as Error;
     console.error(
       "[seed-playwright-auth] FATAL: Failed to create Clerk session",
     );
-    console.error("[seed-playwright-auth] Error:", error.message);
+    console.error("[seed-playwright-auth] Error:", err.message);
     process.exit(1);
   }
 
@@ -106,7 +104,7 @@ async function run(): Promise<void> {
         path: "/",
         httpOnly: true,
         secure: isSecure,
-        sameSite: "Lax" as const,
+        sameSite: "Lax",
         expires: expiresTimestamp,
       },
       {
@@ -116,7 +114,7 @@ async function run(): Promise<void> {
         path: "/",
         httpOnly: false,
         secure: isSecure,
-        sameSite: "Lax" as const,
+        sameSite: "Lax",
         expires: expiresTimestamp,
       },
     ],
@@ -139,7 +137,6 @@ async function run(): Promise<void> {
 }
 
 run().catch((err) => {
-  const error = err as Error;
-  console.error("[seed-playwright-auth] FATAL ERROR:", error.message || err);
+  console.error("[seed-playwright-auth] FATAL ERROR:", err.message || err);
   process.exit(1);
 });

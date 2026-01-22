@@ -36,7 +36,9 @@ export default function TimekeepingPage() {
       <div className="rounded-lg border border-border bg-card p-6">
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Time Entry</h2>
-          <p className="text-sm text-muted-foreground">{STATUS.NOT_CONFIGURED}</p>
+          <p className="text-sm text-muted-foreground">
+            {STATUS.NOT_CONFIGURED}
+          </p>
         </div>
         <EmptyState
           icon={Clock}

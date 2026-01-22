@@ -99,7 +99,7 @@ export function insightBuilder(overrides: InsightOverrides = {}): Insight {
  */
 export function insightsBuilder(
   count: number = 3,
-  baseOverrides: InsightOverrides = {}
+  baseOverrides: InsightOverrides = {},
 ): Insight[] {
   const types: InsightType[] = [
     "anomaly",
@@ -118,7 +118,7 @@ export function insightsBuilder(
       severity: severities[i % severities.length],
       confidence: 0.7 + Math.random() * 0.25, // 0.70-0.95
       ...baseOverrides,
-    })
+    }),
   );
 }
 
@@ -158,7 +158,7 @@ export type IntelligenceStateFactoryOverrides = {
  * });
  */
 export function intelligenceStateFactory(
-  overrides: IntelligenceStateFactoryOverrides = {}
+  overrides: IntelligenceStateFactoryOverrides = {},
 ): InsightsSummaryResponse {
   const lifecycle = overrides.lifecycle ?? "success";
 
@@ -171,13 +171,15 @@ export function intelligenceStateFactory(
       overrides.intelligence_version ?? INTELLIGENCE_CONTRACT_VERSION,
     lifecycle,
     reason_code: needsReasonCode
-      ? overrides.reason_code ?? "unknown"
-      : overrides.reason_code ?? null,
+      ? (overrides.reason_code ?? "unknown")
+      : (overrides.reason_code ?? null),
     reason_message: needsReasonCode
-      ? overrides.reason_message ?? "No insights available"
-      : overrides.reason_message ?? null,
+      ? (overrides.reason_message ?? "No insights available")
+      : (overrides.reason_message ?? null),
     generated_at: overrides.generated_at ?? new Date().toISOString(),
-    items: needsItems ? overrides.items ?? insightsBuilder(3) : overrides.items ?? null,
+    items: needsItems
+      ? (overrides.items ?? insightsBuilder(3))
+      : (overrides.items ?? null),
   };
 }
 
@@ -189,7 +191,7 @@ export function intelligenceStateFactory(
  * Success state - Valid insights ready for display
  */
 export function successIntelligenceState(
-  insights: Insight[] = insightsBuilder(5)
+  insights: Insight[] = insightsBuilder(5),
 ): InsightsSummaryResponse {
   return intelligenceStateFactory({
     lifecycle: "success",
@@ -203,7 +205,7 @@ export function successIntelligenceState(
  * Pending state - Insights are being computed
  */
 export function pendingIntelligenceState(
-  reason_message = "Computing insights..."
+  reason_message = "Computing insights...",
 ): InsightsSummaryResponse {
   return intelligenceStateFactory({
     lifecycle: "pending",
@@ -218,7 +220,7 @@ export function pendingIntelligenceState(
  */
 export function failedIntelligenceState(
   reason_code: IntelligenceReasonCode = "computation_error",
-  reason_message = "Unable to compute insights"
+  reason_message = "Unable to compute insights",
 ): InsightsSummaryResponse {
   return intelligenceStateFactory({
     lifecycle: "failed",
@@ -233,7 +235,7 @@ export function failedIntelligenceState(
  */
 export function staleIntelligenceState(
   insights: Insight[] = insightsBuilder(3),
-  reason_message = "Insights are more than 24 hours old"
+  reason_message = "Insights are more than 24 hours old",
 ): InsightsSummaryResponse {
   return intelligenceStateFactory({
     lifecycle: "stale",
@@ -278,7 +280,7 @@ export class IntelligenceStateValidationError extends Error {
   constructor(
     message: string,
     public field: string,
-    public value: unknown
+    public value: unknown,
   ) {
     super(message);
     this.name = "IntelligenceStateValidationError";
@@ -303,13 +305,13 @@ export class IntelligenceStateValidationError extends Error {
  * @throws IntelligenceStateValidationError if validation fails
  */
 export function assertValidIntelligenceState(
-  state: unknown
+  state: unknown,
 ): asserts state is InsightsSummaryResponse {
   if (!state || typeof state !== "object") {
     throw new IntelligenceStateValidationError(
       "Intelligence state must be a non-null object",
       "root",
-      state
+      state,
     );
   }
 
@@ -323,7 +325,7 @@ export function assertValidIntelligenceState(
     throw new IntelligenceStateValidationError(
       "Missing required field: intelligence_version",
       "intelligence_version",
-      undefined
+      undefined,
     );
   }
 
@@ -331,19 +333,19 @@ export function assertValidIntelligenceState(
     throw new IntelligenceStateValidationError(
       `intelligence_version must be a string, got ${typeof s.intelligence_version}`,
       "intelligence_version",
-      s.intelligence_version
+      s.intelligence_version,
     );
   }
 
   if (
     !SUPPORTED_INTELLIGENCE_VERSIONS.includes(
-      s.intelligence_version as SupportedIntelligenceVersion
+      s.intelligence_version as SupportedIntelligenceVersion,
     )
   ) {
     throw new IntelligenceStateValidationError(
       `Unsupported intelligence_version: "${s.intelligence_version}". Supported: ${SUPPORTED_INTELLIGENCE_VERSIONS.join(", ")}`,
       "intelligence_version",
-      s.intelligence_version
+      s.intelligence_version,
     );
   }
 
@@ -355,7 +357,7 @@ export function assertValidIntelligenceState(
     throw new IntelligenceStateValidationError(
       "Missing required field: lifecycle",
       "lifecycle",
-      undefined
+      undefined,
     );
   }
 
@@ -363,19 +365,19 @@ export function assertValidIntelligenceState(
     throw new IntelligenceStateValidationError(
       `lifecycle must be a string, got ${typeof s.lifecycle}`,
       "lifecycle",
-      s.lifecycle
+      s.lifecycle,
     );
   }
 
   if (
     !VALID_INTELLIGENCE_LIFECYCLE_STATUSES.includes(
-      s.lifecycle as IntelligenceLifecycleStatus
+      s.lifecycle as IntelligenceLifecycleStatus,
     )
   ) {
     throw new IntelligenceStateValidationError(
       `Invalid lifecycle: "${s.lifecycle}". Valid: ${VALID_INTELLIGENCE_LIFECYCLE_STATUSES.join(", ")}`,
       "lifecycle",
-      s.lifecycle
+      s.lifecycle,
     );
   }
 
@@ -390,7 +392,7 @@ export function assertValidIntelligenceState(
       throw new IntelligenceStateValidationError(
         `reason_code is required when lifecycle is "${lifecycle}"`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
 
@@ -398,19 +400,19 @@ export function assertValidIntelligenceState(
       throw new IntelligenceStateValidationError(
         `reason_code must be a string, got ${typeof s.reason_code}`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
 
     if (
       !VALID_INTELLIGENCE_REASON_CODES.includes(
-        s.reason_code as IntelligenceReasonCode
+        s.reason_code as IntelligenceReasonCode,
       )
     ) {
       throw new IntelligenceStateValidationError(
         `Invalid reason_code: "${s.reason_code}". Valid: ${VALID_INTELLIGENCE_REASON_CODES.join(", ")}`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
   }
@@ -423,7 +425,7 @@ export function assertValidIntelligenceState(
     throw new IntelligenceStateValidationError(
       "Missing required field: generated_at",
       "generated_at",
-      undefined
+      undefined,
     );
   }
 
@@ -431,7 +433,7 @@ export function assertValidIntelligenceState(
     throw new IntelligenceStateValidationError(
       `generated_at must be a string, got ${typeof s.generated_at}`,
       "generated_at",
-      s.generated_at
+      s.generated_at,
     );
   }
 
@@ -444,7 +446,7 @@ export function assertValidIntelligenceState(
       throw new IntelligenceStateValidationError(
         'items is required (non-null) when lifecycle is "success"',
         "items",
-        s.items
+        s.items,
       );
     }
 
@@ -452,7 +454,7 @@ export function assertValidIntelligenceState(
       throw new IntelligenceStateValidationError(
         `items must be an array, got ${typeof s.items}`,
         "items",
-        s.items
+        s.items,
       );
     }
 
@@ -471,7 +473,7 @@ export function assertValidIntelligenceState(
       throw new IntelligenceStateValidationError(
         `reason_message must be a string or null, got ${typeof s.reason_message}`,
         "reason_message",
-        s.reason_message
+        s.reason_message,
       );
     }
   }
@@ -485,7 +487,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}: Insight must be a non-null object`,
       context,
-      insight
+      insight,
     );
   }
 
@@ -496,7 +498,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.id must be a string`,
       `${context}.id`,
-      i.id
+      i.id,
     );
   }
 
@@ -505,7 +507,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.title must be a string`,
       `${context}.title`,
-      i.title
+      i.title,
     );
   }
 
@@ -514,7 +516,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.summary must be a string`,
       `${context}.summary`,
-      i.summary
+      i.summary,
     );
   }
 
@@ -523,7 +525,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.type must be one of: ${VALID_INSIGHT_TYPES.join(", ")}`,
       `${context}.type`,
-      i.type
+      i.type,
     );
   }
 
@@ -532,7 +534,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.severity must be one of: ${VALID_SEVERITY_LEVELS.join(", ")}`,
       `${context}.severity`,
-      i.severity
+      i.severity,
     );
   }
 
@@ -541,7 +543,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.confidence must be a number`,
       `${context}.confidence`,
-      i.confidence
+      i.confidence,
     );
   }
 
@@ -549,7 +551,7 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.confidence must be between 0 and 1, got ${i.confidence}`,
       `${context}.confidence`,
-      i.confidence
+      i.confidence,
     );
   }
 
@@ -558,16 +560,20 @@ function assertValidInsight(insight: unknown, context: string): void {
     throw new IntelligenceStateValidationError(
       `${context}.created_at must be a string`,
       `${context}.created_at`,
-      i.created_at
+      i.created_at,
     );
   }
 
   // source - REQUIRED valid enum
-  if (!VALID_INSIGHT_SOURCES.includes(i.source as (typeof VALID_INSIGHT_SOURCES)[number])) {
+  if (
+    !VALID_INSIGHT_SOURCES.includes(
+      i.source as (typeof VALID_INSIGHT_SOURCES)[number],
+    )
+  ) {
     throw new IntelligenceStateValidationError(
       `${context}.source must be one of: ${VALID_INSIGHT_SOURCES.join(", ")}`,
       `${context}.source`,
-      i.source
+      i.source,
     );
   }
 }

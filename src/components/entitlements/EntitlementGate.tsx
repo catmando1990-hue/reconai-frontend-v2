@@ -182,7 +182,9 @@ export function useCapabilities(apiBase: string) {
       } else if (e instanceof HttpError) {
         setError(`HTTP ${e.status}: ${e.message}`);
       } else {
-        setError(e instanceof Error ? e.message : "Failed to load capabilities");
+        setError(
+          e instanceof Error ? e.message : "Failed to load capabilities",
+        );
       }
     } finally {
       setLoading(false);

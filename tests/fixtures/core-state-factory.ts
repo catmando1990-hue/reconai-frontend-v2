@@ -50,18 +50,27 @@ export type SyncStatus = (typeof VALID_SYNC_STATUSES)[number];
  */
 export function assertValidCoreState(
   state: unknown,
-  context?: string
+  context?: string,
 ): asserts state is CoreState {
   const prefix = context ? `[${context}] ` : "";
 
   if (!state || typeof state !== "object") {
-    throw new Error(`${prefix}CoreState must be an object, got ${typeof state}`);
+    throw new Error(
+      `${prefix}CoreState must be an object, got ${typeof state}`,
+    );
   }
 
   const s = state as Record<string, unknown>;
 
   // Required top-level fields
-  const requiredFields = ["available", "request_id", "fetched_at", "sync", "live_state", "evidence"];
+  const requiredFields = [
+    "available",
+    "request_id",
+    "fetched_at",
+    "sync",
+    "live_state",
+    "evidence",
+  ];
   for (const field of requiredFields) {
     if (!(field in s)) {
       throw new Error(`${prefix}Missing required field: ${field}`);
@@ -78,13 +87,19 @@ export function assertValidCoreState(
 
   // Type validations
   if (typeof s.available !== "boolean") {
-    throw new Error(`${prefix}available must be boolean, got ${typeof s.available}`);
+    throw new Error(
+      `${prefix}available must be boolean, got ${typeof s.available}`,
+    );
   }
   if (typeof s.request_id !== "string") {
-    throw new Error(`${prefix}request_id must be string, got ${typeof s.request_id}`);
+    throw new Error(
+      `${prefix}request_id must be string, got ${typeof s.request_id}`,
+    );
   }
   if (typeof s.fetched_at !== "string") {
-    throw new Error(`${prefix}fetched_at must be string, got ${typeof s.fetched_at}`);
+    throw new Error(
+      `${prefix}fetched_at must be string, got ${typeof s.fetched_at}`,
+    );
   }
 
   // Validate sync object
@@ -102,7 +117,7 @@ export function assertValidCoreState(
  */
 function assertValidSyncState(
   sync: unknown,
-  context: string
+  context: string,
 ): asserts sync is CoreSyncState {
   if (!sync || typeof sync !== "object") {
     throw new Error(`${context} must be an object, got ${typeof sync}`);
@@ -111,7 +126,13 @@ function assertValidSyncState(
   const s = sync as Record<string, unknown>;
 
   // Required sync fields
-  const requiredFields = ["version", "status", "started_at", "last_successful_at", "error_reason"];
+  const requiredFields = [
+    "version",
+    "status",
+    "started_at",
+    "last_successful_at",
+    "error_reason",
+  ];
   for (const field of requiredFields) {
     if (!(field in s)) {
       throw new Error(`${context}: Missing required field: ${field}`);
@@ -128,7 +149,9 @@ function assertValidSyncState(
 
   // Validate version
   if (typeof s.version !== "string") {
-    throw new Error(`${context}.version must be string, got ${typeof s.version}`);
+    throw new Error(
+      `${context}.version must be string, got ${typeof s.version}`,
+    );
   }
 
   // Validate status is in allowed enum
@@ -137,7 +160,7 @@ function assertValidSyncState(
   }
   if (!VALID_SYNC_STATUSES.includes(s.status as SyncStatus)) {
     throw new Error(
-      `${context}.status must be one of [${VALID_SYNC_STATUSES.join(", ")}], got "${s.status}"`
+      `${context}.status must be one of [${VALID_SYNC_STATUSES.join(", ")}], got "${s.status}"`,
     );
   }
 
@@ -145,7 +168,10 @@ function assertValidSyncState(
   if (s.started_at !== null && typeof s.started_at !== "string") {
     throw new Error(`${context}.started_at must be string or null`);
   }
-  if (s.last_successful_at !== null && typeof s.last_successful_at !== "string") {
+  if (
+    s.last_successful_at !== null &&
+    typeof s.last_successful_at !== "string"
+  ) {
     throw new Error(`${context}.last_successful_at must be string or null`);
   }
   if (s.error_reason !== null && typeof s.error_reason !== "string") {
@@ -158,7 +184,7 @@ function assertValidSyncState(
  */
 function assertValidLiveState(
   liveState: unknown,
-  context: string
+  context: string,
 ): asserts liveState is CoreLiveState {
   if (!liveState || typeof liveState !== "object") {
     throw new Error(`${context} must be an object, got ${typeof liveState}`);
@@ -233,7 +259,9 @@ function assertValidBankSync(data: unknown, context: string): void {
   const d = data as Record<string, unknown>;
   const validStatuses = ["healthy", "stale", "error", "not_connected"];
   if (!validStatuses.includes(d.status as string)) {
-    throw new Error(`${context}.status must be one of [${validStatuses.join(", ")}]`);
+    throw new Error(
+      `${context}.status must be one of [${validStatuses.join(", ")}]`,
+    );
   }
   if (d.last_synced_at !== null && typeof d.last_synced_at !== "string") {
     throw new Error(`${context}.last_synced_at must be string or null`);
@@ -248,7 +276,7 @@ function assertValidBankSync(data: unknown, context: string): void {
  */
 function assertValidEvidence(
   evidence: unknown,
-  context: string
+  context: string,
 ): asserts evidence is CoreEvidence {
   if (!evidence || typeof evidence !== "object") {
     throw new Error(`${context} must be an object, got ${typeof evidence}`);
@@ -257,7 +285,13 @@ function assertValidEvidence(
   const s = evidence as Record<string, unknown>;
 
   // Required evidence fields
-  const requiredFields = ["invoices", "bills", "customers", "vendors", "recent_transactions"];
+  const requiredFields = [
+    "invoices",
+    "bills",
+    "customers",
+    "vendors",
+    "recent_transactions",
+  ];
   for (const field of requiredFields) {
     if (!(field in s)) {
       throw new Error(`${context}: Missing required field: ${field}`);
@@ -326,7 +360,7 @@ function defaultEvidence(): CoreEvidence {
  * Override specific fields as needed for test scenarios.
  */
 export function coreStateFactory(
-  overrides: Partial<CoreState> = {}
+  overrides: Partial<CoreState> = {},
 ): CoreState {
   const base: CoreState = {
     available: false,
@@ -499,7 +533,9 @@ export function fullOrgState(): CoreState {
       },
       bank_sync: {
         status: "error",
-        last_synced_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+        last_synced_at: new Date(
+          Date.now() - 48 * 60 * 60 * 1000,
+        ).toISOString(),
         items_needing_attention: 2,
       },
     },
@@ -564,7 +600,10 @@ export function withSyncRunning(base?: CoreState): CoreState {
 /**
  * Create state with sync failed.
  */
-export function withSyncFailed(errorReason: string, base?: CoreState): CoreState {
+export function withSyncFailed(
+  errorReason: string,
+  base?: CoreState,
+): CoreState {
   return coreStateFactory({
     ...(base || partialOrgState()),
     sync: {
@@ -624,7 +663,10 @@ export function withNullSync(): Record<string, unknown> {
 /**
  * Create state with extended recent transactions.
  */
-export function withExtendedTransactions(count: number, base?: CoreState): CoreState {
+export function withExtendedTransactions(
+  count: number,
+  base?: CoreState,
+): CoreState {
   const items = Array.from({ length: count }, (_, i) => ({
     id: `tx${i + 1}`,
     date: `2024-01-${15 - i}`,

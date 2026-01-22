@@ -14,7 +14,7 @@ export function assertNoAuthRedirect(page: Page): void {
       `AUTH REDIRECT DETECTED: Expected protected route but got redirected to sign-in.\n` +
         `Current URL: ${url}\n` +
         `This indicates the test session is not authenticated.\n` +
-        `For CI: Ensure PLAYWRIGHT_AUTH=true and auth state is seeded.`
+        `For CI: Ensure PLAYWRIGHT_AUTH=true and auth state is seeded.`,
     );
   }
 }
@@ -25,7 +25,7 @@ export function assertNoAuthRedirect(page: Page): void {
  */
 export async function gotoProtectedRoute(
   page: Page,
-  path: string
+  path: string,
 ): Promise<void> {
   await page.goto(path, { waitUntil: "domcontentloaded" });
   assertNoAuthRedirect(page);

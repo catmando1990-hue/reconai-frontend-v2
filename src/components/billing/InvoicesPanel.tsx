@@ -26,10 +26,10 @@ export function InvoicesPanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const json = await auditedFetch<{ invoices: Invoice[]; request_id: string }>(
-        `${apiBase}/api/billing/invoices`,
-        { credentials: "include" },
-      );
+      const json = await auditedFetch<{
+        invoices: Invoice[];
+        request_id: string;
+      }>(`${apiBase}/api/billing/invoices`, { credentials: "include" });
       setItems(json?.invoices || []);
     } catch (e: unknown) {
       if (e instanceof AuditProvenanceError) {

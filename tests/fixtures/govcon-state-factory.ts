@@ -86,7 +86,7 @@ export type GovConEvidenceOverrides = Partial<GovConEvidence>;
  * Create a valid GovConEvidence with defaults
  */
 export function evidenceBuilder(
-  overrides: GovConEvidenceOverrides = {}
+  overrides: GovConEvidenceOverrides = {},
 ): GovConEvidence {
   return {
     id: `evidence-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -102,9 +102,7 @@ export function evidenceBuilder(
 /**
  * Create multiple evidence items for testing
  */
-export function evidenceListBuilder(
-  count: number = 3
-): GovConEvidence[] {
+export function evidenceListBuilder(count: number = 3): GovConEvidence[] {
   const types: GovConEvidence["type"][] = [
     "timesheet",
     "invoice",
@@ -118,7 +116,7 @@ export function evidenceListBuilder(
       id: `evidence-${i + 1}`,
       type: types[i % types.length],
       filename: `${types[i % types.length]}_${i + 1}.pdf`,
-    })
+    }),
   );
 }
 
@@ -132,7 +130,7 @@ export type DcaaReadinessOverrides = Partial<DcaaReadinessItem>;
  * Create a valid DcaaReadinessItem with defaults
  */
 export function dcaaReadinessBuilder(
-  overrides: DcaaReadinessOverrides = {}
+  overrides: DcaaReadinessOverrides = {},
 ): DcaaReadinessItem {
   return {
     id: `dcaa-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -155,7 +153,7 @@ export function fullDcaaReadinessBuilder(): DcaaReadinessItem[] {
       category,
       status: "compliant",
       evidence_count: 3 + i,
-    })
+    }),
   );
 }
 
@@ -169,7 +167,7 @@ export type GovConSnapshotOverrides = Partial<GovConSnapshot>;
  * Create a valid GovConSnapshot with defaults
  */
 export function govconSnapshotBuilder(
-  overrides: GovConSnapshotOverrides = {}
+  overrides: GovConSnapshotOverrides = {},
 ): GovConSnapshot {
   return {
     as_of: new Date().toISOString(),
@@ -224,7 +222,7 @@ export type GovConStateFactoryOverrides = {
  * });
  */
 export function govconStateFactory(
-  overrides: GovConStateFactoryOverrides = {}
+  overrides: GovConStateFactoryOverrides = {},
 ): GovConSnapshotResponse {
   const lifecycle = overrides.lifecycle ?? "success";
 
@@ -240,15 +238,15 @@ export function govconStateFactory(
     govcon_version: overrides.govcon_version ?? GOVCON_CONTRACT_VERSION,
     lifecycle,
     reason_code: needsReasonCode
-      ? overrides.reason_code ?? "unknown"
-      : overrides.reason_code ?? null,
+      ? (overrides.reason_code ?? "unknown")
+      : (overrides.reason_code ?? null),
     reason_message: needsReasonCode
-      ? overrides.reason_message ?? "Compliance data unavailable"
-      : overrides.reason_message ?? null,
+      ? (overrides.reason_message ?? "Compliance data unavailable")
+      : (overrides.reason_message ?? null),
     generated_at: overrides.generated_at ?? new Date().toISOString(),
     snapshot: needsSnapshot
-      ? overrides.snapshot ?? govconSnapshotBuilder()
-      : overrides.snapshot ?? null,
+      ? (overrides.snapshot ?? govconSnapshotBuilder())
+      : (overrides.snapshot ?? null),
     has_evidence,
   };
 }
@@ -261,7 +259,7 @@ export function govconStateFactory(
  * Success state - Valid compliance data with evidence
  */
 export function successGovConState(
-  snapshotOverrides: GovConSnapshotOverrides = {}
+  snapshotOverrides: GovConSnapshotOverrides = {},
 ): GovConSnapshotResponse {
   return govconStateFactory({
     lifecycle: "success",
@@ -276,7 +274,7 @@ export function successGovConState(
  * Pending state - Compliance check in progress
  */
 export function pendingGovConState(
-  reason_message = "Compliance check in progress..."
+  reason_message = "Compliance check in progress...",
 ): GovConSnapshotResponse {
   return govconStateFactory({
     lifecycle: "pending",
@@ -292,7 +290,7 @@ export function pendingGovConState(
  */
 export function failedGovConState(
   reason_code: GovConReasonCode = "dcaa_validation_failed",
-  reason_message = "Compliance validation failed"
+  reason_message = "Compliance validation failed",
 ): GovConSnapshotResponse {
   return govconStateFactory({
     lifecycle: "failed",
@@ -308,7 +306,7 @@ export function failedGovConState(
  */
 export function staleGovConState(
   snapshotOverrides: GovConSnapshotOverrides = {},
-  reason_message = "Compliance data is more than 24 hours old"
+  reason_message = "Compliance data is more than 24 hours old",
 ): GovConSnapshotResponse {
   return govconStateFactory({
     lifecycle: "stale",
@@ -324,7 +322,7 @@ export function staleGovConState(
  * CRITICAL: This state should fail compliance checks
  */
 export function noEvidenceGovConState(
-  reason_message = "Required evidence attachments missing"
+  reason_message = "Required evidence attachments missing",
 ): GovConSnapshotResponse {
   return govconStateFactory({
     lifecycle: "no_evidence",
@@ -377,7 +375,7 @@ export class GovConStateValidationError extends Error {
   constructor(
     message: string,
     public field: string,
-    public value: unknown
+    public value: unknown,
   ) {
     super(message);
     this.name = "GovConStateValidationError";
@@ -402,13 +400,13 @@ export class GovConStateValidationError extends Error {
  * @throws GovConStateValidationError if validation fails
  */
 export function assertValidGovConState(
-  state: unknown
+  state: unknown,
 ): asserts state is GovConSnapshotResponse {
   if (!state || typeof state !== "object") {
     throw new GovConStateValidationError(
       "GovCon state must be a non-null object",
       "root",
-      state
+      state,
     );
   }
 
@@ -422,7 +420,7 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       "Missing required field: govcon_version",
       "govcon_version",
-      undefined
+      undefined,
     );
   }
 
@@ -430,19 +428,19 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       `govcon_version must be a string, got ${typeof s.govcon_version}`,
       "govcon_version",
-      s.govcon_version
+      s.govcon_version,
     );
   }
 
   if (
     !SUPPORTED_GOVCON_VERSIONS.includes(
-      s.govcon_version as SupportedGovConVersion
+      s.govcon_version as SupportedGovConVersion,
     )
   ) {
     throw new GovConStateValidationError(
       `Unsupported govcon_version: "${s.govcon_version}". Supported: ${SUPPORTED_GOVCON_VERSIONS.join(", ")}`,
       "govcon_version",
-      s.govcon_version
+      s.govcon_version,
     );
   }
 
@@ -454,7 +452,7 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       "Missing required field: lifecycle",
       "lifecycle",
-      undefined
+      undefined,
     );
   }
 
@@ -462,19 +460,19 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       `lifecycle must be a string, got ${typeof s.lifecycle}`,
       "lifecycle",
-      s.lifecycle
+      s.lifecycle,
     );
   }
 
   if (
     !VALID_GOVCON_LIFECYCLE_STATUSES.includes(
-      s.lifecycle as GovConLifecycleStatus
+      s.lifecycle as GovConLifecycleStatus,
     )
   ) {
     throw new GovConStateValidationError(
       `Invalid lifecycle: "${s.lifecycle}". Valid: ${VALID_GOVCON_LIFECYCLE_STATUSES.join(", ")}`,
       "lifecycle",
-      s.lifecycle
+      s.lifecycle,
     );
   }
 
@@ -489,7 +487,7 @@ export function assertValidGovConState(
       throw new GovConStateValidationError(
         `reason_code is required when lifecycle is "${lifecycle}"`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
 
@@ -497,15 +495,17 @@ export function assertValidGovConState(
       throw new GovConStateValidationError(
         `reason_code must be a string, got ${typeof s.reason_code}`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
 
-    if (!VALID_GOVCON_REASON_CODES.includes(s.reason_code as GovConReasonCode)) {
+    if (
+      !VALID_GOVCON_REASON_CODES.includes(s.reason_code as GovConReasonCode)
+    ) {
       throw new GovConStateValidationError(
         `Invalid reason_code: "${s.reason_code}". Valid: ${VALID_GOVCON_REASON_CODES.join(", ")}`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
   }
@@ -518,7 +518,7 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       "Missing required field: generated_at",
       "generated_at",
-      undefined
+      undefined,
     );
   }
 
@@ -526,7 +526,7 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       `generated_at must be a string, got ${typeof s.generated_at}`,
       "generated_at",
-      s.generated_at
+      s.generated_at,
     );
   }
 
@@ -538,7 +538,7 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       "Missing required field: has_evidence (DCAA COMPLIANCE REQUIREMENT)",
       "has_evidence",
-      undefined
+      undefined,
     );
   }
 
@@ -546,7 +546,7 @@ export function assertValidGovConState(
     throw new GovConStateValidationError(
       `has_evidence must be a boolean, got ${typeof s.has_evidence}`,
       "has_evidence",
-      s.has_evidence
+      s.has_evidence,
     );
   }
 
@@ -559,7 +559,7 @@ export function assertValidGovConState(
       throw new GovConStateValidationError(
         'snapshot is required when lifecycle is "success"',
         "snapshot",
-        s.snapshot
+        s.snapshot,
       );
     }
 
@@ -576,7 +576,7 @@ export function assertValidGovConState(
       throw new GovConStateValidationError(
         `reason_message must be a string or null, got ${typeof s.reason_message}`,
         "reason_message",
-        s.reason_message
+        s.reason_message,
       );
     }
   }
@@ -586,13 +586,13 @@ export function assertValidGovConState(
  * Validate GovConSnapshot structure
  */
 function assertValidGovConSnapshot(
-  snapshot: unknown
+  snapshot: unknown,
 ): asserts snapshot is GovConSnapshot {
   if (!snapshot || typeof snapshot !== "object") {
     throw new GovConStateValidationError(
       "snapshot must be a non-null object",
       "snapshot",
-      snapshot
+      snapshot,
     );
   }
 
@@ -603,7 +603,7 @@ function assertValidGovConSnapshot(
     throw new GovConStateValidationError(
       "snapshot.as_of must be a string",
       "snapshot.as_of",
-      snap.as_of
+      snap.as_of,
     );
   }
 
@@ -612,12 +612,15 @@ function assertValidGovConSnapshot(
     throw new GovConStateValidationError(
       "snapshot.dcaa_readiness must be an array",
       "snapshot.dcaa_readiness",
-      snap.dcaa_readiness
+      snap.dcaa_readiness,
     );
   }
 
   for (let i = 0; i < snap.dcaa_readiness.length; i++) {
-    assertValidDcaaReadinessItem(snap.dcaa_readiness[i], `snapshot.dcaa_readiness[${i}]`);
+    assertValidDcaaReadinessItem(
+      snap.dcaa_readiness[i],
+      `snapshot.dcaa_readiness[${i}]`,
+    );
   }
 
   // evidence_attached - REQUIRED array
@@ -625,12 +628,15 @@ function assertValidGovConSnapshot(
     throw new GovConStateValidationError(
       "snapshot.evidence_attached must be an array",
       "snapshot.evidence_attached",
-      snap.evidence_attached
+      snap.evidence_attached,
     );
   }
 
   for (let i = 0; i < snap.evidence_attached.length; i++) {
-    assertValidEvidence(snap.evidence_attached[i], `snapshot.evidence_attached[${i}]`);
+    assertValidEvidence(
+      snap.evidence_attached[i],
+      `snapshot.evidence_attached[${i}]`,
+    );
   }
 }
 
@@ -642,7 +648,7 @@ function assertValidDcaaReadinessItem(item: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}: must be a non-null object`,
       context,
-      item
+      item,
     );
   }
 
@@ -652,23 +658,31 @@ function assertValidDcaaReadinessItem(item: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.id must be a string`,
       `${context}.id`,
-      i.id
+      i.id,
     );
   }
 
-  if (!VALID_DCAA_CATEGORIES.includes(i.category as typeof VALID_DCAA_CATEGORIES[number])) {
+  if (
+    !VALID_DCAA_CATEGORIES.includes(
+      i.category as (typeof VALID_DCAA_CATEGORIES)[number],
+    )
+  ) {
     throw new GovConStateValidationError(
       `${context}.category must be one of: ${VALID_DCAA_CATEGORIES.join(", ")}`,
       `${context}.category`,
-      i.category
+      i.category,
     );
   }
 
-  if (!VALID_DCAA_STATUSES.includes(i.status as typeof VALID_DCAA_STATUSES[number])) {
+  if (
+    !VALID_DCAA_STATUSES.includes(
+      i.status as (typeof VALID_DCAA_STATUSES)[number],
+    )
+  ) {
     throw new GovConStateValidationError(
       `${context}.status must be one of: ${VALID_DCAA_STATUSES.join(", ")}`,
       `${context}.status`,
-      i.status
+      i.status,
     );
   }
 
@@ -676,7 +690,7 @@ function assertValidDcaaReadinessItem(item: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.evidence_count must be a number`,
       `${context}.evidence_count`,
-      i.evidence_count
+      i.evidence_count,
     );
   }
 
@@ -684,7 +698,7 @@ function assertValidDcaaReadinessItem(item: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.issues must be an array`,
       `${context}.issues`,
-      i.issues
+      i.issues,
     );
   }
 }
@@ -697,7 +711,7 @@ function assertValidEvidence(evidence: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}: must be a non-null object`,
       context,
-      evidence
+      evidence,
     );
   }
 
@@ -707,15 +721,19 @@ function assertValidEvidence(evidence: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.id must be a string`,
       `${context}.id`,
-      e.id
+      e.id,
     );
   }
 
-  if (!VALID_EVIDENCE_TYPES.includes(e.type as typeof VALID_EVIDENCE_TYPES[number])) {
+  if (
+    !VALID_EVIDENCE_TYPES.includes(
+      e.type as (typeof VALID_EVIDENCE_TYPES)[number],
+    )
+  ) {
     throw new GovConStateValidationError(
       `${context}.type must be one of: ${VALID_EVIDENCE_TYPES.join(", ")}`,
       `${context}.type`,
-      e.type
+      e.type,
     );
   }
 
@@ -723,7 +741,7 @@ function assertValidEvidence(evidence: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.filename must be a string`,
       `${context}.filename`,
-      e.filename
+      e.filename,
     );
   }
 
@@ -731,7 +749,7 @@ function assertValidEvidence(evidence: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.hash must be a string`,
       `${context}.hash`,
-      e.hash
+      e.hash,
     );
   }
 
@@ -739,7 +757,7 @@ function assertValidEvidence(evidence: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.uploaded_at must be a string`,
       `${context}.uploaded_at`,
-      e.uploaded_at
+      e.uploaded_at,
     );
   }
 
@@ -747,7 +765,7 @@ function assertValidEvidence(evidence: unknown, context: string): void {
     throw new GovConStateValidationError(
       `${context}.verified must be a boolean`,
       `${context}.verified`,
-      e.verified
+      e.verified,
     );
   }
 }

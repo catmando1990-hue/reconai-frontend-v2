@@ -288,7 +288,10 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
                 </span>
               </div>
             ) : null}
-            <AuditEvidence requestId={exportResult.request_id} variant="success" />
+            <AuditEvidence
+              requestId={exportResult.request_id}
+              variant="success"
+            />
           </div>
         ) : null}
       </div>
@@ -362,7 +365,10 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
                 {deleteResult.immutable_log_id}
               </span>
             </div>
-            <AuditEvidence requestId={deleteResult.request_id} variant="success" />
+            <AuditEvidence
+              requestId={deleteResult.request_id}
+              variant="success"
+            />
           </div>
         ) : null}
       </div>

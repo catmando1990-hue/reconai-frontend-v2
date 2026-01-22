@@ -20,7 +20,9 @@ export function useApi() {
   const { org_id } = useOrg();
 
   const api = useMemo(() => {
-    const withOrgHeader = (options: AuditedFetchOptions = {}): AuditedFetchOptions => {
+    const withOrgHeader = (
+      options: AuditedFetchOptions = {},
+    ): AuditedFetchOptions => {
       const headers = new Headers(options.headers);
       if (org_id && !headers.has("x-organization-id")) {
         headers.set("x-organization-id", org_id);
@@ -30,12 +32,18 @@ export function useApi() {
 
     return {
       // Legacy alias
-      apiFetch: <T = unknown,>(path: string, options: AuditedFetchOptions = {}) => {
+      apiFetch: <T = unknown,>(
+        path: string,
+        options: AuditedFetchOptions = {},
+      ) => {
         return auditedFetch<T>(path, withOrgHeader(options));
       },
 
       // Canonical methods
-      auditedFetch: <T = unknown,>(path: string, options: AuditedFetchOptions = {}) => {
+      auditedFetch: <T = unknown,>(
+        path: string,
+        options: AuditedFetchOptions = {},
+      ) => {
         return auditedFetch<T>(path, withOrgHeader(options));
       },
 

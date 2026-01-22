@@ -39,7 +39,9 @@ export function AuditEvidence({
   // FAIL-CLOSED: If no requestId, render nothing but log warning
   if (!requestId) {
     if (process.env.NODE_ENV === "development") {
-      console.warn("[AuditEvidence] Missing requestId - evidence not available");
+      console.warn(
+        "[AuditEvidence] Missing requestId - evidence not available",
+      );
     }
     return null;
   }
@@ -57,7 +59,8 @@ export function AuditEvidence({
 
   const variantStyles = {
     default: "border-border bg-muted",
-    success: "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20",
+    success:
+      "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20",
     error: "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20",
   };
 

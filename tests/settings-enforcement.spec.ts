@@ -27,7 +27,9 @@ test.describe("Settings Page Enforcement", () => {
     // The page should show a loading state when settings are loading
     // Either loading spinner OR the actual content (if API responds quickly)
     const hasLoadingOrContent = await page
-      .locator("[data-testid='settings-lifecycle-banner'], .animate-spin, [title='Settings']")
+      .locator(
+        "[data-testid='settings-lifecycle-banner'], .animate-spin, [title='Settings']",
+      )
       .first()
       .isVisible()
       .catch(() => true); // Allow redirect to sign-in
@@ -35,7 +37,9 @@ test.describe("Settings Page Enforcement", () => {
     expect(hasLoadingOrContent).toBeTruthy();
   });
 
-  test("should show lifecycle banner for non-success states", async ({ page }) => {
+  test("should show lifecycle banner for non-success states", async ({
+    page,
+  }) => {
     // Mock a failed settings response
     await page.route("**/api/settings/config", (route) => {
       route.fulfill({
@@ -99,7 +103,9 @@ test.describe("Settings Page Enforcement", () => {
     // Should fail closed - show error state or banner
     // The page should NOT render the main settings content optimistically
     const mainContent = page.locator('[data-testid="settings-main-content"]');
-    const isMainContentVisible = await mainContent.isVisible().catch(() => false);
+    const isMainContentVisible = await mainContent
+      .isVisible()
+      .catch(() => false);
 
     // If auth is working, main content should NOT be visible for invalid version
     // (it will show error state instead)
@@ -240,7 +246,7 @@ test.describe("Settings Page Enforcement", () => {
       if (dialogVisible) {
         // Find the confirmation input
         const confirmInput = page.locator(
-          'input[placeholder="Type the exact phrase..."]'
+          'input[placeholder="Type the exact phrase..."]',
         );
 
         // Type wrong phrase

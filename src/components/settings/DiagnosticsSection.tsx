@@ -116,7 +116,9 @@ export function DiagnosticsSection() {
       } else if (err instanceof HttpError) {
         setConfirmError(`HTTP ${err.status}: ${err.message}`);
       } else {
-        setConfirmError(err instanceof Error ? err.message : "Diagnostic failed");
+        setConfirmError(
+          err instanceof Error ? err.message : "Diagnostic failed",
+        );
       }
       setModalStep("results");
     }
@@ -424,9 +426,7 @@ export function DiagnosticsSection() {
                   {result ? (
                     <>
                       {/* BACKGROUND NORMALIZATION: No decorative colors - use bg-muted */}
-                      <div
-                        className="rounded p-3 bg-muted"
-                      >
+                      <div className="rounded p-3 bg-muted">
                         <div className="flex items-center gap-2">
                           <span
                             className={

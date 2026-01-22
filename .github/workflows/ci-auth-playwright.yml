@@ -16,9 +16,9 @@ on:
   workflow_dispatch:
     inputs:
       target_url:
-        description: 'Target URL for tests'
+        description: "Target URL for tests"
         required: false
-        default: 'https://www.reconaitechnology.com'
+        default: "https://www.reconaitechnology.com"
   push:
     branches: [main]
   pull_request:

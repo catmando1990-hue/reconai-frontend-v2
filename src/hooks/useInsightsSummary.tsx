@@ -30,12 +30,12 @@ export type SupportedIntelligenceVersion =
  * FAIL-CLOSED: Unknown versions are rejected
  */
 export function isSupportedIntelligenceVersion(
-  version: unknown
+  version: unknown,
 ): version is SupportedIntelligenceVersion {
   return (
     typeof version === "string" &&
     SUPPORTED_INTELLIGENCE_VERSIONS.includes(
-      version as SupportedIntelligenceVersion
+      version as SupportedIntelligenceVersion,
     )
   );
 }
@@ -55,7 +55,7 @@ const VALID_LIFECYCLE_STATUSES: IntelligenceLifecycleStatus[] = [
  * Returns false if version is missing/unknown or lifecycle is invalid
  */
 export function isValidIntelligenceResponse(
-  response: unknown
+  response: unknown,
 ): response is InsightsSummaryResponse {
   if (!response || typeof response !== "object") return false;
   const r = response as Record<string, unknown>;
@@ -66,7 +66,9 @@ export function isValidIntelligenceResponse(
   // PART 2: Lifecycle validation - required for rendering decisions
   if (
     typeof r.lifecycle !== "string" ||
-    !VALID_LIFECYCLE_STATUSES.includes(r.lifecycle as IntelligenceLifecycleStatus)
+    !VALID_LIFECYCLE_STATUSES.includes(
+      r.lifecycle as IntelligenceLifecycleStatus,
+    )
   ) {
     return false;
   }
@@ -140,7 +142,7 @@ export function useInsightsSummary(): UseInsightsSummaryState {
           {
             intelligenceVersion: resObj?.intelligence_version,
             lifecycle: resObj?.lifecycle,
-          }
+          },
         );
         setData(failClosedState);
         setError("Intelligence data validation failed");
@@ -184,6 +186,6 @@ export function useInsightsSummary(): UseInsightsSummaryState {
       ...derived,
       refetch,
     }),
-    [data, isLoading, error, derived, refetch]
+    [data, isLoading, error, derived, refetch],
   );
 }

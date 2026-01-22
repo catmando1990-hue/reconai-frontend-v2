@@ -39,7 +39,9 @@ export default function IndirectsPage() {
           <div className="rounded-lg border border-border bg-card p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold">Indirect Cost Pools</h2>
-              <p className="text-sm text-muted-foreground">{STATUS.NOT_CONFIGURED}</p>
+              <p className="text-sm text-muted-foreground">
+                {STATUS.NOT_CONFIGURED}
+              </p>
             </div>
             <EmptyState
               icon={Layers}

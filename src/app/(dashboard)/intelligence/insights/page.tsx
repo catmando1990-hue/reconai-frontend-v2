@@ -363,7 +363,9 @@ export default function IntelligenceInsightsPage() {
                   <div className="pt-2 border-t">
                     <p className="text-xs text-muted-foreground">
                       Status:{" "}
-                      <span className="capitalize font-medium">{lifecycle}</span>
+                      <span className="capitalize font-medium">
+                        {lifecycle}
+                      </span>
                     </p>
                   </div>
                 )}

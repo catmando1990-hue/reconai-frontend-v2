@@ -401,7 +401,8 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                     </div>
                   </div>
                   <div className="text-sm font-medium text-foreground">
-                    {tx.amount < 0 ? "-" : "+"}{formatCurrency(Math.abs(tx.amount))}
+                    {tx.amount < 0 ? "-" : "+"}
+                    {formatCurrency(Math.abs(tx.amount))}
                   </div>
                 </div>
               ))}

@@ -105,21 +105,29 @@ export default function ReconciliationPage() {
                   Active Runs
                 </span>
                 {/* HIERARCHY: text-base font-medium (subordinate to Intelligence) */}
-                <span className="text-base font-medium text-muted-foreground italic">No data</span>
+                <span className="text-base font-medium text-muted-foreground italic">
+                  No data
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Open Variances
                 </span>
-                <span className="text-base font-medium text-muted-foreground italic">No data</span>
+                <span className="text-base font-medium text-muted-foreground italic">
+                  No data
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Resolved</span>
-                <span className="text-base font-medium text-muted-foreground italic">No data</span>
+                <span className="text-base font-medium text-muted-foreground italic">
+                  No data
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Escalated</span>
-                <span className="text-base font-medium text-muted-foreground italic">No data</span>
+                <span className="text-base font-medium text-muted-foreground italic">
+                  No data
+                </span>
               </div>
               {/* SF-1408 reference */}
               <div className="pt-2 border-t">

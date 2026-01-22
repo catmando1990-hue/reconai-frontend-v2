@@ -17,7 +17,10 @@ import { SettingsLifecycleBanner } from "@/components/settings/SettingsLifecycle
 import { DestructiveActionConfirmation } from "@/components/settings/DestructiveActionConfirmation";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Info } from "lucide-react";
-import { useSettingsConfig, type DestructiveAction } from "@/hooks/useSettingsConfig";
+import {
+  useSettingsConfig,
+  type DestructiveAction,
+} from "@/hooks/useSettingsConfig";
 import type { SubscriptionTier } from "@/lib/entitlements";
 
 /**
@@ -94,7 +97,7 @@ export default function SettingsPage() {
 
   // Destructive action confirmation state
   const [pendingAction, setPendingAction] = useState<DestructiveAction | null>(
-    null
+    null,
   );
 
   // Get user's current tier from metadata
@@ -240,8 +243,8 @@ export default function SettingsPage() {
                 Policy acknowledgement required
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Please acknowledge the terms of service and data policy to enable
-                account management features.
+                Please acknowledge the terms of service and data policy to
+                enable account management features.
               </p>
               <Button
                 variant="outline"
@@ -379,10 +382,14 @@ export default function SettingsPage() {
             {/* PART 2 & 3: Danger Zone - Destructive Actions */}
             {/* DESTRUCTIVE ZONE ENFORCEMENT: Stronger border, additional spacing, no colored backgrounds */}
             <div className="mt-4 pt-4">
-              <SecondaryPanel title="Danger Zone" className="bg-card border-2 border-dashed border-border">
+              <SecondaryPanel
+                title="Danger Zone"
+                className="bg-card border-2 border-dashed border-border"
+              >
                 <div className="space-y-4">
                   <p className="text-xs text-muted-foreground">
-                    These actions require confirmation and cannot be easily undone.
+                    These actions require confirmation and cannot be easily
+                    undone.
                   </p>
                   <div className="space-y-3">
                     <Button

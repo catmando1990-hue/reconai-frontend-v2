@@ -1,13 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  AlertCircle,
-  Loader2,
-  AlertTriangle,
-  RefreshCw,
-} from "lucide-react";
-import type { SettingsLifecycleStatus, SettingsReasonCode } from "@/lib/api/types";
+import { AlertCircle, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import type {
+  SettingsLifecycleStatus,
+  SettingsReasonCode,
+} from "@/lib/api/types";
 
 interface SettingsLifecycleBannerProps {
   lifecycle: SettingsLifecycleStatus;

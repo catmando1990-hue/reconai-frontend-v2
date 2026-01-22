@@ -70,7 +70,9 @@ export default function ExportForDCAAPDFButton({ className }: Props) {
       </button>
       {success && (
         <div>
-          <div className="text-xs text-green-600">PDF export completed successfully.</div>
+          <div className="text-xs text-green-600">
+            PDF export completed successfully.
+          </div>
           <AuditEvidence requestId={lastRequestId} variant="success" />
         </div>
       )}

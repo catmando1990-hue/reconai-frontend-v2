@@ -619,24 +619,34 @@ test.describe("CORE State-of-Business Dashboard", () => {
       await expect(page.locator("text=Syncing financial data")).toBeVisible();
 
       // Get the dashboard content container
-      const dashboardContent = page.locator('[data-testid="dashboard-content"]');
+      const dashboardContent = page.locator(
+        '[data-testid="dashboard-content"]',
+      );
       await expect(dashboardContent).toBeVisible();
 
       // Assert DOM order: Live State section comes BEFORE sync banner slot
       // This uses Playwright's element ordering based on DOM position
-      const liveStateSection = page.locator('[data-testid="live-state-section"]');
-      const syncBannerSlot = page.locator('[data-testid="subordinate-banner-slot"]');
+      const liveStateSection = page.locator(
+        '[data-testid="live-state-section"]',
+      );
+      const syncBannerSlot = page.locator(
+        '[data-testid="subordinate-banner-slot"]',
+      );
 
       await expect(liveStateSection).toBeVisible();
       await expect(syncBannerSlot).toBeVisible();
 
       // Verify priority attributes are set correctly
-      const liveStatePriority = await liveStateSection.getAttribute("data-priority");
-      const syncBannerPriority = await syncBannerSlot.getAttribute("data-priority");
+      const liveStatePriority =
+        await liveStateSection.getAttribute("data-priority");
+      const syncBannerPriority =
+        await syncBannerSlot.getAttribute("data-priority");
 
       expect(Number(liveStatePriority)).toBe(100); // LiveState priority
       expect(Number(syncBannerPriority)).toBe(80); // SyncBanner priority
-      expect(Number(liveStatePriority)).toBeGreaterThan(Number(syncBannerPriority));
+      expect(Number(liveStatePriority)).toBeGreaterThan(
+        Number(syncBannerPriority),
+      );
 
       // Verify DOM order by comparing bounding boxes (top position)
       const liveStateBbox = await liveStateSection.boundingBox();
@@ -668,7 +678,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
       await expect(syncBanner).toBeVisible();
 
       // The sync banner MUST be inside the subordinate-banner-slot
-      const bannerSlot = page.locator('[data-testid="subordinate-banner-slot"]');
+      const bannerSlot = page.locator(
+        '[data-testid="subordinate-banner-slot"]',
+      );
       await expect(bannerSlot).toBeVisible();
 
       // Verify banner is descendant of slot
@@ -676,8 +688,12 @@ test.describe("CORE State-of-Business Dashboard", () => {
       await expect(bannerInSlot).toBeVisible();
 
       // Verify the banner is inside dashboard-content, not in header
-      const dashboardContent = page.locator('[data-testid="dashboard-content"]');
-      const bannerInContent = dashboardContent.locator('[data-testid="sync-banner"]');
+      const dashboardContent = page.locator(
+        '[data-testid="dashboard-content"]',
+      );
+      const bannerInContent = dashboardContent.locator(
+        '[data-testid="sync-banner"]',
+      );
       await expect(bannerInContent).toBeVisible();
     });
 
@@ -700,7 +716,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
       // Collect priorities in DOM order
       const priorities: number[] = [];
       for (let i = 0; i < count; i++) {
-        const priority = await priorityElements.nth(i).getAttribute("data-priority");
+        const priority = await priorityElements
+          .nth(i)
+          .getAttribute("data-priority");
         if (priority) {
           priorities.push(Number(priority));
         }

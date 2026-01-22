@@ -29,7 +29,7 @@ export type SupportedSettingsVersion =
  * FAIL-CLOSED: Unknown versions are rejected
  */
 export function isSupportedSettingsVersion(
-  version: unknown
+  version: unknown,
 ): version is SupportedSettingsVersion {
   return (
     typeof version === "string" &&
@@ -52,7 +52,7 @@ const VALID_LIFECYCLE_STATUSES: SettingsLifecycleStatus[] = [
  * Returns false if version is missing/unknown or lifecycle is invalid
  */
 export function isValidSettingsResponse(
-  response: unknown
+  response: unknown,
 ): response is SettingsResponse {
   if (!response || typeof response !== "object") return false;
   const r = response as Record<string, unknown>;
@@ -101,7 +101,7 @@ const failClosedState: SettingsResponse = {
  * Check if user has acknowledged the policy (required for destructive actions)
  */
 export function hasPolicyAcknowledgement(
-  settings: SettingsResponse | null
+  settings: SettingsResponse | null,
 ): boolean {
   if (!settings || settings.lifecycle !== "success") return false;
   return settings.settings?.policy_acknowledged_at !== null;
@@ -114,7 +114,8 @@ export const DESTRUCTIVE_ACTIONS = {
   UNLINK_BANK: {
     action: "unlink_bank",
     phrase: "UNLINK BANK ACCOUNT",
-    description: "This will disconnect your bank account and stop transaction syncing.",
+    description:
+      "This will disconnect your bank account and stop transaction syncing.",
   },
   CLEAR_CACHE: {
     action: "clear_cache",
@@ -124,7 +125,8 @@ export const DESTRUCTIVE_ACTIONS = {
   DELETE_DATA: {
     action: "delete_data",
     phrase: "DELETE MY DATA",
-    description: "This will permanently delete your data. This action cannot be undone.",
+    description:
+      "This will permanently delete your data. This action cannot be undone.",
   },
   REVOKE_ACCESS: {
     action: "revoke_access",
@@ -158,7 +160,7 @@ export type UseSettingsConfigState = {
   /** Validate confirmation phrase for destructive action */
   validateDestructiveAction: (
     action: DestructiveAction,
-    confirmPhrase: string
+    confirmPhrase: string,
   ) => boolean;
   refetch: () => Promise<void>;
 };
@@ -190,7 +192,7 @@ export function useSettingsConfig(): UseSettingsConfigState {
           {
             settingsVersion: resObj?.settings_version,
             lifecycle: resObj?.lifecycle,
-          }
+          },
         );
         setData(failClosedState);
         setError("Settings validation failed");
@@ -232,14 +234,14 @@ export function useSettingsConfig(): UseSettingsConfigState {
       // Must have policy acknowledged for most actions
       if (!hasPolicyAcknowledgement(data)) {
         console.warn(
-          "[useSettingsConfig] Policy acknowledgement required for destructive action"
+          "[useSettingsConfig] Policy acknowledgement required for destructive action",
         );
         return false;
       }
 
       return true;
     },
-    [data]
+    [data],
   );
 
   // Derived state helpers
@@ -273,6 +275,14 @@ export function useSettingsConfig(): UseSettingsConfigState {
       validateDestructiveAction,
       refetch,
     }),
-    [data, isLoading, error, derived, acknowledgePolicy, validateDestructiveAction, refetch]
+    [
+      data,
+      isLoading,
+      error,
+      derived,
+      acknowledgePolicy,
+      validateDestructiveAction,
+      refetch,
+    ],
   );
 }

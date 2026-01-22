@@ -167,7 +167,9 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
 
       {saveSuccess && !err && (
         <div className="mt-3">
-          <div className="text-sm text-green-600">Changes saved successfully.</div>
+          <div className="text-sm text-green-600">
+            Changes saved successfully.
+          </div>
           <AuditEvidence requestId={lastRequestId} variant="success" />
         </div>
       )}

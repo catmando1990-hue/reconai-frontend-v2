@@ -116,7 +116,7 @@ export interface CoreSyncState {
  * FAIL-CLOSED: Unknown versions are rejected
  */
 export function isSupportedSyncVersion(
-  version: unknown
+  version: unknown,
 ): version is SupportedSyncVersion {
   return (
     typeof version === "string" &&
@@ -237,7 +237,7 @@ export function useCoreState() {
         // Unknown or missing sync version = fail-closed
         console.warn(
           "[useCoreState] Invalid response or unsupported sync version, failing closed",
-          { syncVersion: response?.sync?.version }
+          { syncVersion: response?.sync?.version },
         );
         setState(failClosedState);
       }
@@ -279,7 +279,7 @@ export function useCoreState() {
             // Unknown or missing sync version = fail-closed
             console.warn(
               "[useCoreState] Invalid response or unsupported sync version, failing closed",
-              { syncVersion: response?.sync?.version }
+              { syncVersion: response?.sync?.version },
             );
             setState(failClosedState);
           }

@@ -76,7 +76,9 @@ export function DestructiveActionConfirmation({
         <div className="flex items-center justify-between border-b border-border p-4">
           <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <h2 className="text-base font-semibold">Confirm Destructive Action</h2>
+            <h2 className="text-base font-semibold">
+              Confirm Destructive Action
+            </h2>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -115,7 +117,11 @@ export function DestructiveActionConfirmation({
           {/* Confirmation Input */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Type <code className="bg-muted px-1 rounded">{actionConfig.phrase}</code> to confirm:
+              Type{" "}
+              <code className="bg-muted px-1 rounded">
+                {actionConfig.phrase}
+              </code>{" "}
+              to confirm:
             </label>
             <input
               type="text"

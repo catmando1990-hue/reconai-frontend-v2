@@ -39,12 +39,15 @@ if (!CLERK_CI_USER_ID) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getClerkClient(): Promise<any> {
   try {
-    // @ts-expect-error - Package installed at CI runtime only
     const clerkSdk = await import("@clerk/clerk-sdk-node");
     return clerkSdk.createClerkClient({ secretKey: CLERK_SECRET_KEY! });
   } catch {
-    console.error("[seed-playwright-auth] FATAL: @clerk/clerk-sdk-node not installed");
-    console.error("[seed-playwright-auth] Run: npm install -D @clerk/clerk-sdk-node");
+    console.error(
+      "[seed-playwright-auth] FATAL: @clerk/clerk-sdk-node not installed",
+    );
+    console.error(
+      "[seed-playwright-auth] Run: npm install -D @clerk/clerk-sdk-node",
+    );
     process.exit(1);
   }
 }
@@ -79,7 +82,9 @@ async function run(): Promise<void> {
     console.log("[seed-playwright-auth] Sign-in token created successfully");
   } catch (err) {
     const error = err as Error;
-    console.error("[seed-playwright-auth] FATAL: Failed to create Clerk session");
+    console.error(
+      "[seed-playwright-auth] FATAL: Failed to create Clerk session",
+    );
     console.error("[seed-playwright-auth] Error:", error.message);
     process.exit(1);
   }

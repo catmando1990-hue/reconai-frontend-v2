@@ -32,10 +32,15 @@ const cspDirectivesBase = [
 ];
 
 // STRICT CSP for dashboard routes - frame-ancestors 'none' prevents all framing (clickjacking protection)
-const cspDashboardStrict = [...cspDirectivesBase, "frame-ancestors 'none'"].join("; ");
+const cspDashboardStrict = [
+  ...cspDirectivesBase,
+  "frame-ancestors 'none'",
+].join("; ");
 
 // MODERATE CSP for public routes - frame-ancestors 'self' allows same-origin framing
-const cspPublicModerate = [...cspDirectivesBase, "frame-ancestors 'self'"].join("; ");
+const cspPublicModerate = [...cspDirectivesBase, "frame-ancestors 'self'"].join(
+  "; ",
+);
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -159,7 +164,8 @@ const nextConfig: NextConfig = {
       // DASHBOARD ROUTES — STRICT CSP (frame-ancestors 'none')
       // These routes handle authenticated financial data and must prevent all framing
       {
-        source: "/(home|core|cfo|intelligence|govcon|settings|invoicing|connect-bank|customers|receipts|ar)(.*)",
+        source:
+          "/(home|core|cfo|intelligence|govcon|settings|invoicing|connect-bank|customers|receipts|ar)(.*)",
         headers: [
           ...sharedSecurityHeaders,
           // X-Frame-Options DENY for legacy browser support

@@ -28,7 +28,7 @@ export type SupportedGovConVersion = (typeof SUPPORTED_GOVCON_VERSIONS)[number];
  * FAIL-CLOSED: Unknown versions are rejected
  */
 export function isSupportedGovConVersion(
-  version: unknown
+  version: unknown,
 ): version is SupportedGovConVersion {
   return (
     typeof version === "string" &&
@@ -52,7 +52,7 @@ const VALID_LIFECYCLE_STATUSES: GovConLifecycleStatus[] = [
  * Returns false if version is missing/unknown, lifecycle is invalid, or evidence flag is missing
  */
 export function isValidGovConResponse(
-  response: unknown
+  response: unknown,
 ): response is GovConSnapshotResponse {
   if (!response || typeof response !== "object") return false;
   const r = response as Record<string, unknown>;
@@ -146,7 +146,7 @@ export function useGovConSnapshot(): UseGovConSnapshotState {
             govconVersion: resObj?.govcon_version,
             lifecycle: resObj?.lifecycle,
             hasEvidence: resObj?.has_evidence,
-          }
+          },
         );
         setData(failClosedState);
         setError("GovCon compliance data validation failed");
@@ -193,6 +193,6 @@ export function useGovConSnapshot(): UseGovConSnapshotState {
       ...derived,
       refetch,
     }),
-    [data, isLoading, error, derived, refetch]
+    [data, isLoading, error, derived, refetch],
   );
 }

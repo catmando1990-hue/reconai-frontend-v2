@@ -31,7 +31,9 @@ const baseURL =
   "http://localhost:3000";
 
 // Log configuration for debugging in CI
-console.log(`[Playwright] baseURL: ${baseURL} (isRemote: ${isRemote}, isAuth: ${isAuthenticated})`);
+console.log(
+  `[Playwright] baseURL: ${baseURL} (isRemote: ${isRemote}, isAuth: ${isAuthenticated})`,
+);
 
 export default defineConfig({
   testDir: "./tests",

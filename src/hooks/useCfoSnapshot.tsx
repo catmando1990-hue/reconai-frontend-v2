@@ -29,7 +29,7 @@ export type SupportedCfoVersion = (typeof SUPPORTED_CFO_VERSIONS)[number];
  * FAIL-CLOSED: Unknown versions are rejected
  */
 export function isSupportedCfoVersion(
-  version: unknown
+  version: unknown,
 ): version is SupportedCfoVersion {
   return (
     typeof version === "string" &&
@@ -52,7 +52,7 @@ const VALID_LIFECYCLE_STATUSES: CfoLifecycleStatus[] = [
  * Returns false if version is missing/unknown or lifecycle is invalid
  */
 export function isValidCfoResponse(
-  response: unknown
+  response: unknown,
 ): response is CfoSnapshotResponse {
   if (!response || typeof response !== "object") return false;
   const r = response as Record<string, unknown>;
@@ -137,7 +137,7 @@ export function useCfoSnapshot(): UseCfoSnapshotState {
           {
             cfoVersion: resObj?.cfo_version,
             lifecycle: resObj?.lifecycle,
-          }
+          },
         );
         setData(failClosedState);
         setError("CFO data validation failed");
@@ -181,6 +181,6 @@ export function useCfoSnapshot(): UseCfoSnapshotState {
       ...derived,
       refetch,
     }),
-    [data, isLoading, error, derived, refetch]
+    [data, isLoading, error, derived, refetch],
   );
 }

@@ -139,7 +139,9 @@ export default function CompleteProfilePage() {
         } else if (err instanceof HttpError) {
           setError(`HTTP ${err.status}: ${err.message}`);
         } else {
-          setError("Network error. Please check your connection and try again.");
+          setError(
+            "Network error. Please check your connection and try again.",
+          );
         }
         setIsLoading(false);
       }

@@ -156,9 +156,10 @@ export default function AuditPage() {
         <div className="flex items-start gap-2">
           <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Advisory only.</span> This audit trail
-            documents system events for reference purposes. It does not certify
-            DCAA compliance or replace professional audit review.
+            <span className="font-medium text-foreground">Advisory only.</span>{" "}
+            This audit trail documents system events for reference purposes. It
+            does not certify DCAA compliance or replace professional audit
+            review.
           </p>
         </div>
       </div>
@@ -277,7 +278,9 @@ export default function AuditPage() {
                   {/* P0 FIX: Show explicit reason for missing data */}
                   {/* HIERARCHY: text-base font-medium for values */}
                   {auditEntries !== null ? (
-                    <span className="text-base font-medium">{auditEntries}</span>
+                    <span className="text-base font-medium">
+                      {auditEntries}
+                    </span>
                   ) : (
                     <span className="text-muted-foreground italic text-xs">
                       {lifecycle === "pending" ? "Loading" : "No data"}
@@ -287,7 +290,9 @@ export default function AuditPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">With Evidence</span>
                   {isSuccess ? (
-                    <span className="text-base font-medium">{evidenceCount}</span>
+                    <span className="text-base font-medium">
+                      {evidenceCount}
+                    </span>
                   ) : (
                     <span className="text-muted-foreground italic text-xs">
                       {lifecycle === "pending" ? "Loading" : "No data"}

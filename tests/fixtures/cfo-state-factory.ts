@@ -67,7 +67,7 @@ export type CfoSnapshotOverrides = Partial<CfoSnapshot>;
  * Create a valid CfoSnapshot with defaults
  */
 export function cfoSnapshotBuilder(
-  overrides: CfoSnapshotOverrides = {}
+  overrides: CfoSnapshotOverrides = {},
 ): CfoSnapshot {
   return {
     as_of: new Date().toISOString(),
@@ -128,7 +128,7 @@ export type CfoStateFactoryOverrides = {
  * });
  */
 export function cfoStateFactory(
-  overrides: CfoStateFactoryOverrides = {}
+  overrides: CfoStateFactoryOverrides = {},
 ): CfoSnapshotResponse {
   const lifecycle = overrides.lifecycle ?? "success";
 
@@ -140,15 +140,15 @@ export function cfoStateFactory(
     cfo_version: overrides.cfo_version ?? CFO_CONTRACT_VERSION,
     lifecycle,
     reason_code: needsReasonCode
-      ? overrides.reason_code ?? "unknown"
-      : overrides.reason_code ?? null,
+      ? (overrides.reason_code ?? "unknown")
+      : (overrides.reason_code ?? null),
     reason_message: needsReasonCode
-      ? overrides.reason_message ?? "No data available"
-      : overrides.reason_message ?? null,
+      ? (overrides.reason_message ?? "No data available")
+      : (overrides.reason_message ?? null),
     generated_at: overrides.generated_at ?? new Date().toISOString(),
     snapshot: needsSnapshot
-      ? overrides.snapshot ?? cfoSnapshotBuilder()
-      : overrides.snapshot ?? null,
+      ? (overrides.snapshot ?? cfoSnapshotBuilder())
+      : (overrides.snapshot ?? null),
   };
 }
 
@@ -160,7 +160,7 @@ export function cfoStateFactory(
  * Success state - Valid CFO data ready for display
  */
 export function successCfoState(
-  snapshotOverrides: CfoSnapshotOverrides = {}
+  snapshotOverrides: CfoSnapshotOverrides = {},
 ): CfoSnapshotResponse {
   return cfoStateFactory({
     lifecycle: "success",
@@ -174,7 +174,7 @@ export function successCfoState(
  * Pending state - CFO data is being computed
  */
 export function pendingCfoState(
-  reason_message = "Computing financial metrics..."
+  reason_message = "Computing financial metrics...",
 ): CfoSnapshotResponse {
   return cfoStateFactory({
     lifecycle: "pending",
@@ -189,7 +189,7 @@ export function pendingCfoState(
  */
 export function failedCfoState(
   reason_code: CfoReasonCode = "computation_error",
-  reason_message = "Unable to compute CFO metrics"
+  reason_message = "Unable to compute CFO metrics",
 ): CfoSnapshotResponse {
   return cfoStateFactory({
     lifecycle: "failed",
@@ -204,7 +204,7 @@ export function failedCfoState(
  */
 export function staleCfoState(
   snapshotOverrides: CfoSnapshotOverrides = {},
-  reason_message = "Data is more than 24 hours old"
+  reason_message = "Data is more than 24 hours old",
 ): CfoSnapshotResponse {
   return cfoStateFactory({
     lifecycle: "stale",
@@ -234,7 +234,7 @@ export class CfoStateValidationError extends Error {
   constructor(
     message: string,
     public field: string,
-    public value: unknown
+    public value: unknown,
   ) {
     super(message);
     this.name = "CfoStateValidationError";
@@ -257,12 +257,14 @@ export class CfoStateValidationError extends Error {
  * @param state - The state to validate
  * @throws CfoStateValidationError if validation fails
  */
-export function assertValidCfoState(state: unknown): asserts state is CfoSnapshotResponse {
+export function assertValidCfoState(
+  state: unknown,
+): asserts state is CfoSnapshotResponse {
   if (!state || typeof state !== "object") {
     throw new CfoStateValidationError(
       "CFO state must be a non-null object",
       "root",
-      state
+      state,
     );
   }
 
@@ -276,7 +278,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       "Missing required field: cfo_version",
       "cfo_version",
-      undefined
+      undefined,
     );
   }
 
@@ -284,7 +286,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       `cfo_version must be a string, got ${typeof s.cfo_version}`,
       "cfo_version",
-      s.cfo_version
+      s.cfo_version,
     );
   }
 
@@ -292,7 +294,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       `Unsupported cfo_version: "${s.cfo_version}". Supported: ${SUPPORTED_CFO_VERSIONS.join(", ")}`,
       "cfo_version",
-      s.cfo_version
+      s.cfo_version,
     );
   }
 
@@ -304,7 +306,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       "Missing required field: lifecycle",
       "lifecycle",
-      undefined
+      undefined,
     );
   }
 
@@ -312,7 +314,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       `lifecycle must be a string, got ${typeof s.lifecycle}`,
       "lifecycle",
-      s.lifecycle
+      s.lifecycle,
     );
   }
 
@@ -322,7 +324,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       `Invalid lifecycle: "${s.lifecycle}". Valid: ${VALID_CFO_LIFECYCLE_STATUSES.join(", ")}`,
       "lifecycle",
-      s.lifecycle
+      s.lifecycle,
     );
   }
 
@@ -337,7 +339,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
       throw new CfoStateValidationError(
         `reason_code is required when lifecycle is "${lifecycle}"`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
 
@@ -345,7 +347,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
       throw new CfoStateValidationError(
         `reason_code must be a string, got ${typeof s.reason_code}`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
 
@@ -353,7 +355,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
       throw new CfoStateValidationError(
         `Invalid reason_code: "${s.reason_code}". Valid: ${VALID_CFO_REASON_CODES.join(", ")}`,
         "reason_code",
-        s.reason_code
+        s.reason_code,
       );
     }
   }
@@ -366,7 +368,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       "Missing required field: generated_at",
       "generated_at",
-      undefined
+      undefined,
     );
   }
 
@@ -374,7 +376,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
     throw new CfoStateValidationError(
       `generated_at must be a string, got ${typeof s.generated_at}`,
       "generated_at",
-      s.generated_at
+      s.generated_at,
     );
   }
 
@@ -387,7 +389,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
       throw new CfoStateValidationError(
         'snapshot is required when lifecycle is "success"',
         "snapshot",
-        s.snapshot
+        s.snapshot,
       );
     }
 
@@ -404,7 +406,7 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
       throw new CfoStateValidationError(
         `reason_message must be a string or null, got ${typeof s.reason_message}`,
         "reason_message",
-        s.reason_message
+        s.reason_message,
       );
     }
   }
@@ -413,12 +415,14 @@ export function assertValidCfoState(state: unknown): asserts state is CfoSnapsho
 /**
  * Validate CfoSnapshot structure
  */
-function assertValidCfoSnapshot(snapshot: unknown): asserts snapshot is CfoSnapshot {
+function assertValidCfoSnapshot(
+  snapshot: unknown,
+): asserts snapshot is CfoSnapshot {
   if (!snapshot || typeof snapshot !== "object") {
     throw new CfoStateValidationError(
       "snapshot must be a non-null object",
       "snapshot",
-      snapshot
+      snapshot,
     );
   }
 
@@ -429,7 +433,7 @@ function assertValidCfoSnapshot(snapshot: unknown): asserts snapshot is CfoSnaps
     throw new CfoStateValidationError(
       "snapshot.as_of must be a string",
       "snapshot.as_of",
-      snap.as_of
+      snap.as_of,
     );
   }
 
@@ -439,7 +443,7 @@ function assertValidCfoSnapshot(snapshot: unknown): asserts snapshot is CfoSnaps
       throw new CfoStateValidationError(
         "snapshot.runway_days must be a number or null",
         "snapshot.runway_days",
-        snap.runway_days
+        snap.runway_days,
       );
     }
   }
@@ -450,7 +454,7 @@ function assertValidCfoSnapshot(snapshot: unknown): asserts snapshot is CfoSnaps
       throw new CfoStateValidationError(
         "snapshot.cash_on_hand must be a number or null",
         "snapshot.cash_on_hand",
-        snap.cash_on_hand
+        snap.cash_on_hand,
       );
     }
   }
@@ -461,7 +465,7 @@ function assertValidCfoSnapshot(snapshot: unknown): asserts snapshot is CfoSnaps
       throw new CfoStateValidationError(
         "snapshot.burn_rate_monthly must be a number or null",
         "snapshot.burn_rate_monthly",
-        snap.burn_rate_monthly
+        snap.burn_rate_monthly,
       );
     }
   }
@@ -472,7 +476,7 @@ function assertValidCfoSnapshot(snapshot: unknown): asserts snapshot is CfoSnaps
       throw new CfoStateValidationError(
         "snapshot.top_risks must be an array",
         "snapshot.top_risks",
-        snap.top_risks
+        snap.top_risks,
       );
     }
 
@@ -487,7 +491,7 @@ function assertValidCfoSnapshot(snapshot: unknown): asserts snapshot is CfoSnaps
       throw new CfoStateValidationError(
         "snapshot.next_actions must be an array",
         "snapshot.next_actions",
-        snap.next_actions
+        snap.next_actions,
       );
     }
 
@@ -505,7 +509,7 @@ function assertValidRisk(risk: unknown): void {
     throw new CfoStateValidationError(
       "Risk must be a non-null object",
       "snapshot.top_risks[]",
-      risk
+      risk,
     );
   }
 
@@ -515,7 +519,7 @@ function assertValidRisk(risk: unknown): void {
     throw new CfoStateValidationError(
       "Risk.id must be a string",
       "snapshot.top_risks[].id",
-      r.id
+      r.id,
     );
   }
 
@@ -523,7 +527,7 @@ function assertValidRisk(risk: unknown): void {
     throw new CfoStateValidationError(
       "Risk.title must be a string",
       "snapshot.top_risks[].title",
-      r.title
+      r.title,
     );
   }
 
@@ -531,7 +535,7 @@ function assertValidRisk(risk: unknown): void {
     throw new CfoStateValidationError(
       `Risk.severity must be one of: ${VALID_SEVERITY_LEVELS.join(", ")}`,
       "snapshot.top_risks[].severity",
-      r.severity
+      r.severity,
     );
   }
 }
@@ -544,7 +548,7 @@ function assertValidAction(action: unknown): void {
     throw new CfoStateValidationError(
       "Action must be a non-null object",
       "snapshot.next_actions[]",
-      action
+      action,
     );
   }
 
@@ -554,7 +558,7 @@ function assertValidAction(action: unknown): void {
     throw new CfoStateValidationError(
       "Action.id must be a string",
       "snapshot.next_actions[].id",
-      a.id
+      a.id,
     );
   }
 
@@ -562,7 +566,7 @@ function assertValidAction(action: unknown): void {
     throw new CfoStateValidationError(
       "Action.title must be a string",
       "snapshot.next_actions[].title",
-      a.title
+      a.title,
     );
   }
 
@@ -570,7 +574,7 @@ function assertValidAction(action: unknown): void {
     throw new CfoStateValidationError(
       "Action.rationale must be a string",
       "snapshot.next_actions[].rationale",
-      a.rationale
+      a.rationale,
     );
   }
 }

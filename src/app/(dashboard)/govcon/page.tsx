@@ -131,7 +131,10 @@ function LifecycleStatusBanner({
 
   // No evidence state - CRITICAL for DCAA compliance
   // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
-  if (lifecycle === "no_evidence" || (lifecycle === "success" && !hasEvidence)) {
+  if (
+    lifecycle === "no_evidence" ||
+    (lifecycle === "success" && !hasEvidence)
+  ) {
     return (
       <div
         data-testid="govcon-lifecycle-banner"
@@ -260,7 +263,7 @@ function LifecycleStatusBanner({
 
 function getDcaaStatusVariant(
   lifecycle: GovConLifecycleStatus | null,
-  hasEvidence: boolean
+  hasEvidence: boolean,
 ): "unknown" | "muted" {
   // HIERARCHY: GovCon never shows "ok" (green) - only muted/unknown
   if (!lifecycle) return "unknown";
@@ -272,7 +275,7 @@ function getDcaaStatusVariant(
 function getDcaaStatusLabel(
   lifecycle: GovConLifecycleStatus | null,
   reasonCode: GovConReasonCode | null,
-  hasEvidence: boolean
+  hasEvidence: boolean,
 ): string {
   // HIERARCHY: No pass/fail language - advisory only
   if (!lifecycle) return "Not evaluated";
@@ -393,10 +396,10 @@ export default function GovConDashboardPage() {
         <div className="flex items-start gap-2">
           <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Advisory only.</span> This workspace
-            assists with documentation collection and organization. It does not
-            certify DCAA compliance or replace professional accounting review.
-            See{" "}
+            <span className="font-medium text-foreground">Advisory only.</span>{" "}
+            This workspace assists with documentation collection and
+            organization. It does not certify DCAA compliance or replace
+            professional accounting review. See{" "}
             <Link
               href={ROUTES.GOVCON_SF1408}
               className="text-primary underline hover:no-underline"
@@ -451,7 +454,10 @@ export default function GovConDashboardPage() {
               />
             ) : isSuccess && data?.snapshot ? (
               /* SUCCESS with evidence: Render documentation queue */
-              <div className="space-y-4" data-testid="govcon-compliance-content">
+              <div
+                className="space-y-4"
+                data-testid="govcon-compliance-content"
+              >
                 {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">

@@ -33,10 +33,7 @@ export function SecondaryPanel({
 
   return (
     <div
-      className={[
-        "rounded-lg border border-border bg-card",
-        className ?? "",
-      ]
+      className={["rounded-lg border border-border bg-card", className ?? ""]
         .join(" ")
         .trim()}
     >

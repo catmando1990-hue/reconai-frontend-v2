@@ -1,18 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import Link from "next/link";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import PageHelp from "@/components/dashboard/PageHelp";
 import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
-import SignalsPanel from "@/components/signals/SignalsPanel";
-import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
-import { useDashboardState } from "@/hooks/useDashboardState";
-import {
-  renderIfAvailable,
-  formatCurrency,
-  formatCount,
-} from "@/lib/renderGuards";
+import { useCoreState, type CoreState } from "@/hooks/useCoreState";
+import { formatCurrency, formatCount } from "@/lib/renderGuards";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,119 +14,133 @@ import {
   Receipt,
   Users,
   Building2,
-  AlertTriangle,
-  HelpCircle,
-  Clock,
   RefreshCw,
   Banknote,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
 
 /**
- * State-of-Business Dashboard
+ * CORE State-of-Business Dashboard
  *
- * CANONICAL LAWS COMPLIANCE:
- * - Sections only render if backing data exists
- * - null → "—" (em dash), unknown → "Unknown", never coerce to 0
- * - Fail-closed: missing data is explicit, not hidden
- * - Delete (don't hide) any widget without backing signal
+ * P0 FIX: ALL CORE surfaces driven by single /api/core/state fetch.
+ *
+ * RENDER RULES (NON-NEGOTIABLE):
+ * - IF core_state.available === false: Render NOTHING for CORE widgets
+ * - IF core_state.available === true: Render ONLY entities that exist
+ * - No "--" dashes anywhere
+ * - No empty cards rendered
+ * - Sections disappear when irrelevant
+ * - Unknown data shows NOTHING, not 0
  *
  * STRUCTURE:
- * 1. Live State (top) - What needs attention RIGHT NOW
- * 2. Evidence (middle) - Real data from backend
+ * 1. Live State (top) - What needs attention NOW (auto-populated)
+ * 2. Evidence (middle) - Real data from backend (auto-populated)
  * 3. Navigation (bottom) - Only if other sections rendered
  */
 
 // =============================================================================
-// SECTION 1: LIVE STATE
+// SECTION 1: LIVE STATE - What needs attention NOW
 // =============================================================================
 
 interface LiveStateProps {
-  documentsWaiting: {
-    available: boolean;
-    count: number | null;
-  };
-  bankSync: {
-    available: boolean;
-    status: string | null;
-    isStale: boolean;
-    lastSyncedAt: string | null;
-  };
-  healthStatus: "ok" | "attention" | "unknown";
+  liveState: CoreState["live_state"];
 }
 
 /**
  * LiveStateSection - Shows what needs attention RIGHT NOW
- * Only renders if there's actionable state to display
+ * ONLY renders if there's actionable state to display
+ * NO manual fetch buttons - auto-populated on load
  */
-function LiveStateSection({
-  documentsWaiting,
-  bankSync,
-  healthStatus,
-}: LiveStateProps) {
-  // Determine if any live state signals exist
-  const hasDocumentsWaiting =
-    documentsWaiting.available && (documentsWaiting.count ?? 0) > 0;
-  const hasBankStale = bankSync.available && bankSync.isStale;
-  const hasBankIssue =
-    bankSync.available &&
-    (bankSync.status === "login_required" || bankSync.status === "error");
-  const hasAttention = healthStatus === "attention";
+function LiveStateSection({ liveState }: LiveStateProps) {
+  const { unpaid_invoices, unpaid_bills, bank_sync } = liveState;
 
-  // If no live state signals, don't render this section
-  if (!hasDocumentsWaiting && !hasBankStale && !hasBankIssue && !hasAttention) {
+  // Determine attention items
+  const hasUnpaidInvoices = unpaid_invoices && unpaid_invoices.count > 0;
+  const hasUnpaidBills = unpaid_bills && unpaid_bills.count > 0;
+  const hasBankError = bank_sync?.status === "error";
+  const hasBankStale = bank_sync?.status === "stale";
+  const overdueInvoiceCount = unpaid_invoices?.items.filter((i) => i.is_overdue).length ?? 0;
+  const overdueBillCount = unpaid_bills?.items.filter((b) => b.is_overdue).length ?? 0;
+
+  // If no attention items, don't render this section
+  if (!hasUnpaidInvoices && !hasUnpaidBills && !hasBankError && !hasBankStale) {
     return null;
   }
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+    <div className="space-y-4">
+      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
         Requires Attention
       </h2>
 
-      <div className="flex flex-wrap gap-2">
-        {/* Health Status Chip */}
-        {healthStatus === "unknown" ? (
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium">
-            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-            Status unavailable
-          </span>
-        ) : healthStatus === "attention" ? (
-          <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
-            <AlertTriangle className="h-4 w-4" />
-            Amounts due
-          </span>
-        ) : null}
-
-        {/* Documents Waiting */}
-        {hasDocumentsWaiting && (
+      <div className="flex flex-wrap gap-3">
+        {/* Unpaid Invoices */}
+        {hasUnpaidInvoices && (
           <Link
-            href="/documents"
-            className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
+            href="/invoicing"
+            className="inline-flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-colors"
           >
-            <Clock className="h-4 w-4" />
-            {documentsWaiting.count} document{documentsWaiting.count !== 1 ? "s" : ""} processing
+            <FileText className="h-4 w-4" />
+            <span>
+              {unpaid_invoices.count} unpaid invoice{unpaid_invoices.count !== 1 ? "s" : ""}
+              {overdueInvoiceCount > 0 && (
+                <span className="ml-1 text-red-600 dark:text-red-400">
+                  ({overdueInvoiceCount} overdue)
+                </span>
+              )}
+            </span>
+            <span className="font-semibold">
+              {formatCurrency(unpaid_invoices.total_due)}
+            </span>
           </Link>
         )}
 
-        {/* Bank Sync Issues */}
-        {hasBankIssue && (
+        {/* Unpaid Bills */}
+        {hasUnpaidBills && (
+          <Link
+            href="/core-dashboard"
+            className="inline-flex items-center gap-2 rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2.5 text-sm font-medium text-orange-700 dark:text-orange-300 hover:bg-orange-500/20 transition-colors"
+          >
+            <Receipt className="h-4 w-4" />
+            <span>
+              {unpaid_bills.count} unpaid bill{unpaid_bills.count !== 1 ? "s" : ""}
+              {overdueBillCount > 0 && (
+                <span className="ml-1 text-red-600 dark:text-red-400">
+                  ({overdueBillCount} overdue)
+                </span>
+              )}
+            </span>
+            <span className="font-semibold">
+              {formatCurrency(unpaid_bills.total_due)}
+            </span>
+          </Link>
+        )}
+
+        {/* Bank Sync Error */}
+        {hasBankError && (
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-500/20 transition-colors"
           >
             <Banknote className="h-4 w-4" />
-            Bank connection {bankSync.status === "login_required" ? "needs re-auth" : "error"}
+            <span>Bank connection error</span>
+            {bank_sync?.items_needing_attention && bank_sync.items_needing_attention > 0 && (
+              <span className="text-xs">
+                ({bank_sync.items_needing_attention} item{bank_sync.items_needing_attention !== 1 ? "s" : ""})
+              </span>
+            )}
           </Link>
         )}
 
         {/* Bank Sync Stale */}
-        {hasBankStale && !hasBankIssue && (
+        {hasBankStale && !hasBankError && (
           <Link
             href="/settings"
-            className="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-xs font-medium text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/20 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-2.5 text-sm font-medium text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/20 transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
-            Bank sync stale (&gt;24h)
+            <span>Bank sync stale (&gt;24h)</span>
           </Link>
         )}
       </div>
@@ -142,245 +149,242 @@ function LiveStateSection({
 }
 
 // =============================================================================
-// SECTION 2: EVIDENCE
+// SECTION 2: EVIDENCE - Real data from backend
 // =============================================================================
 
 interface EvidenceProps {
-  metricsAvailable: boolean;
-  totalInvoiced: number | null;
-  totalInvoicePaid: number | null;
-  totalInvoiceDue: number | null;
-  totalBilled: number | null;
-  totalBillPaid: number | null;
-  totalBillDue: number | null;
-  invoices: number | null;
-  bills: number | null;
-  customers: number | null;
-  vendors: number | null;
-  isLoading: boolean;
-  error: Error | null;
+  evidence: CoreState["evidence"];
 }
 
 /**
  * EvidenceSection - Shows real data from backend
- * Only renders if metrics are available
+ * ONLY renders cards with actual data - no empty cards
+ * NO manual fetch buttons - auto-populated on load
  */
-function EvidenceSection({
-  metricsAvailable,
-  totalInvoiced,
-  totalInvoicePaid,
-  totalInvoiceDue,
-  totalBilled,
-  totalBillPaid,
-  totalBillDue,
-  invoices,
-  bills,
-  customers,
-  vendors,
-  isLoading,
-  error,
-}: EvidenceProps) {
-  // If metrics unavailable and not loading, don't render section
-  if (!metricsAvailable && !isLoading) {
-    return (
-      <div className="rounded-lg border border-border bg-card/50 p-6">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <HelpCircle className="h-5 w-5" />
-          <span className="text-sm">
-            {error
-              ? "Unable to load financial data. Showing safe defaults."
-              : "Financial metrics unavailable."}
-          </span>
-        </div>
-      </div>
-    );
-  }
+function EvidenceSection({ evidence }: EvidenceProps) {
+  const { invoices, bills, customers, vendors, recent_transactions } = evidence;
 
-  // Check if we have any meaningful data to show
-  const hasInvoiceData = totalInvoiced !== null || invoices !== null;
-  const hasBillData = totalBilled !== null || bills !== null;
-  const hasCountData = customers !== null || vendors !== null;
+  // Check what data exists
+  const hasInvoices = invoices !== null && invoices.total_count > 0;
+  const hasBills = bills !== null && bills.total_count > 0;
+  const hasCustomers = customers !== null && customers.total_count > 0;
+  const hasVendors = vendors !== null && vendors.total_count > 0;
+  const hasTransactions = recent_transactions !== null && recent_transactions.count > 0;
 
-  if (!hasInvoiceData && !hasBillData && !hasCountData && !isLoading) {
+  // If no evidence at all, don't render section
+  if (!hasInvoices && !hasBills && !hasCustomers && !hasVendors && !hasTransactions) {
     return null;
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
         Financial Evidence
       </h2>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">
-            Accounts Summary
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Actual inflow/outflow data from connected accounts.
-          </p>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="animate-pulse space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="h-32 bg-card/30 rounded-xl" />
-                <div className="h-32 bg-card/30 rounded-xl" />
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Invoice and Bill Summary - only render if data exists */}
-              {(hasInvoiceData || hasBillData) && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {/* Invoicing Panel */}
-                  {renderIfAvailable(
-                    hasInvoiceData ? { totalInvoiced, invoices } : null,
-                    () => (
-                      <div className="rounded-xl border border-border bg-background p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-medium">Invoicing</div>
-                            <div className="mt-1 text-2xl font-semibold tracking-tight">
-                              {formatCurrency(totalInvoiced)}
-                            </div>
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              Paid {formatCurrency(totalInvoicePaid)} • Due{" "}
-                              {formatCurrency(totalInvoiceDue)}
-                            </div>
-                          </div>
-                          <div className="h-10 w-10 rounded-xl border border-border bg-card flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-primary" />
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">
-                            {formatCount(invoices)} invoice{invoices !== 1 ? "s" : ""}
-                          </span>
-                          <Button asChild size="sm" variant="secondary">
-                            <Link href="/invoicing">
-                              Review <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  )}
-
-                  {/* Bills Panel */}
-                  {renderIfAvailable(
-                    hasBillData ? { totalBilled, bills } : null,
-                    () => (
-                      <div className="rounded-xl border border-border bg-background p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-medium">Bills</div>
-                            <div className="mt-1 text-2xl font-semibold tracking-tight">
-                              {formatCurrency(totalBilled)}
-                            </div>
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              Paid {formatCurrency(totalBillPaid)} • Due{" "}
-                              {formatCurrency(totalBillDue)}
-                            </div>
-                          </div>
-                          <div className="h-10 w-10 rounded-xl border border-border bg-card flex items-center justify-center">
-                            <Receipt className="h-5 w-5 text-primary" />
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">
-                            {formatCount(bills)} bill{bills !== 1 ? "s" : ""}
-                          </span>
-                          <Button asChild size="sm" variant="secondary">
-                            <Link href="/core-dashboard">
-                              Open Core <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
-
-              {/* Customer and Vendor Counts - only render if data exists */}
-              {hasCountData && (
-                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {renderIfAvailable(customers, (count) => (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">Customers</div>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div className="mt-1 text-xl font-semibold tracking-tight">
-                        {formatCount(count)}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        Active customer records
-                      </div>
+      {/* Invoice and Bill Summary Cards */}
+      {(hasInvoices || hasBills) && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Invoices Card - only if data exists */}
+          {hasInvoices && (
+            <Card className="border-border/60 bg-card">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <FileText className="h-4 w-4 text-primary" />
+                      Invoicing
                     </div>
-                  ))}
-
-                  {renderIfAvailable(vendors, (count) => (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">Vendors</div>
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div className="mt-1 text-xl font-semibold tracking-tight">
-                        {formatCount(count)}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        Active vendor records
-                      </div>
+                    <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                      {formatCurrency(invoices.total_amount)}
                     </div>
-                  ))}
+                    <div className="mt-2 flex items-center gap-3 text-sm">
+                      <span className="text-emerald-600 dark:text-emerald-400">
+                        Paid {formatCurrency(invoices.paid_amount)}
+                      </span>
+                      {invoices.due_amount > 0 && (
+                        <span className="text-amber-600 dark:text-amber-400">
+                          Due {formatCurrency(invoices.due_amount)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-foreground">
+                      {formatCount(invoices.total_count)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">invoices</div>
+                  </div>
                 </div>
-              )}
-            </>
+                <div className="mt-4 flex justify-end">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/invoicing">
+                      View All <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
 
-      {/* Signals Panel - manual fetch, advisory only */}
-      <SignalsPanel />
+          {/* Bills Card - only if data exists */}
+          {hasBills && (
+            <Card className="border-border/60 bg-card">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <Receipt className="h-4 w-4 text-primary" />
+                      Bills
+                    </div>
+                    <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+                      {formatCurrency(bills.total_amount)}
+                    </div>
+                    <div className="mt-2 flex items-center gap-3 text-sm">
+                      <span className="text-emerald-600 dark:text-emerald-400">
+                        Paid {formatCurrency(bills.paid_amount)}
+                      </span>
+                      {bills.due_amount > 0 && (
+                        <span className="text-amber-600 dark:text-amber-400">
+                          Due {formatCurrency(bills.due_amount)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-foreground">
+                      {formatCount(bills.total_count)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">bills</div>
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/core-dashboard">
+                      View All <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Customer and Vendor Counts - only if data exists */}
+      {(hasCustomers || hasVendors) && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {hasCustomers && (
+            <Card className="border-border/60 bg-card">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Customers</span>
+                  </div>
+                  <div className="text-xl font-bold text-foreground">
+                    {formatCount(customers.total_count)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {hasVendors && (
+            <Card className="border-border/60 bg-card">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Vendors</span>
+                  </div>
+                  <div className="text-xl font-bold text-foreground">
+                    {formatCount(vendors.total_count)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Recent Transactions - only if data exists */}
+      {hasTransactions && (
+        <Card className="border-border/60 bg-card">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Activity className="h-4 w-4 text-muted-foreground" />
+                Recent Transactions
+              </CardTitle>
+              <Button asChild size="sm" variant="ghost">
+                <Link href="/core/transactions">
+                  View All <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="space-y-2">
+              {recent_transactions.items.slice(0, 5).map((tx) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between py-2 border-b border-border/40 last:border-0"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">
+                      {tx.merchant_name}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(tx.date).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className={`text-sm font-medium ${tx.amount < 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                    {formatCurrency(Math.abs(tx.amount))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
 
 // =============================================================================
-// SECTION 3: NAVIGATION
+// SECTION 3: NAVIGATION - Only if other sections rendered
 // =============================================================================
 
 interface NavigationProps {
-  showNavigation: boolean;
+  hasEvidence: boolean;
 }
 
 /**
  * NavigationSection - Quick paths into the system
- * Only renders if other sections rendered (user has context)
+ * ONLY renders if Evidence section rendered (user has context)
+ * Truth is PRIMARY, Navigation is SECONDARY
  */
-function NavigationSection({ showNavigation }: NavigationProps) {
-  if (!showNavigation) {
+function NavigationSection({ hasEvidence }: NavigationProps) {
+  // Navigation only shows if user has evidence (data exists)
+  if (!hasEvidence) {
     return null;
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
         Quick Actions
       </h2>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Button
           asChild
-          variant="secondary"
-          className="h-auto py-4 justify-start"
+          variant="outline"
+          className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
         >
           <Link href="/core/transactions" className="flex flex-col items-start gap-1">
-            <span className="font-medium">Review Transactions</span>
+            <span className="font-medium text-foreground">Review Transactions</span>
             <span className="text-xs text-muted-foreground font-normal">
               View and categorize recent activity
             </span>
@@ -389,11 +393,11 @@ function NavigationSection({ showNavigation }: NavigationProps) {
 
         <Button
           asChild
-          variant="secondary"
-          className="h-auto py-4 justify-start"
+          variant="outline"
+          className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
         >
           <Link href="/intelligence-dashboard" className="flex flex-col items-start gap-1">
-            <span className="font-medium">Run Intelligence</span>
+            <span className="font-medium text-foreground">Intelligence</span>
             <span className="text-xs text-muted-foreground font-normal">
               Analyze patterns and anomalies
             </span>
@@ -402,11 +406,11 @@ function NavigationSection({ showNavigation }: NavigationProps) {
 
         <Button
           asChild
-          variant="secondary"
-          className="h-auto py-4 justify-start"
+          variant="outline"
+          className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
         >
           <Link href="/cfo-dashboard" className="flex flex-col items-start gap-1">
-            <span className="font-medium">CFO Overview</span>
+            <span className="font-medium text-foreground">CFO Overview</span>
             <span className="text-xs text-muted-foreground font-normal">
               High-level financial summary
             </span>
@@ -422,84 +426,73 @@ function NavigationSection({ showNavigation }: NavigationProps) {
 // =============================================================================
 
 export default function HomeDashboardPage() {
-  const { metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
-  const { state: dashboardState, isLoading: stateLoading } = useDashboardState();
+  // P0 FIX: Single fetch for all CORE data - NO manual triggers
+  const { state, isLoading, hasEvidence } = useCoreState();
 
-  const derived = useMemo(() => {
-    const m = metrics;
+  // Loading state
+  if (isLoading) {
+    return (
+      <RouteShell
+        title="Dashboard"
+        subtitle="Loading state-of-business..."
+      >
+        <div className="space-y-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-16 bg-card/30 rounded-lg" />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="h-40 bg-card/30 rounded-xl" />
+              <div className="h-40 bg-card/30 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </RouteShell>
+    );
+  }
 
-    /**
-     * P0 FIX: Check availability BEFORE accessing any nested fields.
-     * If metrics are unavailable, return early with safe defaults.
-     */
-    if (!m?.available) {
-      return {
-        metricsAvailable: false,
-        totalInvoiced: null,
-        totalInvoicePaid: null,
-        totalInvoiceDue: null,
-        totalBilled: null,
-        totalBillPaid: null,
-        totalBillDue: null,
-        invoices: null,
-        bills: null,
-        customers: null,
-        vendors: null,
-        health: "unknown" as const,
-      };
-    }
+  // P0 RULE: IF core_state.available === false, render NOTHING for CORE widgets
+  // Optionally render ONE top-level notice
+  if (!state.available) {
+    return (
+      <RouteShell
+        title="Dashboard"
+        subtitle="State-of-business overview"
+        right={
+          <div className="flex items-center gap-2">
+            <PageHelp
+              title="Dashboard"
+              description="Your state-of-business overview. Connect your accounts to see financial data."
+            />
+          </div>
+        }
+      >
+        <FirstRunSystemBanner />
 
-    // SAFE: metrics.available === true, all nested objects exist
-    const totalInvoiced = m.summary.totalInvoiced;
-    const totalInvoicePaid = m.summary.totalInvoicePaid;
-    const totalInvoiceDue = m.summary.totalInvoiceDue;
+        {/* Single honest notice - no fake widgets, no placeholders */}
+        <Card className="border-border/60 bg-card">
+          <CardContent className="p-8 text-center">
+            <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              No Financial Data Yet
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+              Connect your bank accounts or create invoices to see your state-of-business overview.
+            </p>
+            <div className="flex justify-center gap-3">
+              <Button asChild variant="default">
+                <Link href="/connect-bank">Connect Bank</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/invoicing">Create Invoice</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </RouteShell>
+    );
+  }
 
-    const totalBilled = m.summary.totalBilled;
-    const totalBillPaid = m.summary.totalBillPaid;
-    const totalBillDue = m.summary.totalBillDue;
-
-    const invoices = m.counts.invoices;
-    const bills = m.counts.bills;
-    const customers = m.counts.customers;
-    const vendors = m.counts.vendors;
-
-    /**
-     * FAIL-CLOSED Health Status Logic:
-     * - "unknown": Required data is null (cannot determine health)
-     * - "ok": Data exists AND no outstanding amounts due
-     * - "attention": Data exists AND amounts are due
-     */
-    const canDetermineHealth =
-      totalInvoiceDue !== null && totalBillDue !== null;
-
-    const health: "ok" | "attention" | "unknown" = !canDetermineHealth
-      ? "unknown"
-      : totalInvoiceDue > 0 || totalBillDue > 0
-        ? "attention"
-        : "ok";
-
-    return {
-      metricsAvailable: true,
-      totalInvoiced,
-      totalInvoicePaid,
-      totalInvoiceDue,
-      totalBilled,
-      totalBillPaid,
-      totalBillDue,
-      invoices,
-      bills,
-      customers,
-      vendors,
-      health,
-    };
-  }, [metrics]);
-
-  // Determine if navigation should show (only if other sections rendered)
-  const showNavigation =
-    derived.metricsAvailable ||
-    dashboardState.documentsWaiting.available ||
-    dashboardState.bankSync.available;
-
+  // P0 RULE: IF core_state.available === true, render ONLY entities that exist
+  // Sections disappear when irrelevant
   return (
     <RouteShell
       title="Dashboard"
@@ -508,7 +501,7 @@ export default function HomeDashboardPage() {
         <div className="flex items-center gap-2">
           <PageHelp
             title="Dashboard"
-            description="Your state-of-business overview. Displays metrics from connected accounts and surfaces priority signals."
+            description="Your state-of-business overview. Auto-populated from connected accounts."
           />
           <Button asChild size="sm">
             <Link href="/core-dashboard">Open Core</Link>
@@ -519,32 +512,14 @@ export default function HomeDashboardPage() {
       <FirstRunSystemBanner />
 
       <div className="space-y-8">
-        {/* SECTION 1: Live State - What needs attention now */}
-        <LiveStateSection
-          documentsWaiting={dashboardState.documentsWaiting}
-          bankSync={dashboardState.bankSync}
-          healthStatus={derived.health}
-        />
+        {/* SECTION 1: Live State - What needs attention NOW (auto-populated) */}
+        <LiveStateSection liveState={state.live_state} />
 
-        {/* SECTION 2: Evidence - Real data from backend */}
-        <EvidenceSection
-          metricsAvailable={derived.metricsAvailable}
-          totalInvoiced={derived.totalInvoiced}
-          totalInvoicePaid={derived.totalInvoicePaid}
-          totalInvoiceDue={derived.totalInvoiceDue}
-          totalBilled={derived.totalBilled}
-          totalBillPaid={derived.totalBillPaid}
-          totalBillDue={derived.totalBillDue}
-          invoices={derived.invoices}
-          bills={derived.bills}
-          customers={derived.customers}
-          vendors={derived.vendors}
-          isLoading={metricsLoading || stateLoading}
-          error={metricsError}
-        />
+        {/* SECTION 2: Evidence - Real data from backend (auto-populated) */}
+        <EvidenceSection evidence={state.evidence} />
 
         {/* SECTION 3: Navigation - Only if other sections rendered */}
-        <NavigationSection showNavigation={showNavigation} />
+        <NavigationSection hasEvidence={hasEvidence} />
       </div>
     </RouteShell>
   );

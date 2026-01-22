@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { assertNoAuthRedirect } from "./fixtures/test-helpers";
+import { assertNoAuthRedirect } from "../fixtures/test-helpers";
 
 /**
  * Settings Enforcement Tests
@@ -244,10 +244,13 @@ test.describe("Settings Page Enforcement", () => {
       const dialogVisible = await confirmDialog.isVisible().catch(() => false);
 
       if (dialogVisible) {
-        // Find the confirmation input
-        const confirmInput = page.locator(
-          'input[placeholder="Type the exact phrase..."]',
-        );
+        // Find the confirmation input without depending on placeholder text.
+        // Scope to the dialog to avoid matching unrelated inputs.
+        const dialog = page
+          .locator('[role="dialog"]')
+          .filter({ hasText: "Confirm Destructive Action" });
+
+        const confirmInput = dialog.locator("input").first();
 
         // Type wrong phrase
         await confirmInput.fill("wrong phrase");

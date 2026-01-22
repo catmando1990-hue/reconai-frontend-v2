@@ -35,6 +35,9 @@ jobs:
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
       CLERK_CI_USER_ID: ${{ secrets.CLERK_CI_USER_ID || '' }}
       PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.target_url || 'https://www.reconaitechnology.com' }}
+      # CI Auth lane explicitly expects an authenticated browser context.
+      # Tests use this to avoid skipping suites that require auth.
+      PLAYWRIGHT_AUTH: "1"
 
     steps:
       - name: Checkout
@@ -51,6 +54,20 @@ jobs:
 
       - name: Install Clerk SDK (CI only)
         run: npm install -D @clerk/clerk-sdk-node
+
+      - name: Guard required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${CLERK_SECRET_KEY:-}" ]]; then
+            echo "[ci-auth] FAIL: Missing CLERK_SECRET_KEY (GitHub Secret)" >&2
+            exit 1
+          fi
+          if [[ -z "${CLERK_CI_USER_ID:-}" ]]; then
+            echo "[ci-auth] FAIL: Missing CLERK_CI_USER_ID (GitHub Secret)" >&2
+            echo "[ci-auth] Create a dedicated CI user in Clerk, then add its user_id as the CLERK_CI_USER_ID secret." >&2
+            exit 1
+          fi
 
       - name: Seed Clerk auth session
         id: seed_auth

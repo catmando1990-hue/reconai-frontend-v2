@@ -1,5 +1,5 @@
 import { test, expect, type Page, type Route } from "@playwright/test";
-import { assertNoAuthRedirect } from "./fixtures/test-helpers";
+import { assertNoAuthRedirect } from "../fixtures/test-helpers";
 
 // Import canonical factories - ALL tests MUST use these
 import {
@@ -13,7 +13,7 @@ import {
   withNullSync,
   withExtendedTransactions,
   assertValidCoreState,
-} from "./fixtures/core-state-factory";
+} from "../fixtures/core-state-factory";
 
 import type { CoreState } from "@/hooks/useCoreState";
 

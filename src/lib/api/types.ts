@@ -205,3 +205,66 @@ export type GovConSnapshotResponse = {
   /** Evidence REQUIRED for compliance - fail-closed if missing */
   has_evidence: boolean;
 };
+
+// =============================================================================
+// SETTINGS TYPES
+// =============================================================================
+
+/**
+ * Settings Lifecycle Status
+ * - success: Settings loaded and valid
+ * - pending: Loading settings
+ * - failed: Failed to load settings
+ * - stale: Settings may be outdated
+ */
+export type SettingsLifecycleStatus =
+  | "success"
+  | "pending"
+  | "failed"
+  | "stale";
+
+/**
+ * Settings Reason Codes - Required for non-success lifecycle states
+ */
+export type SettingsReasonCode =
+  | "not_loaded"
+  | "backend_timeout"
+  | "validation_failed"
+  | "unauthorized"
+  | "unknown";
+
+/**
+ * Feature flag configuration
+ */
+export type FeatureFlags = {
+  intelligence_enabled: boolean;
+  govcon_enabled: boolean;
+  plaid_enabled: boolean;
+  ai_diagnostics_enabled: boolean;
+};
+
+/**
+ * Settings Snapshot - User and system configuration
+ */
+export type SettingsSnapshot = {
+  as_of: string; // ISO8601
+  user_id: string;
+  organization_id: string | null;
+  tier: string;
+  features: FeatureFlags;
+  policy_acknowledged_at: string | null; // ISO8601 - REQUIRED for certain actions
+};
+
+export type SettingsResponse = {
+  /** Version of Settings contract - frontend validates against supported versions */
+  settings_version: string;
+  /** Lifecycle status - REQUIRED for rendering decisions */
+  lifecycle: SettingsLifecycleStatus;
+  /** Reason code - REQUIRED when lifecycle is not "success" */
+  reason_code: SettingsReasonCode | null;
+  /** Human-readable reason message */
+  reason_message: string | null;
+  generated_at: string; // ISO8601
+  /** Settings data - only valid when lifecycle is "success" */
+  settings: SettingsSnapshot | null;
+};

@@ -12,7 +12,28 @@ import { SecuritySection } from "@/components/settings/SecuritySection";
 import { DataSourcesSection } from "@/components/settings/DataSourcesSection";
 import { PreferencesSection } from "@/components/settings/PreferencesSection";
 import { DiagnosticsSection } from "@/components/settings/DiagnosticsSection";
+import { SettingsLifecycleBanner } from "@/components/settings/SettingsLifecycleBanner";
+import { DestructiveActionConfirmation } from "@/components/settings/DestructiveActionConfirmation";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, Info } from "lucide-react";
+import { useSettingsConfig, type DestructiveAction } from "@/hooks/useSettingsConfig";
 import type { SubscriptionTier } from "@/lib/entitlements";
+
+/**
+ * Settings Page with Version and Lifecycle Enforcement
+ *
+ * PART 1 — Version Enforcement
+ * - Uses useSettingsConfig hook with fail-closed validation
+ * - Unknown/missing settings_version = fail-closed
+ *
+ * PART 2 — Lifecycle Rendering
+ * - Non-success lifecycle shows banner with reason
+ * - No optimistic UI - only render on success
+ *
+ * PART 3 — Guardrails
+ * - Confirmations for destructive actions
+ * - Policy acknowledgement enforced
+ */
 
 interface ProfileData {
   id?: string;
@@ -27,21 +48,17 @@ interface ProfileData {
   mfaEnabled?: boolean;
 }
 
-/**
- * P1 FIX: Updated PlaidData interface to match new honest status contract.
- * Status is now based on actual backend item data.
- */
 interface PlaidData {
   environment?: string | null;
   institutions?: unknown[];
   lastSync?: string | null;
-  // P1 FIX: New honest status values
   status?: "active" | "login_required" | "error" | "unknown" | "not_connected";
-  // New fields from status contract
   items_count?: number | null;
   last_synced_at?: string | null;
   has_items?: boolean;
   source?: "backend_items" | "backend_hardening" | "unknown";
+  itemId?: string;
+  isDuplicate?: boolean;
 }
 
 interface IntelData {
@@ -52,6 +69,20 @@ interface IntelData {
 export default function SettingsPage() {
   const { user, isLoaded: userLoaded } = useUser();
   const searchParams = useSearchParams();
+
+  // Settings config with version enforcement
+  const {
+    isLoading: settingsLoading,
+    isSuccess: settingsSuccess,
+    lifecycle,
+    reasonCode,
+    reasonMessage,
+    hasPolicyAcknowledged,
+    acknowledgePolicy,
+    refetch: refetchSettings,
+  } = useSettingsConfig();
+
+  // Local state for component data
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [plaid, setPlaid] = useState<PlaidData | null>(null);
   const [intel, setIntel] = useState<IntelData | null>(null);
@@ -59,6 +90,11 @@ export default function SettingsPage() {
   const [checkoutStatus, setCheckoutStatus] = useState<
     "success" | "cancelled" | null
   >(null);
+
+  // Destructive action confirmation state
+  const [pendingAction, setPendingAction] = useState<DestructiveAction | null>(
+    null
+  );
 
   // Get user's current tier from metadata
   const userTier = (user?.publicMetadata as Record<string, unknown> | undefined)
@@ -76,7 +112,6 @@ export default function SettingsPage() {
   useEffect(() => {
     const checkout = searchParams.get("checkout");
     if (checkout === "success" || checkout === "cancelled") {
-      // Use requestAnimationFrame to defer state update
       requestAnimationFrame(() => {
         setCheckoutStatus(checkout as "success" | "cancelled");
         window.history.replaceState({}, "", "/settings");
@@ -84,8 +119,11 @@ export default function SettingsPage() {
     }
   }, [searchParams]);
 
-  // Load data on mount
+  // Load data on mount (only when settings are ready)
   useEffect(() => {
+    // PART 2: No optimistic UI - only load when settings lifecycle is success
+    if (!settingsSuccess) return;
+
     async function load() {
       try {
         const res = await fetch("/api/me");
@@ -122,19 +160,57 @@ export default function SettingsPage() {
       }
     }
     load();
-  }, []);
+  }, [settingsSuccess]);
 
   const handleProfileUpdate = async (data: Partial<ProfileData>) => {
-    // Profile settings now persist to localStorage in ProfileSection
-    // This handler updates local state and can be extended for backend sync
     setProfile((prev) => (prev ? { ...prev, ...data } : null));
+  };
+
+  // Handle destructive action confirmation
+  const handleDestructiveAction = (action: DestructiveAction) => {
+    setPendingAction(action);
+  };
+
+  const handleConfirmDestructiveAction = async () => {
+    if (!pendingAction) return;
+
+    // Execute the destructive action
+    console.log(`[Settings] Executing destructive action: ${pendingAction}`);
+
+    // Close the dialog
+    setPendingAction(null);
   };
 
   return (
     <RouteShell
       title="Settings"
       subtitle="Manage your account, preferences, and data sources"
+      right={
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void refetchSettings()}
+            disabled={settingsLoading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${settingsLoading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+        </div>
+      }
     >
+      {/* PART 2: Lifecycle-based rendering - show banner for non-success states */}
+      {lifecycle && lifecycle !== "success" && (
+        <SettingsLifecycleBanner
+          lifecycle={lifecycle}
+          reasonCode={reasonCode}
+          reasonMessage={reasonMessage}
+          onRetry={() => void refetchSettings()}
+        />
+      )}
+
       {/* Checkout status message - full width */}
       {checkoutStatus === "success" && (
         <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 mb-6">
@@ -154,126 +230,234 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        {/* Left Column - Primary Settings */}
-        <div className="space-y-6 lg:col-span-8">
-          {/* Billing & Upgrade */}
-          <UpgradePanel currentTier={userTier} />
-
-          {/* Profile Section */}
-          <ProfileSection
-            profile={profile}
-            onProfileUpdate={handleProfileUpdate}
-          />
-
-          {/* Preferences - persists to localStorage */}
-          <PreferencesSection />
+      {/* PART 3: Policy acknowledgement banner (if not acknowledged) */}
+      {settingsSuccess && !hasPolicyAcknowledged && (
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                Policy acknowledgement required
+              </p>
+              <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+                Please acknowledge the terms of service and data policy to enable
+                account management features.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void acknowledgePolicy()}
+                className="mt-2"
+              >
+                Acknowledge Policy
+              </Button>
+            </div>
+          </div>
         </div>
+      )}
 
-        {/* Right Column - Secondary Settings */}
-        <div className="space-y-4 lg:col-span-4">
-          {/* Security & Access */}
-          <SecuritySection
-            isActive={!!profile}
-            lastLogin={profile?.lastLogin}
-            mfaEnabled={profile?.mfaEnabled}
-          />
+      {/* PART 2: Only render main content on success lifecycle */}
+      {settingsLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Loading settings…</p>
+          </div>
+        </div>
+      ) : settingsSuccess ? (
+        <div className="grid gap-6 lg:grid-cols-12">
+          {/* Left Column - Primary Settings */}
+          <div className="space-y-6 lg:col-span-8">
+            {/* Billing & Upgrade */}
+            <UpgradePanel currentTier={userTier} />
 
-          {/* Data Sources */}
-          <DataSourcesSection plaid={plaid} />
+            {/* Profile Section */}
+            <ProfileSection
+              profile={profile}
+              onProfileUpdate={handleProfileUpdate}
+            />
 
-          {/* Intelligence Settings */}
-          <SecondaryPanel title="Intelligence" className="bg-card">
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Status</span>
-                <StatusChip variant="ok">Enabled</StatusChip>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Mode</span>
-                <span className="font-medium">Advisory-only</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Manual Run</span>
-                <span className="font-medium">Required</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Threshold</span>
-                <span className="font-medium">≥ 0.85</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Last Run</span>
-                <span className="font-medium">{intel?.lastRun ?? "—"}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Cache</span>
-                <span className="font-medium">{intel?.cache ?? "—"}</span>
-              </div>
-            </div>
-          </SecondaryPanel>
+            {/* Preferences - persists to localStorage */}
+            <PreferencesSection />
+          </div>
 
-          {/* Audit Log Status */}
-          <SecondaryPanel title="Audit Log" className="bg-card">
-            <div className="text-sm">
-              {auditAvailable === null && (
-                <span className="text-muted-foreground">Loading…</span>
-              )}
-              {auditAvailable === true && (
+          {/* Right Column - Secondary Settings */}
+          <div className="space-y-4 lg:col-span-4">
+            {/* Security & Access */}
+            <SecuritySection
+              isActive={!!profile}
+              lastLogin={profile?.lastLogin}
+              mfaEnabled={profile?.mfaEnabled}
+            />
+
+            {/* Data Sources */}
+            <DataSourcesSection plaid={plaid} />
+
+            {/* Intelligence Settings */}
+            <SecondaryPanel title="Intelligence" className="bg-card">
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Status</span>
-                  <StatusChip variant="ok">Available</StatusChip>
+                  <StatusChip variant="ok">Enabled</StatusChip>
                 </div>
-              )}
-              {auditAvailable === false && (
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Status</span>
-                  <StatusChip variant="warn">Unavailable</StatusChip>
+                  <span className="text-muted-foreground">Mode</span>
+                  <span className="font-medium">Advisory-only</span>
                 </div>
-              )}
-            </div>
-          </SecondaryPanel>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Manual Run</span>
+                  <span className="font-medium">Required</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Threshold</span>
+                  <span className="font-medium">≥ 0.85</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Last Run</span>
+                  <span className="font-medium">{intel?.lastRun ?? "—"}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Cache</span>
+                  <span className="font-medium">{intel?.cache ?? "—"}</span>
+                </div>
+              </div>
+            </SecondaryPanel>
 
-          {/* System Info - Show actual status from health check, not hardcoded values */}
-          <SecondaryPanel title="System" className="bg-card">
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Frontend</span>
-                <span className="font-medium">
-                  {process.env.NEXT_PUBLIC_APP_VERSION ?? "—"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Backend</span>
-                <span className="font-medium">—</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Build</span>
-                <span className="font-medium">
-                  {process.env.NEXT_PUBLIC_BUILD_ID ?? "—"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">API Health</span>
-                {/* Show actual audit availability as proxy for API health */}
-                {auditAvailable === null ? (
-                  <StatusChip variant="muted">Checking…</StatusChip>
-                ) : auditAvailable ? (
-                  <StatusChip variant="ok">Connected</StatusChip>
-                ) : (
-                  <StatusChip variant="warn">Unavailable</StatusChip>
+            {/* Audit Log Status */}
+            <SecondaryPanel title="Audit Log" className="bg-card">
+              <div className="text-sm">
+                {auditAvailable === null && (
+                  <span className="text-muted-foreground">Loading…</span>
+                )}
+                {auditAvailable === true && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Status</span>
+                    <StatusChip variant="ok">Available</StatusChip>
+                  </div>
+                )}
+                {auditAvailable === false && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Status</span>
+                    <StatusChip variant="warn">Unavailable</StatusChip>
+                  </div>
                 )}
               </div>
-            </div>
-          </SecondaryPanel>
-        </div>
+            </SecondaryPanel>
 
-        {/* Admin-Only Diagnostics - Full Width */}
-        {isAdmin && (
-          <div className="lg:col-span-12">
-            <DiagnosticsSection />
+            {/* System Info */}
+            <SecondaryPanel title="System" className="bg-card">
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Frontend</span>
+                  <span className="font-medium">
+                    {process.env.NEXT_PUBLIC_APP_VERSION ?? "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Backend</span>
+                  <span className="font-medium">—</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Build</span>
+                  <span className="font-medium">
+                    {process.env.NEXT_PUBLIC_BUILD_ID ?? "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">API Health</span>
+                  {auditAvailable === null ? (
+                    <StatusChip variant="muted">Checking…</StatusChip>
+                  ) : auditAvailable ? (
+                    <StatusChip variant="ok">Connected</StatusChip>
+                  ) : (
+                    <StatusChip variant="warn">Unavailable</StatusChip>
+                  )}
+                </div>
+              </div>
+            </SecondaryPanel>
+
+            {/* PART 3: Danger Zone - Destructive Actions */}
+            <SecondaryPanel title="Danger Zone" className="bg-card">
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  These actions require confirmation and cannot be easily undone.
+                </p>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
+                    onClick={() => handleDestructiveAction("UNLINK_BANK")}
+                    disabled={!hasPolicyAcknowledged}
+                  >
+                    Unlink Bank Account
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
+                    onClick={() => handleDestructiveAction("CLEAR_CACHE")}
+                    disabled={!hasPolicyAcknowledged}
+                  >
+                    Clear All Cache
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
+                    onClick={() => handleDestructiveAction("REVOKE_ACCESS")}
+                    disabled={!hasPolicyAcknowledged}
+                  >
+                    Revoke Third-Party Access
+                  </Button>
+                </div>
+                {!hasPolicyAcknowledged && (
+                  <p className="text-xs text-muted-foreground italic">
+                    Acknowledge the policy above to enable these actions.
+                  </p>
+                )}
+              </div>
+            </SecondaryPanel>
           </div>
-        )}
-      </div>
+
+          {/* Admin-Only Diagnostics - Full Width */}
+          {isAdmin && (
+            <div className="lg:col-span-12">
+              <DiagnosticsSection />
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Failed/non-success state - show minimal UI */
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Settings could not be loaded. Please try again.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void refetchSettings()}
+              className="mt-4"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* PART 3: Destructive Action Confirmation Dialog */}
+      {pendingAction && (
+        <DestructiveActionConfirmation
+          action={pendingAction}
+          isOpen={true}
+          onClose={() => setPendingAction(null)}
+          onConfirm={handleConfirmDestructiveAction}
+          hasPolicyAcknowledged={hasPolicyAcknowledged}
+          onAcknowledgePolicy={acknowledgePolicy}
+        />
+      )}
     </RouteShell>
   );
 }

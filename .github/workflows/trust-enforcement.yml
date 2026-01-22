@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install ts-node (CI determinism)
+        run: npm install -D ts-node typescript
+
       - name: Run Trust Check
         run: npx ts-node scripts/trust-check.ts
 

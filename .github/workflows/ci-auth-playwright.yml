@@ -54,13 +54,9 @@ jobs:
           CLERK_CI_USER_ID: ${{ secrets.CLERK_CI_USER_ID }}
           PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.target_url || 'https://www.reconaitechnology.com' }}
 
-      - name: Verify auth state created
-        run: |
-          if [ ! -f playwright-auth-state.json ]; then
-            echo "FATAL: playwright-auth-state.json not created"
-            exit 1
-          fi
-          echo "Auth state file created successfully"
+      - name: Verify Playwright auth state
+        shell: bash
+        run: scripts/ci/check-playwright-auth-state.sh
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

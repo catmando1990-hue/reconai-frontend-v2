@@ -37,9 +37,24 @@ jobs:
           node-version: "20"
           cache: "npm"
       - run: npm ci
-      - run: npm run reconai:lighthouse
+
+      - name: Collect Lighthouse metrics
+        run: npx lhci collect
         env:
           BASE_URL: ${{ env.BASE_URL }}
+
+      - name: Assert performance budgets
+        run: npx lhci assert
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: Upload Lighthouse reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: ./lhci_reports
+          retention-days: 30
 
   zap_baseline:
     runs-on: ubuntu-latest

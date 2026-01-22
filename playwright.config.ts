@@ -1,20 +1,20 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Playwright Configuration
+ * Playwright Configuration — Canonical Project Isolation
  *
  * Environment variables:
  * - PLAYWRIGHT_BASE_URL: Primary override for baseURL (CI uses this)
  * - BASE_URL: Fallback if PLAYWRIGHT_BASE_URL not set
- * - PLAYWRIGHT_AUTH: When 'true', load authenticated storage state
  * - Default: http://localhost:3000 (local dev only)
  *
  * In CI: Set PLAYWRIGHT_BASE_URL=https://www.reconaitechnology.com
  * Locally: No env var needed, defaults to localhost:3000
  *
- * Authenticated CI lane:
- * - Set PLAYWRIGHT_AUTH=true to enable authenticated tests
- * - Requires playwright-auth-state.json (created by seed-playwright-auth.ts)
+ * CANONICAL AUTH RULE:
+ * - Auth is NEVER configured globally
+ * - ci-smoke: always unauthenticated (no storageState)
+ * - ci-auth: explicitly loads playwright-auth-state.json
  */
 
 // Determine if running against a remote URL (CI mode)
@@ -22,18 +22,13 @@ const isRemote = Boolean(
   process.env.PLAYWRIGHT_BASE_URL || process.env.BASE_URL,
 );
 
-// Determine if running in authenticated mode
-const isAuthenticated = process.env.PLAYWRIGHT_AUTH === "true";
-
 const baseURL =
   process.env.PLAYWRIGHT_BASE_URL ||
   process.env.BASE_URL ||
   "http://localhost:3000";
 
 // Log configuration for debugging in CI
-console.log(
-  `[Playwright] baseURL: ${baseURL} (isRemote: ${isRemote}, isAuth: ${isAuthenticated})`,
-);
+console.log(`[Playwright] baseURL: ${baseURL} (isRemote: ${isRemote})`);
 
 export default defineConfig({
   testDir: "./tests",
@@ -44,20 +39,29 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
-    // Load authenticated storage state when PLAYWRIGHT_AUTH=true
-    ...(isAuthenticated ? { storageState: "playwright-auth-state.json" } : {}),
+    // CANONICAL: No global storageState - auth is project-specific
   },
   projects: [
     // CI-only: fast, deterministic smoke tests (<3 min total)
-    // CANONICAL: ci-smoke runs unauthenticated by default, explicit storageState contract
+    // CANONICAL: ci-smoke is ALWAYS unauthenticated
     {
       name: "ci-smoke",
       testDir: "./tests/ci",
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },
-        // Explicit: unauthenticated unless PLAYWRIGHT_AUTH=true
-        ...(isAuthenticated ? {} : { storageState: undefined }),
+        storageState: undefined, // EXPLICIT: no auth artifacts
+      },
+    },
+    // CI-only: authenticated E2E tests
+    // CANONICAL: ci-auth ALWAYS requires playwright-auth-state.json
+    {
+      name: "ci-auth",
+      testDir: "./tests/auth",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        storageState: "playwright-auth-state.json", // EXPLICIT: auth required
       },
     },
     // Full regression: all tests, all viewports (manual/nightly)

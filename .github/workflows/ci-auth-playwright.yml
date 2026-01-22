@@ -30,6 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     # Only run if secrets are available (not on forks)
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    # CANONICAL: Promote secrets to job-level env with explicit empty-string guard
+    env:
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      CLERK_CI_USER_ID: ${{ secrets.CLERK_CI_USER_ID || '' }}
+      PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.target_url || 'https://www.reconaitechnology.com' }}
 
     steps:
       - name: Checkout
@@ -50,10 +55,7 @@ jobs:
       - name: Seed Clerk auth session
         id: seed_auth
         run: node scripts/seed-playwright-auth.mjs
-        env:
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          CLERK_CI_USER_ID: ${{ secrets.CLERK_CI_USER_ID }}
-          PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.target_url || 'https://www.reconaitechnology.com' }}
+        # CANONICAL: Uses job-level env (CLERK_SECRET_KEY, CLERK_CI_USER_ID, PLAYWRIGHT_BASE_URL)
 
       - name: Verify Playwright auth state
         shell: bash
@@ -65,10 +67,8 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright (authenticated)
-        run: npx playwright test --project=ci-smoke
-        env:
-          PLAYWRIGHT_AUTH: "true"
-          PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.target_url || 'https://www.reconaitechnology.com' }}
+        run: npx playwright test --project=ci-auth
+        # CANONICAL: Uses job-level PLAYWRIGHT_BASE_URL
 
       - name: Upload test results
         if: failure()

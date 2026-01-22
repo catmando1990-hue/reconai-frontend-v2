@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
 
-// Content Security Policy directives
+// Content Security Policy directives - BASE (shared between public and dashboard)
 // Plaid requirements from: https://plaid.com/docs/link/web/
-const cspDirectives = [
+const cspDirectivesBase = [
   "default-src 'self'",
   // Scripts: self + inline for Next.js + Clerk + Plaid (cdn.plaid.com) + Vercel
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://vercel.live https://cdn.plaid.com",
@@ -21,8 +21,6 @@ const cspDirectives = [
   "media-src 'self' https://*.vercel-storage.com https://*.public.blob.vercel-storage.com blob:",
   // Frame: self + Clerk + Plaid (cdn.plaid.com per docs)
   "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://cdn.plaid.com",
-  // Frame ancestors: prevent clickjacking
-  "frame-ancestors 'self'",
   // Form actions: self only
   "form-action 'self'",
   // Base URI: self only
@@ -33,7 +31,11 @@ const cspDirectives = [
   "upgrade-insecure-requests",
 ];
 
-const cspHeader = cspDirectives.join("; ");
+// STRICT CSP for dashboard routes - frame-ancestors 'none' prevents all framing (clickjacking protection)
+const cspDashboardStrict = [...cspDirectivesBase, "frame-ancestors 'none'"].join("; ");
+
+// MODERATE CSP for public routes - frame-ancestors 'self' allows same-origin framing
+const cspPublicModerate = [...cspDirectivesBase, "frame-ancestors 'self'"].join("; ");
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -133,33 +135,58 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
-    return [
+    // Shared security headers (excluding CSP which differs by route)
+    const sharedSecurityHeaders = [
+      // HSTS: Enforce HTTPS for 2 years, include subdomains, preload
       {
-        source: "/:path*",
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains; preload",
+      },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-XSS-Protection", value: "1; mode=block" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      {
+        // Permissions-Policy: Plaid Link requires encrypted-media and accelerometer for SEON fingerprinting
+        // Using * to allow these features for all origins including Plaid's iframe
+        // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy
+        key: "Permissions-Policy",
+        value:
+          "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
+      },
+    ];
+
+    return [
+      // DASHBOARD ROUTES — STRICT CSP (frame-ancestors 'none')
+      // These routes handle authenticated financial data and must prevent all framing
+      {
+        source: "/(home|core|cfo|intelligence|govcon|settings|invoicing|connect-bank|customers|receipts|ar)(.*)",
         headers: [
-          // HSTS: Enforce HTTPS for 1 year, include subdomains
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains; preload",
-          },
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "X-XSS-Protection", value: "1; mode=block" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          {
-            // Permissions-Policy: Plaid Link requires encrypted-media and accelerometer for SEON fingerprinting
-            // Using * to allow these features for all origins including Plaid's iframe
-            // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy
-            key: "Permissions-Policy",
-            value:
-              "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
-          },
+          ...sharedSecurityHeaders,
+          // X-Frame-Options DENY for legacy browser support
+          { key: "X-Frame-Options", value: "DENY" },
           {
             key: "Content-Security-Policy",
-            value: cspHeader,
+            value: cspDashboardStrict,
           },
         ],
       },
+
+      // PUBLIC ROUTES — MODERATE CSP (frame-ancestors 'self')
+      // Marketing pages, auth pages, etc. - allow same-origin framing
+      {
+        source: "/:path*",
+        headers: [
+          ...sharedSecurityHeaders,
+          // X-Frame-Options SAMEORIGIN for legacy browser support
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          {
+            key: "Content-Security-Policy",
+            value: cspPublicModerate,
+          },
+        ],
+      },
+
+      // Video assets - aggressive caching
       {
         source: "/videos/:path*",
         headers: [

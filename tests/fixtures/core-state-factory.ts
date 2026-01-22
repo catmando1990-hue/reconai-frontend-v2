@@ -598,6 +598,7 @@ export function withUnknownSyncVersion(): Record<string, unknown> {
 export function withMissingSyncVersion(): Record<string, unknown> {
   // Returns raw object to bypass type checking for invalid state
   const state = partialOrgState();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { version, ...syncWithoutVersion } = state.sync;
   return {
     ...state,

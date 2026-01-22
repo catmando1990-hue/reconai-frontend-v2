@@ -39,8 +39,8 @@ if (!CLERK_CI_USER_ID) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getClerkClient(): Promise<any> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const clerkSdk = require("@clerk/clerk-sdk-node");
+    // @ts-expect-error - Package installed at CI runtime only
+    const clerkSdk = await import("@clerk/clerk-sdk-node");
     return clerkSdk.createClerkClient({ secretKey: CLERK_SECRET_KEY! });
   } catch {
     console.error("[seed-playwright-auth] FATAL: @clerk/clerk-sdk-node not installed");

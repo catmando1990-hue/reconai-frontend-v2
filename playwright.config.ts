@@ -6,10 +6,15 @@ import { defineConfig, devices } from "@playwright/test";
  * Environment variables:
  * - PLAYWRIGHT_BASE_URL: Primary override for baseURL (CI uses this)
  * - BASE_URL: Fallback if PLAYWRIGHT_BASE_URL not set
+ * - PLAYWRIGHT_AUTH: When 'true', load authenticated storage state
  * - Default: http://localhost:3000 (local dev only)
  *
  * In CI: Set PLAYWRIGHT_BASE_URL=https://www.reconaitechnology.com
  * Locally: No env var needed, defaults to localhost:3000
+ *
+ * Authenticated CI lane:
+ * - Set PLAYWRIGHT_AUTH=true to enable authenticated tests
+ * - Requires playwright-auth-state.json (created by seed-playwright-auth.ts)
  */
 
 // Determine if running against a remote URL (CI mode)
@@ -17,13 +22,16 @@ const isRemote = Boolean(
   process.env.PLAYWRIGHT_BASE_URL || process.env.BASE_URL,
 );
 
+// Determine if running in authenticated mode
+const isAuthenticated = process.env.PLAYWRIGHT_AUTH === "true";
+
 const baseURL =
   process.env.PLAYWRIGHT_BASE_URL ||
   process.env.BASE_URL ||
   "http://localhost:3000";
 
-// Log baseURL for debugging in CI
-console.log(`[Playwright] baseURL: ${baseURL} (isRemote: ${isRemote})`);
+// Log configuration for debugging in CI
+console.log(`[Playwright] baseURL: ${baseURL} (isRemote: ${isRemote}, isAuth: ${isAuthenticated})`);
 
 export default defineConfig({
   testDir: "./tests",
@@ -32,6 +40,8 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
+    // Load authenticated storage state when PLAYWRIGHT_AUTH=true
+    ...(isAuthenticated ? { storageState: "playwright-auth-state.json" } : {}),
   },
   projects: [
     {

@@ -93,6 +93,14 @@ export interface CoreEvidence {
   } | null;
 }
 
+/** Sync lifecycle state */
+export interface CoreSyncState {
+  status: "running" | "failed" | "success" | "never";
+  started_at: string | null;
+  last_successful_at: string | null;
+  error_reason: string | null;
+}
+
 // Full CORE state response
 export interface CoreState {
   /**
@@ -104,6 +112,9 @@ export interface CoreState {
   /** Request tracking */
   request_id: string;
   fetched_at: string;
+
+  /** Sync lifecycle - only render UI for "running" or "failed" states */
+  sync: CoreSyncState;
 
   /** Live State - what needs attention NOW */
   live_state: CoreLiveState;
@@ -119,6 +130,12 @@ const failClosedState: CoreState = {
   available: false,
   request_id: "",
   fetched_at: "",
+  sync: {
+    status: "never",
+    started_at: null,
+    last_successful_at: null,
+    error_reason: null,
+  },
   live_state: {
     unpaid_invoices: null,
     unpaid_bills: null,
@@ -175,7 +192,9 @@ export function useCoreState() {
         setState(failClosedState);
       }
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to fetch core state"));
+      setError(
+        err instanceof Error ? err : new Error("Failed to fetch core state"),
+      );
       setState(failClosedState);
     } finally {
       setIsLoading(false);
@@ -207,7 +226,11 @@ export function useCoreState() {
         }
       } catch (err) {
         if (alive) {
-          setError(err instanceof Error ? err : new Error("Failed to fetch core state"));
+          setError(
+            err instanceof Error
+              ? err
+              : new Error("Failed to fetch core state"),
+          );
           setState(failClosedState);
         }
       } finally {
@@ -226,7 +249,7 @@ export function useCoreState() {
 
   // Derived state helpers
   const derived = useMemo(() => {
-    const { live_state, evidence } = state;
+    const { live_state, evidence, sync } = state;
 
     // Has any attention items?
     const hasAttentionItems =
@@ -253,12 +276,18 @@ export function useCoreState() {
     const overdueBills =
       live_state.unpaid_bills?.items.filter((b) => b.is_overdue).length ?? 0;
 
+    // Sync state helpers - only render UI for running/failed
+    const isSyncing = sync.status === "running";
+    const hasSyncError = sync.status === "failed";
+
     return {
       hasAttentionItems,
       hasEvidence,
       totalDue,
       overdueInvoices,
       overdueBills,
+      isSyncing,
+      hasSyncError,
     };
   }, [state]);
 
@@ -270,6 +299,6 @@ export function useCoreState() {
       refetch: fetchState,
       ...derived,
     }),
-    [state, isLoading, error, fetchState, derived]
+    [state, isLoading, error, fetchState, derived],
   );
 }

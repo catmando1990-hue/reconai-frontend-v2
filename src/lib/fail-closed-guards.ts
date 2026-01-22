@@ -59,7 +59,7 @@ export function isValidTimestamp(value: unknown): boolean {
  */
 export function isKnownStatus<T extends string>(
   value: unknown,
-  knownValues: readonly T[]
+  knownValues: readonly T[],
 ): value is T {
   return typeof value === "string" && knownValues.includes(value as T);
 }
@@ -87,7 +87,7 @@ export function safeMetric(value: unknown): number | null {
 export function safeStatus<T extends string>(
   value: unknown,
   knownValues: readonly T[],
-  unknownValue: T
+  unknownValue: T,
 ): T {
   if (isKnownStatus(value, knownValues)) {
     return value;
@@ -131,12 +131,12 @@ export function devWarn(condition: boolean, message: string): void {
 export function assertBackendValue<T>(
   value: T,
   fieldName: string,
-  source: string
+  source: string,
 ): T {
   devWarn(
     value === undefined,
     `${fieldName} is undefined but expected from backend (${source}). ` +
-      `Displaying "Unknown" instead of fabricating a value.`
+      `Displaying "Unknown" instead of fabricating a value.`,
   );
   return value;
 }
@@ -157,16 +157,8 @@ export type DisplayableConnectionStatus =
   | "Disconnected"
   | "Unknown";
 
-const VALID_CONNECTION_STATUSES = [
-  "active",
-  "error",
-  "requires_action",
-  "disconnected",
-  "unknown",
-] as const;
-
 export function getDisplayConnectionStatus(
-  status: unknown
+  status: unknown,
 ): DisplayableConnectionStatus {
   switch (status) {
     case "active":
@@ -183,7 +175,7 @@ export function getDisplayConnectionStatus(
       // FAIL-CLOSED: Any unknown status displays as "Unknown"
       devWarn(
         status !== "unknown" && status !== undefined,
-        `Unknown connection status: "${status}". Displaying as "Unknown".`
+        `Unknown connection status: "${status}". Displaying as "Unknown".`,
       );
       return "Unknown";
   }
@@ -198,7 +190,9 @@ export type DisplayableHealthStatus =
   | "Unhealthy"
   | "Unknown";
 
-export function getDisplayHealthStatus(status: unknown): DisplayableHealthStatus {
+export function getDisplayHealthStatus(
+  status: unknown,
+): DisplayableHealthStatus {
   switch (status) {
     case "healthy":
     case "ok":
@@ -221,7 +215,10 @@ export function getDisplayHealthStatus(status: unknown): DisplayableHealthStatus
  *
  * NEVER shows "Live" or "Real-time" unless backend explicitly confirms
  */
-export type DisplayableDataMode = "Live Data" | "Demo Data" | "Data Mode Unknown";
+export type DisplayableDataMode =
+  | "Live Data"
+  | "Demo Data"
+  | "Data Mode Unknown";
 
 export function getDisplayDataMode(mode: unknown): DisplayableDataMode {
   switch (mode) {

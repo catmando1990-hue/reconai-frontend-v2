@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { useApi } from "@/lib/useApi";
-import { AlertTriangle, ChevronRight, X, RefreshCw, FlaskConical } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronRight,
+  X,
+  RefreshCw,
+  FlaskConical,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 

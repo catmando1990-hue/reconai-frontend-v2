@@ -78,8 +78,8 @@ export function MarketingHomePage() {
               {/* Description - Factual, non-promotional */}
               <p className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
                 ReconAI organizes transactions, surfaces patterns, and produces
-                audit-ready outputs. Every result traces to source evidence.
-                No silent actions. No inferred data.
+                audit-ready outputs. Every result traces to source evidence. No
+                silent actions. No inferred data.
               </p>
 
               {/* Primary CTA - Single button only */}

@@ -64,7 +64,11 @@ export async function POST(request: NextRequest) {
     if (!responseText || responseText.trim() === "") {
       console.error("Backend /api/profile/complete returned empty response");
       return NextResponse.json(
-        { ok: false, error: "Empty response from backend", request_id: requestId },
+        {
+          ok: false,
+          error: "Empty response from backend",
+          request_id: requestId,
+        },
         { status: 502 },
       );
     }
@@ -78,14 +82,21 @@ export async function POST(request: NextRequest) {
         responseText.slice(0, 200),
       );
       return NextResponse.json(
-        { ok: false, error: "Invalid JSON from backend", request_id: requestId },
+        {
+          ok: false,
+          error: "Invalid JSON from backend",
+          request_id: requestId,
+        },
         { status: 502 },
       );
     }
 
     if (!resp.ok) {
       console.error("Backend /api/profile/complete error:", resp.status, data);
-      const detail = data.detail as Record<string, unknown> | string | undefined;
+      const detail = data.detail as
+        | Record<string, unknown>
+        | string
+        | undefined;
       return NextResponse.json(
         {
           ok: false,

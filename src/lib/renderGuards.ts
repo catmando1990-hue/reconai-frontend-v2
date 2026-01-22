@@ -24,7 +24,7 @@ import type { ReactNode } from "react";
  */
 export function renderIfAvailable<T>(
   data: T | null | undefined,
-  renderFn: (data: T) => ReactNode
+  renderFn: (data: T) => ReactNode,
 ): ReactNode {
   if (data == null) {
     return null;
@@ -45,7 +45,7 @@ export function renderIfAvailable<T>(
  */
 export function renderIfNonEmpty<T>(
   array: T[] | null | undefined,
-  renderFn: (array: T[]) => ReactNode
+  renderFn: (array: T[]) => ReactNode,
 ): ReactNode {
   if (!array || array.length === 0) {
     return null;
@@ -72,7 +72,7 @@ export function renderIfNonEmpty<T>(
  */
 export function formatMetric(
   value: number | string | null | undefined,
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string {
   if (value == null) {
     return "—";
@@ -99,7 +99,7 @@ export function formatMetric(
  */
 export function formatCurrency(
   value: number | null | undefined,
-  currency: string = "USD"
+  currency: string = "USD",
 ): string {
   return formatMetric(value, { style: "currency", currency });
 }
@@ -118,7 +118,7 @@ export function formatCurrency(
  */
 export function formatPercent(
   value: number | null | undefined,
-  isDecimal: boolean = false
+  isDecimal: boolean = false,
 ): string {
   if (value == null) {
     return "—";
@@ -143,14 +143,17 @@ export function formatPercent(
  */
 export function formatCount(
   value: number | null | undefined,
-  compact: boolean = false
+  compact: boolean = false,
 ): string {
   if (value == null) {
     return "—";
   }
 
   if (compact && Math.abs(value) >= 1000) {
-    return formatMetric(value, { notation: "compact", maximumFractionDigits: 1 });
+    return formatMetric(value, {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    });
   }
 
   return formatMetric(value, { maximumFractionDigits: 0 });

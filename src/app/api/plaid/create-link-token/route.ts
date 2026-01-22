@@ -67,12 +67,13 @@ export async function POST() {
       console.error(
         `[FAIL-CLOSED] Plaid create-link-token received non-JSON response. ` +
           `Status: ${resp.status}, Content-Type: ${contentType}, ` +
-          `Body preview: ${textBody.slice(0, 200)}`
+          `Body preview: ${textBody.slice(0, 200)}`,
       );
       return NextResponse.json(
         {
           error: "Bank connection failed. Please retry.",
-          detail: "Plaid link token creation failed — non-JSON response from backend",
+          detail:
+            "Plaid link token creation failed — non-JSON response from backend",
         },
         { status: 502 },
       );

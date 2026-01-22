@@ -14,6 +14,7 @@ useEffect(() => {
 ```
 
 When Clerk hasn't finished initializing:
+
 - `window.Clerk.session` is undefined
 - `getClerkJwt()` returns null
 - No `Authorization` header is sent
@@ -22,6 +23,7 @@ When Clerk hasn't finished initializing:
 ## Solution
 
 All protected API calls now:
+
 1. Use `useApi()` hook (provides org context + consistent auth)
 2. Gate execution behind `isLoaded` from `useOrg()`
 3. Include `apiFetch` in dependency arrays for proper re-execution
@@ -41,31 +43,34 @@ useEffect(() => {
 ## Files Modified (17 files)
 
 ### Hooks
-| File | Issue | Fix |
-|------|-------|-----|
+
+| File                               | Issue                                  | Fix                                   |
+| ---------------------------------- | -------------------------------------- | ------------------------------------- |
 | `src/hooks/useDashboardMetrics.ts` | Direct `apiFetch` import, no auth gate | Uses `useApi()`, gates on `authReady` |
 
 ### Components
-| File | Issue | Fix |
-|------|-------|-----|
-| `src/components/overview/OverviewSnapshot.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
-| `src/components/system/SystemStatusPanel.tsx` | SWR with direct `apiFetch`, no key gating | SWR key is `null` until `authReady` |
-| `src/components/signals/SignalsPanel.tsx` | Direct `apiFetch` import | Uses `useApi()` |
-| `src/components/intelligence/IntelligenceV1Panel.tsx` | Direct `apiFetch` import | Uses `useApi()` |
-| `src/components/audit/AuditPanel.tsx` | SWR with direct fetcher | Uses `useApi()`, gates SWR key |
-| `src/components/admin/MaintenanceToggle.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
-| `src/components/transactions/TransactionsTable.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
+
+| File                                                  | Issue                                     | Fix                                   |
+| ----------------------------------------------------- | ----------------------------------------- | ------------------------------------- |
+| `src/components/overview/OverviewSnapshot.tsx`        | Direct `apiFetch`, immediate fetch        | Uses `useApi()`, gates on `authReady` |
+| `src/components/system/SystemStatusPanel.tsx`         | SWR with direct `apiFetch`, no key gating | SWR key is `null` until `authReady`   |
+| `src/components/signals/SignalsPanel.tsx`             | Direct `apiFetch` import                  | Uses `useApi()`                       |
+| `src/components/intelligence/IntelligenceV1Panel.tsx` | Direct `apiFetch` import                  | Uses `useApi()`                       |
+| `src/components/audit/AuditPanel.tsx`                 | SWR with direct fetcher                   | Uses `useApi()`, gates SWR key        |
+| `src/components/admin/MaintenanceToggle.tsx`          | Direct `apiFetch`, immediate fetch        | Uses `useApi()`, gates on `authReady` |
+| `src/components/transactions/TransactionsTable.tsx`   | Direct `apiFetch`, immediate fetch        | Uses `useApi()`, gates on `authReady` |
 
 ### Page Components
-| File | Issue | Fix |
-|------|-------|-----|
-| `src/app/(dashboard)/invoices/page.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
-| `src/app/(dashboard)/bills/page.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
-| `src/app/(dashboard)/customers/page.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
-| `src/app/(dashboard)/vendors/page.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
-| `src/app/(dashboard)/receipts/page.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
-| `src/app/(dashboard)/documents/page.tsx` | Direct `apiFetch` in page AND nested component | Both use `useApi()`, gates on `authReady` |
-| `src/app/(dashboard)/cfo/compliance/page.tsx` | Direct `apiFetch`, immediate fetch | Uses `useApi()`, gates on `authReady` |
+
+| File                                          | Issue                                          | Fix                                       |
+| --------------------------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| `src/app/(dashboard)/invoices/page.tsx`       | Direct `apiFetch`, immediate fetch             | Uses `useApi()`, gates on `authReady`     |
+| `src/app/(dashboard)/bills/page.tsx`          | Direct `apiFetch`, immediate fetch             | Uses `useApi()`, gates on `authReady`     |
+| `src/app/(dashboard)/customers/page.tsx`      | Direct `apiFetch`, immediate fetch             | Uses `useApi()`, gates on `authReady`     |
+| `src/app/(dashboard)/vendors/page.tsx`        | Direct `apiFetch`, immediate fetch             | Uses `useApi()`, gates on `authReady`     |
+| `src/app/(dashboard)/receipts/page.tsx`       | Direct `apiFetch`, immediate fetch             | Uses `useApi()`, gates on `authReady`     |
+| `src/app/(dashboard)/documents/page.tsx`      | Direct `apiFetch` in page AND nested component | Both use `useApi()`, gates on `authReady` |
+| `src/app/(dashboard)/cfo/compliance/page.tsx` | Direct `apiFetch`, immediate fetch             | Uses `useApi()`, gates on `authReady`     |
 
 ## Canonical Fetch Pattern (MANDATORY)
 

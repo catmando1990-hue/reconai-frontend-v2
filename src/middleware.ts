@@ -171,7 +171,7 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
       const hasMFAEnabled = Boolean(
         publicMetadata?.mfaEnabled ||
         sessionClaims?.["two_factor_enabled"] ||
-        sessionClaims?.["mfa"]
+        sessionClaims?.["mfa"],
       );
 
       // If MFA enforcement is enabled and user doesn't have MFA, redirect to setup

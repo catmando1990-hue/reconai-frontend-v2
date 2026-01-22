@@ -15,7 +15,9 @@ const BACKEND_URL =
  * FAIL-OPEN: If status check fails, allow access (don't block users due to network issues)
  * The profile completion page will also check and redirect if needed.
  */
-async function checkProfileCompleted(token: string | null): Promise<boolean | null> {
+async function checkProfileCompleted(
+  token: string | null,
+): Promise<boolean | null> {
   if (!token) return null;
 
   try {

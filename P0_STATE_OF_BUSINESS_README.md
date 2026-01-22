@@ -16,16 +16,16 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 
 ### GovCon Routes (Hardcoded Zeros Removed)
 
-| File | Issue | Fix |
-|------|-------|-----|
-| `src/app/(dashboard)/govcon/contracts/page.tsx` | Hardcoded "0" values, fake summaries | Removed fake summary panels, single honest EmptyState |
+| File                                              | Issue                                           | Fix                                                   |
+| ------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `src/app/(dashboard)/govcon/contracts/page.tsx`   | Hardcoded "0" values, fake summaries            | Removed fake summary panels, single honest EmptyState |
 | `src/app/(dashboard)/govcon/timekeeping/page.tsx` | Fake weekly grid with "0h", hardcoded summaries | Removed fake grid/summaries, single honest EmptyState |
-| `src/app/(dashboard)/govcon/indirects/page.tsx` | Hardcoded "$0" values, fake progress bars | Removed fake rate summaries, kept only FAR reference |
+| `src/app/(dashboard)/govcon/indirects/page.tsx`   | Hardcoded "$0" values, fake progress bars       | Removed fake rate summaries, kept only FAR reference  |
 
 ### Settings Route (Hardcoded Values Removed)
 
-| File | Issue | Fix |
-|------|-------|-----|
+| File                                    | Issue                                     | Fix                                                     |
+| --------------------------------------- | ----------------------------------------- | ------------------------------------------------------- |
 | `src/app/(dashboard)/settings/page.tsx` | Hardcoded "1.0.0", "28-30", always "Good" | Now reads from env vars, shows actual API health status |
 
 ## Changes in Detail
@@ -33,6 +33,7 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ### 1. GovCon Contracts Page
 
 **Before:**
+
 ```tsx
 <span className="text-lg font-semibold">0</span>  // Active Contracts
 <span className="text-lg font-semibold">$0</span> // Total Value
@@ -41,6 +42,7 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ```
 
 **After:**
+
 - Removed all fake summary panels
 - Single EmptyState with honest message
 - STATUS.NOT_CONFIGURED as subtitle
@@ -49,6 +51,7 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ### 2. GovCon Timekeeping Page
 
 **Before:**
+
 ```tsx
 // Fake weekly grid with hardcoded dates
 {DAYS_OF_WEEK.map((day, idx) => (
@@ -63,6 +66,7 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ```
 
 **After:**
+
 - Removed fake weekly grid
 - Removed all hour summaries
 - Single EmptyState explaining contract dependency
@@ -71,6 +75,7 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ### 3. GovCon Indirects Page
 
 **Before:**
+
 ```tsx
 <span className="text-lg font-semibold">0</span>   // Total Pools
 <span className="text-lg font-semibold">$0</span>  // Indirect Costs
@@ -80,6 +85,7 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ```
 
 **After:**
+
 - Removed all fake rate summaries
 - Removed fake progress bars
 - Kept FAR Reference panel (static educational content)
@@ -88,6 +94,7 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ### 4. Settings Page System Info
 
 **Before:**
+
 ```tsx
 <span className="font-medium">1.0.0</span>       // Hardcoded version
 <span className="font-medium">28–30</span>       // Hardcoded build
@@ -95,10 +102,17 @@ This fix performs a comprehensive audit and refactor of all authenticated dashbo
 ```
 
 **After:**
+
 ```tsx
-{process.env.NEXT_PUBLIC_APP_VERSION ?? "—"}      // Reads from env
-{process.env.NEXT_PUBLIC_BUILD_ID ?? "—"}         // Reads from env
-{auditAvailable ? "Connected" : "Unavailable"}   // Actual health check
+{
+  process.env.NEXT_PUBLIC_APP_VERSION ?? "—";
+} // Reads from env
+{
+  process.env.NEXT_PUBLIC_BUILD_ID ?? "—";
+} // Reads from env
+{
+  auditAvailable ? "Connected" : "Unavailable";
+} // Actual health check
 ```
 
 ## Canonical Laws Compliance

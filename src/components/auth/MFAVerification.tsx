@@ -57,7 +57,7 @@ export function MFAVerification({
   const supportedFactors = signInResource.supportedSecondFactors || [];
   const hasTOTP = supportedFactors.some((f) => f.strategy === "totp");
   const hasBackupCode = supportedFactors.some(
-    (f) => f.strategy === "backup_code"
+    (f) => f.strategy === "backup_code",
   );
 
   const handleVerifyTOTP = useCallback(
@@ -90,7 +90,7 @@ export function MFAVerification({
         setIsLoading(false);
       }
     },
-    [signInResource, code, setActive, router, redirectUrl]
+    [signInResource, code, setActive, router, redirectUrl],
   );
 
   const handleVerifyBackupCode = useCallback(
@@ -123,7 +123,7 @@ export function MFAVerification({
         setIsLoading(false);
       }
     },
-    [signInResource, code, setActive, router, redirectUrl]
+    [signInResource, code, setActive, router, redirectUrl],
   );
 
   // TOTP verification form
@@ -163,7 +163,11 @@ export function MFAVerification({
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button type="submit" disabled={isLoading || code.length !== 6} className="w-full">
+            <Button
+              type="submit"
+              disabled={isLoading || code.length !== 6}
+              className="w-full"
+            >
               {isLoading ? (
                 <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : (
@@ -235,7 +239,11 @@ export function MFAVerification({
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button type="submit" disabled={isLoading || !code.trim()} className="w-full">
+            <Button
+              type="submit"
+              disabled={isLoading || !code.trim()}
+              className="w-full"
+            >
               {isLoading ? (
                 <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : (
@@ -289,7 +297,12 @@ export function MFAVerification({
           Please contact support to resolve this issue.
         </p>
         {onBack && (
-          <Button variant="ghost" type="button" className="w-full" onClick={onBack}>
+          <Button
+            variant="ghost"
+            type="button"
+            className="w-full"
+            onClick={onBack}
+          >
             Back to sign in
           </Button>
         )}

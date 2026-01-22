@@ -122,7 +122,9 @@ const failClosedMetrics: DashboardMetrics = {
  *
  * P0 FIX: Prevents runtime crashes from accessing undefined nested objects.
  */
-function normalizeMetrics(raw: RawMetricsResponse | null | undefined): DashboardMetrics {
+function normalizeMetrics(
+  raw: RawMetricsResponse | null | undefined,
+): DashboardMetrics {
   // If no data at all, return fail-closed
   if (!raw) {
     return failClosedMetrics;
@@ -213,7 +215,9 @@ export function useDashboardMetrics() {
       try {
         setIsLoading(true);
         if (alive) setError(null);
-        const raw = await apiFetch<RawMetricsResponse>("/api/dashboard/metrics");
+        const raw = await apiFetch<RawMetricsResponse>(
+          "/api/dashboard/metrics",
+        );
         // P0 FIX: Normalize response to ensure all nested objects exist
         if (alive) setMetrics(normalizeMetrics(raw));
       } catch {
@@ -235,6 +239,6 @@ export function useDashboardMetrics() {
 
   return useMemo(
     () => ({ metrics, isLoading, error, refetch: fetchMetrics }),
-    [metrics, isLoading, error, fetchMetrics]
+    [metrics, isLoading, error, fetchMetrics],
   );
 }

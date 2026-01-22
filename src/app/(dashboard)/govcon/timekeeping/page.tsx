@@ -34,10 +34,7 @@ export default function TimekeepingPage() {
       />
 
       {/* Single honest empty state - no fake grids or summaries */}
-      <PrimaryPanel
-        title="Time Entry"
-        subtitle={STATUS.NOT_CONFIGURED}
-      >
+      <PrimaryPanel title="Time Entry" subtitle={STATUS.NOT_CONFIGURED}>
         <EmptyState
           icon={Clock}
           title="No time entries"

@@ -57,14 +57,16 @@ const TRUST_VIOLATION_PATTERNS = [
   {
     pattern: /["']Last\s*(?:Refresh|Sync|Update)[:\s]*\d+[mhs]\s*ago["']/gi,
     rule: "FABRICATED_TIMESTAMP",
-    message: "Hardcoded relative time is forbidden. Use actual backend timestamps.",
+    message:
+      "Hardcoded relative time is forbidden. Use actual backend timestamps.",
     severity: "error" as const,
   },
   // Zero fallbacks that hide missing data: || 0
   {
     pattern: /\|\|\s*0(?:\s*[,;)\]}]|\s*$)/gm,
     rule: "ZERO_FALLBACK",
-    message: "Zero fallback hides missing data. Use null and display 'Unknown'.",
+    message:
+      "Zero fallback hides missing data. Use null and display 'Unknown'.",
     severity: "warning" as const,
     filePattern: /hooks|components/,
   },
@@ -72,13 +74,15 @@ const TRUST_VIOLATION_PATTERNS = [
   {
     pattern: /\|\|\s*["']{2}(?:\s*[,;)\]}]|\s*$)/gm,
     rule: "EMPTY_STRING_FALLBACK",
-    message: "Empty string fallback hides missing data. Use null and display 'Unknown'.",
+    message:
+      "Empty string fallback hides missing data. Use null and display 'Unknown'.",
     severity: "warning" as const,
     filePattern: /hooks|components/,
   },
   // Direct calls to deprecated v1 Plaid endpoints
   {
-    pattern: /["'](?:\/link-token|\/exchange-public-token|\/sandbox-public-token)["']/gi,
+    pattern:
+      /["'](?:\/link-token|\/exchange-public-token|\/sandbox-public-token)["']/gi,
     rule: "DEPRECATED_PLAID_V1",
     message: "V1 Plaid endpoint is deprecated. Use /api/plaid/* endpoints.",
     severity: "error" as const,
@@ -90,11 +94,12 @@ const TRUST_VIOLATION_PATTERNS = [
     message: "DEMO_MODE is enabled. Ensure UI displays 'Demo' badge visibly.",
     severity: "warning" as const,
   },
-  // @ts-ignore in status-related code
+  // Detect @ts-expect-error in status-related code
   {
-    pattern: /@ts-ignore.*status/gi,
-    rule: "TS_IGNORE_STATUS",
-    message: "@ts-ignore used near status code. Type safety must be maintained.",
+    pattern: /@ts-expect-error.*status/gi,
+    rule: "TS_EXPECT_ERROR_STATUS",
+    message:
+      "@ts-expect-error used near status code. Type safety must be maintained.",
     severity: "error" as const,
   },
 ];
@@ -127,12 +132,18 @@ function scanFile(filePath: string): void {
 
   for (const violationPattern of TRUST_VIOLATION_PATTERNS) {
     // Check file pattern filter
-    if (violationPattern.filePattern && !violationPattern.filePattern.test(filePath)) {
+    if (
+      violationPattern.filePattern &&
+      !violationPattern.filePattern.test(filePath)
+    ) {
       continue;
     }
 
     let match: RegExpExecArray | null;
-    const regex = new RegExp(violationPattern.pattern.source, violationPattern.pattern.flags);
+    const regex = new RegExp(
+      violationPattern.pattern.source,
+      violationPattern.pattern.flags,
+    );
 
     while ((match = regex.exec(content)) !== null) {
       // Find line number
@@ -143,7 +154,7 @@ function scanFile(filePath: string): void {
       // Check exclusions (e.g., switch/case statements are OK)
       if (violationPattern.exclude) {
         const shouldExclude = violationPattern.exclude.some((excludePattern) =>
-          excludePattern.test(lineContent)
+          excludePattern.test(lineContent),
         );
         if (shouldExclude) continue;
       }
@@ -201,7 +212,8 @@ function checkFailClosedGuards(): void {
       file: "src/lib/fail-closed-guards.ts",
       line: 0,
       rule: "MISSING_FAIL_CLOSED_GUARDS",
-      message: "fail-closed-guards.ts is missing. Safety guards must be present.",
+      message:
+        "fail-closed-guards.ts is missing. Safety guards must be present.",
       severity: "error",
     });
   }
@@ -222,7 +234,9 @@ function printResults(): void {
     return;
   }
 
-  console.log(`\n❌ Trust violations found: ${errors.length} errors, ${warnings.length} warnings\n`);
+  console.log(
+    `\n❌ Trust violations found: ${errors.length} errors, ${warnings.length} warnings\n`,
+  );
 
   // Print errors first
   if (errors.length > 0) {

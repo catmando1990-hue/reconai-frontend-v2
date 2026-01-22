@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       console.error(
         `[FAIL-CLOSED] Plaid exchange received non-JSON response. ` +
           `Status: ${resp.status}, Content-Type: ${contentType}, ` +
-          `Body preview: ${textBody.slice(0, 200)}`
+          `Body preview: ${textBody.slice(0, 200)}`,
       );
       return NextResponse.json(
         {

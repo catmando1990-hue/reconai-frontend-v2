@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,26 +33,39 @@ const inputClassName =
 const labelClassName = "text-sm font-medium leading-none";
 
 export default function CompleteProfilePage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoaded: clerkLoaded } = useUser();
+
+  // Memoize the clerk values to use as controlled initial state
+  // Note: user values are used when available, form values take over once user types
+  const clerkFirstName = clerkLoaded && user?.firstName ? user.firstName : "";
+  const clerkLastName = clerkLoaded && user?.lastName ? user.lastName : "";
+
+  // Track whether user has manually edited the fields
+  const [hasEditedFirst, setHasEditedFirst] = useState(false);
+  const [hasEditedLast, setHasEditedLast] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fill from Clerk if available
-  useEffect(() => {
-    if (clerkLoaded && user) {
-      if (user.firstName && !firstName) {
-        setFirstName(user.firstName);
-      }
-      if (user.lastName && !lastName) {
-        setLastName(user.lastName);
-      }
-    }
-  }, [clerkLoaded, user, firstName, lastName]);
+  // Compute display values: show clerk value until user edits
+  const displayFirstName = hasEditedFirst
+    ? firstName
+    : firstName || clerkFirstName;
+  const displayLastName = hasEditedLast ? lastName : lastName || clerkLastName;
+
+  // Handlers that track manual edits
+  const handleFirstNameChange = useCallback((value: string) => {
+    setFirstName(value);
+    setHasEditedFirst(true);
+  }, []);
+
+  const handleLastNameChange = useCallback((value: string) => {
+    setLastName(value);
+    setHasEditedLast(true);
+  }, []);
 
   // Get redirect URL from query params
   const redirectUrl = searchParams.get("redirect_url") || "/home";
@@ -61,7 +74,11 @@ export default function CompleteProfilePage() {
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!firstName.trim() || !lastName.trim()) {
+      // Use display values (which include clerk defaults if not edited)
+      const finalFirstName = displayFirstName.trim();
+      const finalLastName = displayLastName.trim();
+
+      if (!finalFirstName || !finalLastName) {
         setError("Please enter your first and last name");
         return;
       }
@@ -74,8 +91,8 @@ export default function CompleteProfilePage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
+            firstName: finalFirstName,
+            lastName: finalLastName,
           }),
         });
 
@@ -83,7 +100,9 @@ export default function CompleteProfilePage() {
 
         if (!resp.ok || !data.ok) {
           // FAIL-CLOSED: Show explicit error, do not proceed
-          setError(data.error || "Failed to complete profile. Please try again.");
+          setError(
+            data.error || "Failed to complete profile. Please try again.",
+          );
           setIsLoading(false);
           return;
         }
@@ -95,7 +114,9 @@ export default function CompleteProfilePage() {
           window.location.href = redirectUrl;
         } else {
           // Unexpected state - show error
-          setError("Profile completion returned unexpected state. Please try again.");
+          setError(
+            "Profile completion returned unexpected state. Please try again.",
+          );
           setIsLoading(false);
         }
       } catch (err) {
@@ -104,7 +125,7 @@ export default function CompleteProfilePage() {
         setIsLoading(false);
       }
     },
-    [firstName, lastName, redirectUrl],
+    [displayFirstName, displayLastName, redirectUrl],
   );
 
   // Don't render until Clerk is loaded
@@ -146,8 +167,8 @@ export default function CompleteProfilePage() {
                 required
                 className={inputClassName}
                 placeholder="John"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                value={displayFirstName}
+                onChange={(e) => handleFirstNameChange(e.target.value)}
                 disabled={isLoading}
               />
             </div>
@@ -164,8 +185,8 @@ export default function CompleteProfilePage() {
                 required
                 className={inputClassName}
                 placeholder="Doe"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                value={displayLastName}
+                onChange={(e) => handleLastNameChange(e.target.value)}
                 disabled={isLoading}
               />
             </div>

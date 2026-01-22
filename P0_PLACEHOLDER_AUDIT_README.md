@@ -11,14 +11,16 @@ This audit corrected dashboard UI violations where placeholder, demo, or mislead
 **Issue:** Mock data was returned silently without any "Demo" labeling when backend was unavailable or failed.
 
 **Fix:**
+
 - Mock data is now returned with explicit `_isDemo: true` and `_demoDisclaimer` flags
 - Backend fetch failures now return `null` (fail-closed) instead of silent mock data
 - Added typed response interfaces: `AlertsResponseWithMode`, `WorkerTasksResponseWithMode`
 
 **Pattern:**
+
 ```typescript
 // BEFORE (BAD)
-if (!isBackendConfigured()) return mockAlerts();  // Silent mock
+if (!isBackendConfigured()) return mockAlerts(); // Silent mock
 
 // AFTER (GOOD)
 if (!isBackendConfigured()) {
@@ -31,21 +33,28 @@ if (!isBackendConfigured()) {
 ### 2. `src/app/(dashboard)/intelligence/insights/page.tsx`
 
 **Issues:**
+
 1. Mock data displayed without "Demo" badge
 2. Counts showed `0` when data was null (e.g., `{data?.items?.length ?? 0}`)
 
 **Fixes:**
+
 - Added Demo badge in header when `_isDemo` flag is present
 - Added demo disclaimer banner when in demo mode
 - Changed count displays to use `formatCount()` helper that shows "No data" for null
 
 **Pattern:**
+
 ```typescript
 // BEFORE (BAD)
-{data?.items?.length ?? 0}  // Shows 0 when data is null
+{
+  data?.items?.length ?? 0;
+} // Shows 0 when data is null
 
 // AFTER (GOOD)
-{formatCount(data?.items?.length)}  // Shows "No data" when null
+{
+  formatCount(data?.items?.length);
+} // Shows "No data" when null
 ```
 
 ---
@@ -55,6 +64,7 @@ if (!isBackendConfigured()) {
 **Issues:** Same as insights page - no demo labeling, counts defaulting to 0.
 
 **Fixes:**
+
 - Added Demo badge in header when `_isDemo` flag is present
 - Added demo disclaimer banner when in demo mode
 - Changed count displays to show "No data" for null values
@@ -68,42 +78,45 @@ if (!isBackendConfigured()) {
 **Fix:** Added explicit null checks to show "—" for unknown values.
 
 **Pattern:**
+
 ```typescript
 // BEFORE (BAD)
-value: system ? String(system.signals_24h ?? 0) : "—"
+value: system ? String(system.signals_24h ?? 0) : "—";
 
 // AFTER (GOOD)
 value: system
   ? system.signals_24h !== null && system.signals_24h !== undefined
     ? String(system.signals_24h)
     : "—"
-  : "—"
+  : "—";
 ```
 
 ---
 
 ## Rendering Rules Enforced
 
-| Condition | Render |
-|-----------|--------|
-| Value is `null` | "—" or "No data" |
-| Value is `undefined` | "—" or "No data" |
-| Value is `0` (explicit from backend) | "0" |
-| Status unknown | "Unknown" |
-| Demo/mock data | "Demo" badge + disclaimer |
-| Feature not implemented | Visually inactive |
+| Condition                            | Render                    |
+| ------------------------------------ | ------------------------- |
+| Value is `null`                      | "—" or "No data"          |
+| Value is `undefined`                 | "—" or "No data"          |
+| Value is `0` (explicit from backend) | "0"                       |
+| Status unknown                       | "Unknown"                 |
+| Demo/mock data                       | "Demo" badge + disclaimer |
+| Feature not implemented              | Visually inactive         |
 
 ---
 
 ## Fail-Closed vs. Fail-Open
 
 **Fail-Closed (REQUIRED):**
+
 - Unknown → display "Unknown"
 - Null metric → display "—"
 - Backend error → return null, show error state
 - Mock data → explicitly labeled
 
 **Fail-Open (PROHIBITED):**
+
 - Unknown → display "OK" or "Live"
 - Null metric → display "0"
 - Backend error → silently use mock data

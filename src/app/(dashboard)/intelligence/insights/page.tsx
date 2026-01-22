@@ -23,7 +23,8 @@ export default function IntelligenceInsightsPage() {
 
   // P0 FIX: Check for demo mode flag from fetcher
   const isDemo = (data as { _isDemo?: boolean })?._isDemo ?? false;
-  const demoDisclaimer = (data as { _demoDisclaimer?: string })?._demoDisclaimer;
+  const demoDisclaimer = (data as { _demoDisclaimer?: string })
+    ?._demoDisclaimer;
 
   // P0 FIX: Helper to format counts - show "—" for null/undefined, not 0
   const formatCount = (count: number | null | undefined): string => {
@@ -150,7 +151,7 @@ export default function IntelligenceInsightsPage() {
                   <span className="text-lg font-semibold">
                     {data?.items
                       ? formatCount(
-                          data.items.filter((i) => i.confidence >= 0.85).length
+                          data.items.filter((i) => i.confidence >= 0.85).length,
                         )
                       : STATUS.NO_DATA}
                   </span>
@@ -163,7 +164,7 @@ export default function IntelligenceInsightsPage() {
                   <span className="text-lg font-semibold">
                     {data?.items
                       ? formatCount(
-                          data.items.filter((i) => i.confidence < 0.85).length
+                          data.items.filter((i) => i.confidence < 0.85).length,
                         )
                       : STATUS.NO_DATA}
                   </span>

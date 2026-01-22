@@ -15,7 +15,16 @@ import { test, expect, type Page, type Route } from "@playwright/test";
  * - No dashes ("--") anywhere
  * - Sections only render with backing data
  * - Data appears on load (no manual fetch buttons for CORE)
+ *
+ * NOTE: These tests require Clerk authentication mocking.
+ * In local dev without auth bypass, tests will fail due to redirect to /sign-in.
+ * For CI, use Clerk test mode or authenticated browser context.
  */
+
+// Skip tests in environments where Clerk auth redirects to sign-in
+// This is detected by checking if PLAYWRIGHT_AUTH_BYPASS or similar env is set
+const skipInUnauthenticatedEnv =
+  !process.env.PLAYWRIGHT_AUTH_BYPASS && !process.env.CI;
 
 // Mock CORE state responses
 const MOCK_CORE_STATE = {
@@ -24,6 +33,12 @@ const MOCK_CORE_STATE = {
     available: false,
     request_id: "test-empty",
     fetched_at: new Date().toISOString(),
+    sync: {
+      status: "never",
+      started_at: null,
+      last_successful_at: null,
+      error_reason: null,
+    },
     live_state: {
       unpaid_invoices: null,
       unpaid_bills: null,
@@ -43,13 +58,31 @@ const MOCK_CORE_STATE = {
     available: true,
     request_id: "test-partial",
     fetched_at: new Date().toISOString(),
+    sync: {
+      status: "success",
+      started_at: null,
+      last_successful_at: new Date().toISOString(),
+      error_reason: null,
+    },
     live_state: {
       unpaid_invoices: {
         count: 2,
         total_due: 2500,
         items: [
-          { id: "inv1", customer_name: "Acme Corp", amount_due: 1500, due_date: null, is_overdue: false },
-          { id: "inv2", customer_name: "Beta Inc", amount_due: 1000, due_date: null, is_overdue: false },
+          {
+            id: "inv1",
+            customer_name: "Acme Corp",
+            amount_due: 1500,
+            due_date: null,
+            is_overdue: false,
+          },
+          {
+            id: "inv2",
+            customer_name: "Beta Inc",
+            amount_due: 1000,
+            due_date: null,
+            is_overdue: false,
+          },
         ],
       },
       unpaid_bills: null,
@@ -85,25 +118,51 @@ const MOCK_CORE_STATE = {
     available: true,
     request_id: "test-full",
     fetched_at: new Date().toISOString(),
+    sync: {
+      status: "success",
+      started_at: null,
+      last_successful_at: new Date().toISOString(),
+      error_reason: null,
+    },
     live_state: {
       unpaid_invoices: {
         count: 5,
         total_due: 25000,
         items: [
-          { id: "inv1", customer_name: "Acme Corp", amount_due: 10000, due_date: "2024-01-01", is_overdue: true },
-          { id: "inv2", customer_name: "Beta Inc", amount_due: 8000, due_date: null, is_overdue: false },
+          {
+            id: "inv1",
+            customer_name: "Acme Corp",
+            amount_due: 10000,
+            due_date: "2024-01-01",
+            is_overdue: true,
+          },
+          {
+            id: "inv2",
+            customer_name: "Beta Inc",
+            amount_due: 8000,
+            due_date: null,
+            is_overdue: false,
+          },
         ],
       },
       unpaid_bills: {
         count: 3,
         total_due: 10000,
         items: [
-          { id: "bill1", vendor_name: "Vendor A", amount_due: 5000, due_date: "2024-01-01", is_overdue: true },
+          {
+            id: "bill1",
+            vendor_name: "Vendor A",
+            amount_due: 5000,
+            due_date: "2024-01-01",
+            is_overdue: true,
+          },
         ],
       },
       bank_sync: {
         status: "error",
-        last_synced_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+        last_synced_at: new Date(
+          Date.now() - 48 * 60 * 60 * 1000,
+        ).toISOString(),
         items_needing_attention: 2,
       },
     },
@@ -127,8 +186,18 @@ const MOCK_CORE_STATE = {
       recent_transactions: {
         count: 5,
         items: [
-          { id: "tx1", date: "2024-01-15", amount: -500, merchant_name: "Office Supplies" },
-          { id: "tx2", date: "2024-01-14", amount: 1200, merchant_name: "Client Payment" },
+          {
+            id: "tx1",
+            date: "2024-01-15",
+            amount: -500,
+            merchant_name: "Office Supplies",
+          },
+          {
+            id: "tx2",
+            date: "2024-01-14",
+            amount: 1200,
+            merchant_name: "Client Payment",
+          },
         ],
       },
     },
@@ -138,7 +207,10 @@ const MOCK_CORE_STATE = {
 /**
  * Setup API mocking for /api/core/state
  */
-async function setupCoreStateMock(page: Page, state: keyof typeof MOCK_CORE_STATE) {
+async function setupCoreStateMock(
+  page: Page,
+  state: keyof typeof MOCK_CORE_STATE,
+) {
   await page.route("**/api/core/state", async (route: Route) => {
     await route.fulfill({
       status: 200,
@@ -158,12 +230,20 @@ async function setupCoreStateMock(page: Page, state: keyof typeof MOCK_CORE_STAT
 }
 
 test.describe("CORE State-of-Business Dashboard", () => {
+  // Skip entire suite if running in unauthenticated environment
+  test.skip(
+    skipInUnauthenticatedEnv,
+    "Requires authenticated Clerk session - set PLAYWRIGHT_AUTH_BYPASS=1 or run in CI",
+  );
+
   test.describe("Empty Organization", () => {
     test.beforeEach(async ({ page }) => {
       await setupCoreStateMock(page, "empty");
     });
 
-    test("shows 'No Financial Data Yet' when available=false", async ({ page }) => {
+    test("shows 'No Financial Data Yet' when available=false", async ({
+      page,
+    }) => {
       await page.goto("/home");
 
       // Should show single honest notice - no fake widgets
@@ -227,7 +307,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
       await setupCoreStateMock(page, "partial");
     });
 
-    test("shows Financial Evidence section with available data", async ({ page }) => {
+    test("shows Financial Evidence section with available data", async ({
+      page,
+    }) => {
       await page.goto("/home");
 
       // Should show "Financial Evidence" heading
@@ -275,7 +357,9 @@ test.describe("CORE State-of-Business Dashboard", () => {
       await expect(vendorsCard).not.toBeVisible();
     });
 
-    test("data appears on load - no manual fetch required", async ({ page }) => {
+    test("data appears on load - no manual fetch required", async ({
+      page,
+    }) => {
       await page.goto("/home");
 
       // Data should appear automatically - no "Fetch" button for CORE
@@ -339,12 +423,12 @@ test.describe("CORE State-of-Business Dashboard", () => {
       await expect(page.locator("text=8").first()).toBeVisible();
     });
 
-    test("shows recent transactions", async ({ page }) => {
+    test("shows recent activity", async ({ page }) => {
       await page.goto("/home");
 
-      // Should show recent transactions
-      const recentTx = page.locator("text=Recent Transactions");
-      await expect(recentTx).toBeVisible();
+      // Should show recent activity section
+      const recentActivity = page.locator("text=Recent Activity");
+      await expect(recentActivity).toBeVisible();
 
       // Should show transaction merchant names
       const merchant = page.locator("text=Office Supplies");
@@ -427,7 +511,7 @@ test.describe("CORE State-of-Business Dashboard", () => {
           url.includes("/api/invoices") ||
           url.includes("/api/bills") ||
           url.includes("/api/customers") ||
-          url.includes("/api/vendors")
+          url.includes("/api/vendors"),
       );
 
       expect(coreFetches.length).toBe(0);
@@ -444,6 +528,176 @@ test.describe("CORE State-of-Business Dashboard", () => {
       // Check attention items have visible styling
       const attentionChip = page.locator('a:has-text("unpaid invoices")');
       await expect(attentionChip).toBeVisible();
+    });
+  });
+
+  test.describe("Sync Lifecycle Visibility", () => {
+    test("does not show sync banner when status is 'success'", async ({
+      page,
+    }) => {
+      // Default mocks use status: "success"
+      await setupCoreStateMock(page, "full");
+      await page.goto("/home");
+
+      // Should NOT show sync banner
+      const syncRunning = page.locator("text=Syncing financial data");
+      await expect(syncRunning).not.toBeVisible();
+
+      const syncFailed = page.locator("text=Sync failed");
+      await expect(syncFailed).not.toBeVisible();
+    });
+
+    test("does not show sync banner when status is 'never'", async ({
+      page,
+    }) => {
+      // Empty org has sync.status: "never"
+      await setupCoreStateMock(page, "empty");
+      await page.goto("/home");
+
+      // Should NOT show sync banner
+      const syncRunning = page.locator("text=Syncing financial data");
+      await expect(syncRunning).not.toBeVisible();
+
+      const syncFailed = page.locator("text=Sync failed");
+      await expect(syncFailed).not.toBeVisible();
+    });
+
+    test("shows sync banner when status is 'running'", async ({ page }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.partial,
+            sync: {
+              status: "running",
+              started_at: new Date().toISOString(),
+              last_successful_at: null,
+              error_reason: null,
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Should show running banner
+      const syncRunning = page.locator("text=Syncing financial data");
+      await expect(syncRunning).toBeVisible();
+    });
+
+    test("shows error badge when status is 'failed'", async ({ page }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.partial,
+            sync: {
+              status: "failed",
+              started_at: new Date(Date.now() - 10000).toISOString(),
+              last_successful_at: null,
+              error_reason: "Connection timeout",
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Should show error badge with reason
+      const syncFailed = page.locator("text=Sync failed");
+      await expect(syncFailed).toBeVisible();
+
+      const errorReason = page.locator("text=Connection timeout");
+      await expect(errorReason).toBeVisible();
+    });
+  });
+
+  test.describe("Evidence Density", () => {
+    test("recent activity shows max 3 items", async ({ page }) => {
+      await page.route("**/api/core/state", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...MOCK_CORE_STATE.full,
+            evidence: {
+              ...MOCK_CORE_STATE.full.evidence,
+              recent_transactions: {
+                count: 10,
+                items: [
+                  {
+                    id: "tx1",
+                    date: "2024-01-15",
+                    amount: -500,
+                    merchant_name: "Merchant 1",
+                  },
+                  {
+                    id: "tx2",
+                    date: "2024-01-14",
+                    amount: 1200,
+                    merchant_name: "Merchant 2",
+                  },
+                  {
+                    id: "tx3",
+                    date: "2024-01-13",
+                    amount: -300,
+                    merchant_name: "Merchant 3",
+                  },
+                  {
+                    id: "tx4",
+                    date: "2024-01-12",
+                    amount: 800,
+                    merchant_name: "Merchant 4",
+                  },
+                  {
+                    id: "tx5",
+                    date: "2024-01-11",
+                    amount: -150,
+                    merchant_name: "Merchant 5",
+                  },
+                ],
+              },
+            },
+          }),
+        });
+      });
+
+      await page.route("**/api/me", async (route: Route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "user_test" }),
+        });
+      });
+
+      await page.goto("/home");
+
+      // Should show only first 3 merchants
+      await expect(page.locator("text=Merchant 1")).toBeVisible();
+      await expect(page.locator("text=Merchant 2")).toBeVisible();
+      await expect(page.locator("text=Merchant 3")).toBeVisible();
+
+      // Should NOT show 4th and 5th
+      await expect(page.locator("text=Merchant 4")).not.toBeVisible();
+      await expect(page.locator("text=Merchant 5")).not.toBeVisible();
     });
   });
 });

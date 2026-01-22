@@ -20,11 +20,11 @@ ReconAI is a **financial control plane** handling sensitive financial data. Sing
 
 MFA enforcement uses a defense-in-depth approach:
 
-| Layer | Location | Behavior |
-|-------|----------|----------|
-| **1. Clerk Provider** | Clerk Dashboard | Sessions without MFA verification are not issued |
-| **2. Middleware** | `src/middleware.ts` | Redirects users without MFA to `/mfa-setup` |
-| **3. Layout Guard** | `src/app/(dashboard)/layout.tsx` | Server-side check before rendering dashboard |
+| Layer                 | Location                         | Behavior                                         |
+| --------------------- | -------------------------------- | ------------------------------------------------ |
+| **1. Clerk Provider** | Clerk Dashboard                  | Sessions without MFA verification are not issued |
+| **2. Middleware**     | `src/middleware.ts`              | Redirects users without MFA to `/mfa-setup`      |
+| **3. Layout Guard**   | `src/app/(dashboard)/layout.tsx` | Server-side check before rendering dashboard     |
 
 ### Flow Diagram
 
@@ -87,15 +87,15 @@ NEXT_PUBLIC_ENFORCE_MFA=true
 
 ### Components Created
 
-| Component | Path | Purpose |
-|-----------|------|---------|
+| Component         | Path                                      | Purpose                                      |
+| ----------------- | ----------------------------------------- | -------------------------------------------- |
 | `MFAVerification` | `src/components/auth/MFAVerification.tsx` | TOTP/backup code verification during sign-in |
-| `MFAEnrollment` | `src/components/auth/MFAEnrollment.tsx` | Forced MFA setup for users without MFA |
+| `MFAEnrollment`   | `src/components/auth/MFAEnrollment.tsx`   | Forced MFA setup for users without MFA       |
 
 ### Routes Added
 
-| Route | Purpose |
-|-------|---------|
+| Route        | Purpose                    |
+| ------------ | -------------------------- |
 | `/mfa-setup` | Forced MFA enrollment page |
 
 ### Sign-In Flow Changes
@@ -108,12 +108,12 @@ The `SignInClient` component now handles:
 
 ## Supported MFA Methods
 
-| Method | Status | Notes |
-|--------|--------|-------|
-| TOTP (Authenticator App) | ✅ Required | Google Authenticator, Authy, 1Password, etc. |
-| Backup Codes | ✅ Required | Generated during enrollment, single-use |
-| SMS | ❌ Not Supported | Not secure enough for financial data |
-| Email Code | ❌ Not Supported | Only for first factor |
+| Method                   | Status           | Notes                                        |
+| ------------------------ | ---------------- | -------------------------------------------- |
+| TOTP (Authenticator App) | ✅ Required      | Google Authenticator, Authy, 1Password, etc. |
+| Backup Codes             | ✅ Required      | Generated during enrollment, single-use      |
+| SMS                      | ❌ Not Supported | Not secure enough for financial data         |
+| Email Code               | ❌ Not Supported | Only for first factor                        |
 
 ## Verification Checklist
 
@@ -143,13 +143,13 @@ grep -n "twoFactorEnabled" src/app/\(dashboard\)/layout.tsx
 
 ## Edge Cases Handled
 
-| Scenario | Behavior |
-|----------|----------|
-| Existing user without MFA | Redirected to `/mfa-setup` on next login |
-| New user first sign-in | Must complete MFA enrollment before dashboard |
-| Lost authenticator | Use backup codes |
-| All backup codes used | Contact support (manual recovery) |
-| OAuth sign-in (Google) | Still requires MFA verification |
+| Scenario                  | Behavior                                      |
+| ------------------------- | --------------------------------------------- |
+| Existing user without MFA | Redirected to `/mfa-setup` on next login      |
+| New user first sign-in    | Must complete MFA enrollment before dashboard |
+| Lost authenticator        | Use backup codes                              |
+| All backup codes used     | Contact support (manual recovery)             |
+| OAuth sign-in (Google)    | Still requires MFA verification               |
 
 ## Security Considerations
 
@@ -168,12 +168,12 @@ grep -n "twoFactorEnabled" src/app/\(dashboard\)/layout.tsx
 
 ## Canonical Laws Compliance
 
-| Law | Status | Implementation |
-|-----|--------|----------------|
-| Fail-Closed | ✅ | Unknown MFA status = redirect to setup |
-| Explicit > Implicit | ✅ | Clear UI for MFA requirements |
-| No Bypass | ✅ | No skip paths in enrollment flow |
-| Auth Required | ✅ | All dashboard routes require auth + MFA |
+| Law                 | Status | Implementation                          |
+| ------------------- | ------ | --------------------------------------- |
+| Fail-Closed         | ✅     | Unknown MFA status = redirect to setup  |
+| Explicit > Implicit | ✅     | Clear UI for MFA requirements           |
+| No Bypass           | ✅     | No skip paths in enrollment flow        |
+| Auth Required       | ✅     | All dashboard routes require auth + MFA |
 
 ## Troubleshooting
 

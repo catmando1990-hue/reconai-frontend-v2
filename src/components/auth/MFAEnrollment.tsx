@@ -32,13 +32,20 @@ const inputClassName =
 
 const labelClassName = "text-sm font-medium leading-none";
 
-type EnrollmentStep = "intro" | "setup" | "verify" | "backup_codes" | "complete";
+type EnrollmentStep =
+  | "intro"
+  | "setup"
+  | "verify"
+  | "backup_codes"
+  | "complete";
 
 interface MFAEnrollmentProps {
   redirectUrl?: string;
 }
 
-export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps) {
+export function MFAEnrollment({
+  redirectUrl = "/accounts",
+}: MFAEnrollmentProps) {
   const router = useRouter();
   const { user, isLoaded } = useUser();
 
@@ -112,7 +119,7 @@ export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps)
         setIsLoading(false);
       }
     },
-    [user, code]
+    [user, code],
   );
 
   const handleComplete = useCallback(() => {
@@ -144,8 +151,8 @@ export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps)
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Secure your account</CardTitle>
           <CardDescription>
-            Two-factor authentication (MFA) is required to access ReconAI.
-            This adds an extra layer of security to your financial data.
+            Two-factor authentication (MFA) is required to access ReconAI. This
+            adds an extra layer of security to your financial data.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -161,14 +168,21 @@ export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps)
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>You&apos;ll need:</p>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>An authenticator app (Google Authenticator, Authy, 1Password, etc.)</li>
+              <li>
+                An authenticator app (Google Authenticator, Authy, 1Password,
+                etc.)
+              </li>
               <li>A safe place to store backup codes</li>
             </ul>
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button onClick={handleStartSetup} disabled={isLoading} className="w-full">
+          <Button
+            onClick={handleStartSetup}
+            disabled={isLoading}
+            className="w-full"
+          >
             {isLoading ? (
               <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             ) : (
@@ -194,7 +208,8 @@ export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps)
           <div className="flex justify-center">
             {totp.uri && (
               <div className="rounded-lg border bg-white p-4">
-                {/* QR code rendered via img tag with data URI */}
+                {/* QR code from external API - next/image not suitable for dynamic external URLs */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(totp.uri)}`}
                   alt="TOTP QR Code"
@@ -245,7 +260,10 @@ export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps)
                 autoComplete="one-time-code"
                 required
                 maxLength={6}
-                className={cn(inputClassName, "text-center tracking-widest text-lg")}
+                className={cn(
+                  inputClassName,
+                  "text-center tracking-widest text-lg",
+                )}
                 placeholder="000000"
                 value={code}
                 onChange={(e) =>
@@ -295,15 +313,15 @@ export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps)
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Save your backup codes</CardTitle>
           <CardDescription>
-            Store these codes in a safe place. You can use them to sign in if you
-            lose access to your authenticator app.
+            Store these codes in a safe place. You can use them to sign in if
+            you lose access to your authenticator app.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4">
             <p className="text-sm text-amber-700 dark:text-amber-400">
-              <strong>Important:</strong> Each code can only be used once. Store them
-              securely and do not share them.
+              <strong>Important:</strong> Each code can only be used once. Store
+              them securely and do not share them.
             </p>
           </div>
 
@@ -315,7 +333,11 @@ export function MFAEnrollment({ redirectUrl = "/accounts" }: MFAEnrollmentProps)
             ))}
           </div>
 
-          <Button variant="outline" onClick={handleCopyBackupCodes} className="w-full">
+          <Button
+            variant="outline"
+            onClick={handleCopyBackupCodes}
+            className="w-full"
+          >
             Copy backup codes
           </Button>
 

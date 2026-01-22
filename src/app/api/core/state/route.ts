@@ -70,6 +70,14 @@ export interface CoreStateResponse {
   request_id: string;
   fetched_at: string;
 
+  /** Sync lifecycle - only render UI for "running" or "failed" states */
+  sync: {
+    status: "running" | "failed" | "success" | "never";
+    started_at: string | null;
+    last_successful_at: string | null;
+    error_reason: string | null;
+  };
+
   /** Live State - what needs attention NOW */
   live_state: {
     unpaid_invoices: {
@@ -158,6 +166,12 @@ function failClosedResponse(requestId: string): CoreStateResponse {
     available: false,
     request_id: requestId,
     fetched_at: new Date().toISOString(),
+    sync: {
+      status: "never",
+      started_at: null,
+      last_successful_at: null,
+      error_reason: null,
+    },
     live_state: {
       unpaid_invoices: null,
       unpaid_bills: null,
@@ -250,15 +264,21 @@ export async function GET() {
     };
 
     // Fetch all data in parallel - SINGLE FETCH for all CORE data
-    const [invoices, bills, customerCount, vendorCount, transactions, plaidItems] =
-      await Promise.all([
-        fetchData<InvoiceData>("/api/invoices?limit=1000"),
-        fetchData<BillData>("/api/bills?limit=1000"),
-        fetchCount("/api/customers?limit=1000"),
-        fetchCount("/api/vendors?limit=1000"),
-        fetchData<TransactionData>("/api/transactions?limit=50"),
-        fetchData<PlaidItemData>("/api/plaid/items"),
-      ]);
+    const [
+      invoices,
+      bills,
+      customerCount,
+      vendorCount,
+      transactions,
+      plaidItems,
+    ] = await Promise.all([
+      fetchData<InvoiceData>("/api/invoices?limit=1000"),
+      fetchData<BillData>("/api/bills?limit=1000"),
+      fetchCount("/api/customers?limit=1000"),
+      fetchCount("/api/vendors?limit=1000"),
+      fetchData<TransactionData>("/api/transactions?limit=50"),
+      fetchData<PlaidItemData>("/api/plaid/items"),
+    ]);
 
     // Determine overall availability - need at least some data
     const hasAnyData =
@@ -272,15 +292,22 @@ export async function GET() {
     }
 
     // Build Live State - what needs attention NOW
-    let unpaidInvoices: CoreStateResponse["live_state"]["unpaid_invoices"] = null;
+    let unpaidInvoices: CoreStateResponse["live_state"]["unpaid_invoices"] =
+      null;
     if (invoices !== null) {
       const unpaid = invoices.filter(
-        (inv) => inv.status !== "paid" && inv.status !== "cancelled" && inv.amount_due > 0
+        (inv) =>
+          inv.status !== "paid" &&
+          inv.status !== "cancelled" &&
+          inv.amount_due > 0,
       );
       if (unpaid.length > 0) {
         unpaidInvoices = {
           count: unpaid.length,
-          total_due: unpaid.reduce((sum, inv) => sum + (inv.amount_due || 0), 0),
+          total_due: unpaid.reduce(
+            (sum, inv) => sum + (inv.amount_due || 0),
+            0,
+          ),
           items: unpaid.slice(0, 5).map((inv) => ({
             id: inv.id,
             customer_name: inv.customer_name || "Unknown",
@@ -295,12 +322,15 @@ export async function GET() {
     let unpaidBills: CoreStateResponse["live_state"]["unpaid_bills"] = null;
     if (bills !== null) {
       const unpaid = bills.filter(
-        (bill) => bill.status !== "paid" && bill.amount_due > 0
+        (bill) => bill.status !== "paid" && bill.amount_due > 0,
       );
       if (unpaid.length > 0) {
         unpaidBills = {
           count: unpaid.length,
-          total_due: unpaid.reduce((sum, bill) => sum + (bill.amount_due || 0), 0),
+          total_due: unpaid.reduce(
+            (sum, bill) => sum + (bill.amount_due || 0),
+            0,
+          ),
           items: unpaid.slice(0, 5).map((bill) => ({
             id: bill.id,
             vendor_name: bill.vendor_name || "Unknown",
@@ -322,13 +352,14 @@ export async function GET() {
         };
       } else {
         const needsAttention = plaidItems.filter(
-          (item) => item.status === "error" || item.status === "login_required"
+          (item) => item.status === "error" || item.status === "login_required",
         );
-        const latestSync = plaidItems
-          .map((item) => item.last_synced_at)
-          .filter((ts): ts is string => ts !== undefined && ts !== null)
-          .sort()
-          .reverse()[0] || null;
+        const latestSync =
+          plaidItems
+            .map((item) => item.last_synced_at)
+            .filter((ts): ts is string => ts !== undefined && ts !== null)
+            .sort()
+            .reverse()[0] || null;
 
         let status: "healthy" | "stale" | "error" = "healthy";
         if (needsAttention.length > 0) {
@@ -350,9 +381,18 @@ export async function GET() {
     if (invoices !== null) {
       invoiceEvidence = {
         total_count: invoices.length,
-        total_amount: invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0),
-        paid_amount: invoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0),
-        due_amount: invoices.reduce((sum, inv) => sum + (inv.amount_due || 0), 0),
+        total_amount: invoices.reduce(
+          (sum, inv) => sum + (inv.total_amount || 0),
+          0,
+        ),
+        paid_amount: invoices.reduce(
+          (sum, inv) => sum + (inv.amount_paid || 0),
+          0,
+        ),
+        due_amount: invoices.reduce(
+          (sum, inv) => sum + (inv.amount_due || 0),
+          0,
+        ),
         by_status: {
           paid: invoices.filter((inv) => inv.status === "paid").length,
           pending: invoices.filter((inv) => inv.status === "sent").length,
@@ -366,20 +406,30 @@ export async function GET() {
     if (bills !== null) {
       billEvidence = {
         total_count: bills.length,
-        total_amount: bills.reduce((sum, bill) => sum + (bill.amount_total || 0), 0),
-        paid_amount: bills.reduce((sum, bill) => sum + (bill.amount_paid || 0), 0),
-        due_amount: bills.reduce((sum, bill) => sum + (bill.amount_due || 0), 0),
+        total_amount: bills.reduce(
+          (sum, bill) => sum + (bill.amount_total || 0),
+          0,
+        ),
+        paid_amount: bills.reduce(
+          (sum, bill) => sum + (bill.amount_paid || 0),
+          0,
+        ),
+        due_amount: bills.reduce(
+          (sum, bill) => sum + (bill.amount_due || 0),
+          0,
+        ),
         by_status: {
           paid: bills.filter((bill) => bill.status === "paid").length,
           pending: bills.filter(
-            (bill) => bill.status === "pending" || bill.status === "partial"
+            (bill) => bill.status === "pending" || bill.status === "partial",
           ).length,
           overdue: 0, // Backend doesn't track overdue for bills
         },
       };
     }
 
-    let recentTransactions: CoreStateResponse["evidence"]["recent_transactions"] = null;
+    let recentTransactions: CoreStateResponse["evidence"]["recent_transactions"] =
+      null;
     if (transactions !== null && transactions.length > 0) {
       recentTransactions = {
         count: transactions.length,
@@ -392,10 +442,21 @@ export async function GET() {
       };
     }
 
+    // Determine sync status based on available data
+    // In production, this would come from a sync jobs table
+    // For now, derive from data availability
+    const syncStatus: CoreStateResponse["sync"] = {
+      status: hasAnyData ? "success" : "never",
+      started_at: null,
+      last_successful_at: hasAnyData ? new Date().toISOString() : null,
+      error_reason: null,
+    };
+
     const response: CoreStateResponse = {
       available: true,
       request_id: requestId,
       fetched_at: new Date().toISOString(),
+      sync: syncStatus,
       live_state: {
         unpaid_invoices: unpaidInvoices,
         unpaid_bills: unpaidBills,
@@ -404,7 +465,8 @@ export async function GET() {
       evidence: {
         invoices: invoiceEvidence,
         bills: billEvidence,
-        customers: customerCount !== null ? { total_count: customerCount } : null,
+        customers:
+          customerCount !== null ? { total_count: customerCount } : null,
         vendors: vendorCount !== null ? { total_count: vendorCount } : null,
         recent_transactions: recentTransactions,
       },

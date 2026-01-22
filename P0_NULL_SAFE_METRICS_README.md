@@ -8,6 +8,7 @@ when the backend returns null/undefined nested objects.
 ## Root Cause
 
 Runtime error:
+
 ```
 Cannot read properties of undefined (reading 'totalInvoiced')
 ```
@@ -44,7 +45,9 @@ The hook now normalizes raw API responses, ensuring all nested objects
 exist even if the backend returns null/undefined:
 
 ```typescript
-function normalizeMetrics(raw: RawMetricsResponse | null | undefined): DashboardMetrics {
+function normalizeMetrics(
+  raw: RawMetricsResponse | null | undefined,
+): DashboardMetrics {
   if (!raw) {
     return failClosedMetrics;
   }
@@ -89,10 +92,10 @@ const derived = useMemo(() => {
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `src/hooks/useDashboardMetrics.ts` | Added `available` flag, raw response type, normalization function |
-| `src/app/(dashboard)/home/page.tsx` | Added availability check before accessing nested fields |
+| File                                | Change                                                            |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| `src/hooks/useDashboardMetrics.ts`  | Added `available` flag, raw response type, normalization function |
+| `src/app/(dashboard)/home/page.tsx` | Added availability check before accessing nested fields           |
 
 ## What This Prevents
 

@@ -105,7 +105,7 @@ function isSyncStale(lastSyncedAt: string | null): boolean {
  */
 function filterWaitingDocuments(documents: Document[]): Document[] {
   return documents.filter(
-    (doc) => doc.status !== "completed" && doc.status !== "failed"
+    (doc) => doc.status !== "completed" && doc.status !== "failed",
   );
 }
 
@@ -207,8 +207,7 @@ export function useDashboardState() {
       }
 
       // Determine overall availability
-      const available =
-        documentsWaiting.available || bankSync.available;
+      const available = documentsWaiting.available || bankSync.available;
 
       setState({
         available,
@@ -224,7 +223,9 @@ export function useDashboardState() {
       });
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to load dashboard state")
+        err instanceof Error
+          ? err
+          : new Error("Failed to load dashboard state"),
       );
       setState(failClosedState);
     } finally {
@@ -294,8 +295,7 @@ export function useDashboardState() {
         }
 
         // Determine overall availability
-        const available =
-          documentsWaiting.available || bankSync.available;
+        const available = documentsWaiting.available || bankSync.available;
 
         setState({
           available,
@@ -314,7 +314,7 @@ export function useDashboardState() {
           setError(
             err instanceof Error
               ? err
-              : new Error("Failed to load dashboard state")
+              : new Error("Failed to load dashboard state"),
           );
           setState(failClosedState);
         }
@@ -331,6 +331,6 @@ export function useDashboardState() {
 
   return useMemo(
     () => ({ state, isLoading, error, refetch: fetchState }),
-    [state, isLoading, error, fetchState]
+    [state, isLoading, error, fetchState],
   );
 }

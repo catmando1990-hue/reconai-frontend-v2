@@ -10,12 +10,14 @@ It ensures no trust violations can silently enter production.
 ## PART 1: Deprecated Code Paths
 
 ### Plaid v1 Router
+
 - [ ] **VERIFIED**: `plaid.py` endpoints return 410 Gone
 - [ ] **VERIFIED**: No direct calls to `stores.save_user_token()` or `stores.get_user_access_token()`
 - [ ] **VERIFIED**: `/link-token`, `/exchange-public-token`, `/accounts`, `/transactions` all deprecated
 - [ ] **VERIFIED**: Frontend uses v2 API endpoints (`/api/plaid/*`)
 
 ### How to Verify
+
 ```bash
 # Backend: Test deprecated endpoints return 410
 curl -X POST https://api.reconai.com/link-token
@@ -32,16 +34,19 @@ grep -r "POST /exchange-public-token" src/
 ## PART 2: Mock/Demo Data References
 
 ### Signals API
+
 - [ ] **VERIFIED**: `DEMO_MODE` flag in `signals.py` is documented
 - [ ] **VERIFIED**: Frontend displays "Demo" badge when `mode === "demo"`
 - [ ] **VERIFIED**: No hardcoded signal data in frontend
 
 ### Dashboard Metrics
+
 - [ ] **VERIFIED**: No hardcoded zeros in `useDashboardMetrics.ts`
 - [ ] **VERIFIED**: Fail-closed metrics return `null` not `0`
 - [ ] **VERIFIED**: UI shows "Unknown" for null values
 
 ### How to Verify
+
 ```bash
 # Search for hardcoded demo data
 grep -rn "DEMO_MODE" app/routers/
@@ -58,20 +63,24 @@ grep -rn 'status.*"ok"' src/
 ## PART 3: Live Indicators Wired to Backend
 
 ### Connection Status
+
 - [ ] **VERIFIED**: Plaid status comes from `/api/plaid/status` (backend items)
 - [ ] **VERIFIED**: No fabricated "Healthy" or "Connected" states
 - [ ] **VERIFIED**: Status shows "Unknown" when backend unavailable
 
 ### Data Freshness
+
 - [ ] **VERIFIED**: "Last Sync" shows actual timestamp or "Unknown"
 - [ ] **VERIFIED**: No hardcoded "Just now", "2m ago", "Live"
 - [ ] **VERIFIED**: `Data Mode: On-demand` not `Data Sync: Live`
 
 ### System Status
+
 - [ ] **VERIFIED**: `SystemStatusPanel.tsx` shows "Unknown" for null values
 - [ ] **VERIFIED**: Health status from backend API, not fabricated
 
 ### How to Verify
+
 ```bash
 # Search for suspicious "live" indicators
 grep -rn '"Live"' src/
@@ -89,21 +98,25 @@ grep -rn 'status.*healthy' src/
 ## PART 4: Unknown States Explicitly Labeled
 
 ### Status Types
+
 - [ ] **VERIFIED**: `status-contracts.ts` defines all valid status types
 - [ ] **VERIFIED**: All status types include "unknown" option
 - [ ] **VERIFIED**: Helper functions default to "unknown" for invalid values
 
 ### UI Components
+
 - [ ] **VERIFIED**: `DataSourcesSection.tsx` shows "Unknown" for missing data
 - [ ] **VERIFIED**: `SystemStatusPanel.tsx` shows "Unknown" for null Plaid sync
 - [ ] **VERIFIED**: `ConnectedAccounts.tsx` shows "Unknown" for invalid status
 
 ### Metrics Display
+
 - [ ] **VERIFIED**: Null counts display as "Unknown" not "0" or "--"
 - [ ] **VERIFIED**: Null amounts display as "Unknown" not "$0.00"
 - [ ] **VERIFIED**: Null timestamps display as "Unknown" not fake times
 
 ### How to Verify
+
 ```bash
 # Verify unknown handling
 grep -rn 'return.*Unknown' src/
@@ -121,15 +134,18 @@ grep -rn "|| ''" src/      # Defaulting to empty string hides missing data
 ## PART 5: Build & Type Safety
 
 ### TypeScript
+
 - [ ] **VERIFIED**: `npm run build` passes with no type errors
 - [ ] **VERIFIED**: All status values are strongly typed (no `string`)
 - [ ] **VERIFIED**: Nullable fields use `T | null` not `T | undefined`
 
 ### ESLint
+
 - [ ] **VERIFIED**: `npm run lint` passes
 - [ ] **VERIFIED**: No `@ts-ignore` or `any` types in status code
 
 ### How to Verify
+
 ```bash
 cd reconai-frontend-v2
 npm run build  # Must pass
@@ -146,16 +162,19 @@ grep -rn ': any' src/types/
 ## PART 6: Backend Validation
 
 ### API Responses
+
 - [ ] **VERIFIED**: All status endpoints return structured JSON
 - [ ] **VERIFIED**: Error responses include proper status codes
 - [ ] **VERIFIED**: Deprecated endpoints return 410 Gone
 
 ### Data Integrity
+
 - [ ] **VERIFIED**: No mock data in production responses
 - [ ] **VERIFIED**: All timestamps are real (not fabricated)
 - [ ] **VERIFIED**: All counts are from actual queries (not hardcoded)
 
 ### How to Verify
+
 ```bash
 # Test API endpoints
 curl https://api.reconai.com/api/plaid/status -H "Authorization: Bearer $TOKEN"
@@ -172,9 +191,9 @@ curl -X POST https://api.reconai.com/link-token
 
 **Pre-Deploy Review Completed By:**
 
-- [ ] Developer: _________________ Date: _________
-- [ ] Code Review: _________________ Date: _________
-- [ ] QA Verification: _________________ Date: _________
+- [ ] Developer: **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\*\***
+- [ ] Code Review: **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\*\***
+- [ ] QA Verification: **\*\*\*\***\_**\*\*\*\*** Date: \***\*\_\*\***
 
 **Deployment Approved:**
 

@@ -4,7 +4,11 @@ import Link from "next/link";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import PageHelp from "@/components/dashboard/PageHelp";
 import FirstRunSystemBanner from "@/components/dashboard/FirstRunSystemBanner";
-import { useCoreState, type CoreState } from "@/hooks/useCoreState";
+import {
+  useCoreState,
+  type CoreState,
+  type CoreSyncState,
+} from "@/hooks/useCoreState";
 import { formatCurrency, formatCount } from "@/lib/renderGuards";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +22,8 @@ import {
   Banknote,
   TrendingUp,
   Activity,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 /**
@@ -60,8 +66,10 @@ function LiveStateSection({ liveState }: LiveStateProps) {
   const hasUnpaidBills = unpaid_bills && unpaid_bills.count > 0;
   const hasBankError = bank_sync?.status === "error";
   const hasBankStale = bank_sync?.status === "stale";
-  const overdueInvoiceCount = unpaid_invoices?.items.filter((i) => i.is_overdue).length ?? 0;
-  const overdueBillCount = unpaid_bills?.items.filter((b) => b.is_overdue).length ?? 0;
+  const overdueInvoiceCount =
+    unpaid_invoices?.items.filter((i) => i.is_overdue).length ?? 0;
+  const overdueBillCount =
+    unpaid_bills?.items.filter((b) => b.is_overdue).length ?? 0;
 
   // If no attention items, don't render this section
   if (!hasUnpaidInvoices && !hasUnpaidBills && !hasBankError && !hasBankStale) {
@@ -83,7 +91,8 @@ function LiveStateSection({ liveState }: LiveStateProps) {
           >
             <FileText className="h-4 w-4" />
             <span>
-              {unpaid_invoices.count} unpaid invoice{unpaid_invoices.count !== 1 ? "s" : ""}
+              {unpaid_invoices.count} unpaid invoice
+              {unpaid_invoices.count !== 1 ? "s" : ""}
               {overdueInvoiceCount > 0 && (
                 <span className="ml-1 text-red-600 dark:text-red-400">
                   ({overdueInvoiceCount} overdue)
@@ -104,7 +113,8 @@ function LiveStateSection({ liveState }: LiveStateProps) {
           >
             <Receipt className="h-4 w-4" />
             <span>
-              {unpaid_bills.count} unpaid bill{unpaid_bills.count !== 1 ? "s" : ""}
+              {unpaid_bills.count} unpaid bill
+              {unpaid_bills.count !== 1 ? "s" : ""}
               {overdueBillCount > 0 && (
                 <span className="ml-1 text-red-600 dark:text-red-400">
                   ({overdueBillCount} overdue)
@@ -125,11 +135,13 @@ function LiveStateSection({ liveState }: LiveStateProps) {
           >
             <Banknote className="h-4 w-4" />
             <span>Bank connection error</span>
-            {bank_sync?.items_needing_attention && bank_sync.items_needing_attention > 0 && (
-              <span className="text-xs">
-                ({bank_sync.items_needing_attention} item{bank_sync.items_needing_attention !== 1 ? "s" : ""})
-              </span>
-            )}
+            {bank_sync?.items_needing_attention &&
+              bank_sync.items_needing_attention > 0 && (
+                <span className="text-xs">
+                  ({bank_sync.items_needing_attention} item
+                  {bank_sync.items_needing_attention !== 1 ? "s" : ""})
+                </span>
+              )}
           </Link>
         )}
 
@@ -169,10 +181,17 @@ function EvidenceSection({ evidence }: EvidenceProps) {
   const hasBills = bills !== null && bills.total_count > 0;
   const hasCustomers = customers !== null && customers.total_count > 0;
   const hasVendors = vendors !== null && vendors.total_count > 0;
-  const hasTransactions = recent_transactions !== null && recent_transactions.count > 0;
+  const hasTransactions =
+    recent_transactions !== null && recent_transactions.count > 0;
 
   // If no evidence at all, don't render section
-  if (!hasInvoices && !hasBills && !hasCustomers && !hasVendors && !hasTransactions) {
+  if (
+    !hasInvoices &&
+    !hasBills &&
+    !hasCustomers &&
+    !hasVendors &&
+    !hasTransactions
+  ) {
     return null;
   }
 
@@ -213,7 +232,9 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                     <div className="text-2xl font-bold text-foreground">
                       {formatCount(invoices.total_count)}
                     </div>
-                    <div className="text-xs text-muted-foreground">invoices</div>
+                    <div className="text-xs text-muted-foreground">
+                      invoices
+                    </div>
                   </div>
                 </div>
                 <div className="mt-4 flex justify-end">
@@ -280,7 +301,9 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Customers</span>
+                    <span className="text-sm font-medium text-foreground">
+                      Customers
+                    </span>
                   </div>
                   <div className="text-xl font-bold text-foreground">
                     {formatCount(customers.total_count)}
@@ -296,7 +319,9 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Vendors</span>
+                    <span className="text-sm font-medium text-foreground">
+                      Vendors
+                    </span>
                   </div>
                   <div className="text-xl font-bold text-foreground">
                     {formatCount(vendors.total_count)}
@@ -308,14 +333,14 @@ function EvidenceSection({ evidence }: EvidenceProps) {
         </div>
       )}
 
-      {/* Recent Transactions - only if data exists */}
+      {/* Recent Activity - only if data exists, max 3 items */}
       {hasTransactions && (
         <Card className="border-border/60 bg-card">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
                 <Activity className="h-4 w-4 text-muted-foreground" />
-                Recent Transactions
+                Recent Activity
               </CardTitle>
               <Button asChild size="sm" variant="ghost">
                 <Link href="/core/transactions">
@@ -326,7 +351,8 @@ function EvidenceSection({ evidence }: EvidenceProps) {
           </CardHeader>
           <CardContent className="pb-4">
             <div className="space-y-2">
-              {recent_transactions.items.slice(0, 5).map((tx) => (
+              {/* P0 FIX: Max 3 items per list for evidence density */}
+              {recent_transactions.items.slice(0, 3).map((tx) => (
                 <div
                   key={tx.id}
                   className="flex items-center justify-between py-2 border-b border-border/40 last:border-0"
@@ -339,7 +365,9 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                       {new Date(tx.date).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className={`text-sm font-medium ${tx.amount < 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                  <div
+                    className={`text-sm font-medium ${tx.amount < 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
+                  >
                     {formatCurrency(Math.abs(tx.amount))}
                   </div>
                 </div>
@@ -383,8 +411,13 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
           variant="outline"
           className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
         >
-          <Link href="/core/transactions" className="flex flex-col items-start gap-1">
-            <span className="font-medium text-foreground">Review Transactions</span>
+          <Link
+            href="/core/transactions"
+            className="flex flex-col items-start gap-1"
+          >
+            <span className="font-medium text-foreground">
+              Review Transactions
+            </span>
             <span className="text-xs text-muted-foreground font-normal">
               View and categorize recent activity
             </span>
@@ -396,7 +429,10 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
           variant="outline"
           className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
         >
-          <Link href="/intelligence-dashboard" className="flex flex-col items-start gap-1">
+          <Link
+            href="/intelligence-dashboard"
+            className="flex flex-col items-start gap-1"
+          >
             <span className="font-medium text-foreground">Intelligence</span>
             <span className="text-xs text-muted-foreground font-normal">
               Analyze patterns and anomalies
@@ -409,7 +445,10 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
           variant="outline"
           className="h-auto py-4 justify-start border-border/60 hover:bg-accent"
         >
-          <Link href="/cfo-dashboard" className="flex flex-col items-start gap-1">
+          <Link
+            href="/cfo-dashboard"
+            className="flex flex-col items-start gap-1"
+          >
             <span className="font-medium text-foreground">CFO Overview</span>
             <span className="text-xs text-muted-foreground font-normal">
               High-level financial summary
@@ -419,6 +458,50 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
       </div>
     </div>
   );
+}
+
+// =============================================================================
+// SYNC BANNER - Only for "running" or "failed" states
+// =============================================================================
+
+interface SyncBannerProps {
+  sync: CoreSyncState;
+}
+
+/**
+ * SyncBanner - Shows sync lifecycle status
+ * ONLY renders for "running" or "failed" states
+ * P0 FIX: success/never = render NOTHING
+ */
+function SyncBanner({ sync }: SyncBannerProps) {
+  // P0 RULE: Only render for running/failed states
+  if (sync.status === "success" || sync.status === "never") {
+    return null;
+  }
+
+  // Running state - small inline banner
+  if (sync.status === "running") {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-md bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 text-sm text-blue-700 dark:text-blue-300">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <span>Syncing financial data…</span>
+      </div>
+    );
+  }
+
+  // Failed state - warning badge with error reason
+  if (sync.status === "failed") {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-md bg-red-500/10 border border-red-500/30 px-3 py-1.5 text-sm text-red-700 dark:text-red-300">
+        <AlertCircle className="h-3.5 w-3.5" />
+        <span>
+          Sync failed{sync.error_reason ? `: ${sync.error_reason}` : ""}
+        </span>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 // =============================================================================
@@ -432,10 +515,7 @@ export default function HomeDashboardPage() {
   // Loading state
   if (isLoading) {
     return (
-      <RouteShell
-        title="Dashboard"
-        subtitle="Loading state-of-business..."
-      >
+      <RouteShell title="Dashboard" subtitle="Loading state-of-business...">
         <div className="space-y-6">
           <div className="animate-pulse space-y-4">
             <div className="h-16 bg-card/30 rounded-lg" />
@@ -475,7 +555,8 @@ export default function HomeDashboardPage() {
               No Financial Data Yet
             </h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-              Connect your bank accounts or create invoices to see your state-of-business overview.
+              Connect your bank accounts or create invoices to see your
+              state-of-business overview.
             </p>
             <div className="flex justify-center gap-3">
               <Button asChild variant="default">
@@ -499,6 +580,8 @@ export default function HomeDashboardPage() {
       subtitle="State-of-business overview. Shows what's happening and what needs attention."
       right={
         <div className="flex items-center gap-2">
+          {/* Sync Banner - only for running/failed states, subordinate to Live State */}
+          <SyncBanner sync={state.sync} />
           <PageHelp
             title="Dashboard"
             description="Your state-of-business overview. Auto-populated from connected accounts."

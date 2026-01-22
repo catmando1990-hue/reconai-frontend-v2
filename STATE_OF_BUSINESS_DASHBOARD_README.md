@@ -14,9 +14,11 @@ This refactor transforms the Home Dashboard from a navigation menu into a true "
 ## Dashboard Structure
 
 ### Section 1: Live State (Top)
+
 **Purpose:** Shows what needs attention RIGHT NOW
 
 Displays attention chips for:
+
 - Documents waiting for processing (links to /documents)
 - Bank connection issues (login_required, error - links to /settings)
 - Bank sync stale (>24h since last sync - links to /settings)
@@ -25,9 +27,11 @@ Displays attention chips for:
 **Conditional:** Section only renders if any attention item exists.
 
 ### Section 2: Evidence (Middle)
+
 **Purpose:** Shows real data from connected accounts
 
 Displays:
+
 - Invoicing summary (total, paid, due, count)
 - Bills summary (total, paid, due, count)
 - Customer count (if available)
@@ -37,9 +41,11 @@ Displays:
 **Conditional:** Individual panels only render if data exists. Shows "Financial metrics unavailable" if no data.
 
 ### Section 3: Navigation (Bottom)
+
 **Purpose:** Quick paths into the system
 
 Shows:
+
 - Review Transactions
 - Run Intelligence
 - CFO Overview
@@ -49,7 +55,9 @@ Shows:
 ## New Files Created
 
 ### `src/lib/renderGuards.ts`
+
 Shared render guard utilities:
+
 - `renderIfAvailable(data, renderFn)` - Renders component only if data is non-null
 - `renderIfNonEmpty(array, renderFn)` - Renders component only if array has items
 - `formatMetric(value, options)` - Formats numbers, null → "—"
@@ -60,14 +68,18 @@ Shared render guard utilities:
 - `hasAllData(...values)` - Check if all values exist
 
 ### `src/hooks/useDashboardState.ts`
+
 Unified hook for dashboard state:
+
 - Fetches documents (for "waiting" count)
 - Fetches Plaid status (for bank sync staleness)
 - Does NOT auto-fetch signals (manual only per LAWS)
 - Returns structured state with availability flags
 
 ### `tests/dashboard-home.spec.ts`
+
 Playwright tests for three organization states:
+
 1. **Empty org** - No data, minimal UI, no hardcoded zeros
 2. **Partial org** - Some metrics, shows relevant sections
 3. **Full org** - All data, all sections visible
@@ -75,6 +87,7 @@ Playwright tests for three organization states:
 ## Files Modified
 
 ### `src/app/(dashboard)/home/page.tsx`
+
 - Refactored to three-section structure
 - Uses render guards for conditional rendering
 - Imports from shared utilities
@@ -84,12 +97,14 @@ Playwright tests for three organization states:
 ## Canonical Laws Compliance
 
 ### What This Prevents
+
 1. **False confidence** - No fake metrics suggesting system health
 2. **Misleading zeros** - Zero implies "verified zero", not "unknown"
 3. **Placeholder fatigue** - Users learn to ignore "coming soon" patterns
 4. **Silent failures** - Errors are explicit, not hidden behind fake UIs
 
 ### What This Enables
+
 1. **Truth-first dashboard** - Shows only what the system actually knows
 2. **Honest empty states** - Clear messaging about what's needed
 3. **Fail-closed behavior** - Unknown state is surfaced, not hidden
@@ -98,11 +113,13 @@ Playwright tests for three organization states:
 ## Testing
 
 Run the Playwright tests:
+
 ```bash
 npx playwright test tests/dashboard-home.spec.ts
 ```
 
 Test scenarios covered:
+
 - Empty organization displays "Financial metrics unavailable"
 - Partial organization shows available metrics only
 - Full organization shows all three sections

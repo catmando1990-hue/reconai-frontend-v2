@@ -114,7 +114,10 @@ export default function SystemStatusPanel() {
       <div className="flex items-center gap-1.5">
         <Clock className="h-3 w-3 text-muted-foreground" />
         <span className="text-muted-foreground">
-          Plaid: {data.last_plaid_sync ? formatTimestamp(data.last_plaid_sync) : "Unknown"}
+          Plaid:{" "}
+          {data.last_plaid_sync
+            ? formatTimestamp(data.last_plaid_sync)
+            : "Unknown"}
         </span>
       </div>
 

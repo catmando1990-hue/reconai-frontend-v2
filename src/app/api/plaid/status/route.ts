@@ -46,7 +46,13 @@ export async function GET() {
 
     // P1 FIX: Try to fetch actual Plaid items from the v2 API first
     // This provides real connection status, not fabricated values
-    let itemsResponse: { items?: Array<{ status?: string; item_id?: string; last_synced_at?: string }> } | null = null;
+    let itemsResponse: {
+      items?: Array<{
+        status?: string;
+        item_id?: string;
+        last_synced_at?: string;
+      }>;
+    } | null = null;
     try {
       const itemsResp = await fetch(`${BACKEND_URL}/api/plaid/items`, {
         method: "GET",
@@ -71,7 +77,9 @@ export async function GET() {
       let status: PlaidConnectionStatus = "not_connected";
       if (hasItems) {
         // Check if any item has an error or needs re-auth
-        const hasLoginRequired = items.some((i) => i.status === "login_required");
+        const hasLoginRequired = items.some(
+          (i) => i.status === "login_required",
+        );
         const hasError = items.some((i) => i.status === "error");
         const hasActive = items.some((i) => i.status === "active");
 
@@ -91,9 +99,8 @@ export async function GET() {
       const syncTimestamps = items
         .map((i) => i.last_synced_at)
         .filter((ts): ts is string => ts !== null && ts !== undefined);
-      const lastSyncedAt = syncTimestamps.length > 0
-        ? syncTimestamps.sort().reverse()[0]
-        : null;
+      const lastSyncedAt =
+        syncTimestamps.length > 0 ? syncTimestamps.sort().reverse()[0] : null;
 
       const plaidStatus: PlaidStatusResponse = {
         status,

@@ -148,7 +148,7 @@ export interface SystemStatusData {
  * Safely get connection status - defaults to "unknown" for any falsy value
  */
 export function safeConnectionStatus(
-  status: string | null | undefined
+  status: string | null | undefined,
 ): ConnectionStatus {
   const validStatuses: ConnectionStatus[] = [
     "active",
@@ -170,7 +170,7 @@ export function safeConnectionStatus(
  * Safely get Plaid status - defaults to "unknown" for any invalid value
  */
 export function safePlaidStatus(
-  status: string | null | undefined
+  status: string | null | undefined,
 ): PlaidConnectionStatus {
   const validStatuses: PlaidConnectionStatus[] = [
     "active",
@@ -192,7 +192,7 @@ export function safePlaidStatus(
  * Safely get health status - defaults to "unknown" for any invalid value
  */
 export function safeHealthStatus(
-  status: string | null | undefined
+  status: string | null | undefined,
 ): HealthStatus {
   const validStatuses: HealthStatus[] = [
     "healthy",
@@ -214,7 +214,9 @@ export function safeHealthStatus(
  *
  * NEVER returns fabricated times like "Just now" or "2m ago"
  */
-export function safeFormatTimestamp(timestamp: string | null | undefined): string {
+export function safeFormatTimestamp(
+  timestamp: string | null | undefined,
+): string {
   if (!timestamp) {
     return "Unknown";
   }
@@ -236,7 +238,7 @@ export function safeFormatTimestamp(timestamp: string | null | undefined): strin
  * Only use this if you have a REAL timestamp from backend.
  */
 export function safeFormatRelativeTime(
-  timestamp: string | null | undefined
+  timestamp: string | null | undefined,
 ): string {
   if (!timestamp) {
     return "Unknown";
@@ -282,7 +284,7 @@ export function safeMetricDisplay(value: number | null | undefined): string {
  */
 export function safeCurrencyDisplay(
   value: number | null | undefined,
-  currency = "USD"
+  currency = "USD",
 ): string {
   if (value === null || value === undefined) {
     return "Unknown";

@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type ExportResult = {
   request_id: string;
@@ -30,24 +35,24 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
       if (startDate) body.start_date = startDate;
       if (endDate) body.end_date = endDate;
 
-      const res = await fetch(`${apiBase}/api/billing/invoices/export`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const json = await auditedFetch<ExportResult>(
+        `${apiBase}/api/billing/invoices/export`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify(body),
+        },
+      );
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-
-      const json = (await res.json()) as ExportResult;
       setResult(json);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to export invoices";
-      setErr(message);
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(e instanceof Error ? e.message : "Failed to export invoices");
+      }
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type Props = {
   className?: string;
@@ -14,8 +19,13 @@ export default function ExportForDCAAPDFButton({ className }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/govcon/export/dcaa/pdf", { method: "POST" });
-      if (!res.ok) throw new Error("export failed");
+
+      // Use rawResponse to get the blob
+      const res = await auditedFetch<Response>("/govcon/export/dcaa/pdf", {
+        method: "POST",
+        rawResponse: true,
+      });
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -25,8 +35,14 @@ export default function ExportForDCAAPDFButton({ className }: Props) {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-    } catch {
-      setError("Unable to export PDF at this time.");
+    } catch (e) {
+      if (e instanceof AuditProvenanceError) {
+        setError(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setError(`Export failed (HTTP ${e.status})`);
+      } else {
+        setError("Unable to export PDF at this time.");
+      }
     } finally {
       setLoading(false);
     }

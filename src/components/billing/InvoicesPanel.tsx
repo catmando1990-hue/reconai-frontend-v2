@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type Invoice = {
   id: string;
@@ -21,19 +26,19 @@ export function InvoicesPanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/invoices`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-      const json = await res.json();
-      setItems((json?.invoices || []) as Invoice[]);
+      const json = await auditedFetch<{ invoices: Invoice[]; request_id: string }>(
+        `${apiBase}/api/billing/invoices`,
+        { credentials: "include" },
+      );
+      setItems(json?.invoices || []);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to load invoices";
-      setErr(message);
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(e instanceof Error ? e.message : "Failed to load invoices");
+      }
     } finally {
       setLoading(false);
     }

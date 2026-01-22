@@ -2,21 +2,19 @@
 // Downloads CSV export via Next.js proxy route.
 // REQUIRED: pass orgId so backend can scope data correctly.
 
+import { auditedFetch } from "@/lib/auditedFetch";
+
 export async function downloadCsvExport(opts: { orgId: string }) {
   const orgId = opts?.orgId?.trim();
   if (!orgId) throw new Error("downloadCsvExport: orgId is required");
 
-  const res = await fetch("/api/proxy-export", {
+  const res = await auditedFetch<Response>("/api/proxy-export", {
     method: "GET",
     headers: {
       "x-organization-id": orgId,
     },
+    rawResponse: true,
   });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Export failed (${res.status}): ${text || res.statusText}`);
-  }
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);

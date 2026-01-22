@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/card";
 import { getTierLimits, type SubscriptionTier } from "@/lib/entitlements";
 import { Check, ExternalLink } from "lucide-react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 /**
  * STEP 8: Dashboard Upgrade Panel
@@ -30,6 +35,12 @@ type UpgradeTier = {
   yearlyPrice: string;
   features: string[];
   recommended?: boolean;
+};
+
+type CheckoutResponse = {
+  request_id: string;
+  checkout_url?: string;
+  error?: string;
 };
 
 const UPGRADE_TIERS: UpgradeTier[] = [
@@ -94,17 +105,13 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
 
     try {
       const priceKey = `${tierKey}_${billingPeriod}`;
-      const res = await fetch("/api/checkout/create-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier: priceKey }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to start checkout");
-      }
+      const data = await auditedFetch<CheckoutResponse>(
+        "/api/checkout/create-session",
+        {
+          method: "POST",
+          body: JSON.stringify({ tier: priceKey }),
+        },
+      );
 
       // Redirect to Stripe-hosted checkout (no Stripe JS needed)
       if (data.checkout_url) {
@@ -113,7 +120,13 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
         throw new Error("No checkout URL returned");
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Checkout failed");
+      if (e instanceof AuditProvenanceError) {
+        setError(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setError(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setError(e instanceof Error ? e.message : "Checkout failed");
+      }
     } finally {
       setLoading(null);
     }

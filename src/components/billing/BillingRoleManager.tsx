@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type BillingRole = {
   user_id: string;
@@ -10,11 +15,21 @@ type BillingRole = {
   is_owner: boolean;
 };
 
+type RolesResponse = {
+  request_id: string;
+  roles: BillingRole[];
+};
+
 type RoleUpdateResult = {
   user_id: string;
   role: string;
   success: boolean;
   error?: string;
+};
+
+type RoleUpdateResponse = {
+  request_id: string;
+  results: RoleUpdateResult[];
 };
 
 export function BillingRoleManager({ apiBase }: { apiBase: string }) {
@@ -26,24 +41,28 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
     Record<string, string>
   >({});
 
+  const handleError = (e: unknown, fallbackMessage: string) => {
+    if (e instanceof AuditProvenanceError) {
+      setErr(`Provenance error: ${e.message}`);
+    } else if (e instanceof HttpError) {
+      setErr(`HTTP ${e.status}: ${e.message}`);
+    } else {
+      setErr(e instanceof Error ? e.message : fallbackMessage);
+    }
+  };
+
   const fetchRoles = React.useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/roles`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-      const json = await res.json();
+      const json = await auditedFetch<RolesResponse>(
+        `${apiBase}/api/billing/roles`,
+        { credentials: "include" },
+      );
       setRoles(json.roles || []);
       setPendingChanges({});
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to load billing roles";
-      setErr(message);
+      handleError(e, "Failed to load billing roles");
     } finally {
       setLoading(false);
     }
@@ -60,20 +79,16 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
         role,
       }));
 
-      const res = await fetch(`${apiBase}/api/billing/roles`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ updates }),
-      });
+      const json = await auditedFetch<RoleUpdateResponse>(
+        `${apiBase}/api/billing/roles`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({ updates }),
+        },
+      );
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-
-      const json = await res.json();
-      const results = (json.results || []) as RoleUpdateResult[];
+      const results = json.results || [];
 
       // Check for failures
       const failures = results.filter((r) => !r.success);
@@ -86,8 +101,7 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
       // Refresh roles
       await fetchRoles();
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Failed to save changes";
-      setErr(message);
+      handleError(e, "Failed to save changes");
     } finally {
       setSaving(false);
     }

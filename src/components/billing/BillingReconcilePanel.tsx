@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 /**
  * STEP 25 — Billing ↔ Entitlement Reconciliation Panel
@@ -78,24 +83,28 @@ export function BillingReconcilePanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const [statusRes, diffRes] = await Promise.all([
-        fetch(`${apiBase}/api/billing/reconcile/status`, {
-          credentials: "include",
-        }),
-        fetch(`${apiBase}/api/billing/reconcile/diff`, {
+      const [statusData, diffData] = await Promise.all([
+        auditedFetch<StatusResponse>(
+          `${apiBase}/api/billing/reconcile/status`,
+          { credentials: "include" },
+        ),
+        auditedFetch<DiffResponse>(`${apiBase}/api/billing/reconcile/diff`, {
           credentials: "include",
         }),
       ]);
 
-      if (!statusRes.ok) throw new Error(`Status: HTTP ${statusRes.status}`);
-      if (!diffRes.ok) throw new Error(`Diff: HTTP ${diffRes.status}`);
-
-      setStatus(await statusRes.json());
-      setDiff(await diffRes.json());
+      setStatus(statusData);
+      setDiff(diffData);
     } catch (e: unknown) {
-      setErr(
-        e instanceof Error ? e.message : "Failed to load reconciliation data",
-      );
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(
+          e instanceof Error ? e.message : "Failed to load reconciliation data",
+        );
+      }
     } finally {
       setLoading(false);
     }

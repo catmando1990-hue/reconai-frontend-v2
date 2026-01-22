@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type VerifyEvent = {
   id: string;
@@ -30,12 +35,16 @@ export default function AuditTrailVerifyPanel() {
     try {
       setLoading(true);
       setErr(null);
-      const res = await fetch("/govcon/audit/verify", { method: "GET" });
-      if (!res.ok) throw new Error("fetch failed");
-      const json = (await res.json()) as VerifyResponse;
+      const json = await auditedFetch<VerifyResponse>("/govcon/audit/verify");
       setData(json);
-    } catch {
-      setErr("Unable to verify audit trail at this time.");
+    } catch (e) {
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr("Unable to verify audit trail at this time.");
+      }
     } finally {
       setLoading(false);
     }

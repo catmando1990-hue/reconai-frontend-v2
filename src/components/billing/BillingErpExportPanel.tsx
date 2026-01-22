@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type ErpFormat = {
   id: string;
@@ -37,22 +42,22 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/erp/formats`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-      const json = (await res.json()) as FormatsResponse;
+      const json = await auditedFetch<FormatsResponse>(
+        `${apiBase}/api/billing/erp/formats`,
+        { credentials: "include" },
+      );
       setFormats(json.formats || []);
       if (json.formats?.length > 0 && !selectedFormat) {
         setSelectedFormat(json.formats[0].id);
       }
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to load ERP formats";
-      setErr(message);
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(e instanceof Error ? e.message : "Failed to load ERP formats");
+      }
     } finally {
       setLoading(false);
     }
@@ -72,24 +77,24 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
       if (startDate) body.start_date = startDate;
       if (endDate) body.end_date = endDate;
 
-      const res = await fetch(`${apiBase}/api/billing/erp/export`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const json = await auditedFetch<ExportResult>(
+        `${apiBase}/api/billing/erp/export`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify(body),
+        },
+      );
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-
-      const json = (await res.json()) as ExportResult;
       setResult(json);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to export to ERP";
-      setErr(message);
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(e instanceof Error ? e.message : "Failed to export to ERP");
+      }
     } finally {
       setExporting(false);
     }

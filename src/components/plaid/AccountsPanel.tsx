@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 type Account = {
   item_id: string;
@@ -30,17 +31,11 @@ function fmtMoney(v: number | null, ccy: string | null) {
 }
 
 async function fetchAccounts() {
-  const r = await fetch("/api/plaid/accounts");
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    // Handle nested error objects from backend
-    const errMsg =
-      typeof j?.error === "string"
-        ? j.error
-        : j?.error?.message || j?.detail || "Failed to load accounts";
-    throw new Error(errMsg);
-  }
-  return (j.accounts || []) as Account[];
+  const j = await auditedFetch<{
+    accounts: Account[];
+    request_id: string;
+  }>("/api/plaid/accounts");
+  return j.accounts || [];
 }
 
 export function AccountsPanel() {

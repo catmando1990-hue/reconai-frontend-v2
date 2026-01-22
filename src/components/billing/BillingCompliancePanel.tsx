@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type RetentionPolicy = {
   org_id: string;
@@ -45,25 +50,29 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
   const [deleteReason, setDeleteReason] = React.useState("");
   const [processing, setProcessing] = React.useState(false);
 
+  const handleError = (e: unknown, fallbackMessage: string) => {
+    if (e instanceof AuditProvenanceError) {
+      setErr(`Provenance error: ${e.message}`);
+    } else if (e instanceof HttpError) {
+      setErr(`HTTP ${e.status}: ${e.message}`);
+    } else {
+      setErr(e instanceof Error ? e.message : fallbackMessage);
+    }
+  };
+
   const fetchPolicy = React.useCallback(async () => {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/retention/policy`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-      const json = (await res.json()) as RetentionPolicy;
+      const json = await auditedFetch<RetentionPolicy>(
+        `${apiBase}/api/billing/retention/policy`,
+        { credentials: "include" },
+      );
       setPolicy(json);
       setRetentionDays(String(json.retention_days));
       setAutoDelete(json.auto_delete_enabled);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to load retention policy";
-      setErr(message);
+      handleError(e, "Failed to load retention policy");
     } finally {
       setLoading(false);
     }
@@ -73,26 +82,21 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
     setProcessing(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/retention/policy`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          retention_days: parseInt(retentionDays, 10),
-          auto_delete_enabled: autoDelete,
-        }),
-      });
+      const json = await auditedFetch<RetentionPolicy>(
+        `${apiBase}/api/billing/retention/policy`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({
+            retention_days: parseInt(retentionDays, 10),
+            auto_delete_enabled: autoDelete,
+          }),
+        },
+      );
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-
-      const json = (await res.json()) as RetentionPolicy;
       setPolicy(json);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Failed to save policy";
-      setErr(message);
+      handleError(e, "Failed to save policy");
     } finally {
       setProcessing(false);
     }
@@ -108,30 +112,24 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
     setErr(null);
     setExportResult(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/retention/export`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          confirmation_phrase: exportConfirm,
-          include_invoices: true,
-          include_transactions: true,
-          include_audit_log: true,
-        }),
-      });
+      const json = await auditedFetch<ExportResult>(
+        `${apiBase}/api/billing/retention/export`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({
+            confirmation_phrase: exportConfirm,
+            include_invoices: true,
+            include_transactions: true,
+            include_audit_log: true,
+          }),
+        },
+      );
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-
-      const json = (await res.json()) as ExportResult;
       setExportResult(json);
       setExportConfirm("");
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to request export";
-      setErr(message);
+      handleError(e, "Failed to request export");
     } finally {
       setProcessing(false);
     }
@@ -153,29 +151,23 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
     setErr(null);
     setDeleteResult(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/retention/delete`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          confirmation_phrase: deleteConfirm,
-          reason: deleteReason,
-          retain_audit_seal: true,
-        }),
-      });
+      const json = await auditedFetch<DeleteResult>(
+        `${apiBase}/api/billing/retention/delete`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({
+            confirmation_phrase: deleteConfirm,
+            reason: deleteReason,
+            retain_audit_seal: true,
+          }),
+        },
+      );
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-
-      const json = (await res.json()) as DeleteResult;
       setDeleteResult(json);
       setDeleteConfirm("");
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to request deletion";
-      setErr(message);
+      handleError(e, "Failed to request deletion");
     } finally {
       setProcessing(false);
     }

@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type FinancialControl = {
   org_id: string;
@@ -46,14 +51,10 @@ export function BillingFinancialControlsPanel({
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/controls`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-      const json = (await res.json()) as FinancialControl;
+      const json = await auditedFetch<FinancialControl>(
+        `${apiBase}/api/billing/controls`,
+        { credentials: "include" },
+      );
       setControls(json);
       if (json.soft_spending_limit_cents)
         setSoftLimit(String(json.soft_spending_limit_cents / 100));
@@ -61,9 +62,13 @@ export function BillingFinancialControlsPanel({
         setApprovalThreshold(String(json.approval_threshold_cents / 100));
       if (json.upgrade_cap_tier) setUpgradeCap(json.upgrade_cap_tier);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to load controls";
-      setErr(message);
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(e instanceof Error ? e.message : "Failed to load controls");
+      }
     } finally {
       setLoading(false);
     }
@@ -71,11 +76,10 @@ export function BillingFinancialControlsPanel({
 
   const fetchAlerts = React.useCallback(async () => {
     try {
-      const res = await fetch(`${apiBase}/api/billing/controls/alerts`, {
-        credentials: "include",
-      });
-      if (!res.ok) return;
-      const json = (await res.json()) as AlertsResponse;
+      const json = await auditedFetch<AlertsResponse>(
+        `${apiBase}/api/billing/controls/alerts`,
+        { credentials: "include" },
+      );
       setAlerts(json.alerts || []);
     } catch {
       // Ignore alert fetch errors
@@ -97,24 +101,24 @@ export function BillingFinancialControlsPanel({
         );
       if (upgradeCap) body.upgrade_cap_tier = upgradeCap;
 
-      const res = await fetch(`${apiBase}/api/billing/controls`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const json = await auditedFetch<FinancialControl>(
+        `${apiBase}/api/billing/controls`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify(body),
+        },
+      );
 
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-
-      const json = (await res.json()) as FinancialControl;
       setControls(json);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to save controls";
-      setErr(message);
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(e instanceof Error ? e.message : "Failed to save controls");
+      }
     } finally {
       setSaving(false);
     }

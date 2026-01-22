@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type EvidenceItem = {
   id: string;
@@ -29,14 +34,18 @@ export default function EvidenceViewer() {
       try {
         setLoading(true);
         setErr(null);
-        const res = await fetch("/govcon/evidence", { method: "GET" });
-        if (!res.ok) throw new Error("fetch failed");
-        const json = (await res.json()) as EvidenceResponse;
+        const json = await auditedFetch<EvidenceResponse>("/govcon/evidence");
         if (!alive) return;
         setData(json);
-      } catch {
+      } catch (e) {
         if (!alive) return;
-        setErr("Unable to load evidence at this time.");
+        if (e instanceof AuditProvenanceError) {
+          setErr(`Provenance error: ${e.message}`);
+        } else if (e instanceof HttpError) {
+          setErr(`HTTP ${e.status}: ${e.message}`);
+        } else {
+          setErr("Unable to load evidence at this time.");
+        }
       } finally {
         if (alive) setLoading(false);
       }

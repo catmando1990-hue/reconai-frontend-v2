@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { auditedFetch } from "@/lib/auditedFetch";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { StatusChip } from "@/components/dashboard/StatusChip";
@@ -126,35 +127,32 @@ export default function SettingsPage() {
 
     async function load() {
       try {
-        const res = await fetch("/api/me");
-        if (res.ok) {
-          const data = await res.json();
-          setProfile(data);
-        }
+        const data = await auditedFetch<ProfileData & { request_id: string }>(
+          "/api/me",
+        );
+        setProfile(data);
       } catch {
         // ignore
       }
       try {
-        const res = await fetch("/api/plaid/status");
-        if (res.ok) {
-          const data = await res.json();
-          setPlaid(data);
-        }
+        const data = await auditedFetch<PlaidData & { request_id: string }>(
+          "/api/plaid/status",
+        );
+        setPlaid(data);
       } catch {
         // ignore
       }
       try {
-        const res = await fetch("/api/intelligence/status");
-        if (res.ok) {
-          const data = await res.json();
-          setIntel(data);
-        }
+        const data = await auditedFetch<IntelData & { request_id: string }>(
+          "/api/intelligence/status",
+        );
+        setIntel(data);
       } catch {
         // ignore
       }
       try {
-        const res = await fetch("/api/audit?limit=1");
-        setAuditAvailable(res.ok);
+        await auditedFetch<{ request_id: string }>("/api/audit?limit=1");
+        setAuditAvailable(true);
       } catch {
         setAuditAvailable(false);
       }

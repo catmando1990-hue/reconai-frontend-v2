@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { Clock, AlertTriangle, User } from "lucide-react";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 interface MaintenanceStatusData {
   ok: boolean;
@@ -22,9 +23,7 @@ export default function MaintenanceStatus() {
   const { data, error } = useSWR<MaintenanceStatusData>(
     `${process.env.NEXT_PUBLIC_API_URL}/api/maintenance/status`,
     async (url: string) => {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to fetch");
-      return res.json();
+      return auditedFetch<MaintenanceStatusData>(url);
     },
     {
       revalidateOnFocus: false,

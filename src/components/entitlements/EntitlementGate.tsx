@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 /**
  * STEP 15 + STEP 20 — Entitlement-Driven UI Hiding & Upgrade UX Wiring
@@ -166,16 +171,19 @@ export function useCapabilities(apiBase: string) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBase}/api/entitlements/capabilities`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await auditedFetch<Capabilities & { request_id: string }>(
+        `${apiBase}/api/entitlements/capabilities`,
+        { credentials: "include" },
+      );
       setCapabilities(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load capabilities");
+      if (e instanceof AuditProvenanceError) {
+        setError(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setError(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setError(e instanceof Error ? e.message : "Failed to load capabilities");
+      }
     } finally {
       setLoading(false);
     }

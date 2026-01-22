@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { Download } from "lucide-react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type Props = {
   className?: string;
@@ -16,14 +21,11 @@ export default function ExportForDCAAButton({ className }: Props) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch("/govcon/export/dcaa", {
+      // Use rawResponse to get the blob, skipBodyValidation for non-JSON
+      const res = await auditedFetch<Response>("/govcon/export/dcaa", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        rawResponse: true,
       });
-
-      if (!res.ok) {
-        throw new Error("Export failed");
-      }
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -34,8 +36,14 @@ export default function ExportForDCAAButton({ className }: Props) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-    } catch {
-      setError("Unable to export at this time.");
+    } catch (e) {
+      if (e instanceof AuditProvenanceError) {
+        setError(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setError(`Export failed (HTTP ${e.status})`);
+      } else {
+        setError("Unable to export at this time.");
+      }
     } finally {
       setLoading(false);
     }

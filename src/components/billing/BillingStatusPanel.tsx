@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type BillingStatus = {
   org_id: string;
@@ -21,19 +26,21 @@ export function BillingStatusPanel({ apiBase }: { apiBase: string }) {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch(`${apiBase}/api/billing/status`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || `HTTP ${res.status}`);
-      }
-      const json = (await res.json()) as BillingStatus;
+      const json = await auditedFetch<BillingStatus>(
+        `${apiBase}/api/billing/status`,
+        { credentials: "include" },
+      );
       setData(json);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to load billing status";
-      setErr(message);
+      if (e instanceof AuditProvenanceError) {
+        setErr(`Provenance error: ${e.message}`);
+      } else if (e instanceof HttpError) {
+        setErr(`HTTP ${e.status}: ${e.message}`);
+      } else {
+        setErr(
+          e instanceof Error ? e.message : "Failed to load billing status",
+        );
+      }
     } finally {
       setLoading(false);
     }

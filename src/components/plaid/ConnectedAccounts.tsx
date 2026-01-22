@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 /**
  * P1 FIX: Item status is now based on actual backend values.
@@ -53,19 +58,21 @@ export function ConnectedAccounts() {
 
   useEffect(() => {
     let mounted = true;
-    fetch("/api/plaid/items")
-      .then(async (r) => {
-        const j = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(j?.error || "Failed to load");
-        return j;
-      })
+    auditedFetch<{ items: Item[]; request_id: string }>("/api/plaid/items")
       .then((j) => {
         if (!mounted) return;
         setItems(j.items || []);
       })
       .catch((e: unknown) => {
         if (!mounted) return;
-        const message = e instanceof Error ? e.message : "Failed to load";
+        let message = "Failed to load";
+        if (e instanceof AuditProvenanceError) {
+          message = `Provenance error: ${e.message}`;
+        } else if (e instanceof HttpError) {
+          message = `HTTP ${e.status}: ${e.message}`;
+        } else if (e instanceof Error) {
+          message = e.message;
+        }
         setError(message);
         setItems([]);
       });

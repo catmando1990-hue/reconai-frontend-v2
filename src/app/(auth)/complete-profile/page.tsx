@@ -3,6 +3,11 @@
 import { useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -87,18 +92,20 @@ export default function CompleteProfilePage() {
       setError(null);
 
       try {
-        const resp = await fetch("/api/profile/complete", {
+        const data = await auditedFetch<{
+          ok: boolean;
+          profileCompleted?: boolean;
+          error?: string;
+          request_id: string;
+        }>("/api/profile/complete", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             firstName: finalFirstName,
             lastName: finalLastName,
           }),
         });
 
-        const data = await resp.json();
-
-        if (!resp.ok || !data.ok) {
+        if (!data.ok) {
           // FAIL-CLOSED: Show explicit error, do not proceed
           setError(
             data.error || "Failed to complete profile. Please try again.",
@@ -121,7 +128,13 @@ export default function CompleteProfilePage() {
         }
       } catch (err) {
         console.error("Profile completion error:", err);
-        setError("Network error. Please check your connection and try again.");
+        if (err instanceof AuditProvenanceError) {
+          setError(`Provenance error: ${err.message}`);
+        } else if (err instanceof HttpError) {
+          setError(`HTTP ${err.status}: ${err.message}`);
+        } else {
+          setError("Network error. Please check your connection and try again.");
+        }
         setIsLoading(false);
       }
     },

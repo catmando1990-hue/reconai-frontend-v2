@@ -4,6 +4,11 @@ import { useState, useCallback } from "react";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { Button } from "@/components/ui/button";
 import { Activity, Zap, Shield, Bug } from "lucide-react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 // Types for diagnostics
 interface Finding {
@@ -91,24 +96,28 @@ export function DiagnosticsSection() {
     };
 
     try {
-      const res = await fetch("/api/diagnostics/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agent: agentMap[modalType],
-          confirm: confirmInput,
-        }),
-      });
+      const data = await auditedFetch<DiagnosticRunResult>(
+        "/api/diagnostics/run",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            agent: agentMap[modalType],
+            confirm: confirmInput,
+          }),
+        },
+      );
 
-      const text = await res.text();
-      if (!text) throw new Error("Empty response");
-
-      const data = JSON.parse(text) as DiagnosticRunResult;
       setResult(data);
       setModalStep("results");
     } catch (err) {
       setResult(null);
-      setConfirmError(err instanceof Error ? err.message : "Diagnostic failed");
+      if (err instanceof AuditProvenanceError) {
+        setConfirmError(`Provenance error: ${err.message}`);
+      } else if (err instanceof HttpError) {
+        setConfirmError(`HTTP ${err.status}: ${err.message}`);
+      } else {
+        setConfirmError(err instanceof Error ? err.message : "Diagnostic failed");
+      }
       setModalStep("results");
     }
   };

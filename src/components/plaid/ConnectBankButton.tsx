@@ -3,59 +3,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PlaidLinkError, usePlaidLink } from "react-plaid-link";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type LinkTokenResponse = {
+  request_id: string;
   link_token: string;
   expiration?: string;
   error?: string;
 };
 
 type ExchangeResponse = {
+  request_id: string;
   item_id?: string;
   error?: string;
 };
-
-/**
- * FAIL-CLOSED: Safe JSON POST helper
- * - Verifies Content-Type is application/json before parsing
- * - Surfaces clear error if response is non-JSON (e.g., HTML error page)
- */
-async function postJSON<T>(url: string, body?: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  // FAIL-CLOSED: Check Content-Type before parsing
-  const contentType = res.headers.get("content-type") || "";
-  const isJson = contentType.includes("application/json");
-
-  if (!isJson) {
-    // Non-JSON response (HTML error page, 410 Gone, etc.)
-    throw new Error("Bank connection failed. Please retry.");
-  }
-
-  const data = (await res.json().catch(() => ({}))) as T;
-
-  if (!res.ok) {
-    // Handle various error response formats
-    const errorData = data as { error?: string | object; detail?: string };
-    let msg = "Bank connection failed. Please retry.";
-    if (typeof errorData?.error === "string") {
-      msg = errorData.error;
-    } else if (typeof errorData?.detail === "string") {
-      msg = errorData.detail;
-    } else if (
-      typeof errorData?.error === "object" &&
-      errorData.error !== null
-    ) {
-      msg = JSON.stringify(errorData.error);
-    }
-    throw new Error(msg);
-  }
-  return data;
-}
 
 export function ConnectBankButton() {
   const searchParams = useSearchParams();
@@ -75,18 +40,22 @@ export function ConnectBankButton() {
     setLoadingToken(true);
     setStatus({ kind: "idle" });
     try {
-      const data = await postJSON<LinkTokenResponse>(
+      const data = await auditedFetch<LinkTokenResponse>(
         "/api/plaid/create-link-token",
+        { method: "POST" },
       );
       if (!data?.link_token) throw new Error("Missing link_token from server");
       setLinkToken(data.link_token);
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Failed to create link token";
-      setStatus({
-        kind: "error",
-        message,
-      });
+      let message = "Failed to create link token";
+      if (e instanceof AuditProvenanceError) {
+        message = `Provenance error: ${e.message}`;
+      } else if (e instanceof HttpError) {
+        message = `HTTP ${e.status}: ${e.message}`;
+      } else if (e instanceof Error) {
+        message = e.message;
+      }
+      setStatus({ kind: "error", message });
       setLinkToken(null);
     } finally {
       setLoadingToken(false);
@@ -102,9 +71,12 @@ export function ConnectBankButton() {
       setBusy(true);
       setStatus({ kind: "idle" });
       try {
-        const data = await postJSON<ExchangeResponse>(
+        const data = await auditedFetch<ExchangeResponse>(
           "/api/plaid/exchange-public-token",
-          { public_token },
+          {
+            method: "POST",
+            body: JSON.stringify({ public_token }),
+          },
         );
         if (!data?.item_id)
           throw new Error("Missing item_id from exchange response");
@@ -114,12 +86,15 @@ export function ConnectBankButton() {
         });
         await fetchLinkToken();
       } catch (e: unknown) {
-        const message =
-          e instanceof Error ? e.message : "Failed to exchange public token";
-        setStatus({
-          kind: "error",
-          message,
-        });
+        let message = "Failed to exchange public token";
+        if (e instanceof AuditProvenanceError) {
+          message = `Provenance error: ${e.message}`;
+        } else if (e instanceof HttpError) {
+          message = `HTTP ${e.status}: ${e.message}`;
+        } else if (e instanceof Error) {
+          message = e.message;
+        }
+        setStatus({ kind: "error", message });
       } finally {
         setBusy(false);
       }

@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type SyncState = "idle" | "syncing" | "success" | "error";
 
 interface SyncResponse {
+  request_id: string;
   last_sync?: string;
   error?: string;
 }
@@ -19,31 +25,21 @@ export function ManualSyncSection() {
     setErrorMessage(null);
 
     try {
-      const res = await fetch("/api/plaid/sync", {
+      const data = await auditedFetch<SyncResponse>("/api/plaid/sync", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
       });
 
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as {
-          error?: string;
-          detail?: string;
-        };
-        const msg =
-          typeof data?.error === "string"
-            ? data.error
-            : typeof data?.detail === "string"
-              ? data.detail
-              : "Sync failed. Please try again.";
-        throw new Error(msg);
-      }
-
-      const data = (await res.json().catch(() => ({}))) as SyncResponse;
       setLastSync(data.last_sync ?? new Date().toISOString());
       setSyncState("success");
     } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "Sync failed. Please try again.";
+      let message = "Sync failed. Please try again.";
+      if (e instanceof AuditProvenanceError) {
+        message = `Provenance error: ${e.message}`;
+      } else if (e instanceof HttpError) {
+        message = `HTTP ${e.status}: ${e.message}`;
+      } else if (e instanceof Error) {
+        message = e.message;
+      }
       setErrorMessage(message);
       setSyncState("error");
     }

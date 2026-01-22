@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 type Persona = {
   name: string;
@@ -13,8 +14,7 @@ export function ReconAIBriefing() {
 
   useEffect(() => {
     // Assumes your frontend proxy routes /api to backend, or swap to NEXT_PUBLIC_API_URL.
-    fetch("/api/ai/identity")
-      .then((r) => r.json())
+    auditedFetch<Persona & { request_id: string }>("/api/ai/identity")
       .then(setPersona)
       .catch(() => setPersona(null));
   }, []);

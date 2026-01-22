@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type GovernanceFilter = {
   id: string;
@@ -56,23 +61,22 @@ export function BillingGovernanceEnhancements({
       setLoading(true);
       setErr(null);
       try {
-        const res = await fetch(
+        const json = await auditedFetch<GovernanceData>(
           `${apiBase}/api/billing/governance/${endpoint}`,
-          {
-            credentials: "include",
-          },
+          { credentials: "include" },
         );
-        if (!res.ok) {
-          const t = await res.text();
-          throw new Error(t || `HTTP ${res.status}`);
-        }
-        const json = (await res.json()) as GovernanceData;
         setRequestId(json.request_id);
         return json;
       } catch (e: unknown) {
-        const message =
-          e instanceof Error ? e.message : "Failed to load governance data";
-        setErr(message);
+        if (e instanceof AuditProvenanceError) {
+          setErr(`Provenance error: ${e.message}`);
+        } else if (e instanceof HttpError) {
+          setErr(`HTTP ${e.status}: ${e.message}`);
+        } else {
+          setErr(
+            e instanceof Error ? e.message : "Failed to load governance data",
+          );
+        }
         return null;
       } finally {
         setLoading(false);

@@ -4,6 +4,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 interface FeatureFlag {
   id: string;
@@ -36,20 +41,20 @@ export function useFeatureFlags(): UseFeatureFlagsResult {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
+      const data = await auditedFetch<FeatureFlag[]>(
         `${API_BASE}/governance/features?enabled_only=true`,
       );
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch feature flags: ${res.status}`);
-      }
-
-      const data = await res.json();
       setFlags(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load feature flags",
-      );
+      if (err instanceof AuditProvenanceError) {
+        setError(`Provenance error: ${err.message}`);
+      } else if (err instanceof HttpError) {
+        setError(`HTTP ${err.status}: ${err.message}`);
+      } else {
+        setError(
+          err instanceof Error ? err.message : "Failed to load feature flags",
+        );
+      }
       setFlags([]);
     } finally {
       setLoading(false);

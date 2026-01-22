@@ -2,6 +2,11 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { PlaidLinkError, usePlaidLink } from "react-plaid-link";
+import {
+  auditedFetch,
+  AuditProvenanceError,
+  HttpError,
+} from "@/lib/auditedFetch";
 
 type ReconnectState =
   | "idle"
@@ -27,39 +32,24 @@ interface ReconnectBankSectionProps {
 }
 
 /**
- * FAIL-CLOSED: Safe JSON POST helper
- * - Verifies Content-Type is application/json before parsing
- * - Surfaces clear error if response is non-JSON (e.g., HTML error page)
+ * FAIL-CLOSED: Safe JSON POST helper using auditedFetch
+ * - Enforces x-request-id provenance
+ * - Throws on missing request_id in response
  */
 async function postJSON<T>(url: string, body?: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  // FAIL-CLOSED: Check Content-Type before parsing
-  const contentType = res.headers.get("content-type") || "";
-  const isJson = contentType.includes("application/json");
-
-  if (!isJson) {
-    // Non-JSON response (HTML error page, 410 Gone, etc.)
-    throw new Error("Bank connection failed. Please retry.");
-  }
-
-  const data = (await res.json().catch(() => ({}))) as T;
-
-  if (!res.ok) {
-    const errorData = data as { error?: string; detail?: string };
-    let msg = "Bank connection failed. Please retry.";
-    if (typeof errorData?.error === "string") {
-      msg = errorData.error;
-    } else if (typeof errorData?.detail === "string") {
-      msg = errorData.detail;
+  try {
+    return await auditedFetch<T>(url, {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    if (e instanceof AuditProvenanceError) {
+      throw new Error(`Provenance error: ${e.message}`);
+    } else if (e instanceof HttpError) {
+      throw new Error(`HTTP ${e.status}: ${e.message}`);
     }
-    throw new Error(msg);
+    throw e;
   }
-  return data;
 }
 
 export function ReconnectBankSection({

@@ -23,13 +23,24 @@
 
 ## Contract Changes
 
-<!-- If you modified /api/core/state, check these boxes -->
+<!-- If you modified /api/core/state or /api/cfo/*, check these boxes -->
+
+### CORE State Contract
 
 - [ ] Did `/api/core/state` contract change? If yes:
   - [ ] Updated `tests/fixtures/core-state-factory.ts` to match new schema
   - [ ] Updated `SYNC_CONTRACT_VERSION` if breaking change
   - [ ] All tests still pass with `assertValidCoreState()`
   - [ ] Coordinated with backend team on schema changes
+
+### CFO Contract
+
+- [ ] Did `/api/cfo/*` contract change? If yes:
+  - [ ] Updated `tests/fixtures/cfo-state-factory.ts` to match new schema
+  - [ ] Updated `SUPPORTED_CFO_VERSIONS` if breaking change
+  - [ ] All tests still pass with `assertValidCfoState()`
+  - [ ] Coordinated with backend team on schema changes
+  - [ ] Updated `VALID_CFO_LIFECYCLE_STATUSES` if enum changed
 
 ## Testing
 

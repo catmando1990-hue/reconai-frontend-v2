@@ -40,32 +40,8 @@ jobs:
 
       - name: Check CORE contract files for changes
         id: core-contract-changes
-        run: |
-          echo "Checking for CORE state contract changes..."
-
-          CORE_CONTRACT_CHANGED=false
-          CORE_FIXTURE_CHANGED=false
-
-          # Check if CORE hook changed
-          if git diff --name-only HEAD~1 HEAD | grep -q "src/hooks/useCoreState.tsx"; then
-            echo "Contract file changed: src/hooks/useCoreState.tsx"
-            CORE_CONTRACT_CHANGED=true
-          fi
-
-          # Check if types changed
-          if git diff --name-only HEAD~1 HEAD | grep -q "src/lib/api/types.ts"; then
-            echo "Types file changed: src/lib/api/types.ts"
-            CORE_CONTRACT_CHANGED=true
-          fi
-
-          # Check if fixture files changed
-          if git diff --name-only HEAD~1 HEAD | grep -q "tests/fixtures/core-state-factory.ts"; then
-            echo "Fixture file changed: tests/fixtures/core-state-factory.ts"
-            CORE_FIXTURE_CHANGED=true
-          fi
-
-          echo "contract_changed=$CORE_CONTRACT_CHANGED" >> $GITHUB_OUTPUT
-          echo "fixture_changed=$CORE_FIXTURE_CHANGED" >> $GITHUB_OUTPUT
+        shell: bash
+        run: scripts/ci/check-core-contract.sh
 
       - name: Verify CORE fixture updates for contract changes
         if: steps.core-contract-changes.outputs.contract_changed == 'true'

@@ -6,6 +6,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type RetentionPolicy = {
   org_id: string;
@@ -238,9 +239,7 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
           </button>
         </div>
         {policy ? (
-          <div className="mt-2 text-xs opacity-50">
-            Request ID: {policy.request_id}
-          </div>
+          <AuditEvidence requestId={policy.request_id} variant="success" />
         ) : null}
       </div>
 
@@ -289,12 +288,7 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
                 </span>
               </div>
             ) : null}
-            <div className="flex justify-between">
-              <span className="opacity-70">Request ID</span>
-              <span className="font-mono text-xs">
-                {exportResult.request_id}
-              </span>
-            </div>
+            <AuditEvidence requestId={exportResult.request_id} variant="success" />
           </div>
         ) : null}
       </div>
@@ -368,12 +362,7 @@ export function BillingCompliancePanel({ apiBase }: { apiBase: string }) {
                 {deleteResult.immutable_log_id}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="opacity-70">Request ID</span>
-              <span className="font-mono text-xs">
-                {deleteResult.request_id}
-              </span>
-            </div>
+            <AuditEvidence requestId={deleteResult.request_id} variant="success" />
           </div>
         ) : null}
       </div>

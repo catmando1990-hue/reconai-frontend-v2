@@ -6,6 +6,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type ErpFormat = {
   id: string;
@@ -140,7 +141,12 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
         </button>
       </div>
 
-      {err ? <div className="mt-3 text-sm text-red-500">{err}</div> : null}
+      {err ? (
+        <div className="mt-3">
+          <div className="text-sm text-red-500">{err}</div>
+          <AuditEvidence requestId={result?.request_id} variant="error" />
+        </div>
+      ) : null}
 
       <div className="mt-4 grid gap-3">
         <div>
@@ -241,10 +247,7 @@ export function BillingErpExportPanel({ apiBase }: { apiBase: string }) {
             <span className="opacity-70">Audit Logged</span>
             <span>{result.audit_logged ? "Yes" : "No"}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="opacity-70">Request ID</span>
-            <span className="font-mono text-xs">{result.request_id}</span>
-          </div>
+          <AuditEvidence requestId={result.request_id} variant="success" />
         </div>
       ) : null}
     </div>

@@ -6,6 +6,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type FinancialControl = {
   org_id: string;
@@ -38,6 +39,7 @@ export function BillingFinancialControlsPanel({
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = React.useState(false);
   const [controls, setControls] = React.useState<FinancialControl | null>(null);
   const [alerts, setAlerts] = React.useState<Alert[]>([]);
   const [showAlerts, setShowAlerts] = React.useState(false);
@@ -89,6 +91,7 @@ export function BillingFinancialControlsPanel({
   const saveControls = async () => {
     setSaving(true);
     setErr(null);
+    setSaveSuccess(false);
     try {
       const body: Record<string, unknown> = {};
       if (softLimit)
@@ -111,6 +114,7 @@ export function BillingFinancialControlsPanel({
       );
 
       setControls(json);
+      setSaveSuccess(true);
     } catch (e: unknown) {
       if (e instanceof AuditProvenanceError) {
         setErr(`Provenance error: ${e.message}`);
@@ -149,7 +153,12 @@ export function BillingFinancialControlsPanel({
         </button>
       </div>
 
-      {err ? <div className="mt-3 text-sm text-red-500">{err}</div> : null}
+      {err ? (
+        <div className="mt-3">
+          <div className="text-sm text-red-500">{err}</div>
+          <AuditEvidence requestId={controls?.request_id} variant="error" />
+        </div>
+      ) : null}
 
       <div className="mt-4 grid gap-3">
         <div>
@@ -212,10 +221,10 @@ export function BillingFinancialControlsPanel({
             <span className="opacity-70">Alerts Mode</span>
             <span>{controls.alerts_mode}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="opacity-70">Request ID</span>
-            <span className="font-mono text-xs">{controls.request_id}</span>
-          </div>
+          <AuditEvidence
+            requestId={controls.request_id}
+            variant={saveSuccess ? "success" : "default"}
+          />
         </div>
       ) : null}
 

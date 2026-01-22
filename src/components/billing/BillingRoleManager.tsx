@@ -6,6 +6,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type BillingRole = {
   user_id: string;
@@ -40,6 +41,9 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
   const [pendingChanges, setPendingChanges] = React.useState<
     Record<string, string>
   >({});
+  // Audit evidence state
+  const [lastRequestId, setLastRequestId] = React.useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = React.useState(false);
 
   const handleError = (e: unknown, fallbackMessage: string) => {
     if (e instanceof AuditProvenanceError) {
@@ -73,6 +77,8 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
 
     setSaving(true);
     setErr(null);
+    setSaveSuccess(false);
+    setLastRequestId(null);
     try {
       const updates = Object.entries(pendingChanges).map(([user_id, role]) => ({
         user_id,
@@ -88,6 +94,9 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
         },
       );
 
+      // Capture request_id for audit evidence
+      setLastRequestId(json.request_id);
+
       const results = json.results || [];
 
       // Check for failures
@@ -96,6 +105,8 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
         setErr(
           `Some updates failed: ${failures.map((f) => f.error).join(", ")}`,
         );
+      } else {
+        setSaveSuccess(true);
       }
 
       // Refresh roles
@@ -147,7 +158,19 @@ export function BillingRoleManager({ apiBase }: { apiBase: string }) {
         </div>
       </div>
 
-      {err ? <div className="mt-3 text-sm text-red-500">{err}</div> : null}
+      {err ? (
+        <div className="mt-3">
+          <div className="text-sm text-red-500">{err}</div>
+          <AuditEvidence requestId={lastRequestId} variant="error" />
+        </div>
+      ) : null}
+
+      {saveSuccess && !err && (
+        <div className="mt-3">
+          <div className="text-sm text-green-600">Changes saved successfully.</div>
+          <AuditEvidence requestId={lastRequestId} variant="success" />
+        </div>
+      )}
 
       {roles.length > 0 ? (
         <div className="mt-4 space-y-2">

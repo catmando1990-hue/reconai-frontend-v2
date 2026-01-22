@@ -7,6 +7,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type ReconnectState =
   | "idle"
@@ -17,11 +18,13 @@ type ReconnectState =
   | "error";
 
 interface UpdateLinkTokenResponse {
+  request_id: string;
   link_token: string;
   error?: string;
 }
 
 interface ExchangeResponse {
+  request_id: string;
   item_id?: string;
   error?: string;
 }
@@ -59,6 +62,8 @@ export function ReconnectBankSection({
   const [state, setState] = useState<ReconnectState>("idle");
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Audit evidence state
+  const [lastRequestId, setLastRequestId] = useState<string | null>(null);
 
   const fetchUpdateLinkToken = useCallback(async () => {
     if (!itemId) {
@@ -88,6 +93,7 @@ export function ReconnectBankSection({
 
   const onSuccess = useCallback(async (public_token: string) => {
     setState("reconnecting");
+    setLastRequestId(null);
     try {
       const data = await postJSON<ExchangeResponse>(
         "/api/plaid/exchange-public-token",
@@ -95,6 +101,8 @@ export function ReconnectBankSection({
       );
       if (!data?.item_id)
         throw new Error("Missing item_id from exchange response");
+      // Capture request_id for audit evidence
+      setLastRequestId(data.request_id);
       setState("success");
       setLinkToken(null);
     } catch (e: unknown) {
@@ -171,12 +179,14 @@ export function ReconnectBankSection({
       {state === "success" && (
         <div className="text-xs text-muted-foreground">
           <p>Reconnection completed. Data is not synced automatically.</p>
+          <AuditEvidence requestId={lastRequestId} variant="success" />
         </div>
       )}
 
       {state === "error" && errorMessage && (
         <div className="text-xs text-destructive">
           <p>{errorMessage}</p>
+          <AuditEvidence requestId={lastRequestId} variant="error" />
         </div>
       )}
     </div>

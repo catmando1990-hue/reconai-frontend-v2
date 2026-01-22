@@ -6,6 +6,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type ExportResult = {
   request_id: string;
@@ -155,7 +156,12 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
         </div>
       </div>
 
-      {err ? <div className="mt-3 text-sm text-red-500">{err}</div> : null}
+      {err ? (
+        <div className="mt-3">
+          <div className="text-sm text-red-500">{err}</div>
+          <AuditEvidence requestId={result?.request_id} variant="error" />
+        </div>
+      ) : null}
 
       {result ? (
         <div className="mt-3 rounded-xl border p-3 text-sm">
@@ -171,13 +177,10 @@ export function InvoiceExportPanel({ apiBase }: { apiBase: string }) {
             <span className="opacity-70">Count</span>
             <span>{result.count ?? 0} invoices</span>
           </div>
-          <div className="flex justify-between">
-            <span className="opacity-70">Request ID</span>
-            <span className="font-mono text-xs">{result.request_id}</span>
-          </div>
           {result.notes ? (
             <div className="mt-2 text-xs opacity-70">{result.notes}</div>
           ) : null}
+          <AuditEvidence requestId={result.request_id} variant="success" />
         </div>
       ) : null}
     </div>

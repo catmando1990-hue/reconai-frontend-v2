@@ -16,6 +16,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 /**
  * STEP 8: Dashboard Upgrade Panel
@@ -93,6 +94,7 @@ interface UpgradePanelProps {
 export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastRequestId, setLastRequestId] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "monthly",
   );
@@ -102,6 +104,7 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
   const handleUpgrade = async (tierKey: string) => {
     setLoading(tierKey);
     setError(null);
+    setLastRequestId(null);
 
     try {
       const priceKey = `${tierKey}_${billingPeriod}`;
@@ -112,6 +115,9 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
           body: JSON.stringify({ tier: priceKey }),
         },
       );
+
+      // Capture request_id for audit evidence
+      setLastRequestId(data.request_id);
 
       // Redirect to Stripe-hosted checkout (no Stripe JS needed)
       if (data.checkout_url) {
@@ -186,6 +192,7 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
         {error && (
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {error}
+            <AuditEvidence requestId={lastRequestId} variant="error" />
           </div>
         )}
 

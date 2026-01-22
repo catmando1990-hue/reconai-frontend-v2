@@ -8,6 +8,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -54,6 +55,7 @@ export default function CompleteProfilePage() {
   const [lastName, setLastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastRequestId, setLastRequestId] = useState<string | null>(null);
 
   // Compute display values: show clerk value until user edits
   const displayFirstName = hasEditedFirst
@@ -90,6 +92,7 @@ export default function CompleteProfilePage() {
 
       setIsLoading(true);
       setError(null);
+      setLastRequestId(null);
 
       try {
         const data = await auditedFetch<{
@@ -104,6 +107,9 @@ export default function CompleteProfilePage() {
             lastName: finalLastName,
           }),
         });
+
+        // Capture request_id for audit evidence
+        setLastRequestId(data.request_id);
 
         if (!data.ok) {
           // FAIL-CLOSED: Show explicit error, do not proceed
@@ -205,9 +211,10 @@ export default function CompleteProfilePage() {
             </div>
 
             {error && (
-              <p className="text-sm text-destructive" role="alert">
-                {error}
-              </p>
+              <div role="alert">
+                <p className="text-sm text-destructive">{error}</p>
+                <AuditEvidence requestId={lastRequestId} variant="error" />
+              </div>
             )}
 
             <Button type="submit" disabled={isLoading} className="w-full mt-2">

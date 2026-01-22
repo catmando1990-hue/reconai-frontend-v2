@@ -7,6 +7,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type LinkTokenResponse = {
   request_id: string;
@@ -40,6 +41,7 @@ export function PlaidLinkButton({
   const [status, setStatus] = useState<{
     kind: "idle" | "ok" | "error";
     message?: string;
+    requestId?: string;
   }>({
     kind: "idle",
   });
@@ -56,6 +58,7 @@ export function PlaidLinkButton({
       setLinkToken(data.link_token);
     } catch (e: unknown) {
       let message = "Failed to create link token";
+      let requestId: string | undefined;
       if (e instanceof AuditProvenanceError) {
         message = `Provenance error: ${e.message}`;
       } else if (e instanceof HttpError) {
@@ -63,7 +66,7 @@ export function PlaidLinkButton({
       } else if (e instanceof Error) {
         message = e.message;
       }
-      setStatus({ kind: "error", message });
+      setStatus({ kind: "error", message, requestId });
       onError?.(message);
       setLinkToken(null);
     } finally {
@@ -92,6 +95,7 @@ export function PlaidLinkButton({
         setStatus({
           kind: "ok",
           message: `Bank connected (item_id: ${data.item_id})`,
+          requestId: data.request_id,
         });
         onSuccessCallback?.(data.item_id);
         await fetchLinkToken();
@@ -171,6 +175,7 @@ export function PlaidLinkButton({
         <div className="rounded-xl border bg-background p-3 text-sm">
           <div className="font-medium">Success</div>
           <div className="text-muted-foreground">{status.message}</div>
+          <AuditEvidence requestId={status.requestId} variant="success" />
         </div>
       )}
 
@@ -178,6 +183,7 @@ export function PlaidLinkButton({
         <div className="rounded-xl border p-3 text-sm">
           <div className="font-medium">Error</div>
           <div className="text-muted-foreground">{status.message}</div>
+          <AuditEvidence requestId={status.requestId} variant="error" />
         </div>
       )}
     </div>

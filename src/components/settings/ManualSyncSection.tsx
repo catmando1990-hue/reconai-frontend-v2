@@ -6,6 +6,7 @@ import {
   AuditProvenanceError,
   HttpError,
 } from "@/lib/auditedFetch";
+import { AuditEvidence } from "@/components/audit/AuditEvidence";
 
 type SyncState = "idle" | "syncing" | "success" | "error";
 
@@ -19,16 +20,21 @@ export function ManualSyncSection() {
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Audit evidence state
+  const [lastRequestId, setLastRequestId] = useState<string | null>(null);
 
   const handleSync = async () => {
     setSyncState("syncing");
     setErrorMessage(null);
+    setLastRequestId(null);
 
     try {
       const data = await auditedFetch<SyncResponse>("/api/plaid/sync", {
         method: "POST",
       });
 
+      // Capture request_id for audit evidence
+      setLastRequestId(data.request_id);
       setLastSync(data.last_sync ?? new Date().toISOString());
       setSyncState("success");
     } catch (e: unknown) {
@@ -64,15 +70,21 @@ export function ManualSyncSection() {
           <p>Sync in progress. This may take a few moments.</p>
         )}
         {syncState === "success" && lastSync && (
-          <p>
-            Last sync completed at {lastSync}. New transactions may still be
-            processing.
-          </p>
+          <>
+            <p>
+              Last sync completed at {lastSync}. New transactions may still be
+              processing.
+            </p>
+            <AuditEvidence requestId={lastRequestId} variant="success" />
+          </>
         )}
         {syncState === "error" && (
-          <p className="text-destructive">
-            {errorMessage || "Sync failed. Please try again."}
-          </p>
+          <>
+            <p className="text-destructive">
+              {errorMessage || "Sync failed. Please try again."}
+            </p>
+            <AuditEvidence requestId={lastRequestId} variant="error" />
+          </>
         )}
       </div>
     </div>

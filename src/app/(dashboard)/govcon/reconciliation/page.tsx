@@ -99,21 +99,28 @@ export default function ReconciliationPage() {
                 <span className="text-sm text-muted-foreground">
                   Active Runs
                 </span>
-                <span className="text-lg font-semibold">0</span>
+                {/* HIERARCHY: text-base font-medium (subordinate to Intelligence) */}
+                <span className="text-base font-medium text-muted-foreground italic">No data</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Open Variances
                 </span>
-                <span className="text-lg font-semibold">0</span>
+                <span className="text-base font-medium text-muted-foreground italic">No data</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Resolved</span>
-                <span className="text-lg font-semibold">0</span>
+                <span className="text-base font-medium text-muted-foreground italic">No data</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Escalated</span>
-                <span className="text-lg font-semibold">0</span>
+                <span className="text-base font-medium text-muted-foreground italic">No data</span>
+              </div>
+              {/* SF-1408 reference */}
+              <div className="pt-2 border-t">
+                <p className="text-xs text-muted-foreground">
+                  SF-1408 § cost-1 through cost-5 (Direct / Indirect Costs)
+                </p>
               </div>
             </div>
           </SecondaryPanel>

@@ -11,7 +11,8 @@ import {
   Loader2,
   AlertTriangle,
   FileWarning,
-  CheckCircle2,
+  FileText,
+  Info,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
@@ -29,6 +30,10 @@ import { ROUTES } from "@/lib/routes";
  * - Unknown/missing govcon_version = fail-closed
  * - Non-success lifecycle REQUIRES reason display
  * - Evidence status shown explicitly
+ *
+ * HIERARCHY: GovCon is subordinate to CORE, CFO, and Intelligence
+ * - No green/pass styling - uses neutral blue advisory styling
+ * - No "Verified" or certification language
  */
 
 export default function AuditPage() {
@@ -48,17 +53,18 @@ export default function AuditPage() {
   const evidenceCount = data?.snapshot?.evidence_attached?.length ?? 0;
 
   // Get integrity status based on lifecycle and evidence
+  // HIERARCHY: No "ok" (green) variant - only muted/warn/error
   function getIntegrityStatus(): {
-    icon: typeof CheckCircle2;
+    icon: typeof FileText;
     label: string;
     description: string;
-    variant: "ok" | "warn" | "error" | "muted";
+    variant: "documented" | "warn" | "error" | "muted";
   } {
     if (isLoading) {
       return {
         icon: Loader2,
         label: "Checking…",
-        description: "Verifying audit trail integrity",
+        description: "Loading audit trail status",
         variant: "muted",
       };
     }
@@ -66,24 +72,25 @@ export default function AuditPage() {
       return {
         icon: AlertCircle,
         label: "Not evaluated",
-        description: "No audit data available to verify",
+        description: "No audit data available",
         variant: "muted",
       };
     }
     if (lifecycle === "pending") {
       return {
         icon: Loader2,
-        label: "Verifying",
-        description: "Integrity check in progress",
+        label: "Loading",
+        description: "Audit trail loading",
         variant: "muted",
       };
     }
     if (lifecycle === "success" && hasEvidence) {
+      // HIERARCHY: "Recorded" not "Verified" - no certification language
       return {
-        icon: CheckCircle2,
-        label: "Verified",
-        description: "Hash chain integrity confirmed",
-        variant: "ok",
+        icon: FileText,
+        label: "Recorded",
+        description: "Hash chain documented with evidence",
+        variant: "documented",
       };
     }
     if (lifecycle === "success" && !hasEvidence) {
@@ -106,14 +113,14 @@ export default function AuditPage() {
       return {
         icon: FileWarning,
         label: "No evidence",
-        description: "Evidence required for DCAA compliance",
+        description: "Evidence required for documentation",
         variant: "warn",
       };
     }
     // Failed
     return {
       icon: AlertCircle,
-      label: "Failed",
+      label: "Unavailable",
       description: reasonMessage || `Error: ${reasonCode || "unknown"}`,
       variant: "error",
     };
@@ -125,7 +132,7 @@ export default function AuditPage() {
   return (
     <RouteShell
       title="Audit Trail"
-      subtitle="Audit log with hash chain integrity for DCAA documentation"
+      subtitle="Event documentation with hash chain integrity"
       right={
         <div className="flex items-center gap-2">
           <Button
@@ -144,18 +151,30 @@ export default function AuditPage() {
         </div>
       }
     >
+      {/* ADVISORY DISCLAIMER */}
+      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-blue-700 dark:text-blue-300">
+            <span className="font-medium">Advisory only.</span> This audit trail
+            documents system events for reference purposes. It does not certify
+            DCAA compliance or replace professional audit review.
+          </p>
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Primary Panel - Audit Timeline */}
         <div className="lg:col-span-8">
           <PrimaryPanel
             title="Audit Timeline"
-            subtitle="Chronological record of all system events"
+            subtitle="Chronological record of system events"
             actions={
               <Link
                 href="/govcon/audit/verify"
                 className="text-sm text-primary hover:underline"
               >
-                Verify hash chain
+                View hash chain
               </Link>
             }
           >
@@ -191,11 +210,11 @@ export default function AuditPage() {
             ) : isSuccess && auditEntries !== null && auditEntries > 0 ? (
               /* SUCCESS: Render audit entries */
               <div className="space-y-4" data-testid="audit-timeline-content">
-                {/* Lifecycle indicator */}
+                {/* Lifecycle indicator - NEUTRAL blue, not green */}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-green-700 dark:text-green-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    Verified
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-blue-700 dark:text-blue-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                    Recorded
                   </span>
                   <span>
                     as of{" "}
@@ -204,12 +223,16 @@ export default function AuditPage() {
                       : "recently"}
                   </span>
                   <span className="text-muted-foreground/60">•</span>
-                  <span>{evidenceCount} evidence files attached</span>
+                  <span>{evidenceCount} evidence files</span>
                 </div>
 
                 {/* TODO: Render actual audit entries when available */}
+                {/* HIERARCHY: text-base font-medium for metrics */}
                 <p className="text-sm text-muted-foreground">
-                  {auditEntries} audit entries recorded.
+                  <span className="text-base font-medium text-foreground">
+                    {auditEntries}
+                  </span>{" "}
+                  audit entries documented.
                 </p>
               </div>
             ) : (
@@ -225,13 +248,14 @@ export default function AuditPage() {
 
         {/* Secondary Panels */}
         <div className="space-y-4 lg:col-span-4">
-          <SecondaryPanel title="Integrity Status">
+          <SecondaryPanel title="Documentation Status">
             <div className="space-y-4">
               {/* P0 FIX: Show explicit status based on lifecycle */}
+              {/* HIERARCHY: No green - use blue for "documented" state */}
               <div
                 className={`flex items-center gap-3 p-3 rounded-lg ${
-                  integrityStatus.variant === "ok"
-                    ? "bg-green-500/10"
+                  integrityStatus.variant === "documented"
+                    ? "bg-blue-500/10"
                     : integrityStatus.variant === "warn"
                       ? "bg-yellow-500/10"
                       : integrityStatus.variant === "error"
@@ -241,8 +265,8 @@ export default function AuditPage() {
               >
                 <div
                   className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                    integrityStatus.variant === "ok"
-                      ? "bg-green-500/20"
+                    integrityStatus.variant === "documented"
+                      ? "bg-blue-500/20"
                       : integrityStatus.variant === "warn"
                         ? "bg-yellow-500/20"
                         : integrityStatus.variant === "error"
@@ -252,8 +276,8 @@ export default function AuditPage() {
                 >
                   <IntegrityIcon
                     className={`h-5 w-5 ${
-                      integrityStatus.variant === "ok"
-                        ? "text-green-600 dark:text-green-400"
+                      integrityStatus.variant === "documented"
+                        ? "text-blue-600 dark:text-blue-400"
                         : integrityStatus.variant === "warn"
                           ? "text-yellow-600 dark:text-yellow-400"
                           : integrityStatus.variant === "error"
@@ -265,8 +289,8 @@ export default function AuditPage() {
                 <div>
                   <p
                     className={`text-sm font-medium ${
-                      integrityStatus.variant === "ok"
-                        ? "text-green-700 dark:text-green-300"
+                      integrityStatus.variant === "documented"
+                        ? "text-blue-700 dark:text-blue-300"
                         : integrityStatus.variant === "warn"
                           ? "text-yellow-700 dark:text-yellow-300"
                           : integrityStatus.variant === "error"
@@ -285,18 +309,9 @@ export default function AuditPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Entries</span>
                   {/* P0 FIX: Show explicit reason for missing data */}
+                  {/* HIERARCHY: text-base font-medium for values */}
                   {auditEntries !== null ? (
-                    <span className="font-medium">{auditEntries}</span>
-                  ) : (
-                    <span className="text-muted-foreground italic text-xs">
-                      {lifecycle === "pending" ? "Loading" : "No data"}
-                    </span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">DCAA Relevant</span>
-                  {auditEntries !== null ? (
-                    <span className="font-medium">{auditEntries}</span>
+                    <span className="text-base font-medium">{auditEntries}</span>
                   ) : (
                     <span className="text-muted-foreground italic text-xs">
                       {lifecycle === "pending" ? "Loading" : "No data"}
@@ -306,13 +321,19 @@ export default function AuditPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">With Evidence</span>
                   {isSuccess ? (
-                    <span className="font-medium">{evidenceCount}</span>
+                    <span className="text-base font-medium">{evidenceCount}</span>
                   ) : (
                     <span className="text-muted-foreground italic text-xs">
                       {lifecycle === "pending" ? "Loading" : "No data"}
                     </span>
                   )}
                 </div>
+              </div>
+              {/* SF-1408 reference */}
+              <div className="pt-2 border-t">
+                <p className="text-xs text-muted-foreground">
+                  SF-1408 § rep-1 through rep-3 (Reporting & Audit Trail)
+                </p>
               </div>
               {/* Show lifecycle context when non-success */}
               {lifecycle && lifecycle !== "success" && (
@@ -341,7 +362,7 @@ export default function AuditPage() {
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
               >
                 <Hash className="h-4 w-4" />
-                Verify Hash Chain
+                View Hash Chain
               </Link>
             </nav>
           </SecondaryPanel>
@@ -349,7 +370,7 @@ export default function AuditPage() {
           <SecondaryPanel title="Retention Policy" collapsible>
             <div className="text-sm text-muted-foreground space-y-2">
               <p>Audit records retained for 6 years per FAR requirements.</p>
-              <p>Evidence files stored with cryptographic verification.</p>
+              <p>Evidence files stored with cryptographic hashing.</p>
               <p>Export available in JSON and PDF formats.</p>
             </div>
           </SecondaryPanel>

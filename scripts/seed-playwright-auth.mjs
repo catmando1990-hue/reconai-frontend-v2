@@ -2,6 +2,11 @@
 /**
  * Seed authenticated Playwright storage state using Clerk backend SDK.
  *
+ * LIFECYCLE STATES:
+ * - FAIL: Missing CLERK_SECRET_KEY or PLAYWRIGHT_BASE_URL (required secrets)
+ * - SKIP: Missing CLERK_CI_USER_ID (auth seeding is optional on forks/PRs)
+ * - SUCCESS: Auth state seeded successfully
+ *
  * SECURITY:
  * - Uses Clerk backend SDK (not UI automation)
  * - Requires CLERK_SECRET_KEY and CLERK_CI_USER_ID from GitHub Secrets
@@ -10,7 +15,7 @@
  *
  * USAGE (CI only):
  *   npm install -D @clerk/clerk-sdk-node
- *   CLERK_SECRET_KEY=sk_xxx CLERK_CI_USER_ID=user_xxx node scripts/seed-playwright-auth.mjs
+ *   CLERK_SECRET_KEY=sk_xxx CLERK_CI_USER_ID=user_xxx PLAYWRIGHT_BASE_URL=https://... node scripts/seed-playwright-auth.mjs
  *
  * NOTE: @clerk/clerk-sdk-node is installed at CI runtime, not in package.json.
  * This keeps the dependency out of the production bundle.
@@ -18,20 +23,25 @@
 import * as fs from "fs";
 import * as path from "path";
 
-// Environment validation - FAIL-CLOSED
-const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
-const CLERK_CI_USER_ID = process.env.CLERK_CI_USER_ID;
-const PLAYWRIGHT_BASE_URL =
-  process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
-
-if (!CLERK_SECRET_KEY) {
-  console.error("[seed-playwright-auth] FATAL: Missing CLERK_SECRET_KEY");
+// Fail-closed helper
+function fatal(msg) {
+  console.error(`[seed-playwright-auth] FATAL: ${msg}`);
   process.exit(1);
 }
 
+// Environment validation - FAIL-CLOSED for required secrets
+const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+const CLERK_CI_USER_ID = process.env.CLERK_CI_USER_ID;
+const PLAYWRIGHT_BASE_URL = process.env.PLAYWRIGHT_BASE_URL;
+
+if (!CLERK_SECRET_KEY) fatal("Missing CLERK_SECRET_KEY");
+if (!PLAYWRIGHT_BASE_URL) fatal("Missing PLAYWRIGHT_BASE_URL");
+
+// Explicit lifecycle: auth seeding is optional but gated
+// Allows CI to pass on forks/PRs where CLERK_CI_USER_ID is not available
 if (!CLERK_CI_USER_ID) {
-  console.error("[seed-playwright-auth] FATAL: Missing CLERK_CI_USER_ID");
-  process.exit(1);
+  console.log("[seed-playwright-auth] SKIP: CLERK_CI_USER_ID not set");
+  process.exit(0);
 }
 
 // Dynamic import to handle package not installed
@@ -41,24 +51,17 @@ async function getClerkClient() {
     const clerkSdk = await import("@clerk/clerk-sdk-node");
     return clerkSdk.createClerkClient({ secretKey: CLERK_SECRET_KEY });
   } catch {
-    console.error(
-      "[seed-playwright-auth] FATAL: @clerk/clerk-sdk-node not installed",
-    );
-    console.error(
-      "[seed-playwright-auth] Run: npm install -D @clerk/clerk-sdk-node",
-    );
-    process.exit(1);
+    fatal("@clerk/clerk-sdk-node not installed. Run: npm install -D @clerk/clerk-sdk-node");
   }
 }
 
 async function run() {
-  console.log("[seed-playwright-auth] Starting Clerk session seeding...");
+  console.log("[seed-playwright-auth] Seeding auth state...");
   console.log("[seed-playwright-auth] Target URL:", PLAYWRIGHT_BASE_URL);
   console.log("[seed-playwright-auth] CI User ID:", CLERK_CI_USER_ID);
 
   const clerk = await getClerkClient();
 
-  // Try to get an existing active session first
   console.log("[seed-playwright-auth] Checking for existing sessions...");
 
   let sessionToken;
@@ -80,11 +83,7 @@ async function run() {
     sessionToken = signInToken.token;
     console.log("[seed-playwright-auth] Sign-in token created successfully");
   } catch (err) {
-    console.error(
-      "[seed-playwright-auth] FATAL: Failed to create Clerk session",
-    );
-    console.error("[seed-playwright-auth] Error:", err.message);
-    process.exit(1);
+    fatal(`Failed to create Clerk session: ${err.message}`);
   }
 
   // Determine domain from target URL
@@ -137,6 +136,5 @@ async function run() {
 }
 
 run().catch((err) => {
-  console.error("[seed-playwright-auth] FATAL ERROR:", err.message || err);
-  process.exit(1);
+  fatal(`Unexpected error: ${err.message || err}`);
 });

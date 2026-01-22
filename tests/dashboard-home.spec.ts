@@ -38,10 +38,12 @@ import type { CoreState } from "@/hooks/useCoreState";
  * For CI, use Clerk test mode or authenticated browser context.
  */
 
-// Skip tests in environments where Clerk auth redirects to sign-in
-// This is detected by checking if PLAYWRIGHT_AUTH_BYPASS or similar env is set
+// CI AUTH GATE: Skip dashboard tests in remote CI without auth context
+// - PLAYWRIGHT_BASE_URL set = running against remote site (prod/staging)
+// - PLAYWRIGHT_AUTH not set = no authenticated session
+// This preserves full local test coverage while preventing CI failures
 const skipInUnauthenticatedEnv =
-  !process.env.PLAYWRIGHT_AUTH_BYPASS && !process.env.CI;
+  !!process.env.PLAYWRIGHT_BASE_URL && !process.env.PLAYWRIGHT_AUTH;
 
 // Canonical mock states from factory - mirrors backend schema exactly
 const MOCK_CORE_STATE = {
@@ -113,10 +115,10 @@ async function setupCustomCoreStateMock(
 }
 
 test.describe("CORE State-of-Business Dashboard", () => {
-  // Skip entire suite if running in unauthenticated environment
+  // Skip entire suite if running in unauthenticated remote environment
   test.skip(
     skipInUnauthenticatedEnv,
-    "Requires authenticated Clerk session - set PLAYWRIGHT_AUTH_BYPASS=1 or run in CI",
+    "Dashboard tests require authentication in remote environments",
   );
 
   test.describe("Empty Organization", () => {

@@ -48,8 +48,29 @@ export default defineConfig({
     ...(isAuthenticated ? { storageState: "playwright-auth-state.json" } : {}),
   },
   projects: [
+    // CI-only: fast, deterministic smoke tests (<3 min total)
+    {
+      name: "ci-smoke",
+      testDir: "./tests/ci",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    // Full regression: all tests, all viewports (manual/nightly)
+    {
+      name: "full-regression",
+      testDir: "./tests",
+      testIgnore: ["**/ci/**"],
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
     {
       name: "mobile",
+      testDir: "./tests",
+      testIgnore: ["**/ci/**"],
       use: {
         ...devices["iPhone 12"],
         viewport: { width: 375, height: 812 },
@@ -57,6 +78,8 @@ export default defineConfig({
     },
     {
       name: "tablet",
+      testDir: "./tests",
+      testIgnore: ["**/ci/**"],
       use: {
         ...devices["iPad (gen 7)"],
         viewport: { width: 768, height: 1024 },
@@ -64,6 +87,8 @@ export default defineConfig({
     },
     {
       name: "desktop",
+      testDir: "./tests",
+      testIgnore: ["**/ci/**"],
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },

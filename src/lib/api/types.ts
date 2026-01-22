@@ -28,6 +28,27 @@ export type InsightsSummaryResponse = {
   items: Insight[];
 };
 
+/**
+ * CFO Lifecycle Status
+ * - success: Data is valid and ready for display
+ * - pending: Data is being computed
+ * - failed: Computation failed, reason_code required
+ * - stale: Data exists but is outdated
+ */
+export type CfoLifecycleStatus = "success" | "pending" | "failed" | "stale";
+
+/**
+ * CFO Reason Codes - Required for non-success lifecycle states
+ * Provides explicit context for why data is unavailable
+ */
+export type CfoReasonCode =
+  | "insufficient_data"
+  | "computation_error"
+  | "backend_timeout"
+  | "data_stale"
+  | "not_configured"
+  | "unknown";
+
 export type CfoSnapshot = {
   as_of: string; // ISO8601
   runway_days: number | null;
@@ -46,6 +67,15 @@ export type CfoSnapshot = {
 };
 
 export type CfoSnapshotResponse = {
+  /** Version of CFO contract - frontend validates against supported versions */
+  cfo_version: string;
+  /** Lifecycle status - REQUIRED for rendering decisions */
+  lifecycle: CfoLifecycleStatus;
+  /** Reason code - REQUIRED when lifecycle is not "success" */
+  reason_code: CfoReasonCode | null;
+  /** Human-readable reason message */
+  reason_message: string | null;
   generated_at: string; // ISO8601
-  snapshot: CfoSnapshot;
+  /** Snapshot data - only valid when lifecycle is "success" */
+  snapshot: CfoSnapshot | null;
 };

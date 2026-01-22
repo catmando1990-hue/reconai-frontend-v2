@@ -56,6 +56,10 @@ export function mockInsights(): InsightsSummaryResponse {
 export function mockCfoSnapshot(): CfoSnapshotResponse {
   const now = isoNow();
   return {
+    cfo_version: "1",
+    lifecycle: "success",
+    reason_code: null,
+    reason_message: null,
     generated_at: now,
     snapshot: {
       as_of: now,

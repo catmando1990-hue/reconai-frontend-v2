@@ -10,16 +10,164 @@ import { useCfoSnapshot } from "@/hooks/useCfoSnapshot";
 import { TierGate } from "@/components/legal/TierGate";
 import { AI_DISCLAIMER, REGULATORY_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
-import { FileText, RefreshCw, AlertTriangle, ChevronRight } from "lucide-react";
+import {
+  FileText,
+  RefreshCw,
+  AlertTriangle,
+  ChevronRight,
+  Clock,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { ROUTES } from "@/lib/routes";
+import type { CfoLifecycleStatus, CfoReasonCode } from "@/lib/api/types";
+
+/**
+ * CFO Executive Summary Page
+ *
+ * P0 FIX: Version and Lifecycle Enforcement
+ * - Unknown/missing cfo_version = fail-closed (no data rendered)
+ * - Non-success lifecycle REQUIRES reason display
+ * - Snapshot data only rendered when lifecycle is "success"
+ */
 
 function formatCurrency(value: number | null): string {
   if (value === null) return "—";
   return `$${value.toLocaleString()}`;
 }
 
+// =============================================================================
+// LIFECYCLE STATUS BANNER - Required for non-success states
+// =============================================================================
+
+/**
+ * Lifecycle Status Banner - Required for non-success states
+ * PART 2: Non-success requires reason display
+ */
+interface LifecycleStatusBannerProps {
+  lifecycle: CfoLifecycleStatus;
+  reasonCode: CfoReasonCode | null;
+  reasonMessage: string | null;
+  onRetry?: () => void;
+}
+
+function LifecycleStatusBanner({
+  lifecycle,
+  reasonCode,
+  reasonMessage,
+  onRetry,
+}: LifecycleStatusBannerProps) {
+  // Success state - no banner needed
+  if (lifecycle === "success") {
+    return null;
+  }
+
+  // Pending state - show loading indicator
+  if (lifecycle === "pending") {
+    return (
+      <div
+        data-testid="cfo-lifecycle-banner"
+        data-lifecycle="pending"
+        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
+      >
+        <div className="flex items-start gap-3">
+          <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              Computing CFO snapshot…
+            </p>
+            {reasonMessage && (
+              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                {reasonMessage}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Stale state - show warning with reason
+  if (lifecycle === "stale") {
+    return (
+      <div
+        data-testid="cfo-lifecycle-banner"
+        data-lifecycle="stale"
+        className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4"
+      >
+        <div className="flex items-start gap-3">
+          <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+              CFO data is stale
+            </p>
+            <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+              {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
+            </p>
+            {onRetry && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRetry}
+                className="mt-2"
+              >
+                <RefreshCw className="mr-2 h-3 w-3" />
+                Refresh
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Failed state - show error with reason (REQUIRED)
+  return (
+    <div
+      data-testid="cfo-lifecycle-banner"
+      data-lifecycle="failed"
+      className="rounded-lg border border-red-500/30 bg-red-500/10 p-4"
+    >
+      <div className="flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+            CFO snapshot unavailable
+          </p>
+          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+            {reasonMessage || `Error: ${reasonCode || "unknown"}`}
+          </p>
+          {onRetry && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              className="mt-2"
+            >
+              <RefreshCw className="mr-2 h-3 w-3" />
+              Retry
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
 function ExecutiveSummaryBody() {
-  const { data, isLoading, error, refetch } = useCfoSnapshot();
+  const {
+    data,
+    isLoading,
+    isSuccess,
+    lifecycle,
+    reasonCode,
+    reasonMessage,
+    refetch,
+  } = useCfoSnapshot();
 
   return (
     <RouteShell
@@ -51,48 +199,134 @@ function ExecutiveSummaryBody() {
             title="Financial Posture"
             subtitle="Key metrics for executive decision-making"
           >
+            {/* P0 FIX: Lifecycle-based rendering */}
             {isLoading ? (
               <p className="text-sm text-muted-foreground">
                 Loading executive summary…
               </p>
-            ) : error ? (
-              <div className="space-y-2">
-                <p className="text-sm text-destructive">{error}</p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => void refetch()}
-                >
-                  Retry
-                </Button>
+            ) : lifecycle && lifecycle !== "success" ? (
+              /* PART 2: Non-success lifecycle shows banner with reason */
+              <div className="space-y-4">
+                <LifecycleStatusBanner
+                  lifecycle={lifecycle}
+                  reasonCode={reasonCode}
+                  reasonMessage={reasonMessage}
+                  onRetry={() => void refetch()}
+                />
+                {/* Show stale data if available during stale/pending states */}
+                {lifecycle === "stale" && data?.snapshot && (
+                  <div className="opacity-60">
+                    <p className="text-xs text-muted-foreground mb-4 italic">
+                      Showing stale data (last updated:{" "}
+                      {data.snapshot.as_of
+                        ? new Date(data.snapshot.as_of).toLocaleString()
+                        : "unknown"}
+                      )
+                    </p>
+                    {/* Stale metrics grid - SUBORDINATE styling */}
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="rounded-lg border border-border bg-background p-5">
+                        <p className="text-sm text-muted-foreground">Runway</p>
+                        {data.snapshot.runway_days !== null ? (
+                          <p className="mt-1 text-2xl font-medium">
+                            {data.snapshot.runway_days} days
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-sm text-muted-foreground italic">
+                            Insufficient data
+                          </p>
+                        )}
+                      </div>
+                      <div className="rounded-lg border border-border bg-background p-5">
+                        <p className="text-sm text-muted-foreground">
+                          Cash on Hand
+                        </p>
+                        {data.snapshot.cash_on_hand !== null ? (
+                          <p className="mt-1 text-2xl font-medium">
+                            {formatCurrency(data.snapshot.cash_on_hand)}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-sm text-muted-foreground italic">
+                            Awaiting data
+                          </p>
+                        )}
+                      </div>
+                      <div className="rounded-lg border border-border bg-background p-5">
+                        <p className="text-sm text-muted-foreground">
+                          Monthly Burn
+                        </p>
+                        {data.snapshot.burn_rate_monthly !== null ? (
+                          <p className="mt-1 text-2xl font-medium">
+                            {formatCurrency(data.snapshot.burn_rate_monthly)}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-sm text-muted-foreground italic">
+                            Awaiting data
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : data?.snapshot ? (
-              <div className="space-y-6">
-                {/* Key Metrics Grid */}
+            ) : isSuccess && data?.snapshot ? (
+              /* SUCCESS: Render full snapshot data */
+              <div className="space-y-6" data-testid="cfo-snapshot-content">
+                {/* Lifecycle indicator - inline with metrics */}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-green-700 dark:text-green-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    Live
+                  </span>
+                  <span>
+                    as of{" "}
+                    {data.snapshot.as_of
+                      ? new Date(data.snapshot.as_of).toLocaleString()
+                      : "recently"}
+                  </span>
+                </div>
+
+                {/* Key Metrics Grid - SUBORDINATE styling (text-2xl, not text-3xl) */}
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="rounded-lg border border-border bg-background p-5">
                     <p className="text-sm text-muted-foreground">Runway</p>
-                    <p className="mt-1 text-3xl font-semibold">
-                      {data.snapshot.runway_days === null
-                        ? "—"
-                        : `${data.snapshot.runway_days} days`}
-                    </p>
+                    {data.snapshot.runway_days !== null ? (
+                      <p className="mt-1 text-2xl font-medium">
+                        {data.snapshot.runway_days} days
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground italic">
+                        Insufficient data to calculate
+                      </p>
+                    )}
                   </div>
                   <div className="rounded-lg border border-border bg-background p-5">
                     <p className="text-sm text-muted-foreground">
                       Cash on Hand
                     </p>
-                    <p className="mt-1 text-3xl font-semibold">
-                      {formatCurrency(data.snapshot.cash_on_hand)}
-                    </p>
+                    {data.snapshot.cash_on_hand !== null ? (
+                      <p className="mt-1 text-2xl font-medium">
+                        {formatCurrency(data.snapshot.cash_on_hand)}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground italic">
+                        Awaiting bank data
+                      </p>
+                    )}
                   </div>
                   <div className="rounded-lg border border-border bg-background p-5">
                     <p className="text-sm text-muted-foreground">
                       Monthly Burn
                     </p>
-                    <p className="mt-1 text-3xl font-semibold">
-                      {formatCurrency(data.snapshot.burn_rate_monthly)}
-                    </p>
+                    {data.snapshot.burn_rate_monthly !== null ? (
+                      <p className="mt-1 text-2xl font-medium">
+                        {formatCurrency(data.snapshot.burn_rate_monthly)}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground italic">
+                        Requires 30+ days of data
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -143,6 +377,7 @@ function ExecutiveSummaryBody() {
                 </div>
               </div>
             ) : (
+              /* EMPTY STATE: No data available */
               <EmptyState
                 icon={FileText}
                 title="No CFO snapshot available"
@@ -160,18 +395,40 @@ function ExecutiveSummaryBody() {
                 <span className="text-sm text-muted-foreground">
                   Risk Count
                 </span>
-                <span className="text-xl font-semibold">
-                  {data?.snapshot?.top_risks.length ?? 0}
-                </span>
+                {/* P0 FIX: Show reason when data unavailable, not bare dash */}
+                {isSuccess && data?.snapshot ? (
+                  <span className="text-lg font-medium">
+                    {data.snapshot.top_risks.length}
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">
+                    {lifecycle === "pending" ? "Loading" : "No data"}
+                  </span>
+                )}
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Pending Actions
                 </span>
-                <span className="text-xl font-semibold">
-                  {data?.snapshot?.next_actions.length ?? 0}
-                </span>
+                {isSuccess && data?.snapshot ? (
+                  <span className="text-lg font-medium">
+                    {data.snapshot.next_actions.length}
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">
+                    {lifecycle === "pending" ? "Loading" : "No data"}
+                  </span>
+                )}
               </div>
+              {/* Show lifecycle status in sidebar */}
+              {lifecycle && lifecycle !== "success" && (
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    Status:{" "}
+                    <span className="capitalize font-medium">{lifecycle}</span>
+                  </p>
+                </div>
+              )}
             </div>
           </SecondaryPanel>
 

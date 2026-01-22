@@ -143,21 +143,33 @@ export default function CfoCompliancePage() {
                 <span className="text-sm text-muted-foreground">
                   Audit Entries
                 </span>
-                <span className="text-lg font-semibold">—</span>
+                {/* P0 FIX: Show reason for unavailable data */}
+                <span className="text-sm text-muted-foreground italic">
+                  Requires audit log setup
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Retention Period
                 </span>
-                <span className="text-lg font-semibold">
-                  {policy?.days ? `${policy.days} days` : "—"}
-                </span>
+                {policy?.days ? (
+                  <span className="text-lg font-medium">
+                    {policy.days} days
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground italic">
+                    Not configured
+                  </span>
+                )}
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Export Packs
                 </span>
-                <span className="text-lg font-semibold">—</span>
+                {/* P0 FIX: Show reason for unavailable data */}
+                <span className="text-sm text-muted-foreground italic">
+                  No packs requested
+                </span>
               </div>
             </div>
           </SecondaryPanel>
@@ -169,7 +181,7 @@ export default function CfoCompliancePage() {
                   Retention Read
                 </span>
                 <StatusChip variant={rbac ? "ok" : "muted"}>
-                  {rbac ? "Granted" : "—"}
+                  {rbac ? "Granted" : "Pending setup"}
                 </StatusChip>
               </div>
               <div className="flex items-center justify-between">
@@ -177,7 +189,7 @@ export default function CfoCompliancePage() {
                   Export Request
                 </span>
                 <StatusChip variant={rbac ? "ok" : "muted"}>
-                  {rbac ? "Granted" : "—"}
+                  {rbac ? "Granted" : "Pending setup"}
                 </StatusChip>
               </div>
             </div>

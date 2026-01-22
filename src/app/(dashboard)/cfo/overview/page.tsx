@@ -7,9 +7,65 @@ import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { OverviewSnapshot } from "@/components/overview/OverviewSnapshot";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Info } from "lucide-react";
+import { useCfoSnapshot } from "@/hooks/useCfoSnapshot";
+
+/**
+ * CFO Overview Page
+ *
+ * P0 FIX: Hierarchy and Lifecycle Enforcement
+ * - CFO metrics are SUBORDINATE to CORE (advisory, not authoritative)
+ * - Metrics styled smaller than CORE to reinforce hierarchy
+ * - Missing data MUST show reason, not ambiguous dashes
+ * - Lifecycle status visible inline with metrics
+ */
+
+function MetricWithReason({
+  label,
+  value,
+  lifecycle,
+  reasonCode,
+}: {
+  label: string;
+  value: string | number | null;
+  lifecycle: string | null;
+  reasonCode: string | null;
+}) {
+  // If we have actual data, show it (subordinate styling - text-lg, not text-xl)
+  if (value !== null && lifecycle === "success") {
+    return (
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-lg font-medium">{value}</span>
+      </div>
+    );
+  }
+
+  // No data - show WHY with explicit reason
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <Info className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground italic">
+          {lifecycle === "pending"
+            ? "Computing…"
+            : lifecycle === "stale"
+              ? "Stale"
+              : reasonCode === "insufficient_data"
+                ? "Insufficient data"
+                : reasonCode === "not_configured"
+                  ? "Not configured"
+                  : "Awaiting data"}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function CfoOverviewPage() {
+  const { lifecycle, reasonCode } = useCfoSnapshot();
+
   return (
     <RouteShell
       title="CFO Overview"
@@ -47,27 +103,37 @@ export default function CfoOverviewPage() {
         <div className="space-y-4 lg:col-span-4">
           <SecondaryPanel title="Key Metrics">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Total Revenue
-                </span>
-                <span className="text-xl font-semibold">—</span>
+              {/* P0 FIX: Show reason for missing data, never ambiguous dashes */}
+              <MetricWithReason
+                label="Total Revenue"
+                value={null}
+                lifecycle={lifecycle}
+                reasonCode={reasonCode}
+              />
+              <MetricWithReason
+                label="Total Expenses"
+                value={null}
+                lifecycle={lifecycle}
+                reasonCode={reasonCode}
+              />
+              <MetricWithReason
+                label="Net Position"
+                value={null}
+                lifecycle={lifecycle}
+                reasonCode={reasonCode}
+              />
+              {/* Lifecycle context - always visible */}
+              <div className="pt-2 border-t">
+                <p className="text-xs text-muted-foreground">
+                  {lifecycle === "success"
+                    ? "Metrics from connected financial sources"
+                    : lifecycle === "pending"
+                      ? "Computing metrics from financial data…"
+                      : lifecycle === "stale"
+                        ? "Data is stale - refresh recommended"
+                        : "Connect financial sources to populate metrics"}
+                </p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Total Expenses
-                </span>
-                <span className="text-xl font-semibold">—</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Net Position
-                </span>
-                <span className="text-xl font-semibold">—</span>
-              </div>
-              <p className="text-xs text-muted-foreground pt-2 border-t">
-                Metrics populate from connected financial sources.
-              </p>
             </div>
           </SecondaryPanel>
 

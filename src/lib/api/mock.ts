@@ -14,6 +14,10 @@ function isoNow() {
 export function mockInsights(): InsightsSummaryResponse {
   const now = isoNow();
   return {
+    intelligence_version: "1",
+    lifecycle: "success",
+    reason_code: null,
+    reason_message: null,
     generated_at: now,
     items: [
       {

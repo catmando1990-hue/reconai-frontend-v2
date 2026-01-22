@@ -23,9 +23,44 @@ export type Insight = {
   source: "rules" | "ml" | "llm" | "hybrid";
 };
 
+/**
+ * Intelligence Lifecycle Status
+ * - success: Insights are valid and ready for display
+ * - pending: Insights are being computed
+ * - failed: Computation failed, reason_code required
+ * - stale: Insights exist but are outdated
+ */
+export type IntelligenceLifecycleStatus =
+  | "success"
+  | "pending"
+  | "failed"
+  | "stale";
+
+/**
+ * Intelligence Reason Codes - Required for non-success lifecycle states
+ * Provides explicit context for why insights are unavailable
+ */
+export type IntelligenceReasonCode =
+  | "insufficient_data"
+  | "computation_error"
+  | "backend_timeout"
+  | "data_stale"
+  | "no_transactions"
+  | "not_configured"
+  | "unknown";
+
 export type InsightsSummaryResponse = {
+  /** Version of Intelligence contract - frontend validates against supported versions */
+  intelligence_version: string;
+  /** Lifecycle status - REQUIRED for rendering decisions */
+  lifecycle: IntelligenceLifecycleStatus;
+  /** Reason code - REQUIRED when lifecycle is not "success" */
+  reason_code: IntelligenceReasonCode | null;
+  /** Human-readable reason message */
+  reason_message: string | null;
   generated_at: string; // ISO8601
-  items: Insight[];
+  /** Insights data - only valid when lifecycle is "success" */
+  items: Insight[] | null;
 };
 
 /**

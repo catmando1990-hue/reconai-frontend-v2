@@ -14,23 +14,162 @@ import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
 import { IntelligenceV1Panel } from "@/components/intelligence/IntelligenceV1Panel";
-import { Sparkles, RefreshCw, FlaskConical } from "lucide-react";
+import {
+  Sparkles,
+  RefreshCw,
+  FlaskConical,
+  Loader2,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import { ROUTES } from "@/lib/routes";
-import { STATUS } from "@/lib/dashboardCopy";
+import type {
+  IntelligenceLifecycleStatus,
+  IntelligenceReasonCode,
+} from "@/lib/api/types";
+
+/**
+ * Intelligence Insights Page
+ *
+ * P0 FIX: Version and Lifecycle Enforcement
+ * - Unknown/missing intelligence_version = fail-closed (no data rendered)
+ * - Non-success lifecycle REQUIRES reason display
+ * - Insights data only rendered when lifecycle is "success"
+ */
+
+// =============================================================================
+// LIFECYCLE STATUS BANNER - Required for non-success states
+// =============================================================================
+
+interface LifecycleStatusBannerProps {
+  lifecycle: IntelligenceLifecycleStatus;
+  reasonCode: IntelligenceReasonCode | null;
+  reasonMessage: string | null;
+  onRetry?: () => void;
+}
+
+function LifecycleStatusBanner({
+  lifecycle,
+  reasonCode,
+  reasonMessage,
+  onRetry,
+}: LifecycleStatusBannerProps) {
+  // Success state - no banner needed
+  if (lifecycle === "success") {
+    return null;
+  }
+
+  // Pending state - show loading indicator
+  if (lifecycle === "pending") {
+    return (
+      <div
+        data-testid="intelligence-lifecycle-banner"
+        data-lifecycle="pending"
+        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
+      >
+        <div className="flex items-start gap-3">
+          <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              Computing insights…
+            </p>
+            {reasonMessage && (
+              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                {reasonMessage}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Stale state - show warning with reason
+  if (lifecycle === "stale") {
+    return (
+      <div
+        data-testid="intelligence-lifecycle-banner"
+        data-lifecycle="stale"
+        className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4"
+      >
+        <div className="flex items-start gap-3">
+          <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+              Insights data is stale
+            </p>
+            <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+              {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
+            </p>
+            {onRetry && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRetry}
+                className="mt-2"
+              >
+                <RefreshCw className="mr-2 h-3 w-3" />
+                Refresh
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Failed state - show error with reason (REQUIRED)
+  return (
+    <div
+      data-testid="intelligence-lifecycle-banner"
+      data-lifecycle="failed"
+      className="rounded-lg border border-red-500/30 bg-red-500/10 p-4"
+    >
+      <div className="flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+            Insights unavailable
+          </p>
+          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+            {reasonMessage || `Error: ${reasonCode || "unknown"}`}
+          </p>
+          {onRetry && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              className="mt-2"
+            >
+              <RefreshCw className="mr-2 h-3 w-3" />
+              Retry
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
 
 export default function IntelligenceInsightsPage() {
-  const { data, isLoading, error, refetch } = useInsightsSummary();
+  const {
+    data,
+    isLoading,
+    isSuccess,
+    lifecycle,
+    reasonCode,
+    reasonMessage,
+    refetch,
+  } = useInsightsSummary();
 
   // P0 FIX: Check for demo mode flag from fetcher
   const isDemo = (data as { _isDemo?: boolean })?._isDemo ?? false;
   const demoDisclaimer = (data as { _demoDisclaimer?: string })
     ?._demoDisclaimer;
-
-  // P0 FIX: Helper to format counts - show "—" for null/undefined, not 0
-  const formatCount = (count: number | null | undefined): string => {
-    if (count === null || count === undefined) return STATUS.NO_DATA;
-    return String(count);
-  };
 
   return (
     <TierGate tier="intelligence" title="Insights">
@@ -76,23 +215,36 @@ export default function IntelligenceInsightsPage() {
               title="Active Insights"
               subtitle="AI-generated signals requiring review"
             >
+              {/* P0 FIX: Lifecycle-based rendering */}
               {isLoading ? (
                 <p className="text-sm text-muted-foreground">
                   Loading insights…
                 </p>
-              ) : error ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-destructive">{error}</p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => void refetch()}
-                  >
-                    Retry
-                  </Button>
-                </div>
-              ) : data?.items?.length ? (
-                <div className="space-y-4">
+              ) : lifecycle && lifecycle !== "success" ? (
+                /* PART 2: Non-success lifecycle shows banner with reason */
+                <LifecycleStatusBanner
+                  lifecycle={lifecycle}
+                  reasonCode={reasonCode}
+                  reasonMessage={reasonMessage}
+                  onRetry={() => void refetch()}
+                />
+              ) : isSuccess && data?.items?.length ? (
+                /* SUCCESS: Render insights data */
+                <div className="space-y-4" data-testid="insights-content">
+                  {/* Lifecycle indicator - inline with insights */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-green-700 dark:text-green-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      Live
+                    </span>
+                    <span>
+                      as of{" "}
+                      {data.generated_at
+                        ? new Date(data.generated_at).toLocaleString()
+                        : "recently"}
+                    </span>
+                  </div>
+
                   {data.items.map((item) => (
                     <div
                       key={item.id}
@@ -116,6 +268,7 @@ export default function IntelligenceInsightsPage() {
                   ))}
                 </div>
               ) : (
+                /* EMPTY STATE: No insights available */
                 <EmptyState
                   icon={Sparkles}
                   title="No insights yet"
@@ -138,37 +291,54 @@ export default function IntelligenceInsightsPage() {
                   <span className="text-sm text-muted-foreground">
                     Total Insights
                   </span>
-                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
-                  <span className="text-lg font-semibold">
-                    {formatCount(data?.items?.length)}
-                  </span>
+                  {/* P0 FIX: Show reason when data unavailable */}
+                  {isSuccess && data?.items ? (
+                    <span className="text-lg font-medium">
+                      {data.items.length}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">
+                      {lifecycle === "pending" ? "Loading" : "No data"}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     High Confidence
                   </span>
-                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
-                  <span className="text-lg font-semibold">
-                    {data?.items
-                      ? formatCount(
-                          data.items.filter((i) => i.confidence >= 0.85).length,
-                        )
-                      : STATUS.NO_DATA}
-                  </span>
+                  {isSuccess && data?.items ? (
+                    <span className="text-lg font-medium">
+                      {data.items.filter((i) => i.confidence >= 0.85).length}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">
+                      {lifecycle === "pending" ? "Loading" : "No data"}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Needs Review
                   </span>
-                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
-                  <span className="text-lg font-semibold">
-                    {data?.items
-                      ? formatCount(
-                          data.items.filter((i) => i.confidence < 0.85).length,
-                        )
-                      : STATUS.NO_DATA}
-                  </span>
+                  {isSuccess && data?.items ? (
+                    <span className="text-lg font-medium">
+                      {data.items.filter((i) => i.confidence < 0.85).length}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">
+                      {lifecycle === "pending" ? "Loading" : "No data"}
+                    </span>
+                  )}
                 </div>
+                {/* Show lifecycle status when non-success */}
+                {lifecycle && lifecycle !== "success" && (
+                  <div className="pt-2 border-t">
+                    <p className="text-xs text-muted-foreground">
+                      Status:{" "}
+                      <span className="capitalize font-medium">{lifecycle}</span>
+                    </p>
+                  </div>
+                )}
               </div>
             </SecondaryPanel>
 

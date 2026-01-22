@@ -105,7 +105,7 @@ export default function CfoCompliancePage() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Primary Panel - Audit Log */}
+        {/* Primary Panel - Audit Log (ONE bg-background per page) */}
         <div className="lg:col-span-8">
           <PrimaryPanel
             title="Audit Log"
@@ -114,24 +114,29 @@ export default function CfoCompliancePage() {
             <AuditPanel />
           </PrimaryPanel>
 
-          {/* Retention Panel */}
+          {/* BACKGROUND NORMALIZATION: Supporting sections use bg-card */}
+          {/* Evidence Retention - SecondaryPanel (bg-card) */}
           <div className="mt-6">
-            <PrimaryPanel
-              title="Evidence Retention"
-              subtitle="Data retention policy and settings"
-            >
-              <RetentionPanel rbac={rbac} policy={policy} />
-            </PrimaryPanel>
+            <SecondaryPanel title="Evidence Retention">
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Data retention policy and settings
+                </p>
+                <RetentionPanel rbac={rbac} policy={policy} />
+              </div>
+            </SecondaryPanel>
           </div>
 
-          {/* Export Pack Panel */}
+          {/* Export Pack - SecondaryPanel (bg-card) */}
           <div className="mt-6">
-            <PrimaryPanel
-              title="Export Pack"
-              subtitle="Request compliance export packages"
-            >
-              <ExportPackRequestPanel rbac={rbac} onRequest={handleExport} />
-            </PrimaryPanel>
+            <SecondaryPanel title="Export Pack">
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Request compliance export packages
+                </p>
+                <ExportPackRequestPanel rbac={rbac} onRequest={handleExport} />
+              </div>
+            </SecondaryPanel>
           </div>
         </div>
 

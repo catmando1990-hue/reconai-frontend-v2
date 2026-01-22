@@ -89,6 +89,7 @@ export default function CfoOverviewPage() {
               title="CFO Tools"
               subtitle="Executive-grade financial intelligence and compliance"
             >
+              {/* BACKGROUND NORMALIZATION: No decorative colors */}
               <div className="space-y-4">
                 {cfoModules.map((module) => {
                   const Icon = module.icon;
@@ -96,10 +97,10 @@ export default function CfoOverviewPage() {
                     <Link
                       key={module.href}
                       href={module.href}
-                      className="group flex items-start gap-4 rounded-lg border border-border bg-background p-5 transition hover:border-primary/20 hover:bg-card"
+                      className="group flex items-start gap-4 rounded-lg border border-border bg-muted p-5 transition hover:bg-card"
                     >
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <Icon className="h-6 w-6 text-primary" />
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-card">
+                        <Icon className="h-6 w-6 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">

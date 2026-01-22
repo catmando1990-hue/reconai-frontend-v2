@@ -51,6 +51,10 @@ interface LifecycleStatusBannerProps {
   onRetry?: () => void;
 }
 
+/**
+ * BACKGROUND NORMALIZATION: Lifecycle banners use border-only styling
+ * No decorative colors - borders over backgrounds
+ */
 function LifecycleStatusBanner({
   lifecycle,
   reasonCode,
@@ -62,22 +66,22 @@ function LifecycleStatusBanner({
     return null;
   }
 
-  // Pending state - show loading indicator
+  // Pending state - show loading indicator (border only)
   if (lifecycle === "pending") {
     return (
       <div
         data-testid="cfo-lifecycle-banner"
         data-lifecycle="pending"
-        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4"
+        className="rounded-lg border border-border bg-card p-4"
       >
         <div className="flex items-start gap-3">
-          <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin shrink-0 mt-0.5" />
+          <Loader2 className="h-5 w-5 text-muted-foreground animate-spin shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            <p className="text-sm font-medium text-foreground">
               Computing CFO snapshot…
             </p>
             {reasonMessage && (
-              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {reasonMessage}
               </p>
             )}
@@ -87,21 +91,21 @@ function LifecycleStatusBanner({
     );
   }
 
-  // Stale state - show warning with reason
+  // Stale state - show warning with reason (border only)
   if (lifecycle === "stale") {
     return (
       <div
         data-testid="cfo-lifecycle-banner"
         data-lifecycle="stale"
-        className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4"
+        className="rounded-lg border border-border bg-card p-4"
       >
         <div className="flex items-start gap-3">
-          <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+          <Clock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+            <p className="text-sm font-medium text-foreground">
               CFO data is stale
             </p>
-            <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
             </p>
             {onRetry && (
@@ -121,20 +125,20 @@ function LifecycleStatusBanner({
     );
   }
 
-  // Failed state - show error with reason (REQUIRED)
+  // Failed state - show error with reason (border only)
   return (
     <div
       data-testid="cfo-lifecycle-banner"
       data-lifecycle="failed"
-      className="rounded-lg border border-red-500/30 bg-red-500/10 p-4"
+      className="rounded-lg border border-border bg-card p-4"
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+        <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+          <p className="text-sm font-medium text-foreground">
             CFO snapshot unavailable
           </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             {reasonMessage || `Error: ${reasonCode || "unknown"}`}
           </p>
           {onRetry && (
@@ -223,9 +227,9 @@ function ExecutiveSummaryBody() {
                         : "unknown"}
                       )
                     </p>
-                    {/* Stale metrics grid - SUBORDINATE styling */}
+                    {/* Stale metrics grid - bg-muted (subordinate) */}
                     <div className="grid gap-4 md:grid-cols-3">
-                      <div className="rounded-lg border border-border bg-background p-5">
+                      <div className="rounded-lg border border-border bg-muted p-5">
                         <p className="text-sm text-muted-foreground">Runway</p>
                         {data.snapshot.runway_days !== null ? (
                           <p className="mt-1 text-2xl font-medium">
@@ -237,7 +241,7 @@ function ExecutiveSummaryBody() {
                           </p>
                         )}
                       </div>
-                      <div className="rounded-lg border border-border bg-background p-5">
+                      <div className="rounded-lg border border-border bg-muted p-5">
                         <p className="text-sm text-muted-foreground">
                           Cash on Hand
                         </p>
@@ -251,7 +255,7 @@ function ExecutiveSummaryBody() {
                           </p>
                         )}
                       </div>
-                      <div className="rounded-lg border border-border bg-background p-5">
+                      <div className="rounded-lg border border-border bg-muted p-5">
                         <p className="text-sm text-muted-foreground">
                           Monthly Burn
                         </p>
@@ -272,10 +276,10 @@ function ExecutiveSummaryBody() {
             ) : isSuccess && data?.snapshot ? (
               /* SUCCESS: Render full snapshot data */
               <div className="space-y-6" data-testid="cfo-snapshot-content">
-                {/* Lifecycle indicator - inline with metrics */}
+                {/* Lifecycle indicator - border only, no decorative colors */}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-green-700 dark:text-green-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                     Live
                   </span>
                   <span>
@@ -286,9 +290,9 @@ function ExecutiveSummaryBody() {
                   </span>
                 </div>
 
-                {/* Key Metrics Grid - SUBORDINATE styling (text-2xl, not text-3xl) */}
+                {/* Key Metrics Grid - bg-muted (subordinate to PrimaryPanel) */}
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-lg border border-border bg-background p-5">
+                  <div className="rounded-lg border border-border bg-muted p-5">
                     <p className="text-sm text-muted-foreground">Runway</p>
                     {data.snapshot.runway_days !== null ? (
                       <p className="mt-1 text-2xl font-medium">
@@ -300,7 +304,7 @@ function ExecutiveSummaryBody() {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-lg border border-border bg-background p-5">
+                  <div className="rounded-lg border border-border bg-muted p-5">
                     <p className="text-sm text-muted-foreground">
                       Cash on Hand
                     </p>
@@ -314,7 +318,7 @@ function ExecutiveSummaryBody() {
                       </p>
                     )}
                   </div>
-                  <div className="rounded-lg border border-border bg-background p-5">
+                  <div className="rounded-lg border border-border bg-muted p-5">
                     <p className="text-sm text-muted-foreground">
                       Monthly Burn
                     </p>
@@ -330,8 +334,8 @@ function ExecutiveSummaryBody() {
                   </div>
                 </div>
 
-                {/* Risks Section */}
-                <div className="rounded-lg border border-border bg-background p-5">
+                {/* Risks Section - bg-muted (subordinate) */}
+                <div className="rounded-lg border border-border bg-muted p-5">
                   <h3 className="text-sm font-semibold mb-3">Top Risks</h3>
                   {data.snapshot.top_risks.length ? (
                     <ul className="space-y-2">
@@ -340,7 +344,7 @@ function ExecutiveSummaryBody() {
                           key={r.id}
                           className="flex items-start gap-2 text-sm text-muted-foreground"
                         >
-                          <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                           {r.title}
                         </li>
                       ))}
@@ -352,15 +356,15 @@ function ExecutiveSummaryBody() {
                   )}
                 </div>
 
-                {/* Actions Section */}
-                <div className="rounded-lg border border-border bg-background p-5">
+                {/* Actions Section - bg-muted (subordinate) */}
+                <div className="rounded-lg border border-border bg-muted p-5">
                   <h3 className="text-sm font-semibold mb-3">Next Actions</h3>
                   {data.snapshot.next_actions.length ? (
                     <ul className="space-y-3">
                       {data.snapshot.next_actions.map((a) => (
                         <li key={a.id} className="space-y-1">
                           <p className="text-sm flex items-center gap-2">
-                            <ChevronRight className="h-4 w-4 text-primary shrink-0" />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                             {a.title}
                           </p>
                           <p className="text-xs text-muted-foreground ml-6">

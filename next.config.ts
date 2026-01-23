@@ -161,29 +161,23 @@ const nextConfig: NextConfig = {
     ];
 
     return [
-        // DASHBOARD ROUTES — STRICT CSP (frame-ancestors 'none')
-        // These routes handle authenticated financial data and must prevent all framing
-        {
-          source:
-            "/(dashboard|home|core|cfo|intelligence|govcon|settings|invoicing|connect-bank|customers|receipts|ar)(.*)",
-          headers: [
-            ...sharedSecurityHeaders,
-            // X-Frame-Options DENY for legacy browser support
-            { key: "X-Frame-Options", value: "DENY" },
-            {
-              key: "Content-Security-Policy",
-              value: cspDashboardStrict,
-            },
-          ],
-        },
+      // VIDEO ASSETS - aggressive caching (keep first, most specific)
+      {
+        source: "/videos/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
 
       // PUBLIC ROUTES — MODERATE CSP (frame-ancestors 'self')
-      // Marketing pages, auth pages, etc. - allow same-origin framing
+      // This MUST come BEFORE dashboard routes so dashboard can override
       {
         source: "/:path*",
         headers: [
           ...sharedSecurityHeaders,
-          // X-Frame-Options SAMEORIGIN for legacy browser support
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           {
             key: "Content-Security-Policy",
@@ -192,13 +186,17 @@ const nextConfig: NextConfig = {
         ],
       },
 
-      // Video assets - aggressive caching
+      // DASHBOARD ROUTES — STRICT CSP (frame-ancestors 'none')
+      // This MUST come AFTER public routes to override the catch-all
       {
-        source: "/videos/:path*",
+        source:
+          "/(dashboard|home|core|cfo|intelligence|govcon|settings|invoicing|connect-bank|customers|receipts|ar)(.*)",
         headers: [
+          ...sharedSecurityHeaders,
+          { key: "X-Frame-Options", value: "DENY" },
           {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
+            key: "Content-Security-Policy",
+            value: cspDashboardStrict,
           },
         ],
       },

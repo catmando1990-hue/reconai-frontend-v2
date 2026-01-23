@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/auth-fixture";
 import { assertNoAuthRedirect } from "../fixtures/test-helpers";
 
 /**

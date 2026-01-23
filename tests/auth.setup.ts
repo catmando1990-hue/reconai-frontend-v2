@@ -4,41 +4,59 @@ import path from "node:path";
 
 const AUTH_STORAGE_STATE = "playwright/.clerk/user.json";
 
-async function isVisible(
-  locator: ReturnType<import("@playwright/test").Page["locator"]>,
-  timeoutMs = 1500,
-) {
-  try {
-    return await locator.first().isVisible({ timeout: timeoutMs });
-  } catch {
-    return false;
-  }
-}
-
-async function fillFirstVisible(
+/**
+ * Wait for an input to be ready (visible + enabled) and fill it.
+ * Clerk disables inputs during React hydration and may re-render/detach DOM nodes.
+ * Using expect().toBeEnabled() with Playwright's retry mechanism handles both:
+ * 1. Initial disabled state during hydration
+ * 2. DOM detachment during re-renders (assertion auto-retries with fresh locators)
+ */
+async function waitAndFillInput(
   page: import("@playwright/test").Page,
   selectors: string[],
   value: string,
+  timeoutMs = 10000,
 ): Promise<boolean> {
   for (const selector of selectors) {
-    const loc = page.locator(selector);
-    if (await isVisible(loc)) {
-      await loc.first().fill(value);
+    try {
+      const loc = page.locator(selector).first();
+      // Check if element exists at all
+      const count = await loc.count();
+      if (count === 0) continue;
+
+      // Use expect().toBeEnabled() which retries through DOM mutations
+      // This handles Clerk's hydration where elements are detached/reattached
+      await expect(loc).toBeEnabled({ timeout: timeoutMs });
+      await loc.fill(value);
       return true;
+    } catch {
+      // Selector not found or not enabled within timeout, try next
+      continue;
     }
   }
   return false;
 }
 
-async function clickFirstVisible(
+/**
+ * Wait for a button to be visible and click it.
+ * Buttons typically don't have the same hydration issues as inputs.
+ */
+async function waitAndClickButton(
   page: import("@playwright/test").Page,
   selectors: string[],
+  timeoutMs = 5000,
 ): Promise<boolean> {
   for (const selector of selectors) {
-    const loc = page.locator(selector);
-    if (await isVisible(loc)) {
-      await loc.first().click();
+    try {
+      const loc = page.locator(selector).first();
+      const count = await loc.count();
+      if (count === 0) continue;
+
+      await expect(loc).toBeVisible({ timeout: timeoutMs });
+      await loc.click();
       return true;
+    } catch {
+      continue;
     }
   }
   return false;
@@ -75,8 +93,8 @@ setup("auth: seed Clerk browser session", async ({ page, baseURL }) => {
     const onSignIn = page.url().includes("/sign-in");
     if (!onSignIn) break;
 
-    // 1) Ensure email/identifier is filled when visible.
-    await fillFirstVisible(
+    // 1) Ensure email/identifier is filled when editable (waits for Clerk hydration).
+    await waitAndFillInput(
       page,
       [
         'input[name="identifier"]',
@@ -87,15 +105,15 @@ setup("auth: seed Clerk browser session", async ({ page, baseURL }) => {
       email,
     );
 
-    // 2) If password field is visible, fill it.
-    const passwordFilled = await fillFirstVisible(
+    // 2) If password field is editable, fill it.
+    const passwordFilled = await waitAndFillInput(
       page,
       ['input[name="password"]', 'input[type="password"]'],
       password,
     );
 
     // 3) Submit/continue.
-    const clicked = await clickFirstVisible(page, [
+    const clicked = await waitAndClickButton(page, [
       'button[type="submit"]',
       'button:has-text("Continue")',
       'button:has-text("Next")',

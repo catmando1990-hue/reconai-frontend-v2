@@ -161,21 +161,21 @@ const nextConfig: NextConfig = {
     ];
 
     return [
-      // DASHBOARD ROUTES — STRICT CSP (frame-ancestors 'none')
-      // These routes handle authenticated financial data and must prevent all framing
-      {
-        source:
-          "/(home|core|cfo|intelligence|govcon|settings|invoicing|connect-bank|customers|receipts|ar)(.*)",
-        headers: [
-          ...sharedSecurityHeaders,
-          // X-Frame-Options DENY for legacy browser support
-          { key: "X-Frame-Options", value: "DENY" },
-          {
-            key: "Content-Security-Policy",
-            value: cspDashboardStrict,
-          },
-        ],
-      },
+        // DASHBOARD ROUTES — STRICT CSP (frame-ancestors 'none')
+        // These routes handle authenticated financial data and must prevent all framing
+        {
+          source:
+            "/(dashboard|home|core|cfo|intelligence|govcon|settings|invoicing|connect-bank|customers|receipts|ar)(.*)",
+          headers: [
+            ...sharedSecurityHeaders,
+            // X-Frame-Options DENY for legacy browser support
+            { key: "X-Frame-Options", value: "DENY" },
+            {
+              key: "Content-Security-Policy",
+              value: cspDashboardStrict,
+            },
+          ],
+        },
 
       // PUBLIC ROUTES — MODERATE CSP (frame-ancestors 'self')
       // Marketing pages, auth pages, etc. - allow same-origin framing

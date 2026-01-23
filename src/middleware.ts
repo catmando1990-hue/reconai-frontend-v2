@@ -2,30 +2,160 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * STEP 2 — Auth Isolation (Canonical Laws Compliant)
+ * ReconAI Middleware - Enterprise Security Headers
  *
- * ReconAI middleware (Edge-safe):
- * - Clerk middleware ONLY runs on authenticated routes
- * - Public/marketing routes bypass Clerk entirely (ZERO overhead)
- * - Auth routes (sign-in, sign-up) use Clerk for auth flow
- * - BUILD 8: Maintenance mode enforcement (fail-open)
- * - P0 MFA: Two-factor authentication enforcement (fail-closed)
+ * Architecture:
+ * 1. Security headers are applied via middleware (not vercel.json) to avoid length limits
+ * 2. Clerk middleware handles authentication for protected routes
+ * 3. Response cloning ensures headers are mutable after Clerk processing
  *
- * NOTE: Security headers (CSP, X-Frame-Options, etc.) are handled by vercel.json
- * at the edge layer, before middleware runs.
+ * Security Posture:
+ * - Dashboard routes: frame-ancestors 'none' (no iframe embedding)
+ * - Public routes: frame-ancestors 'self' (same-origin only)
  */
 
-// Routes that require Clerk middleware (authenticated + auth flow)
+// =========================================================================
+// CSP CONFIGURATION
+// =========================================================================
+
+const DASHBOARD_ROUTE_PREFIXES = [
+  "/dashboard",
+  "/home",
+  "/core",
+  "/cfo",
+  "/intelligence",
+  "/govcon",
+  "/settings",
+  "/invoicing",
+  "/connect-bank",
+  "/customers",
+  "/receipts",
+  "/ar",
+];
+
+// Base CSP directives (shared)
+const CSP_DIRECTIVES = {
+  "default-src": ["'self'"],
+  "script-src": [
+    "'self'",
+    "'unsafe-inline'",
+    "'unsafe-eval'",
+    "https://*.clerk.accounts.dev",
+    "https://*.clerk.dev",
+    "https://clerk.reconaitechnology.com",
+    "https://challenges.cloudflare.com",
+    "https://vercel.live",
+    "https://cdn.plaid.com",
+  ],
+  "worker-src": ["'self'", "blob:"],
+  "style-src": ["'self'", "'unsafe-inline'"],
+  "img-src": [
+    "'self'",
+    "data:",
+    "blob:",
+    "https://*.clerk.dev",
+    "https://*.clerk.accounts.dev",
+    "https://img.clerk.com",
+    "https://clerk.reconaitechnology.com",
+    "https://*.vercel-storage.com",
+    "https://*.public.blob.vercel-storage.com",
+  ],
+  "font-src": ["'self'", "data:"],
+  "connect-src": [
+    "'self'",
+    "https://*.clerk.dev",
+    "https://*.clerk.accounts.dev",
+    "https://clerk.reconaitechnology.com",
+    "https://reconai-backend.onrender.com",
+    "https://api.reconai.com",
+    "https://*.vercel-storage.com",
+    "https://vercel.live",
+    "wss://*.clerk.dev",
+    "wss://clerk.reconaitechnology.com",
+    "https://production.plaid.com",
+    "https://cdn.plaid.com",
+  ],
+  "media-src": [
+    "'self'",
+    "https://*.vercel-storage.com",
+    "https://*.public.blob.vercel-storage.com",
+    "blob:",
+  ],
+  "frame-src": [
+    "'self'",
+    "https://*.clerk.dev",
+    "https://*.clerk.accounts.dev",
+    "https://clerk.reconaitechnology.com",
+    "https://challenges.cloudflare.com",
+    "https://cdn.plaid.com",
+  ],
+  "form-action": ["'self'"],
+  "base-uri": ["'self'"],
+  "object-src": ["'none'"],
+};
+
+function buildCSP(frameAncestors: string): string {
+  const directives = Object.entries(CSP_DIRECTIVES)
+    .map(([key, values]) => `${key} ${values.join(" ")}`)
+    .join("; ");
+  return `${directives}; upgrade-insecure-requests; frame-ancestors ${frameAncestors}`;
+}
+
+const CSP_STRICT = buildCSP("'none'");
+const CSP_MODERATE = buildCSP("'self'");
+
+function isDashboardRoute(pathname: string): boolean {
+  return DASHBOARD_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+// =========================================================================
+// SECURITY HEADERS
+// =========================================================================
+
+interface SecurityHeaders {
+  "Strict-Transport-Security": string;
+  "X-Content-Type-Options": string;
+  "X-XSS-Protection": string;
+  "Referrer-Policy": string;
+  "Permissions-Policy": string;
+  "X-Frame-Options": string;
+  "Content-Security-Policy": string;
+}
+
+function getSecurityHeaders(pathname: string): SecurityHeaders {
+  const isStrict = isDashboardRoute(pathname);
+
+  return {
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+    "X-Content-Type-Options": "nosniff",
+    "X-XSS-Protection": "1; mode=block",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
+    "X-Frame-Options": isStrict ? "DENY" : "SAMEORIGIN",
+    "Content-Security-Policy": isStrict ? CSP_STRICT : CSP_MODERATE,
+  };
+}
+
+function applySecurityHeaders(response: NextResponse, pathname: string): void {
+  const headers = getSecurityHeaders(pathname);
+  Object.entries(headers).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+}
+
+// =========================================================================
+// CLERK AUTH CONFIGURATION
+// =========================================================================
+
 const CLERK_ROUTES = [
-  // Auth flow routes
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/onboarding(.*)",
   "/mfa-setup(.*)",
   "/complete-profile(.*)",
-  // Canonical dashboard entry routes
   "/dashboard(.*)",
-  // Protected dashboard routes (now under route group, keeping for legacy links)
   "/home(.*)",
   "/account(.*)",
   "/connect-bank(.*)",
@@ -56,7 +186,6 @@ const CLERK_ROUTES = [
   "/vendors(.*)",
   "/receipts(.*)",
   "/diagnostics(.*)",
-  // API routes that require auth
   "/api/diagnostics(.*)",
   "/api/admin(.*)",
   "/api/me(.*)",
@@ -70,30 +199,27 @@ const CLERK_ROUTES = [
   "/api/profile(.*)",
 ];
 
-// Routes that need auth enforcement (subset of CLERK_ROUTES)
-// Excludes auth flow routes, MFA setup, and profile completion (user needs to complete these first)
 const PROTECTED_PREFIXES = CLERK_ROUTES.filter(
   (r) =>
     !r.startsWith("/sign-in") &&
     !r.startsWith("/sign-up") &&
     !r.startsWith("/onboarding") &&
     !r.startsWith("/mfa-setup") &&
-    !r.startsWith("/complete-profile"),
+    !r.startsWith("/complete-profile")
 );
 
-// Routes that require MFA to be enabled (all protected routes)
 const MFA_REQUIRED_ROUTES = PROTECTED_PREFIXES.filter(
-  (r) => !r.startsWith("/api/"),
+  (r) => !r.startsWith("/api/")
 );
 
 const requiresMFA = createRouteMatcher(MFA_REQUIRED_ROUTES);
-
 const requiresClerk = createRouteMatcher(CLERK_ROUTES);
 const isProtectedRoute = createRouteMatcher(PROTECTED_PREFIXES);
 
-/**
- * BUILD 8: Check maintenance mode from backend API (fail-open).
- */
+// =========================================================================
+// MAINTENANCE MODE
+// =========================================================================
+
 async function checkMaintenanceMode(): Promise<boolean> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return false;
@@ -105,36 +231,30 @@ async function checkMaintenanceMode(): Promise<boolean> {
     });
 
     if (!res.ok) return false;
-
     const data = await res.json();
     return Boolean(data?.enabled);
   } catch {
-    return false; // fail open
+    return false;
   }
 }
 
-/**
- * Clerk middleware handler — only invoked for authenticated routes.
- */
+// =========================================================================
+// CLERK MIDDLEWARE HANDLER
+// =========================================================================
+
 const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
-  // Allow maintenance page itself
-  if (pathname.startsWith("/maintenance")) {
+  // Allow these routes without additional checks
+  if (
+    pathname.startsWith("/maintenance") ||
+    pathname.startsWith("/mfa-setup") ||
+    pathname.startsWith("/complete-profile")
+  ) {
     return NextResponse.next();
   }
 
-  // Allow MFA setup page (user needs to complete setup)
-  if (pathname.startsWith("/mfa-setup")) {
-    return NextResponse.next();
-  }
-
-  // Allow profile completion page (user needs to complete profile)
-  if (pathname.startsWith("/complete-profile")) {
-    return NextResponse.next();
-  }
-
-  // Maintenance mode enforcement — PROTECTED ROUTES ONLY
+  // Maintenance mode enforcement
   if (isProtectedRoute(req)) {
     const maintenanceMode = await checkMaintenanceMode();
 
@@ -155,29 +275,21 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
     }
   }
 
-  // P0 MFA ENFORCEMENT — Dashboard routes require MFA (fail-closed)
-  // This checks if user has MFA enabled via Clerk session claims
+  // MFA enforcement
   if (requiresMFA(req)) {
     const { sessionClaims, userId } = await auth();
 
-    // If user is authenticated, check MFA status
     if (userId) {
-      // Clerk stores MFA status in session claims when configured
-      // Check if user has completed second factor verification
       const publicMetadata = sessionClaims?.publicMetadata as
         | Record<string, unknown>
         | undefined;
 
-      // Check Clerk's built-in two-factor verification status
-      // When MFA is required at Clerk level, sessions without MFA won't be issued
-      // This is a defense-in-depth check for users who enrolled but haven't verified
       const hasMFAEnabled = Boolean(
         publicMetadata?.mfaEnabled ||
-        sessionClaims?.["two_factor_enabled"] ||
-        sessionClaims?.["mfa"],
+          sessionClaims?.["two_factor_enabled"] ||
+          sessionClaims?.["mfa"]
       );
 
-      // If MFA enforcement is enabled and user doesn't have MFA, redirect to setup
       const enforceMFA = process.env.NEXT_PUBLIC_ENFORCE_MFA === "true";
 
       if (enforceMFA && !hasMFAEnabled) {
@@ -189,37 +301,56 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
     }
   }
 
-  // Protected routes are handled by server-side auth() in layouts
   return NextResponse.next();
 });
 
-/**
- * Main middleware: Routes Clerk only where needed.
- * Public/marketing routes get ZERO Clerk overhead.
- * Security headers are handled by vercel.json at the edge.
- */
+// =========================================================================
+// MAIN MIDDLEWARE
+// =========================================================================
+
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Always skip Next internals and static assets
+  // Skip Next.js internals and static assets
   if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
   }
 
-  // STEP 2: Only apply Clerk middleware to authenticated routes
-  // This includes both page routes AND API routes that need auth
+  // Routes requiring Clerk authentication
   if (requiresClerk(req)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return clerkHandler(req, {} as any);
+    const clerkResponse = await clerkHandler(req, {} as any);
+
+    // Handle redirects from Clerk (maintenance, MFA, etc.)
+    if (clerkResponse && clerkResponse.status >= 300 && clerkResponse.status < 400) {
+      const location = clerkResponse.headers.get("location");
+      if (location) {
+        const redirectResponse = NextResponse.redirect(location, clerkResponse.status);
+        applySecurityHeaders(redirectResponse, pathname);
+        return redirectResponse;
+      }
+    }
+
+    // Create a fresh mutable response with security headers
+    // This bypasses Clerk's immutable response issue
+    const response = NextResponse.next({
+      request: {
+        headers: req.headers,
+      },
+    });
+
+    applySecurityHeaders(response, pathname);
+    return response;
   }
 
-  // Public/marketing routes — ZERO Clerk overhead
-  return NextResponse.next();
+  // Public routes - no Clerk overhead
+  const response = NextResponse.next();
+  applySecurityHeaders(response, pathname);
+  return response;
 }
 
 export const config = {
   matcher: [
-    // Match all routes except static files and images
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)$).*)",
   ],
 };

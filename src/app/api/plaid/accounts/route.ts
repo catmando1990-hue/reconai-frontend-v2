@@ -15,16 +15,17 @@ function errorResponse(
   status: number,
   requestId?: string,
 ) {
+  const id = requestId || crypto.randomUUID();
   return NextResponse.json(
     {
       ok: false,
       error: {
         code,
         message,
-        request_id: requestId || crypto.randomUUID(),
+        request_id: id,
       },
     },
-    { status },
+    { status, headers: { "x-request-id": id } },
   );
 }
 
@@ -160,11 +161,10 @@ export async function GET() {
     }));
 
     // Return accounts from backend response with success envelope
-    return NextResponse.json({
-      ok: true,
-      accounts,
-      request_id: requestId,
-    });
+    return NextResponse.json(
+      { ok: true, accounts, request_id: requestId },
+      { headers: { "x-request-id": requestId } },
+    );
   } catch (err: unknown) {
     console.error("[Plaid accounts] Unhandled error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -4,7 +4,6 @@ import { NextResponse, type NextRequest } from "next/server";
 // =============================================================================
 // STRICT ROUTES (X-Frame-Options: DENY, frame-ancestors 'none')
 // =============================================================================
-// Be explicit. No prefix matching. List every route pattern.
 
 const STRICT_ROUTES = createRouteMatcher([
   "/dashboard(.*)",
@@ -56,28 +55,54 @@ const CSP_STRICT = `${CSP_BASE}; frame-ancestors 'none'`;
 const CSP_PUBLIC = `${CSP_BASE}; frame-ancestors 'self'`;
 
 // =============================================================================
-// SECURITY HEADERS
+// APPLY HEADERS (Following Clerk's manual CSP pattern)
 // =============================================================================
 
-function getHeaders(isStrict: boolean) {
-  return {
-    "Content-Security-Policy": isStrict ? CSP_STRICT : CSP_PUBLIC,
-    "X-Frame-Options": isStrict ? "DENY" : "SAMEORIGIN",
-    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-    "X-Content-Type-Options": "nosniff",
-    "X-XSS-Protection": "1; mode=block",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
-  };
+function createResponseWithHeaders(req: NextRequest): NextResponse {
+  const isStrict = STRICT_ROUTES(req);
+  const csp = isStrict ? CSP_STRICT : CSP_PUBLIC;
+  const xfo = isStrict ? "DENY" : "SAMEORIGIN";
+
+  // Create new request headers with CSP
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("Content-Security-Policy", csp);
+
+  // Create response with modified request headers
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+
+  // Also set on response headers
+  response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("X-Frame-Options", xfo);
+  response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*");
+
+  return response;
 }
 
-function applyHeaders(response: NextResponse, req: NextRequest): NextResponse {
+function createRedirectWithHeaders(req: NextRequest, destination: string): NextResponse {
   const isStrict = STRICT_ROUTES(req);
-  const headers = getHeaders(isStrict);
+  const csp = isStrict ? CSP_STRICT : CSP_PUBLIC;
+  const xfo = isStrict ? "DENY" : "SAMEORIGIN";
 
-  for (const [key, value] of Object.entries(headers)) {
-    response.headers.set(key, value);
-  }
+  const url = req.nextUrl.clone();
+  url.pathname = destination;
+
+  const response = NextResponse.redirect(url);
+
+  response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("X-Frame-Options", xfo);
+  response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*");
 
   return response;
 }
@@ -173,18 +198,18 @@ async function checkMaintenanceMode(): Promise<boolean> {
 }
 
 // =============================================================================
-// MIDDLEWARE
+// MIDDLEWARE - No contentSecurityPolicy option = Clerk won't inject CSP
 // =============================================================================
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
-  // Skip static
+  // Skip static files completely
   if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
   }
 
-  // Auth pages - just apply headers
+  // Auth pages - return response with headers
   if (
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
@@ -193,7 +218,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     pathname.startsWith("/mfa-setup") ||
     pathname.startsWith("/complete-profile")
   ) {
-    return applyHeaders(NextResponse.next(), req);
+    return createResponseWithHeaders(req);
   }
 
   // Protected routes
@@ -206,9 +231,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       const isAdmin = meta?.role === "admin" || meta?.role === "org:admin";
 
       if (!isAdmin) {
-        const url = req.nextUrl.clone();
-        url.pathname = "/maintenance";
-        return applyHeaders(NextResponse.redirect(url), req);
+        return createRedirectWithHeaders(req, "/maintenance");
       }
     }
 
@@ -228,14 +251,19 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
           const url = req.nextUrl.clone();
           url.pathname = "/mfa-setup";
           url.searchParams.set("redirect_url", pathname);
-          return applyHeaders(NextResponse.redirect(url), req);
+
+          const response = NextResponse.redirect(url);
+          const isStrict = STRICT_ROUTES(req);
+          response.headers.set("Content-Security-Policy", isStrict ? CSP_STRICT : CSP_PUBLIC);
+          response.headers.set("X-Frame-Options", isStrict ? "DENY" : "SAMEORIGIN");
+          return response;
         }
       }
     }
   }
 
-  // All routes get headers
-  return applyHeaders(NextResponse.next(), req);
+  // All other routes - return response with headers
+  return createResponseWithHeaders(req);
 });
 
 export const config = {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { BACKEND_URL } from "@/lib/config";
+import { getBackendUrl } from "@/lib/config";
 
 /**
  * Fail-closed error envelope for consistent JSON responses
@@ -54,9 +54,12 @@ export async function GET() {
   const requestId = crypto.randomUUID();
 
   try {
-    // Verify env vars exist
-    if (!BACKEND_URL) {
-      console.error("[Plaid accounts] BACKEND_URL is not configured");
+    // Get backend URL (validated at runtime, not module scope)
+    let backendUrl: string;
+    try {
+      backendUrl = getBackendUrl();
+    } catch (err) {
+      console.error("[Plaid accounts] BACKEND_URL is not configured:", err);
       return errorResponse(
         "CONFIG_ERROR",
         "Backend URL is not configured",
@@ -78,7 +81,7 @@ export async function GET() {
     const token = await getToken();
 
     // Use the new authenticated /api/plaid/items endpoint
-    const resp = await fetch(`${BACKEND_URL}/api/plaid/items`, {
+    const resp = await fetch(`${backendUrl}/api/plaid/items`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

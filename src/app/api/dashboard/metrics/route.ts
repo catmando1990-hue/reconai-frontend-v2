@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { BACKEND_URL } from "@/lib/config";
-
-const API_URL = BACKEND_URL;
+import { getBackendUrl } from "@/lib/config";
 
 /**
  * Backend invoice response shape (subset for aggregation)
@@ -86,7 +84,7 @@ export async function GET() {
     // Fetch full data for aggregation (fail-closed: null on failure)
     const fetchData = async <T>(endpoint: string): Promise<T[] | null> => {
       try {
-        const res = await fetch(`${API_URL}${endpoint}`, {
+        const res = await fetch(`${getBackendUrl()}${endpoint}`, {
           method: "GET",
           headers,
         });
@@ -102,7 +100,7 @@ export async function GET() {
     // Fetch count only (for customers/vendors where we don't need aggregation)
     const fetchCount = async (endpoint: string): Promise<number | null> => {
       try {
-        const res = await fetch(`${API_URL}${endpoint}`, {
+        const res = await fetch(`${getBackendUrl()}${endpoint}`, {
           method: "GET",
           headers,
         });

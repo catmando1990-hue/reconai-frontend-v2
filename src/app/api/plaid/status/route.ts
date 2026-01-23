@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { BACKEND_URL } from "@/lib/config";
+import { getBackendUrl } from "@/lib/config";
 
 /**
  * Plaid Connection Status Contract:
@@ -57,7 +57,7 @@ export async function GET(req: Request) {
       }>;
     } | null = null;
     try {
-      const itemsResp = await fetch(`${BACKEND_URL}/api/plaid/items`, {
+      const itemsResp = await fetch(`${getBackendUrl()}/api/plaid/items`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +122,7 @@ export async function GET(req: Request) {
 
     // Fallback: Try hardening endpoint, but DO NOT fabricate connection status
     try {
-      const resp = await fetch(`${BACKEND_URL}/api/plaid/status`, {
+      const resp = await fetch(`${getBackendUrl()}/api/plaid/status`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

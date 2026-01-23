@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
-import { BACKEND_URL } from "@/lib/config";
+import { getBackendUrl } from "@/lib/config";
 
 const ENDPOINT = "/api/plaid/create-link-token";
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const protocol = host.includes("localhost") ? "http" : "https";
     const redirectUri = `${protocol}://${host}/plaid/oauth`;
 
-    const resp = await fetch(`${BACKEND_URL}${ENDPOINT}`, {
+    const resp = await fetch(`${getBackendUrl()}${ENDPOINT}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

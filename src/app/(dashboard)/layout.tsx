@@ -3,7 +3,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
-import { BACKEND_URL } from "@/lib/config";
+import { getBackendUrl } from "@/lib/config";
 
 /**
  * P0: Check profile completion status from backend (single source of truth)
@@ -16,7 +16,7 @@ async function checkProfileCompleted(
   if (!token) return null;
 
   try {
-    const resp = await fetch(`${BACKEND_URL}/api/profile/status`, {
+    const resp = await fetch(`${getBackendUrl()}/api/profile/status`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

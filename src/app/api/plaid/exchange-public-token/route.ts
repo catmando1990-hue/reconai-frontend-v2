@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { BACKEND_URL } from "@/lib/config";
+import { getBackendUrl } from "@/lib/config";
 
 /**
  * ============================================================================
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
     const token = await getToken();
 
-    const resp = await fetch(`${BACKEND_URL}${EXCHANGE_ENDPOINT}`, {
+    const resp = await fetch(`${getBackendUrl()}${EXCHANGE_ENDPOINT}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

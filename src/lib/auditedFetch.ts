@@ -84,8 +84,13 @@ function generateRequestId(): string {
 }
 
 function resolveUrl(path: string, baseUrl?: string): string {
+  // Absolute URLs are untouched
   if (/^https?:\/\//i.test(path)) return path;
 
+  // Any /api/* path is always returned as-is (same-origin)
+  if (/^\/api\//.test(path)) return path;
+
+  // Apply base URL only to non-/api paths
   const base =
     baseUrl ??
     process.env.NEXT_PUBLIC_API_URL ??

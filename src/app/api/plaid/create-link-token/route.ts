@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@clerk/nextjs/server";
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://reconai-backend.onrender.com";
+import { BACKEND_URL } from "@/lib/config";
 
 const ENDPOINT = "/api/plaid/create-link-token";
 
-export async function POST() {
+export async function POST(req: Request) {
+  // Generate request ID for provenance tracking
+  const incomingRequestId = req.headers.get("x-request-id");
+  const requestId = incomingRequestId || crypto.randomUUID();
+
   try {
     const { userId, getToken } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized", request_id: requestId },
+        { status: 401, headers: { "x-request-id": requestId } },
+      );
     }
 
     const token = await getToken();
@@ -39,8 +43,8 @@ export async function POST() {
         `Plaid create-link-token: non-JSON response (${resp.status})`,
       );
       return NextResponse.json(
-        { error: "Bank connection failed. Please retry." },
-        { status: 502 },
+        { error: "Bank connection failed. Please retry.", code: "NON_JSON_RESPONSE", request_id: requestId },
+        { status: 502, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -48,20 +52,24 @@ export async function POST() {
 
     if (!resp.ok) {
       return NextResponse.json(
-        { error: data.detail || data.error || "Failed to create link token" },
-        { status: resp.status },
+        { error: data.detail || data.error || "Failed to create link token", code: "UPSTREAM_ERROR", request_id: requestId },
+        { status: resp.status, headers: { "x-request-id": requestId } },
       );
     }
 
-    return NextResponse.json({
-      link_token: data.link_token,
-      expiration: data.expiration,
-    });
+    return NextResponse.json(
+      {
+        link_token: data.link_token,
+        expiration: data.expiration,
+        request_id: requestId,
+      },
+      { headers: { "x-request-id": requestId } },
+    );
   } catch (err: unknown) {
     console.error("Plaid link token error:", err);
     return NextResponse.json(
-      { error: "Bank connection failed. Please retry." },
-      { status: 500 },
+      { error: "Bank connection failed. Please retry.", code: "INTERNAL_ERROR", request_id: requestId },
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

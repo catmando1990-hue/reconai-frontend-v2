@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { auditedFetch } from "@/lib/auditedFetch";
+import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 
 type Account = {
   item_id: string;
@@ -41,6 +41,7 @@ async function fetchAccounts() {
 export function AccountsPanel() {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [noItemsYet, setNoItemsYet] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -51,6 +52,21 @@ export function AccountsPanel() {
       })
       .catch((e: unknown) => {
         if (!mounted) return;
+
+        // Handle NO_PLAID_ITEM gracefully - not an error state
+        if (e instanceof HttpError && e.status === 400) {
+          try {
+            const body = e.body as { code?: string; message?: string } | undefined;
+            if (body?.code === "NO_PLAID_ITEM") {
+              setNoItemsYet(true);
+              setAccounts([]);
+              return;
+            }
+          } catch {
+            // Fall through to error handling
+          }
+        }
+
         setError(e instanceof Error ? e.message : "Failed to load accounts");
         setAccounts([]);
       });
@@ -109,7 +125,9 @@ export function AccountsPanel() {
 
       {accounts !== null && accounts.length === 0 && !error && (
         <p className="mt-4 text-sm text-muted-foreground">
-          No accounts found. Connect a bank first on the Connect Bank page.
+          {noItemsYet
+            ? "No bank connected yet. Visit the Connect Bank page to link your bank."
+            : "No accounts found. Connect a bank first on the Connect Bank page."}
         </p>
       )}
 

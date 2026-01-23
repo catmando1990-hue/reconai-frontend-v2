@@ -3,83 +3,19 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
+import type {
+  DashboardMetrics,
+  DashboardMetricsResponse,
+} from "@/types/api-contracts";
+
+// Re-export for backward compatibility
+export type { DashboardMetrics } from "@/types/api-contracts";
 
 /**
  * Raw API response shape - may have nullable nested objects.
  * Backend correctly returns nullable fields; frontend must honor the contract.
  */
-interface RawMetricsResponse {
-  counts?: {
-    invoices?: number | null;
-    bills?: number | null;
-    customers?: number | null;
-    vendors?: number | null;
-  } | null;
-  summary?: {
-    totalInvoiced?: number | null;
-    totalInvoicePaid?: number | null;
-    totalInvoiceDue?: number | null;
-    totalBilled?: number | null;
-    totalBillPaid?: number | null;
-    totalBillDue?: number | null;
-  } | null;
-  invoicesByStatus?: {
-    paid?: number | null;
-    pending?: number | null;
-    overdue?: number | null;
-    draft?: number | null;
-  } | null;
-  billsByStatus?: {
-    paid?: number | null;
-    pending?: number | null;
-    overdue?: number | null;
-    draft?: number | null;
-  } | null;
-}
-
-/**
- * Dashboard metrics interface with nullable fields for fail-closed behavior.
- * null = data unavailable (unknown state), NOT zero.
- *
- * P0 FIX: Added `available` flag to signal when metrics can be safely accessed.
- * Consumers MUST check `available === true` before dereferencing any nested fields.
- */
-export interface DashboardMetrics {
-  /**
-   * P0 NULL-SAFE: Availability flag.
-   * - true: All nested objects are guaranteed non-null (safe to access)
-   * - false: Data unavailable - render explicit unavailable state
-   *
-   * MANDATORY CHECK: if (!metrics?.available) { render unavailable UI }
-   */
-  available: boolean;
-  counts: {
-    invoices: number | null;
-    bills: number | null;
-    customers: number | null;
-    vendors: number | null;
-  };
-  summary: {
-    totalInvoiced: number | null;
-    totalInvoicePaid: number | null;
-    totalInvoiceDue: number | null;
-    totalBilled: number | null;
-    totalBillPaid: number | null;
-    totalBillDue: number | null;
-  };
-  invoicesByStatus: {
-    paid: number | null;
-    pending: number | null;
-    overdue: number | null;
-    draft: number | null;
-  };
-  billsByStatus: {
-    paid: number | null;
-    pending: number | null;
-    overdue: number | null;
-    draft: number | null;
-  };
-}
+type RawMetricsResponse = Partial<DashboardMetricsResponse>;
 
 /**
  * FAIL-CLOSED: Unavailable metrics with available=false.

@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-
-// Proxy to Render backend which has Plaid credentials configured
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://reconai-backend.onrender.com";
+import { BACKEND_URL } from "@/lib/config";
 
 /**
  * Fail-closed error envelope for consistent JSON responses
@@ -140,6 +136,25 @@ export async function GET() {
         error_message?: string;
       }>;
     } | null;
+
+    // ========================================================================
+    // ORDERING GUARD: Return 400 if NO Plaid Item exists (before Link)
+    // This prevents premature calls to /accounts before exchange-public-token
+    // Frontend should show "No bank connected yet" - NOT an error state
+    // ========================================================================
+    if (!itemsData?.items || itemsData.items.length === 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          status: "no_item",
+          reason: "No Plaid Item exists. Complete Plaid Link first.",
+          code: "NO_PLAID_ITEM",
+          message: "No bank connected yet",
+          request_id: requestId,
+        },
+        { status: 400, headers: { "x-request-id": requestId } },
+      );
+    }
 
     // Map items to account-like objects for display
     const accounts = (itemsData?.items || []).map((item) => ({

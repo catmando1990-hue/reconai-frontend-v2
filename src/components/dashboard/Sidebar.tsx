@@ -15,10 +15,6 @@ import {
   HelpCircle,
   LayoutDashboard,
   Sparkles,
-  Shield,
-  Clock,
-  AlertCircle,
-  CheckCircle2,
   type LucideIcon,
 } from "lucide-react";
 import { useUserProfile } from "@/lib/user-profile-context";
@@ -58,90 +54,10 @@ const MODULE_ORDER: ModuleKey[] = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTEXT PANEL CONFIGURATION
-// Tier 3 shows operational context, not navigation duplication
+// P2 FIX: Context panel removed. Static values like "On-demand", "Manual",
+// "Active", "Verified" were misleading since they don't reflect actual state.
+// Will be re-implemented when we have real-time state to display.
 // ─────────────────────────────────────────────────────────────────────────────
-
-interface ContextItem {
-  label: string;
-  value: string;
-  status?: "ok" | "warning" | "error" | "pending";
-  icon?: LucideIcon;
-}
-
-interface ModuleContext {
-  title: string;
-  mode?: string;
-  scope?: string;
-  items: ContextItem[];
-}
-
-function getModuleContext(module: ModuleKey | null): ModuleContext | null {
-  if (!module) return null;
-
-  switch (module) {
-    case "core":
-      /**
-       * P1 FIX: Removed misleading static timestamps and "Live" claims.
-       * "Last Refresh: 2m ago" was hardcoded, implying real-time data.
-       * "Data Sync: Live" claimed live sync that doesn't exist.
-       * Now shows honest, static context information only.
-       */
-      return {
-        title: "Core Context",
-        mode: "Operational",
-        scope: "All Accounts",
-        items: [
-          {
-            label: "Data Mode",
-            value: "On-demand",
-            icon: CheckCircle2,
-          },
-          { label: "Refresh", value: "Manual", icon: Clock },
-        ],
-      };
-
-    case "intelligence":
-      return {
-        title: "Intelligence Context",
-        mode: "Analysis",
-        scope: "Current Period",
-        items: [
-          { label: "Confidence", value: "≥85%", status: "ok", icon: Shield },
-          { label: "Signals", value: "Advisory", icon: AlertCircle },
-        ],
-      };
-
-    case "cfo":
-      return {
-        title: "CFO Context",
-        mode: "Executive",
-        scope: "Organization",
-        items: [
-          { label: "View", value: "Read-only", icon: Shield },
-          { label: "Period", value: "Current FY", icon: Clock },
-        ],
-      };
-
-    case "govcon":
-      return {
-        title: "GovCon Context",
-        mode: "Compliance",
-        scope: "DCAA Standards",
-        items: [
-          { label: "Audit Mode", value: "Active", status: "ok", icon: Shield },
-          {
-            label: "Hash Chain",
-            value: "Verified",
-            status: "ok",
-            icon: CheckCircle2,
-          },
-        ],
-      };
-
-    default:
-      return null;
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -168,23 +84,6 @@ function getActiveModule(pathname: string): ModuleKey | null {
   return null;
 }
 
-function getStatusColor(
-  status?: "ok" | "warning" | "error" | "pending",
-): string {
-  switch (status) {
-    case "ok":
-      return "text-chart-1";
-    case "warning":
-      return "text-chart-4";
-    case "error":
-      return "text-destructive";
-    case "pending":
-      return "text-muted-foreground";
-    default:
-      return "text-foreground";
-  }
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // SIDEBAR COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
@@ -209,11 +108,6 @@ export function Sidebar() {
       return true;
     });
   }, [showGovCon]);
-
-  // Get context for active module (Tier 3 - operational context, not nav)
-  const moduleContext = useMemo(() => {
-    return getModuleContext(activeModule);
-  }, [activeModule]);
 
   const handleSignOut = async () => {
     await signOut();

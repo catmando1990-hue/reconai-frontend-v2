@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-
-// Proxy to Render backend
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://reconai-backend.onrender.com";
+import { BACKEND_URL } from "@/lib/config";
 
 /**
  * Plaid Connection Status Contract:
@@ -35,11 +31,18 @@ export interface PlaidStatusResponse {
   source: "backend_items" | "backend_hardening" | "unknown";
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  // Generate request ID for provenance tracking
+  const incomingRequestId = req.headers.get("x-request-id");
+  const requestId = incomingRequestId || crypto.randomUUID();
+
   try {
     const { userId, getToken } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized", request_id: requestId },
+        { status: 401, headers: { "x-request-id": requestId } },
+      );
     }
 
     const token = await getToken();
@@ -102,16 +105,17 @@ export async function GET() {
       const lastSyncedAt =
         syncTimestamps.length > 0 ? syncTimestamps.sort().reverse()[0] : null;
 
-      const plaidStatus: PlaidStatusResponse = {
+      const plaidStatus: PlaidStatusResponse & { request_id: string } = {
         status,
         items_count: items.length,
         last_synced_at: lastSyncedAt,
         has_items: hasItems,
         environment: process.env.PLAID_ENV || "sandbox",
         source: "backend_items",
+        request_id: requestId,
       };
 
-      return NextResponse.json(plaidStatus);
+      return NextResponse.json(plaidStatus, { headers: { "x-request-id": requestId } });
     }
 
     // Fallback: Try hardening endpoint, but DO NOT fabricate connection status
@@ -128,16 +132,17 @@ export async function GET() {
         // P1 FIX: Hardening endpoint only tells us if sync is enabled,
         // NOT whether the user has any bank connections. Return "unknown"
         // status to be honest about what we don't know.
-        const plaidStatus: PlaidStatusResponse = {
+        const plaidStatus: PlaidStatusResponse & { request_id: string } = {
           status: "unknown",
           items_count: null,
           last_synced_at: null,
           has_items: false, // We don't know - be conservative
           environment: process.env.PLAID_ENV || "sandbox",
           source: "backend_hardening",
+          request_id: requestId,
         };
 
-        return NextResponse.json(plaidStatus);
+        return NextResponse.json(plaidStatus, { headers: { "x-request-id": requestId } });
       }
     } catch {
       // Hardening endpoint also failed
@@ -145,30 +150,32 @@ export async function GET() {
 
     // P1 FIX: If all backend calls fail, return honest "unknown" status
     // instead of fabricating a status
-    const failClosedStatus: PlaidStatusResponse = {
+    const failClosedStatus: PlaidStatusResponse & { request_id: string } = {
       status: "unknown",
       items_count: null,
       last_synced_at: null,
       has_items: false,
       environment: null,
       source: "unknown",
+      request_id: requestId,
     };
 
-    return NextResponse.json(failClosedStatus);
+    return NextResponse.json(failClosedStatus, { headers: { "x-request-id": requestId } });
   } catch (err: unknown) {
     console.error("Plaid status fetch error:", err);
 
     // P1 FIX: Even on error, return structured response with "unknown" status
     // instead of error object that frontend may misinterpret
-    const errorStatus: PlaidStatusResponse = {
+    const errorStatus: PlaidStatusResponse & { request_id: string } = {
       status: "unknown",
       items_count: null,
       last_synced_at: null,
       has_items: false,
       environment: null,
       source: "unknown",
+      request_id: requestId,
     };
 
-    return NextResponse.json(errorStatus);
+    return NextResponse.json(errorStatus, { headers: { "x-request-id": requestId } });
   }
 }

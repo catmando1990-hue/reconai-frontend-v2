@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { BACKEND_URL } from "@/lib/config";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://reconai-backend.onrender.com";
+const API_URL = BACKEND_URL;
 
 /**
  * Backend invoice response shape (subset for aggregation)

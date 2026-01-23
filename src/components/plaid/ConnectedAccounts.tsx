@@ -55,16 +55,33 @@ function getStatusColorClass(status: ItemStatus): string {
 export function ConnectedAccounts() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [noItemsYet, setNoItemsYet] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    auditedFetch<{ items: Item[]; request_id: string }>("/api/plaid/items")
+    auditedFetch<{ ok?: boolean; items?: Item[]; code?: string; message?: string; request_id: string }>("/api/plaid/items")
       .then((j) => {
         if (!mounted) return;
         setItems(j.items || []);
       })
       .catch((e: unknown) => {
         if (!mounted) return;
+
+        // Handle NO_PLAID_ITEM gracefully - not an error state
+        if (e instanceof HttpError && e.status === 400) {
+          // Try to parse the response body for the error code
+          try {
+            const body = e.body as { code?: string; message?: string } | undefined;
+            if (body?.code === "NO_PLAID_ITEM") {
+              setNoItemsYet(true);
+              setItems([]);
+              return;
+            }
+          } catch {
+            // Fall through to error handling
+          }
+        }
+
         let message = "Failed to load";
         if (e instanceof AuditProvenanceError) {
           message = `Provenance error: ${e.message}`;
@@ -96,7 +113,9 @@ export function ConnectedAccounts() {
 
       {items !== null && items.length === 0 && !error && (
         <p className="mt-4 text-sm text-muted-foreground">
-          No connected accounts yet.
+          {noItemsYet
+            ? "No bank connected yet. Use the button above to link your bank."
+            : "No connected accounts yet."}
         </p>
       )}
 

@@ -3,12 +3,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
-
-// Backend URL for profile status check
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://reconai-backend.onrender.com";
+import { BACKEND_URL } from "@/lib/config";
 
 /**
  * P0: Check profile completion status from backend (single source of truth)

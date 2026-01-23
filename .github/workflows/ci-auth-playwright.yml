@@ -69,5 +69,5 @@ jobs:
 
       - name: Run authenticated Playwright tests
         env:
-          PLAYWRIGHT_AUTH: '1'
+          PLAYWRIGHT_AUTH: "1"
         run: npx playwright test --project=ci-auth

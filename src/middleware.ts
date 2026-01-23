@@ -77,16 +77,25 @@ function createResponseWithHeaders(req: NextRequest): NextResponse {
   // Also set on response headers
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("X-Frame-Options", xfo);
-  response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload",
+  );
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
+  );
 
   return response;
 }
 
-function createRedirectWithHeaders(req: NextRequest, destination: string): NextResponse {
+function createRedirectWithHeaders(
+  req: NextRequest,
+  destination: string,
+): NextResponse {
   const isStrict = STRICT_ROUTES(req);
   const csp = isStrict ? CSP_STRICT : CSP_PUBLIC;
   const xfo = isStrict ? "DENY" : "SAMEORIGIN";
@@ -98,11 +107,17 @@ function createRedirectWithHeaders(req: NextRequest, destination: string): NextR
 
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("X-Frame-Options", xfo);
-  response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload",
+  );
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
+  );
 
   return response;
 }
@@ -227,7 +242,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     const maintenance = await checkMaintenanceMode();
     if (maintenance) {
       const { sessionClaims } = await auth();
-      const meta = sessionClaims?.publicMetadata as Record<string, unknown> | undefined;
+      const meta = sessionClaims?.publicMetadata as
+        | Record<string, unknown>
+        | undefined;
       const isAdmin = meta?.role === "admin" || meta?.role === "org:admin";
 
       if (!isAdmin) {
@@ -240,11 +257,13 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       const { sessionClaims, userId } = await auth();
 
       if (userId && process.env.NEXT_PUBLIC_ENFORCE_MFA === "true") {
-        const meta = sessionClaims?.publicMetadata as Record<string, unknown> | undefined;
+        const meta = sessionClaims?.publicMetadata as
+          | Record<string, unknown>
+          | undefined;
         const hasMFA = Boolean(
           meta?.mfaEnabled ||
           sessionClaims?.["two_factor_enabled"] ||
-          sessionClaims?.["mfa"]
+          sessionClaims?.["mfa"],
         );
 
         if (!hasMFA) {
@@ -254,8 +273,14 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
           const response = NextResponse.redirect(url);
           const isStrict = STRICT_ROUTES(req);
-          response.headers.set("Content-Security-Policy", isStrict ? CSP_STRICT : CSP_PUBLIC);
-          response.headers.set("X-Frame-Options", isStrict ? "DENY" : "SAMEORIGIN");
+          response.headers.set(
+            "Content-Security-Policy",
+            isStrict ? CSP_STRICT : CSP_PUBLIC,
+          );
+          response.headers.set(
+            "X-Frame-Options",
+            isStrict ? "DENY" : "SAMEORIGIN",
+          );
           return response;
         }
       }

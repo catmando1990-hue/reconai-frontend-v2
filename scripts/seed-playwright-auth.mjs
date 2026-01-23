@@ -58,7 +58,9 @@ async function getClerkClient() {
     const clerkSdk = await import("@clerk/clerk-sdk-node");
     return clerkSdk.createClerkClient({ secretKey: CLERK_SECRET_KEY });
   } catch {
-    fatal("@clerk/clerk-sdk-node not installed. Run: npm install -D @clerk/clerk-sdk-node");
+    fatal(
+      "@clerk/clerk-sdk-node not installed. Run: npm install -D @clerk/clerk-sdk-node",
+    );
   }
 }
 

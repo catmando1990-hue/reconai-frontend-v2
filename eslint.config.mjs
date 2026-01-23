@@ -13,6 +13,13 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Disable react-hooks/rules-of-hooks in test files
+  {
+    files: ["tests/**/*.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
   // AUDIT COMPLIANCE: Ban direct fetch() usage
   // All API calls MUST use auditedFetch for request_id provenance enforcement
   {

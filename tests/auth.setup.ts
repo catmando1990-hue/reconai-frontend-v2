@@ -4,16 +4,6 @@ import path from 'node:path';
 
 const AUTH_STORAGE_STATE = 'playwright/.clerk/user.json';
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(
-      `Missing required env var: ${name}. Set it in your shell / CI secrets.`
-    );
-  }
-  return value;
-}
-
 async function isVisible(locator: ReturnType<import('@playwright/test').Page['locator']>, timeoutMs = 1500) {
   try {
     return await locator.first().isVisible({ timeout: timeoutMs });

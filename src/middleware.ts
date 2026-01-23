@@ -2,18 +2,17 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * ReconAI Middleware - Enterprise Security Headers
+ * ReconAI Middleware
  *
- * KEY INSIGHT: Headers must be applied INSIDE clerkMiddleware, not after.
- * When we return NextResponse.next() from inside the handler, that response
- * is ours and mutable. Clerk's internal response handling doesn't affect it.
+ * PARALLEL HEADER STRATEGY:
+ * - Edge config (next.config.ts): HSTS, X-Content-Type-Options, etc. (short, universal)
+ * - Middleware (here): CSP, X-Frame-Options (long, route-specific)
  *
- * Why not next.config.ts headers()? Vercel's edge layer truncates long headers.
- * The CSP is ~1500 chars which exceeds edge limits.
+ * No key collision = no overwrite = both apply correctly
  */
 
 // =========================================================================
-// CSP CONFIGURATION
+// DASHBOARD ROUTE DETECTION
 // =========================================================================
 
 const DASHBOARD_ROUTE_PREFIXES = [
@@ -30,6 +29,16 @@ const DASHBOARD_ROUTE_PREFIXES = [
   "/receipts",
   "/ar",
 ];
+
+function isDashboardRoute(pathname: string): boolean {
+  return DASHBOARD_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+// =========================================================================
+// CSP CONFIGURATION
+// =========================================================================
 
 const CSP_DIRECTIVES = {
   "default-src": ["'self'"],
@@ -101,36 +110,15 @@ function buildCSP(frameAncestors: string): string {
 const CSP_STRICT = buildCSP("'none'");
 const CSP_MODERATE = buildCSP("'self'");
 
-function isDashboardRoute(pathname: string): boolean {
-  return DASHBOARD_ROUTE_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-}
-
 // =========================================================================
-// SECURITY HEADERS
+// HEADER APPLICATION (CSP + X-Frame-Options only)
 // =========================================================================
 
-function getSecurityHeaders(pathname: string): Record<string, string> {
+function applyRouteHeaders(headers: Headers, pathname: string): void {
   const isStrict = isDashboardRoute(pathname);
 
-  return {
-    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-    "X-Content-Type-Options": "nosniff",
-    "X-XSS-Protection": "1; mode=block",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy":
-      "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
-    "X-Frame-Options": isStrict ? "DENY" : "SAMEORIGIN",
-    "Content-Security-Policy": isStrict ? CSP_STRICT : CSP_MODERATE,
-  };
-}
-
-function applySecurityHeaders(headers: Headers, pathname: string): void {
-  const securityHeaders = getSecurityHeaders(pathname);
-  Object.entries(securityHeaders).forEach(([key, value]) => {
-    headers.set(key, value);
-  });
+  headers.set("X-Frame-Options", isStrict ? "DENY" : "SAMEORIGIN");
+  headers.set("Content-Security-Policy", isStrict ? CSP_STRICT : CSP_MODERATE);
 }
 
 // =========================================================================
@@ -218,26 +206,15 @@ async function checkMaintenanceMode(): Promise<boolean> {
 // MAIN MIDDLEWARE
 // =========================================================================
 
-/**
- * Using clerkMiddleware as the default export.
- *
- * CRITICAL: We return NextResponse.next() from INSIDE the handler.
- * This response is OURS and mutable. We can set headers on it.
- *
- * This is different from wrapping clerkMiddleware and trying to modify
- * its returned response, which is immutable.
- */
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
-  // Skip Next.js internals
+  // Skip internals
   if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
   }
 
-  // -------------------------------------------------------------------------
-  // AUTH FLOW ROUTES - Allow without additional checks
-  // -------------------------------------------------------------------------
+  // Auth flow routes
   if (
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
@@ -247,15 +224,12 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     pathname.startsWith("/complete-profile")
   ) {
     const response = NextResponse.next();
-    applySecurityHeaders(response.headers, pathname);
+    applyRouteHeaders(response.headers, pathname);
     return response;
   }
 
-  // -------------------------------------------------------------------------
-  // PROTECTED ROUTES - Check maintenance mode and MFA
-  // -------------------------------------------------------------------------
+  // Protected routes - maintenance & MFA checks
   if (isProtectedRoute(req)) {
-    // Maintenance mode check
     const maintenanceMode = await checkMaintenanceMode();
 
     if (maintenanceMode) {
@@ -271,12 +245,11 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
         const url = req.nextUrl.clone();
         url.pathname = "/maintenance";
         const response = NextResponse.redirect(url);
-        applySecurityHeaders(response.headers, pathname);
+        applyRouteHeaders(response.headers, pathname);
         return response;
       }
     }
 
-    // MFA enforcement
     if (requiresMFA(req)) {
       const { sessionClaims, userId } = await auth();
 
@@ -298,18 +271,16 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
           url.pathname = "/mfa-setup";
           url.searchParams.set("redirect_url", pathname);
           const response = NextResponse.redirect(url);
-          applySecurityHeaders(response.headers, pathname);
+          applyRouteHeaders(response.headers, pathname);
           return response;
         }
       }
     }
   }
 
-  // -------------------------------------------------------------------------
-  // ALL OTHER ROUTES - Apply headers and continue
-  // -------------------------------------------------------------------------
+  // All routes - apply CSP and X-Frame-Options
   const response = NextResponse.next();
-  applySecurityHeaders(response.headers, pathname);
+  applyRouteHeaders(response.headers, pathname);
   return response;
 });
 

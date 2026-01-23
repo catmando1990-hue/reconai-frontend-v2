@@ -1,8 +1,33 @@
 import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
 
-// NOTE: Security headers (CSP, X-Frame-Options, etc.) are handled by middleware.ts
-// at runtime to avoid Vercel's edge layer truncating long CSP headers.
+// =========================================================================
+// UNIVERSAL SECURITY HEADERS (short, no truncation risk)
+// CSP and X-Frame-Options are handled by middleware (route-specific)
+// =========================================================================
+
+const universalHeaders = [
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  {
+    key: "X-XSS-Protection",
+    value: "1; mode=block",
+  },
+  {
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
+  },
+];
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -20,6 +45,23 @@ const nextConfig: NextConfig = {
         hostname: "*.public.blob.vercel-storage.com",
       },
     ],
+  },
+  async headers() {
+    return [
+      // Video files
+      {
+        source: "/videos/(.*)",
+        headers: [
+          { key: "Content-Type", value: "video/mp4" },
+          { key: "Accept-Ranges", value: "bytes" },
+        ],
+      },
+      // All routes - universal headers only
+      {
+        source: "/(.*)",
+        headers: universalHeaders,
+      },
+    ];
   },
   async redirects() {
     return [

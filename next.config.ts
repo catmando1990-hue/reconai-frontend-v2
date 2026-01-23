@@ -1,33 +1,8 @@
 import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
 
-// =========================================================================
-// UNIVERSAL SECURITY HEADERS (short, no truncation risk)
-// CSP and X-Frame-Options are handled by middleware (route-specific)
-// =========================================================================
-
-const universalHeaders = [
-  {
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
-  },
-  {
-    key: "X-Content-Type-Options",
-    value: "nosniff",
-  },
-  {
-    key: "X-XSS-Protection",
-    value: "1; mode=block",
-  },
-  {
-    key: "Referrer-Policy",
-    value: "strict-origin-when-cross-origin",
-  },
-  {
-    key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
-  },
-];
+// All security headers are handled by middleware.ts
+// No edge config dependency - all headers applied at runtime
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -46,23 +21,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async headers() {
-    return [
-      // Video files
-      {
-        source: "/videos/(.*)",
-        headers: [
-          { key: "Content-Type", value: "video/mp4" },
-          { key: "Accept-Ranges", value: "bytes" },
-        ],
-      },
-      // All routes - universal headers only
-      {
-        source: "/(.*)",
-        headers: universalHeaders,
-      },
-    ];
-  },
   async redirects() {
     return [
       {
@@ -77,8 +35,18 @@ const nextConfig: NextConfig = {
       },
       // 308 redirects for legacy /dashboard/* routes to canonical route-group paths
       {
+        source: "/dashboard",
+        destination: "/home",
+        permanent: true,
+      },
+      {
         source: "/dashboard/home",
         destination: "/home",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/settings",
+        destination: "/settings",
         permanent: true,
       },
       {

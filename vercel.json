@@ -1,14 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "rm -rf .next && TURBOPACK=0 next build",
-  "outputDirectory": ".next",
-  "headers": [
-    {
-      "source": "/videos/(.*)",
-      "headers": [
-        { "key": "Content-Type", "value": "video/mp4" },
-        { "key": "Accept-Ranges", "value": "bytes" }
-      ]
-    }
-  ]
+  "outputDirectory": ".next"
 }

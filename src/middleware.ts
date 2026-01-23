@@ -4,149 +4,18 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * ReconAI Middleware - Enterprise Security Headers
  *
- * Architecture:
- * 1. Security headers are applied via middleware (not vercel.json) to avoid length limits
- * 2. Clerk middleware handles authentication for protected routes
- * 3. Response cloning ensures headers are mutable after Clerk processing
+ * Key insight: Clerk's middleware response may be immutable.
+ * Solution: Use Next.js headers() in config OR apply via response creation.
  *
- * Security Posture:
- * - Dashboard routes: frame-ancestors 'none' (no iframe embedding)
- * - Public routes: frame-ancestors 'self' (same-origin only)
+ * This version keeps the original Clerk structure intact and applies
+ * headers through Next.js config headers (see next.config.ts).
+ *
+ * Security headers (CSP, X-Frame-Options) are set via next.config.ts headers()
+ * to avoid conflicts with Clerk's response handling.
  */
 
 // =========================================================================
-// CSP CONFIGURATION
-// =========================================================================
-
-const DASHBOARD_ROUTE_PREFIXES = [
-  "/dashboard",
-  "/home",
-  "/core",
-  "/cfo",
-  "/intelligence",
-  "/govcon",
-  "/settings",
-  "/invoicing",
-  "/connect-bank",
-  "/customers",
-  "/receipts",
-  "/ar",
-];
-
-// Base CSP directives (shared)
-const CSP_DIRECTIVES = {
-  "default-src": ["'self'"],
-  "script-src": [
-    "'self'",
-    "'unsafe-inline'",
-    "'unsafe-eval'",
-    "https://*.clerk.accounts.dev",
-    "https://*.clerk.dev",
-    "https://clerk.reconaitechnology.com",
-    "https://challenges.cloudflare.com",
-    "https://vercel.live",
-    "https://cdn.plaid.com",
-  ],
-  "worker-src": ["'self'", "blob:"],
-  "style-src": ["'self'", "'unsafe-inline'"],
-  "img-src": [
-    "'self'",
-    "data:",
-    "blob:",
-    "https://*.clerk.dev",
-    "https://*.clerk.accounts.dev",
-    "https://img.clerk.com",
-    "https://clerk.reconaitechnology.com",
-    "https://*.vercel-storage.com",
-    "https://*.public.blob.vercel-storage.com",
-  ],
-  "font-src": ["'self'", "data:"],
-  "connect-src": [
-    "'self'",
-    "https://*.clerk.dev",
-    "https://*.clerk.accounts.dev",
-    "https://clerk.reconaitechnology.com",
-    "https://reconai-backend.onrender.com",
-    "https://api.reconai.com",
-    "https://*.vercel-storage.com",
-    "https://vercel.live",
-    "wss://*.clerk.dev",
-    "wss://clerk.reconaitechnology.com",
-    "https://production.plaid.com",
-    "https://cdn.plaid.com",
-  ],
-  "media-src": [
-    "'self'",
-    "https://*.vercel-storage.com",
-    "https://*.public.blob.vercel-storage.com",
-    "blob:",
-  ],
-  "frame-src": [
-    "'self'",
-    "https://*.clerk.dev",
-    "https://*.clerk.accounts.dev",
-    "https://clerk.reconaitechnology.com",
-    "https://challenges.cloudflare.com",
-    "https://cdn.plaid.com",
-  ],
-  "form-action": ["'self'"],
-  "base-uri": ["'self'"],
-  "object-src": ["'none'"],
-};
-
-function buildCSP(frameAncestors: string): string {
-  const directives = Object.entries(CSP_DIRECTIVES)
-    .map(([key, values]) => `${key} ${values.join(" ")}`)
-    .join("; ");
-  return `${directives}; upgrade-insecure-requests; frame-ancestors ${frameAncestors}`;
-}
-
-const CSP_STRICT = buildCSP("'none'");
-const CSP_MODERATE = buildCSP("'self'");
-
-function isDashboardRoute(pathname: string): boolean {
-  return DASHBOARD_ROUTE_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-}
-
-// =========================================================================
-// SECURITY HEADERS
-// =========================================================================
-
-interface SecurityHeaders {
-  "Strict-Transport-Security": string;
-  "X-Content-Type-Options": string;
-  "X-XSS-Protection": string;
-  "Referrer-Policy": string;
-  "Permissions-Policy": string;
-  "X-Frame-Options": string;
-  "Content-Security-Policy": string;
-}
-
-function getSecurityHeaders(pathname: string): SecurityHeaders {
-  const isStrict = isDashboardRoute(pathname);
-
-  return {
-    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-    "X-Content-Type-Options": "nosniff",
-    "X-XSS-Protection": "1; mode=block",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
-    "X-Frame-Options": isStrict ? "DENY" : "SAMEORIGIN",
-    "Content-Security-Policy": isStrict ? CSP_STRICT : CSP_MODERATE,
-  };
-}
-
-function applySecurityHeaders(response: NextResponse, pathname: string): void {
-  const headers = getSecurityHeaders(pathname);
-  Object.entries(headers).forEach(([key, value]) => {
-    response.headers.set(key, value);
-  });
-}
-
-// =========================================================================
-// CLERK AUTH CONFIGURATION
+// CLERK ROUTE MATCHERS
 // =========================================================================
 
 const CLERK_ROUTES = [
@@ -186,6 +55,9 @@ const CLERK_ROUTES = [
   "/vendors(.*)",
   "/receipts(.*)",
   "/diagnostics(.*)",
+  "/govcon(.*)",
+  "/ar(.*)",
+  "/invoicing(.*)",
   "/api/diagnostics(.*)",
   "/api/admin(.*)",
   "/api/me(.*)",
@@ -245,16 +117,22 @@ async function checkMaintenanceMode(): Promise<boolean> {
 const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
-  // Allow these routes without additional checks
-  if (
-    pathname.startsWith("/maintenance") ||
-    pathname.startsWith("/mfa-setup") ||
-    pathname.startsWith("/complete-profile")
-  ) {
+  // Allow maintenance page itself
+  if (pathname.startsWith("/maintenance")) {
     return NextResponse.next();
   }
 
-  // Maintenance mode enforcement
+  // Allow MFA setup page
+  if (pathname.startsWith("/mfa-setup")) {
+    return NextResponse.next();
+  }
+
+  // Allow profile completion page
+  if (pathname.startsWith("/complete-profile")) {
+    return NextResponse.next();
+  }
+
+  // Maintenance mode enforcement — PROTECTED ROUTES ONLY
   if (isProtectedRoute(req)) {
     const maintenanceMode = await checkMaintenanceMode();
 
@@ -275,7 +153,7 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
     }
   }
 
-  // MFA enforcement
+  // P0 MFA ENFORCEMENT
   if (requiresMFA(req)) {
     const { sessionClaims, userId } = await auth();
 
@@ -301,6 +179,7 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
     }
   }
 
+  // Protected routes are handled by server-side auth() in layouts
   return NextResponse.next();
 });
 
@@ -308,49 +187,33 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
 // MAIN MIDDLEWARE
 // =========================================================================
 
+/**
+ * Main middleware: Routes Clerk only where needed.
+ *
+ * NOTE: Security headers (CSP, X-Frame-Options, etc.) are handled by
+ * next.config.ts headers() function. This avoids conflicts with Clerk's
+ * immutable response objects.
+ */
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Skip Next.js internals and static assets
+  // Always skip Next internals and static assets
   if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
   }
 
-  // Routes requiring Clerk authentication
+  // Only apply Clerk middleware to authenticated routes
   if (requiresClerk(req)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const clerkResponse = await clerkHandler(req, {} as any);
-
-    // Handle redirects from Clerk (maintenance, MFA, etc.)
-    if (clerkResponse && clerkResponse.status >= 300 && clerkResponse.status < 400) {
-      const location = clerkResponse.headers.get("location");
-      if (location) {
-        const redirectResponse = NextResponse.redirect(location, clerkResponse.status);
-        applySecurityHeaders(redirectResponse, pathname);
-        return redirectResponse;
-      }
-    }
-
-    // Create a fresh mutable response with security headers
-    // This bypasses Clerk's immutable response issue
-    const response = NextResponse.next({
-      request: {
-        headers: req.headers,
-      },
-    });
-
-    applySecurityHeaders(response, pathname);
-    return response;
+    return clerkHandler(req, {} as any);
   }
 
-  // Public routes - no Clerk overhead
-  const response = NextResponse.next();
-  applySecurityHeaders(response, pathname);
-  return response;
+  // Public/marketing routes — ZERO Clerk overhead
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

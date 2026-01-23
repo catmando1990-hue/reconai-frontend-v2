@@ -283,11 +283,36 @@ export default async function middleware(req: NextRequest) {
   // This includes both page routes AND API routes that need auth
   if (requiresClerk(req)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await clerkHandler(req, {} as any);
-    // Apply security headers to Clerk-handled routes
-    if (response) {
+    const clerkResponse = await clerkHandler(req, {} as any);
+
+    // Clone the response to make headers mutable
+    // Clerk responses may be immutable, so we need a new NextResponse
+    if (clerkResponse) {
+      const response = NextResponse.next({
+        request: req,
+        headers: new Headers(clerkResponse.headers),
+      });
+
+      // Copy status and any redirect location
+      if (clerkResponse.status >= 300 && clerkResponse.status < 400) {
+        const location = clerkResponse.headers.get("location");
+        if (location) {
+          const redirectResponse = NextResponse.redirect(
+            location,
+            clerkResponse.status,
+          );
+          setSecurityHeaders(redirectResponse, pathname);
+          return redirectResponse;
+        }
+      }
+
       setSecurityHeaders(response, pathname);
+      return response;
     }
+
+    // Fallback if no response from Clerk
+    const response = NextResponse.next();
+    setSecurityHeaders(response, pathname);
     return response;
   }
 

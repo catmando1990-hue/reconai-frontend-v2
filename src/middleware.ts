@@ -10,7 +10,83 @@ import { NextResponse, type NextRequest } from "next/server";
  * - Auth routes (sign-in, sign-up) use Clerk for auth flow
  * - BUILD 8: Maintenance mode enforcement (fail-open)
  * - P0 MFA: Two-factor authentication enforcement (fail-closed)
+ * - CSP headers: Strict for dashboard, moderate for public routes
  */
+
+// =========================================================================
+// CSP HEADER CONFIGURATION
+// =========================================================================
+
+// Dashboard routes that need strict CSP (frame-ancestors 'none')
+const DASHBOARD_ROUTE_PREFIXES = [
+  "/dashboard",
+  "/home",
+  "/core",
+  "/cfo",
+  "/intelligence",
+  "/govcon",
+  "/settings",
+  "/invoicing",
+  "/connect-bank",
+  "/customers",
+  "/receipts",
+  "/ar",
+];
+
+// Base CSP directives (shared between strict and moderate)
+const cspBase = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://vercel.live https://cdn.plaid.com",
+  "worker-src 'self' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://*.clerk.dev https://*.clerk.accounts.dev https://img.clerk.com https://clerk.reconaitechnology.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
+  "font-src 'self' data:",
+  "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://reconai-backend.onrender.com https://api.reconai.com https://*.vercel-storage.com https://vercel.live wss://*.clerk.dev wss://clerk.reconaitechnology.com https://production.plaid.com https://cdn.plaid.com",
+  "media-src 'self' https://*.vercel-storage.com https://*.public.blob.vercel-storage.com blob:",
+  "frame-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.reconaitechnology.com https://challenges.cloudflare.com https://cdn.plaid.com",
+  "form-action 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "upgrade-insecure-requests",
+];
+
+const cspStrict = [...cspBase, "frame-ancestors 'none'"].join("; ");
+const cspModerate = [...cspBase, "frame-ancestors 'self'"].join("; ");
+
+function isDashboardRoute(pathname: string): boolean {
+  return DASHBOARD_ROUTE_PREFIXES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
+
+function setSecurityHeaders(response: Response, pathname: string): void {
+  // Shared security headers
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload",
+  );
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), encrypted-media=*, accelerometer=*",
+  );
+
+  if (isDashboardRoute(pathname)) {
+    // STRICT - Dashboard routes (financial data)
+    response.headers.set("X-Frame-Options", "DENY");
+    response.headers.set("Content-Security-Policy", cspStrict);
+  } else {
+    // MODERATE - Public routes
+    response.headers.set("X-Frame-Options", "SAMEORIGIN");
+    response.headers.set("Content-Security-Policy", cspModerate);
+  }
+}
+
+// =========================================================================
+// CLERK AUTH CONFIGURATION
+// =========================================================================
 
 // Routes that require Clerk middleware (authenticated + auth flow)
 const CLERK_ROUTES = [
@@ -193,6 +269,7 @@ const clerkHandler = clerkMiddleware(async (auth, req: NextRequest) => {
 /**
  * Main middleware: Routes Clerk only where needed.
  * Public/marketing routes get ZERO Clerk overhead.
+ * All routes get appropriate security headers (CSP).
  */
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -206,11 +283,18 @@ export default async function middleware(req: NextRequest) {
   // This includes both page routes AND API routes that need auth
   if (requiresClerk(req)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return clerkHandler(req, {} as any);
+    const response = await clerkHandler(req, {} as any);
+    // Apply security headers to Clerk-handled routes
+    if (response) {
+      setSecurityHeaders(response, pathname);
+    }
+    return response;
   }
 
   // Public/marketing routes — ZERO Clerk overhead
-  return NextResponse.next();
+  const response = NextResponse.next();
+  setSecurityHeaders(response, pathname);
+  return response;
 }
 
 export const config = {

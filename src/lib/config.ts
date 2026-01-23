@@ -86,10 +86,7 @@ export function getRequiredEnv(name: string, fallbackForDev?: string): string {
  * Required in production, uses fallback in dev only.
  */
 export function getBackendUrl(): string {
-  return getRequiredEnv(
-    "NEXT_PUBLIC_API_BASE_URL",
-    "http://localhost:8000",
-  );
+  return getRequiredEnv("NEXT_PUBLIC_API_BASE_URL", "http://localhost:8000");
 }
 
 /**

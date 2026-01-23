@@ -59,7 +59,13 @@ export function ConnectedAccounts() {
 
   useEffect(() => {
     let mounted = true;
-    auditedFetch<{ ok?: boolean; items?: Item[]; code?: string; message?: string; request_id: string }>("/api/plaid/items")
+    auditedFetch<{
+      ok?: boolean;
+      items?: Item[];
+      code?: string;
+      message?: string;
+      request_id: string;
+    }>("/api/plaid/items")
       .then((j) => {
         if (!mounted) return;
         setItems(j.items || []);
@@ -71,7 +77,9 @@ export function ConnectedAccounts() {
         if (e instanceof HttpError && e.status === 400) {
           // Try to parse the response body for the error code
           try {
-            const body = e.body as { code?: string; message?: string } | undefined;
+            const body = e.body as
+              | { code?: string; message?: string }
+              | undefined;
             if (body?.code === "NO_PLAID_ITEM") {
               setNoItemsYet(true);
               setItems([]);

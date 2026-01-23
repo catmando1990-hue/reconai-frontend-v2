@@ -56,7 +56,9 @@ export function AccountsPanel() {
         // Handle NO_PLAID_ITEM gracefully - not an error state
         if (e instanceof HttpError && e.status === 400) {
           try {
-            const body = e.body as { code?: string; message?: string } | undefined;
+            const body = e.body as
+              | { code?: string; message?: string }
+              | undefined;
             if (body?.code === "NO_PLAID_ITEM") {
               setNoItemsYet(true);
               setAccounts([]);

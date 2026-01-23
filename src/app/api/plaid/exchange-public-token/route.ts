@@ -40,7 +40,11 @@ export async function POST(req: Request) {
 
     if (!public_token || typeof public_token !== "string") {
       return NextResponse.json(
-        { error: "Missing public_token", code: "MISSING_PUBLIC_TOKEN", request_id: requestId },
+        {
+          error: "Missing public_token",
+          code: "MISSING_PUBLIC_TOKEN",
+          request_id: requestId,
+        },
         { status: 400, headers: { "x-request-id": requestId } },
       );
     }
@@ -105,7 +109,12 @@ export async function POST(req: Request) {
     console.error("Plaid exchange token error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { error: "Bank connection failed. Please retry.", detail: message, code: "INTERNAL_ERROR", request_id: requestId },
+      {
+        error: "Bank connection failed. Please retry.",
+        detail: message,
+        code: "INTERNAL_ERROR",
+        request_id: requestId,
+      },
       { status: 500, headers: { "x-request-id": requestId } },
     );
   }

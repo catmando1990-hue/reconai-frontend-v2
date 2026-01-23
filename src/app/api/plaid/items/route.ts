@@ -11,7 +11,12 @@ export async function GET(req: Request) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
-        { ok: false, error: "Unauthorized", code: "AUTH_REQUIRED", request_id: requestId },
+        {
+          ok: false,
+          error: "Unauthorized",
+          code: "AUTH_REQUIRED",
+          request_id: requestId,
+        },
         { status: 401, headers: { "x-request-id": requestId } },
       );
     }
@@ -26,7 +31,12 @@ export async function GET(req: Request) {
     if (error) {
       console.error("[Plaid items] Supabase error:", error);
       return NextResponse.json(
-        { ok: false, error: "Failed to load connected accounts", code: "DB_ERROR", request_id: requestId },
+        {
+          ok: false,
+          error: "Failed to load connected accounts",
+          code: "DB_ERROR",
+          request_id: requestId,
+        },
         { status: 500, headers: { "x-request-id": requestId } },
       );
     }
@@ -58,7 +68,12 @@ export async function GET(req: Request) {
     console.error("[Plaid items] Unhandled error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { ok: false, error: message, code: "INTERNAL_ERROR", request_id: requestId },
+      {
+        ok: false,
+        error: message,
+        code: "INTERNAL_ERROR",
+        request_id: requestId,
+      },
       { status: 500, headers: { "x-request-id": requestId } },
     );
   }

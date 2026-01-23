@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo } from "react";
@@ -21,11 +21,6 @@ import { useUserProfile } from "@/lib/user-profile-context";
 import { hasGovConEntitlement } from "@/lib/entitlements";
 import { MODULES, type ModuleKey } from "@/lib/dashboardNav";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ICON MAPPING
-// Maps dashboardNav icon strings to Lucide components
-// ─────────────────────────────────────────────────────────────────────────────
-
 const ICON_MAP: Record<string, LucideIcon> = {
   Home: LayoutDashboard,
   Database,
@@ -39,10 +34,6 @@ function getIcon(iconName: string | undefined): LucideIcon {
   return iconName && ICON_MAP[iconName] ? ICON_MAP[iconName] : Database;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MODULE ORDER (canonical order for Tier 2)
-// ─────────────────────────────────────────────────────────────────────────────
-
 const MODULE_ORDER: ModuleKey[] = [
   "home",
   "core",
@@ -51,17 +42,6 @@ const MODULE_ORDER: ModuleKey[] = [
   "govcon",
   "settings",
 ];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CONTEXT PANEL CONFIGURATION
-// P2 FIX: Context panel removed. Static values like "On-demand", "Manual",
-// "Active", "Verified" were misleading since they don't reflect actual state.
-// Will be re-implemented when we have real-time state to display.
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
 
 function getActiveModule(pathname: string): ModuleKey | null {
   if (pathname.startsWith("/home")) return "home";
@@ -84,10 +64,6 @@ function getActiveModule(pathname: string): ModuleKey | null {
   return null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SIDEBAR COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function Sidebar() {
   const pathname = usePathname() || "";
   const router = useRouter();
@@ -101,7 +77,6 @@ export function Sidebar() {
     [profile?.tiers, profile?.role],
   );
 
-  // Build ordered modules list (filtered by entitlements)
   const visibleModules = useMemo(() => {
     return MODULE_ORDER.filter((key) => {
       if (key === "govcon" && !showGovCon) return false;
@@ -116,15 +91,8 @@ export function Sidebar() {
 
   return (
     <aside className="relative flex h-full overflow-hidden">
-      {/* ─────────────────────────────────────────────────────────────────────
-          TIER 1 + TIER 2: Main Sidebar Rail
-          Fixed width, contains identity + primary modules
-      ───────────────────────────────────────────────────────────────────── */}
       <div className="relative w-56 shrink-0 flex flex-col h-full bg-background border-r border-border">
         <div className="flex flex-col h-full">
-          {/* ─────────────────────────────────────────────────────────────────
-              TIER 1: Workspace / Product Identity
-          ───────────────────────────────────────────────────────────────── */}
           <div className="h-14 flex items-center px-4 border-b border-border">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center transition-colors group-hover:border-primary/40">
@@ -141,10 +109,6 @@ export function Sidebar() {
             </Link>
           </div>
 
-          {/* ─────────────────────────────────────────────────────────────────
-              TIER 2: Primary Module Rail
-              No accordion, no collapsing. Active module highlighted.
-          ───────────────────────────────────────────────────────────────── */}
           <nav
             className="flex-1 overflow-y-auto py-3 px-2"
             aria-label="Primary navigation"
@@ -193,9 +157,6 @@ export function Sidebar() {
             </div>
           </nav>
 
-          {/* ─────────────────────────────────────────────────────────────────
-              FOOTER: Quick Actions + Sign Out
-          ───────────────────────────────────────────────────────────────── */}
           <div className="border-t border-border p-3 space-y-2">
             <div className="flex items-center justify-center gap-2">
               <Link
@@ -225,78 +186,6 @@ export function Sidebar() {
           </div>
         </div>
       </div>
-
-      {/* ─────────────────────────────────────────────────────────────────────
-          TIER 3: Context Panel (NOT navigation duplication)
-          Shows: Mode, Scope, Operational State
-          Visible only when module has meaningful context to display.
-      ───────────────────────────────────────────────────────────────────── */}
-      {moduleContext && (
-        <div className="relative w-44 shrink-0 flex flex-col h-full border-r border-border bg-muted/50">
-          {/* Context header */}
-          <div className="h-14 flex flex-col justify-center px-3 border-b border-border">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Context
-            </span>
-            {moduleContext.mode && (
-              <span className="text-xs font-medium text-foreground">
-                {moduleContext.mode} Mode
-              </span>
-            )}
-          </div>
-
-          {/* Context content */}
-          <div className="flex-1 overflow-y-auto py-3 px-3">
-            {/* Scope indicator */}
-            {moduleContext.scope && (
-              <div className="mb-3 pb-3 border-b border-border">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                  Scope
-                </div>
-                <div className="text-xs font-medium text-foreground">
-                  {moduleContext.scope}
-                </div>
-              </div>
-            )}
-
-            {/* Status items */}
-            <div className="space-y-2">
-              {moduleContext.items.map((item, idx) => {
-                const ItemIcon = item.icon;
-                return (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      {ItemIcon && (
-                        <ItemIcon
-                          className={`h-3 w-3 shrink-0 ${getStatusColor(item.status)}`}
-                        />
-                      )}
-                      <span className="text-[11px] text-muted-foreground truncate">
-                        {item.label}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[11px] font-medium shrink-0 ${getStatusColor(item.status)}`}
-                    >
-                      {item.value}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Context footer - visual anchor */}
-          <div className="px-3 py-2 border-t border-border">
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground/60 text-center">
-              Read-only
-            </div>
-          </div>
-        </div>
-      )}
     </aside>
   );
 }

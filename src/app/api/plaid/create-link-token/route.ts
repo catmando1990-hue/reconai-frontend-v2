@@ -43,7 +43,11 @@ export async function POST(req: Request) {
         `Plaid create-link-token: non-JSON response (${resp.status})`,
       );
       return NextResponse.json(
-        { error: "Bank connection failed. Please retry.", code: "NON_JSON_RESPONSE", request_id: requestId },
+        {
+          error: "Bank connection failed. Please retry.",
+          code: "NON_JSON_RESPONSE",
+          request_id: requestId,
+        },
         { status: 502, headers: { "x-request-id": requestId } },
       );
     }
@@ -52,7 +56,11 @@ export async function POST(req: Request) {
 
     if (!resp.ok) {
       return NextResponse.json(
-        { error: data.detail || data.error || "Failed to create link token", code: "UPSTREAM_ERROR", request_id: requestId },
+        {
+          error: data.detail || data.error || "Failed to create link token",
+          code: "UPSTREAM_ERROR",
+          request_id: requestId,
+        },
         { status: resp.status, headers: { "x-request-id": requestId } },
       );
     }
@@ -68,7 +76,11 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     console.error("Plaid link token error:", err);
     return NextResponse.json(
-      { error: "Bank connection failed. Please retry.", code: "INTERNAL_ERROR", request_id: requestId },
+      {
+        error: "Bank connection failed. Please retry.",
+        code: "INTERNAL_ERROR",
+        request_id: requestId,
+      },
       { status: 500, headers: { "x-request-id": requestId } },
     );
   }

@@ -115,7 +115,9 @@ export async function GET(req: Request) {
         request_id: requestId,
       };
 
-      return NextResponse.json(plaidStatus, { headers: { "x-request-id": requestId } });
+      return NextResponse.json(plaidStatus, {
+        headers: { "x-request-id": requestId },
+      });
     }
 
     // Fallback: Try hardening endpoint, but DO NOT fabricate connection status
@@ -142,7 +144,9 @@ export async function GET(req: Request) {
           request_id: requestId,
         };
 
-        return NextResponse.json(plaidStatus, { headers: { "x-request-id": requestId } });
+        return NextResponse.json(plaidStatus, {
+          headers: { "x-request-id": requestId },
+        });
       }
     } catch {
       // Hardening endpoint also failed
@@ -160,7 +164,9 @@ export async function GET(req: Request) {
       request_id: requestId,
     };
 
-    return NextResponse.json(failClosedStatus, { headers: { "x-request-id": requestId } });
+    return NextResponse.json(failClosedStatus, {
+      headers: { "x-request-id": requestId },
+    });
   } catch (err: unknown) {
     console.error("Plaid status fetch error:", err);
 
@@ -176,6 +182,8 @@ export async function GET(req: Request) {
       request_id: requestId,
     };
 
-    return NextResponse.json(errorStatus, { headers: { "x-request-id": requestId } });
+    return NextResponse.json(errorStatus, {
+      headers: { "x-request-id": requestId },
+    });
   }
 }

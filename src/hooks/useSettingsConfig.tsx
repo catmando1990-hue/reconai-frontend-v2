@@ -177,7 +177,7 @@ export function useSettingsConfig(): UseSettingsConfigState {
     setError(null);
 
     try {
-      const res = await apiFetch<SettingsResponse>("/settings/config", {
+      const res = await apiFetch<SettingsResponse>("/api/settings/config", {
         method: "GET",
       });
 
@@ -212,7 +212,7 @@ export function useSettingsConfig(): UseSettingsConfigState {
   // Acknowledge policy
   const acknowledgePolicy = useCallback(async () => {
     try {
-      await apiFetch("/settings/acknowledge-policy", {
+      await apiFetch("/api/settings/acknowledge-policy", {
         method: "POST",
       });
       // Refetch to get updated policy_acknowledged_at

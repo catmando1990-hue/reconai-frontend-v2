@@ -53,10 +53,10 @@ export async function GET(req: Request) {
     if (error) {
       console.error("[Transactions] Supabase error:", error);
       // Return empty array on error — graceful degradation
-      return NextResponse.json([], {
-        status: 200,
-        headers: { "x-request-id": requestId },
-      });
+      return NextResponse.json(
+        { items: [], count: 0, request_id: requestId },
+        { status: 200, headers: { "x-request-id": requestId } },
+      );
     }
 
     // Map to frontend expected format
@@ -72,16 +72,16 @@ export async function GET(req: Request) {
       duplicate: false, // Would need separate duplicate detection
     }));
 
-    return NextResponse.json(mapped, {
-      status: 200,
-      headers: { "x-request-id": requestId },
-    });
+    return NextResponse.json(
+      { items: mapped, count: mapped.length, request_id: requestId },
+      { status: 200, headers: { "x-request-id": requestId } },
+    );
   } catch (err) {
     console.error("[Transactions] Unhandled error:", err);
     // Return empty array on error
-    return NextResponse.json([], {
-      status: 200,
-      headers: { "x-request-id": requestId },
-    });
+    return NextResponse.json(
+      { items: [], count: 0, request_id: requestId },
+      { status: 200, headers: { "x-request-id": requestId } },
+    );
   }
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
-// Proxy to Render backend - check both env vars for compatibility
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -12,8 +11,6 @@ const BACKEND_URL =
  *
  * Proxies to backend /api/me which auto-provisions personal workspace for new users.
  * Never returns 404 for valid Clerk sessions.
- *
- * Response always includes request_id for tracing.
  */
 export async function GET() {
   const requestId = crypto.randomUUID();
@@ -23,7 +20,7 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized", request_id: requestId },
-        { status: 401 },
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -33,18 +30,18 @@ export async function GET() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-request-id": requestId,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
 
-    // Read response as text first for fail-safe parsing
     const responseText = await resp.text();
 
     if (!responseText || responseText.trim() === "") {
       console.error("Backend /api/me returned empty response");
       return NextResponse.json(
         { error: "Empty response from backend", request_id: requestId },
-        { status: 502 },
+        { status: 502, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -58,7 +55,7 @@ export async function GET() {
       );
       return NextResponse.json(
         { error: "Invalid JSON from backend", request_id: requestId },
-        { status: 502 },
+        { status: 502, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -72,19 +69,18 @@ export async function GET() {
             data.error ||
             "Failed to fetch profile",
           backend_status: resp.status,
-          request_id: data.request_id || requestId,
+          request_id: requestId,
         },
-        { status: resp.status },
+        { status: resp.status, headers: { "x-request-id": requestId } },
       );
     }
 
-    // Transform backend response to match frontend ProfileData interface
     const user = data.user as Record<string, unknown> | undefined;
     const org = data.org as Record<string, unknown> | undefined;
     const permissions = data.permissions as Record<string, unknown> | undefined;
 
     const profile = {
-      request_id: data.request_id || requestId,
+      request_id: requestId,
       id: user?.id,
       email: user?.email,
       name:
@@ -98,22 +94,24 @@ export async function GET() {
       tier: org?.tier,
       isPersonalWorkspace: org?.is_personal_workspace || false,
       role: permissions?.role,
-      // P0: Profile completion status from backend (single source of truth)
       profileCompleted: Boolean(user?.profile_completed),
-      timezone: undefined, // Not provided by backend yet
-      currency: undefined, // Not provided by backend yet
-      fiscalYearStart: undefined, // Not provided by backend yet
-      lastLogin: undefined, // Not provided by backend yet
-      mfaEnabled: undefined, // Not provided by backend yet
+      timezone: undefined,
+      currency: undefined,
+      fiscalYearStart: undefined,
+      lastLogin: undefined,
+      mfaEnabled: undefined,
     };
 
-    return NextResponse.json(profile);
+    return NextResponse.json(profile, {
+      status: 200,
+      headers: { "x-request-id": requestId },
+    });
   } catch (err: unknown) {
     console.error("Profile fetch error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
       { error: "Failed to fetch profile: " + message, request_id: requestId },
-      { status: 500 },
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

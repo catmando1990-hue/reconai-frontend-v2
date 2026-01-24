@@ -18,6 +18,12 @@ interface Transaction {
   pending: boolean;
 }
 
+interface TransactionsResponse {
+  items: Transaction[];
+  count: number;
+  request_id: string;
+}
+
 function formatCurrency(amount: number): string {
   const absAmount = Math.abs(amount);
   const formatted = new Intl.NumberFormat("en-US", {
@@ -46,8 +52,8 @@ export default function CoreTransactionsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<Transaction[]>("/api/transactions?limit=100");
-      setTransactions(data || []);
+      const data = await apiFetch<TransactionsResponse>("/api/transactions?limit=100");
+      setTransactions(data?.items || []);
     } catch (err) {
       console.error("[CoreTransactions] Fetch error:", err);
       setError(err instanceof Error ? err.message : "Failed to load transactions");

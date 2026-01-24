@@ -235,16 +235,22 @@ export async function POST() {
       return failClosed("analysis_failed");
     }
 
-    // Map results back to transaction IDs
+    // Map results back to transaction IDs with display info
     const suggestions = analysis.categorizations
       .filter((c) => c.confidence >= CONFIDENCE_THRESHOLD)
       .map((c) => {
-        const tx = transactions[c.index];
+        const tx = transactions[c.index] as Transaction | undefined;
         return {
           transaction_id: tx?.transaction_id || `tx_${c.index}`,
           suggested_category: c.suggested_category,
           confidence: c.confidence,
           explanation: c.explanation,
+          // Include display info for UI
+          merchant_name: tx?.merchant_name || null,
+          description: tx?.name || null,
+          amount: tx?.amount || null,
+          date: tx?.date || null,
+          current_category: tx?.category?.[0] || null,
           evidence: [
             { type: "ai_analysis", value: "claude-sonnet-4" },
             { type: "threshold", value: CONFIDENCE_THRESHOLD },

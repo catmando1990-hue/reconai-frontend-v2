@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
@@ -13,19 +14,50 @@ import { AI_DISCLAIMER, REGULATORY_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
-import { Bell, RefreshCw, FlaskConical } from "lucide-react";
+import { Bell, RefreshCw, Check, Eye, X } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import { STATUS } from "@/lib/dashboardCopy";
 
+interface AlertItem {
+  id: string;
+  title: string;
+  summary: string;
+  kind: string;
+  status: string;
+  confidence: number;
+  transaction_ids?: string[];
+  created_at?: string;
+}
+
 export default function AlertsPage() {
   const { data, isLoading, error, refetch } = useAlerts();
+  
+  // Track resolved and reviewed alerts locally (no persistence yet)
+  const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
+  const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
 
-  // P0 FIX: Check for demo mode flag from fetcher
-  const isDemo = (data as { _isDemo?: boolean })?._isDemo ?? false;
-  const demoDisclaimer = (data as { _demoDisclaimer?: string })
-    ?._demoDisclaimer;
+  const handleResolve = (alertId: string) => {
+    setResolvedIds((prev) => new Set(prev).add(alertId));
+  };
 
-  // P0 FIX: Helper to format counts - show "—" for null/undefined, not 0
+  const handleMarkReviewed = (alertId: string) => {
+    setReviewedIds((prev) => new Set(prev).add(alertId));
+  };
+
+  const handleDismiss = (alertId: string) => {
+    setResolvedIds((prev) => new Set(prev).add(alertId));
+  };
+
+  // Filter and categorize alerts
+  const allItems = (data?.items as AlertItem[] | null) ?? [];
+  const activeItems = allItems.filter(
+    (item) => !resolvedIds.has(item.id),
+  );
+  const newCount = activeItems.filter(
+    (a) => a.status === "new" && !reviewedIds.has(a.id),
+  ).length;
+  const resolvedCount = resolvedIds.size;
+
   const formatCount = (count: number | null | undefined): string => {
     if (count === null || count === undefined) return STATUS.NO_DATA;
     return String(count);
@@ -35,29 +67,17 @@ export default function AlertsPage() {
     <TierGate tier="intelligence" title="Alerts">
       <RouteShell
         title="Alerts"
-        subtitle="Signals that may require review or documentation. Always verify before acting."
+        subtitle="Claude-powered signals requiring review or action"
         right={
-          <div className="flex items-center gap-2">
-            {/* P0 FIX: Show Demo badge when data is from mock */}
-            {/* BACKGROUND NORMALIZATION: No decorative colors */}
-            {isDemo && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                <FlaskConical className="h-3 w-3" />
-                Demo
-              </span>
-            )}
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => void refetch()}
-              disabled={isLoading}
-            >
-              <RefreshCw
-                className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void refetch()}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
         }
       >
         <div className="space-y-2">
@@ -65,17 +85,7 @@ export default function AlertsPage() {
           <DisclaimerNotice>{REGULATORY_DISCLAIMER}</DisclaimerNotice>
         </div>
 
-        {/* P0 FIX: Show demo disclaimer when in demo mode */}
-        {/* BACKGROUND NORMALIZATION: No decorative colors */}
-        {isDemo && demoDisclaimer && (
-          <div className="mt-2 rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
-            {demoDisclaimer}
-          </div>
-        )}
-
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* BACKGROUND NORMALIZATION: Intelligence is ADVISORY (no bg-background) */}
-          {/* Main content uses bg-card, inner items use bg-muted */}
           <div className="lg:col-span-8">
             <div className="rounded-lg border border-border bg-card p-6">
               <div className="mb-4">
@@ -84,61 +94,95 @@ export default function AlertsPage() {
                   Signals requiring review or documentation
                 </p>
               </div>
+              
               {isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading alerts…</p>
+                <p className="text-sm text-muted-foreground">Analyzing transactions…</p>
               ) : error ? (
                 <div className="space-y-2">
                   <p className="text-sm text-destructive">{error}</p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => void refetch()}
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => void refetch()}>
                     Retry
                   </Button>
                 </div>
-              ) : data?.items?.length ? (
+              ) : activeItems.length ? (
                 <div className="space-y-4">
-                  {data.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-lg border border-border bg-muted p-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-2 min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-medium">{item.title}</h3>
-                            <SeverityBadge
-                              severity={severityFromConfidence(item.confidence)}
-                            />
-                            <StatusChip variant="muted">
-                              {item.status}
-                            </StatusChip>
-                            <StatusChip variant="muted">{item.kind}</StatusChip>
+                  {activeItems.map((item) => {
+                    const isReviewed = reviewedIds.has(item.id);
+                    
+                    return (
+                      <div
+                        key={item.id}
+                        className={`rounded-lg border border-border bg-muted p-4 ${isReviewed ? "opacity-60" : ""}`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="space-y-2 min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-medium">{item.title}</h3>
+                              <SeverityBadge severity={severityFromConfidence(item.confidence)} />
+                              <StatusChip variant={isReviewed ? "ok" : "muted"}>
+                                {isReviewed ? "reviewed" : item.status}
+                              </StatusChip>
+                              <StatusChip variant="muted">{item.kind}</StatusChip>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{item.summary}</p>
+                            
+                            {/* Show affected transactions */}
+                            {item.transaction_ids && item.transaction_ids.length > 0 && (
+                              <p className="text-xs text-muted-foreground">
+                                {item.transaction_ids.length} transaction{item.transaction_ids.length > 1 ? "s" : ""} affected
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <ConfidenceMeta confidence={item.confidence} />
+                              <span className="text-muted-foreground/60">•</span>
+                              <span>
+                                {item.created_at
+                                  ? new Date(item.created_at).toLocaleString()
+                                  : "Time unknown"}
+                              </span>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {item.summary}
-                          </p>
-                          {/* HIERARCHY: Confidence prominent + freshness inline */}
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <ConfidenceMeta confidence={item.confidence} />
-                            <span className="text-muted-foreground/60">•</span>
-                            <span>
-                              {item.created_at
-                                ? new Date(item.created_at).toLocaleString()
-                                : "Time unknown"}
-                            </span>
+                          
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            {!isReviewed && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleMarkReviewed(item.id)}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                Review
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleResolve(item.id)}
+                              className="text-primary border-primary hover:bg-primary/10"
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Resolve
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDismiss(item.id)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <EmptyState
                   icon={Bell}
-                  title="No alerts yet"
-                  description="As transactions and rules accumulate, ReconAI will surface review items here."
+                  title="No alerts"
+                  description="Your transactions look good. No issues detected."
                 />
               )}
             </div>
@@ -149,39 +193,18 @@ export default function AlertsPage() {
             <SecondaryPanel title="Alert Summary">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Total Alerts
-                  </span>
-                  {/* P0 FIX: Show "No data" instead of 0 when data unavailable */}
-                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
+                  <span className="text-sm text-muted-foreground">Total Alerts</span>
                   <span className="text-lg font-medium">
-                    {formatCount(data?.items?.length)}
+                    {formatCount(activeItems.length)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">New</span>
-                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
-                  <span className="text-lg font-medium">
-                    {data?.items
-                      ? formatCount(
-                          data.items.filter((a) => a.status === "new").length,
-                        )
-                      : STATUS.NO_DATA}
-                  </span>
+                  <span className="text-lg font-medium">{formatCount(newCount)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Resolved
-                  </span>
-                  {/* HIERARCHY: Intelligence uses font-medium (subordinate to CFO) */}
-                  <span className="text-lg font-medium">
-                    {data?.items
-                      ? formatCount(
-                          data.items.filter((a) => a.status === "resolved")
-                            .length,
-                        )
-                      : STATUS.NO_DATA}
-                  </span>
+                  <span className="text-sm text-muted-foreground">Resolved</span>
+                  <span className="text-lg font-medium">{formatCount(resolvedCount)}</span>
                 </div>
               </div>
             </SecondaryPanel>
@@ -189,21 +212,21 @@ export default function AlertsPage() {
             <SecondaryPanel title="Alert Types">
               <div className="space-y-3 text-sm">
                 <div className="p-2 rounded border border-border bg-muted">
-                  <p className="font-medium">Anomaly Detection</p>
+                  <p className="font-medium">Duplicate Detection</p>
                   <p className="text-xs text-muted-foreground">
-                    Unusual patterns in transaction data
+                    Same amount and merchant within 48 hours
                   </p>
                 </div>
                 <div className="p-2 rounded border border-border bg-muted">
                   <p className="font-medium">Compliance Risk</p>
                   <p className="text-xs text-muted-foreground">
-                    Potential regulatory or policy issues
+                    Large transactions, missing documentation
                   </p>
                 </div>
                 <div className="p-2 rounded border border-border bg-muted">
-                  <p className="font-medium">Data Quality</p>
+                  <p className="font-medium">Anomaly</p>
                   <p className="text-xs text-muted-foreground">
-                    Missing or inconsistent data fields
+                    Unusual patterns vs typical spending
                   </p>
                 </div>
               </div>
@@ -211,22 +234,10 @@ export default function AlertsPage() {
 
             <SecondaryPanel title="Quick Links" collapsible>
               <div className="space-y-2 text-sm">
-                <Link
-                  href={ROUTES.INTELLIGENCE_INSIGHTS}
-                  className="block text-primary hover:underline"
-                >
+                <Link href={ROUTES.INTELLIGENCE_INSIGHTS} className="block text-primary hover:underline">
                   View insights
                 </Link>
-                <Link
-                  href={ROUTES.INTELLIGENCE_AI_WORKER}
-                  className="block text-primary hover:underline"
-                >
-                  AI Worker tasks
-                </Link>
-                <Link
-                  href={ROUTES.CORE_TRANSACTIONS}
-                  className="block text-primary hover:underline"
-                >
+                <Link href={ROUTES.CORE_TRANSACTIONS} className="block text-primary hover:underline">
                   Review transactions
                 </Link>
               </div>

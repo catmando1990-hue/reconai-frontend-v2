@@ -5,10 +5,14 @@ import { useApi } from "@/lib/useApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusChip } from "@/components/dashboard/StatusChip";
-import { IntelligenceResultCard } from "@/components/shared/IntelligenceResultCard";
+import { Check, X, Loader2 } from "lucide-react";
 
 type CatSuggestion = {
   transaction_id: string;
+  merchant_name?: string;
+  description?: string;
+  amount?: number;
+  date?: string;
   category?: string;
   suggested_category?: string;
   confidence: number;
@@ -44,15 +48,11 @@ type AnalyzeResponse = {
 };
 
 const THRESHOLD = 0.85;
-
-// Local storage key for cached intelligence results
 const CACHE_KEY = "intelligence_v1_cache";
 
 /**
  * Intelligence V1 Panel - Claude-powered transaction analysis
- *
- * Calls /api/intelligence/analyze ONCE to get all data.
- * Results are advisory only - no writes, no mutations.
+ * With Apply/Dismiss functionality for categorization suggestions
  */
 export function IntelligenceV1Panel() {
   const { apiFetch } = useApi();
@@ -65,13 +65,16 @@ export function IntelligenceV1Panel() {
   const [error, setError] = useState<string | null>(null);
   const [cached, setCached] = useState(false);
   const [txCount, setTxCount] = useState<number | null>(null);
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [applyingId, setApplyingId] = useState<string | null>(null);
 
   const run = async () => {
     if (running) return;
     setRunning(true);
     setError(null);
 
-    // Check for cached results before performing API request
+    // Check cache
     try {
       if (typeof window !== "undefined") {
         const cachedStr = window.localStorage.getItem(CACHE_KEY);
@@ -93,7 +96,6 @@ export function IntelligenceV1Panel() {
     setCached(false);
 
     try {
-      // Single API call to analyze endpoint
       const response = await apiFetch<AnalyzeResponse>(
         "/api/intelligence/analyze",
         { method: "POST" },
@@ -113,7 +115,6 @@ export function IntelligenceV1Panel() {
         return;
       }
 
-      // Apply confidence threshold
       const newCat = (response.suggestions ?? []).filter(
         (s) => (s.confidence ?? 0) >= THRESHOLD,
       );
@@ -131,7 +132,7 @@ export function IntelligenceV1Panel() {
       setTxCount(response._transaction_count ?? null);
       setRan(true);
 
-      // Persist to localStorage
+      // Cache
       try {
         if (typeof window !== "undefined") {
           window.localStorage.setItem(
@@ -170,6 +171,39 @@ export function IntelligenceV1Panel() {
     setRan(false);
     setCached(false);
     setError(null);
+    setAppliedIds(new Set());
+    setDismissedIds(new Set());
+  };
+
+  const handleApply = async (suggestion: CatSuggestion) => {
+    if (!suggestion.suggested_category) return;
+    
+    setApplyingId(suggestion.transaction_id);
+    try {
+      const response = await fetch(
+        `/api/transactions/${suggestion.transaction_id}/category`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: suggestion.suggested_category }),
+        },
+      );
+
+      if (response.ok) {
+        setAppliedIds((prev) => new Set(prev).add(suggestion.transaction_id));
+      } else {
+        const err = await response.json();
+        console.error("Failed to apply category:", err);
+      }
+    } catch (err) {
+      console.error("Apply error:", err);
+    } finally {
+      setApplyingId(null);
+    }
+  };
+
+  const handleDismiss = (transactionId: string) => {
+    setDismissedIds((prev) => new Set(prev).add(transactionId));
   };
 
   const status = useMemo(() => {
@@ -178,6 +212,11 @@ export function IntelligenceV1Panel() {
     if (cached) return { label: "Cached", tone: "muted" as const };
     return { label: "Complete", tone: "ok" as const };
   }, [ran, error, cached]);
+
+  // Filter out dismissed and applied
+  const visibleCat = cat?.filter(
+    (s) => !dismissedIds.has(s.transaction_id) && !appliedIds.has(s.transaction_id),
+  );
 
   return (
     <Card className="border border-border bg-card">
@@ -188,8 +227,7 @@ export function IntelligenceV1Panel() {
               Intelligence v1 (Advisory)
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Claude-powered analysis. Read-only outputs with confidence,
-              explanation, and evidence.
+              Claude-powered analysis. Read-only outputs with confidence and explanation.
               {txCount !== null && ran && (
                 <span className="ml-2">({txCount} transactions analyzed)</span>
               )}
@@ -213,10 +251,9 @@ export function IntelligenceV1Panel() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error ? (
-          <p className="text-sm text-destructive">{error}</p>
-        ) : null}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
+        {/* Categorization Suggestions */}
         <section className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium">Categorization Suggestions</h3>
@@ -224,19 +261,61 @@ export function IntelligenceV1Panel() {
               threshold {THRESHOLD}
             </span>
           </div>
-          {cat?.length ? (
+          {visibleCat?.length ? (
             <div className="space-y-2">
-              {cat.slice(0, 6).map((s) => (
-                <IntelligenceResultCard
+              {visibleCat.slice(0, 6).map((s) => (
+                <div
                   key={s.transaction_id}
-                  id={s.transaction_id}
-                  title={s.suggested_category ?? s.category ?? "Suggestion"}
-                  confidence={s.confidence}
-                  explanation={s.explanation}
-                  subtitle={`tx: ${s.transaction_id}`}
-                  evidence={s.evidence}
-                  threshold={THRESHOLD}
-                />
+                  className="rounded-lg border border-border bg-muted p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-primary">
+                          {s.suggested_category ?? s.category ?? "Suggestion"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {Math.round(s.confidence * 100)}%
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {s.explanation}
+                      </p>
+                      {/* Show merchant/description instead of transaction_id */}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {s.merchant_name || s.description || `Transaction ${s.transaction_id.slice(0, 8)}...`}
+                        {s.amount !== undefined && ` · $${Math.abs(s.amount).toFixed(2)}`}
+                        {s.date && ` · ${s.date}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void handleApply(s)}
+                        disabled={applyingId === s.transaction_id}
+                        className="text-primary border-primary hover:bg-primary/10"
+                      >
+                        {applyingId === s.transaction_id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4 mr-1" />
+                            Apply
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDismiss(s.transaction_id)}
+                        disabled={applyingId === s.transaction_id}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : ran && !error ? (
@@ -250,6 +329,7 @@ export function IntelligenceV1Panel() {
           ) : null}
         </section>
 
+        {/* Duplicate Detection */}
         <section className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium">Duplicate Detection</h3>
@@ -260,17 +340,25 @@ export function IntelligenceV1Panel() {
           {dup?.length ? (
             <div className="space-y-2">
               {dup.slice(0, 6).map((g) => (
-                <IntelligenceResultCard
+                <div
                   key={g.group_id}
-                  id={g.group_id}
-                  title={`Group ${g.group_id}`}
-                  confidence={g.confidence}
-                  explanation={g.explanation}
-                  subtitle={`tx: ${g.transactions.join(", ")}`}
-                  evidence={g.evidence}
-                  statusVariant="warn"
-                  threshold={THRESHOLD}
-                />
+                  className="rounded-lg border border-border bg-muted p-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-amber-500">
+                      Potential Duplicate
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {Math.round(g.confidence * 100)}%
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {g.explanation}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {g.transactions.length} transactions flagged
+                  </p>
+                </div>
               ))}
             </div>
           ) : ran && !error ? (
@@ -284,6 +372,7 @@ export function IntelligenceV1Panel() {
           ) : null}
         </section>
 
+        {/* Cashflow Insight */}
         <section className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium">Cashflow Insight</h3>
@@ -292,17 +381,22 @@ export function IntelligenceV1Panel() {
             </span>
           </div>
           {cash ? (
-            <IntelligenceResultCard
-              id="cashflow-insight"
-              title={cash.trend}
-              confidence={cash.confidence}
-              explanation={cash.explanation}
-              subtitle={
-                cash.forecast ? `forecast: ${cash.forecast}` : undefined
-              }
-              evidence={cash.evidence}
-              threshold={THRESHOLD}
-            />
+            <div className="rounded-lg border border-border bg-muted p-3">
+              <div className="flex items-center gap-2">
+                <span className="font-medium capitalize">{cash.trend}</span>
+                <span className="text-xs text-muted-foreground">
+                  {Math.round(cash.confidence * 100)}%
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {cash.explanation}
+              </p>
+              {cash.forecast && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Forecast: {cash.forecast}
+                </p>
+              )}
+            </div>
           ) : ran && !error ? (
             <p className="text-sm text-muted-foreground">
               No cashflow insight met the confidence threshold.

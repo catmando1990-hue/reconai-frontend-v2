@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useApi } from "@/lib/useApi";
+import { auditedFetch } from "@/lib/auditedFetch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusChip } from "@/components/dashboard/StatusChip";
@@ -164,7 +165,7 @@ function CategorySelector({
             disabled={isApplying}
             className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
           >
-            <span className="max-w-[120px] truncate">{displayValue}</span>
+            <span className="max-w-30 truncate">{displayValue}</span>
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           </button>
 
@@ -370,7 +371,8 @@ export function IntelligenceV1Panel() {
     setApplyingId(suggestion.transaction_id);
     try {
       // 1. Update transaction category
-      const txResponse = await fetch(
+      // auditedFetch returns parsed JSON directly, throws HttpError on failure
+      await auditedFetch(
         `/api/transactions/${suggestion.transaction_id}/category`,
         {
           method: "PATCH",
@@ -379,24 +381,21 @@ export function IntelligenceV1Panel() {
         },
       );
 
-      if (!txResponse.ok) {
-        const err = await txResponse.json();
-        console.error("Failed to apply category:", err);
-        return;
-      }
-
       // 2. Save category rule for learning (merchant → category mapping)
       const merchantPattern = suggestion.merchant_name || suggestion.description;
       if (merchantPattern) {
-        await fetch("/api/intelligence/rules", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            merchant_pattern: merchantPattern,
-            category: category,
-          }),
-        });
-        // Don't fail if rule save fails - transaction is already updated
+        try {
+          await auditedFetch("/api/intelligence/rules", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              merchant_pattern: merchantPattern,
+              category: category,
+            }),
+          });
+        } catch {
+          // Don't fail if rule save fails - transaction is already updated
+        }
       }
 
       setAppliedIds((prev) => new Set(prev).add(suggestion.transaction_id));

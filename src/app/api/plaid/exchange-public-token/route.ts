@@ -1,33 +1,21 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getBackendUrl } from "@/lib/config";
+import { getPlaidClient } from "@/lib/plaid";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 /**
- * ============================================================================
- * PLAID TOKEN EXCHANGE - FAIL-CLOSED IMPLEMENTATION
- * ============================================================================
+ * POST /api/plaid/exchange-public-token
  *
- * This route proxies to the v2 Plaid API endpoint on the backend.
+ * Exchanges Plaid public token for access token.
+ * Calls Plaid API directly, then writes to Supabase.
  *
- * CRITICAL: We must verify response is JSON before parsing.
- * If backend returns HTML (410/404/error page), we fail gracefully.
- *
- * v1 endpoints (/exchange-public-token) are DEPRECATED and return 410 Gone.
- * v2 endpoint is: /api/plaid/exchange-public-token
- *
- * ============================================================================
+ * SECURITY: Access token is stored in Supabase, never returned to client.
  */
-
-// v2 Plaid API endpoint (NOT the deprecated v1 /exchange-public-token)
-const EXCHANGE_ENDPOINT = "/api/plaid/exchange-public-token";
-
 export async function POST(req: Request) {
-  // Generate request ID for provenance tracking
-  const incomingRequestId = req.headers.get("x-request-id");
-  const requestId = incomingRequestId || crypto.randomUUID();
+  const requestId = crypto.randomUUID();
 
   try {
-    const { userId, getToken } = await auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized", request_id: requestId },
@@ -36,7 +24,11 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const public_token = body?.public_token;
+    const { public_token, institution_id, institution_name } = body as {
+      public_token?: string;
+      institution_id?: string;
+      institution_name?: string;
+    };
 
     if (!public_token || typeof public_token !== "string") {
       return NextResponse.json(
@@ -49,70 +41,183 @@ export async function POST(req: Request) {
       );
     }
 
-    const token = await getToken();
+    console.log(
+      `[Plaid exchange] userId=${userId}, institution=${institution_name || "unknown"}, requestId=${requestId}`,
+    );
 
-    const resp = await fetch(`${getBackendUrl()}${EXCHANGE_ENDPOINT}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ user_id: userId, public_token }),
+    // Exchange public token for access token via Plaid API
+    const plaid = getPlaidClient();
+    const exchangeResponse = await plaid.itemPublicTokenExchange({
+      public_token,
     });
 
-    // ========================================================================
-    // FAIL-CLOSED: Verify response is JSON before parsing
-    // ========================================================================
-    const contentType = resp.headers.get("content-type") || "";
-    const isJson = contentType.includes("application/json");
+    const accessToken = exchangeResponse.data.access_token;
+    const itemId = exchangeResponse.data.item_id;
 
-    if (!isJson) {
-      // Backend returned non-JSON (HTML error page, 410 Gone, etc.)
-      const textBody = await resp.text().catch(() => "[unreadable]");
-      console.error(
-        `[FAIL-CLOSED] Plaid exchange received non-JSON response. ` +
-          `Status: ${resp.status}, Content-Type: ${contentType}, ` +
-          `Body preview: ${textBody.slice(0, 200)}`,
-      );
+    // Get item details to confirm institution
+    let institutionId = institution_id;
+    let institutionNameResolved = institution_name;
+
+    try {
+      const itemResponse = await plaid.itemGet({ access_token: accessToken });
+      institutionId = itemResponse.data.item.institution_id || institutionId;
+
+      if (institutionId && !institutionNameResolved) {
+        const instResponse = await plaid.institutionsGetById({
+          institution_id: institutionId,
+          country_codes: ["US" as never],
+        });
+        institutionNameResolved = instResponse.data.institution.name;
+      }
+    } catch (itemErr) {
+      console.warn("[Plaid exchange] Could not fetch item details:", itemErr);
+    }
+
+    // Write to Supabase
+    const supabase = supabaseAdmin();
+
+    // Check for duplicate item
+    const { data: existingItem } = await supabase
+      .from("plaid_items")
+      .select("id, item_id")
+      .eq("item_id", itemId)
+      .single();
+
+    if (existingItem) {
+      // Update existing item
+      const { error: updateError } = await supabase
+        .from("plaid_items")
+        .update({
+          access_token: accessToken,
+          institution_id: institutionId,
+          institution_name: institutionNameResolved,
+          status: "active",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("item_id", itemId);
+
+      if (updateError) {
+        console.error("[Plaid exchange] Supabase update error:", updateError);
+        return NextResponse.json(
+          {
+            error: "Failed to update bank connection",
+            code: "SUPABASE_ERROR",
+            request_id: requestId,
+          },
+          { status: 500, headers: { "x-request-id": requestId } },
+        );
+      }
+
       return NextResponse.json(
         {
-          error: "Bank connection failed. Please retry.",
-          detail: "Plaid exchange failed — non-JSON response from backend",
-          code: "NON_JSON_RESPONSE",
+          item_id: itemId,
+          status: "connected",
+          is_duplicate: true,
           request_id: requestId,
         },
-        { status: 502, headers: { "x-request-id": requestId } },
+        { status: 200, headers: { "x-request-id": requestId } },
       );
     }
 
-    // Safe to parse as JSON
-    const data = await resp.json();
+    // Insert new item
+    const { error: insertError } = await supabase.from("plaid_items").insert({
+      user_id: userId,
+      clerk_user_id: userId,
+      item_id: itemId,
+      access_token: accessToken,
+      institution_id: institutionId,
+      institution_name: institutionNameResolved,
+      status: "active",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
 
-    if (!resp.ok) {
-      // Backend returned JSON error response
+    if (insertError) {
+      console.error("[Plaid exchange] Supabase insert error:", insertError);
       return NextResponse.json(
         {
-          error: data.detail || data.error || "Failed to exchange token",
-          code: "UPSTREAM_ERROR",
+          error: "Failed to save bank connection",
+          code: "SUPABASE_ERROR",
           request_id: requestId,
         },
-        { status: resp.status, headers: { "x-request-id": requestId } },
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
-    // Return minimal metadata (never expose access_token to client)
-    return NextResponse.json(
-      { item_id: data.item_id, status: "connected", request_id: requestId },
-      { headers: { "x-request-id": requestId } },
-    );
-  } catch (err: unknown) {
-    console.error("Plaid exchange token error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
+    // Fetch accounts and store them
+    try {
+      const accountsResponse = await plaid.accountsGet({
+        access_token: accessToken,
+      });
+
+      const accounts = accountsResponse.data.accounts.map((acct) => ({
+        user_id: userId,
+        clerk_user_id: userId,
+        item_id: itemId,
+        account_id: acct.account_id,
+        institution_id: institutionId,
+        institution_name: institutionNameResolved,
+        name: acct.name,
+        official_name: acct.official_name,
+        type: acct.type,
+        subtype: acct.subtype,
+        mask: acct.mask,
+        balance_current: acct.balances.current,
+        balance_available: acct.balances.available,
+        iso_currency_code: acct.balances.iso_currency_code || "USD",
+        last_synced: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }));
+
+      if (accounts.length > 0) {
+        const { error: accountsError } = await supabase
+          .from("plaid_accounts")
+          .upsert(accounts, { onConflict: "account_id" });
+
+        if (accountsError) {
+          console.error(
+            "[Plaid exchange] Failed to save accounts:",
+            accountsError,
+          );
+          // Non-fatal — item is saved, accounts can be synced later
+        }
+      }
+    } catch (acctErr) {
+      console.warn("[Plaid exchange] Could not fetch accounts:", acctErr);
+      // Non-fatal
+    }
+
     return NextResponse.json(
       {
-        error: "Bank connection failed. Please retry.",
-        detail: message,
-        code: "INTERNAL_ERROR",
+        item_id: itemId,
+        status: "connected",
+        is_duplicate: false,
+        request_id: requestId,
+      },
+      { status: 200, headers: { "x-request-id": requestId } },
+    );
+  } catch (err: unknown) {
+    console.error("[Plaid exchange] Error:", err);
+
+    // Extract Plaid error details if available
+    const plaidError = err as {
+      response?: {
+        data?: {
+          error_code?: string;
+          error_message?: string;
+        };
+      };
+    };
+    const errorCode = plaidError.response?.data?.error_code || "PLAID_ERROR";
+    const errorMessage =
+      plaidError.response?.data?.error_message ||
+      (err instanceof Error ? err.message : "Failed to exchange token");
+
+    return NextResponse.json(
+      {
+        error: errorMessage,
+        code: errorCode,
         request_id: requestId,
       },
       { status: 500, headers: { "x-request-id": requestId } },

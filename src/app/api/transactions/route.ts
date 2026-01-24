@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getBackendUrl } from "@/lib/config";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 /**
  * GET /api/transactions
  *
- * Proxies to backend GET /api/intelligence/transactions
- * Returns transactions with classification overlay.
+ * Returns transactions from Supabase for the authenticated user.
+ * Source of truth: Supabase `transactions` table.
  */
 export async function GET(req: Request) {
   const requestId = crypto.randomUUID();
 
   try {
-    const { userId, getToken } = await auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
@@ -20,38 +20,38 @@ export async function GET(req: Request) {
       );
     }
 
-    const token = await getToken();
     const url = new URL(req.url);
-    const limit = url.searchParams.get("limit") || "50";
-    const offset = url.searchParams.get("offset") || "0";
+    const limit = parseInt(url.searchParams.get("limit") || "50", 10);
+    const offset = parseInt(url.searchParams.get("offset") || "0", 10);
 
-    let backendUrl: string;
-    try {
-      backendUrl = getBackendUrl();
-    } catch {
-      // Backend not configured — return empty array
-      return NextResponse.json([], {
-        status: 200,
-        headers: { "x-request-id": requestId },
-      });
-    }
+    const supabase = supabaseAdmin();
 
-    // Try intelligence/transactions endpoint first
-    const resp = await fetch(
-      `${backendUrl}/api/intelligence/transactions?limit=${limit}&offset=${offset}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-request-id": requestId,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        signal: AbortSignal.timeout(15000),
-      },
-    );
+    // Query transactions table
+    const { data: transactions, error } = await supabase
+      .from("transactions")
+      .select(
+        `
+        id,
+        transaction_id,
+        account_id,
+        amount,
+        date,
+        name,
+        merchant_name,
+        category,
+        pending,
+        payment_channel,
+        transaction_type,
+        created_at,
+        updated_at
+      `,
+      )
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .range(offset, offset + limit - 1);
 
-    if (!resp.ok) {
-      console.error(`[Transactions] Backend error (${resp.status})`);
+    if (error) {
+      console.error("[Transactions] Supabase error:", error);
       // Return empty array on error — graceful degradation
       return NextResponse.json([], {
         status: 200,
@@ -59,45 +59,25 @@ export async function GET(req: Request) {
       });
     }
 
-    const data = await resp.json();
-
-    // The intelligence endpoint returns { transactions: [...], ... }
-    // Extract and transform for frontend table
-    const transactions = data.transactions || [];
-
     // Map to frontend expected format
-    const mapped = transactions.map(
-      (tx: {
-        id?: string;
-        transaction_id?: string;
-        date?: string;
-        merchant_name?: string;
-        name?: string;
-        description?: string;
-        amount?: number;
-        account_name?: string;
-        account_id?: string;
-        category?: string[];
-        classification?: { category?: string };
-        duplicate_group?: string;
-      }) => ({
-        id: tx.id || tx.transaction_id,
-        date: tx.date,
-        merchant: tx.merchant_name || tx.name,
-        description: tx.description || tx.name,
-        amount: tx.amount,
-        account: tx.account_name || tx.account_id,
-        category: tx.classification?.category || (tx.category && tx.category[0]) || null,
-        duplicate: !!tx.duplicate_group,
-      }),
-    );
+    const mapped = (transactions || []).map((tx) => ({
+      id: tx.id || tx.transaction_id,
+      date: tx.date,
+      merchant: tx.merchant_name || tx.name,
+      description: tx.name,
+      amount: tx.amount,
+      account: tx.account_id,
+      category: Array.isArray(tx.category) ? tx.category[0] : tx.category,
+      pending: tx.pending,
+      duplicate: false, // Would need separate duplicate detection
+    }));
 
     return NextResponse.json(mapped, {
       status: 200,
       headers: { "x-request-id": requestId },
     });
   } catch (err) {
-    console.error("[Transactions] Error:", err);
+    console.error("[Transactions] Unhandled error:", err);
     // Return empty array on error
     return NextResponse.json([], {
       status: 200,

@@ -26,20 +26,33 @@ type DuplicateGroup = {
 
 type Cashflow = {
   trend: string;
-  forecast?: string;
+  forecast?: string | null;
   confidence: number;
   explanation: string;
   evidence?: unknown;
 };
 
+type AnalyzeResponse = {
+  suggestions: CatSuggestion[];
+  duplicates: DuplicateGroup[];
+  cashflow: Cashflow | null;
+  request_id: string;
+  _analyzed: boolean;
+  _reason?: string;
+  _transaction_count?: number;
+  _timestamp?: string;
+};
+
 const THRESHOLD = 0.85;
 
-// Local storage key for cached intelligence results.  Storing results here avoids
-// re-fetching the same data on subsequent runs.
+// Local storage key for cached intelligence results
 const CACHE_KEY = "intelligence_v1_cache";
 
 /**
- * P0 FIX: Auth Propagation - Uses useApi() hook for org context and auth headers
+ * Intelligence V1 Panel - Claude-powered transaction analysis
+ *
+ * Calls /api/intelligence/analyze ONCE to get all data.
+ * Results are advisory only - no writes, no mutations.
  */
 export function IntelligenceV1Panel() {
   const { apiFetch } = useApi();
@@ -51,14 +64,14 @@ export function IntelligenceV1Panel() {
   const [cash, setCash] = useState<Cashflow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cached, setCached] = useState(false);
+  const [txCount, setTxCount] = useState<number | null>(null);
 
   const run = async () => {
     if (running) return;
     setRunning(true);
     setError(null);
 
-    // Check for cached results before performing API requests.  If cached data
-    // exists, populate state and skip the network calls.
+    // Check for cached results before performing API request
     try {
       if (typeof window !== "undefined") {
         const cachedStr = window.localStorage.getItem(CACHE_KEY);
@@ -67,6 +80,7 @@ export function IntelligenceV1Panel() {
           setCat(cachedData.cat ?? null);
           setDup(cachedData.dup ?? null);
           setCash(cachedData.cash ?? null);
+          setTxCount(cachedData.txCount ?? null);
           setRan(true);
           setCached(true);
           setRunning(false);
@@ -74,42 +88,60 @@ export function IntelligenceV1Panel() {
         }
       }
     } catch (e) {
-      // If parsing fails, ignore cache and proceed to fetch fresh data.
       console.error(e);
     }
     setCached(false);
 
     try {
-      const [c1, d1, k1] = await Promise.all([
-        apiFetch<{ suggestions: CatSuggestion[] }>(
-          "/api/intelligence/categorization/suggestions",
-        ),
-        apiFetch<{ duplicates: DuplicateGroup[] }>(
-          "/api/intelligence/duplicates",
-        ),
-        apiFetch<Cashflow>("/api/intelligence/cashflow/insights"),
-      ]);
+      // Single API call to analyze endpoint
+      const response = await apiFetch<AnalyzeResponse>(
+        "/api/intelligence/analyze",
+        { method: "POST" },
+      );
 
-      // Apply the confidence threshold on the client and prepare new results.
-      const newCat = (c1?.suggestions ?? []).filter(
+      if (!response) {
+        setError("No response from analysis");
+        setRan(true);
+        setRunning(false);
+        return;
+      }
+
+      if (!response._analyzed) {
+        setError(response._reason || "Analysis not available");
+        setRan(true);
+        setRunning(false);
+        return;
+      }
+
+      // Apply confidence threshold
+      const newCat = (response.suggestions ?? []).filter(
         (s) => (s.confidence ?? 0) >= THRESHOLD,
       );
-      const newDup = (d1?.duplicates ?? []).filter(
+      const newDup = (response.duplicates ?? []).filter(
         (g) => (g.confidence ?? 0) >= THRESHOLD,
       );
-      const newCash = k1 && (k1.confidence ?? 0) >= THRESHOLD ? k1 : null;
+      const newCash =
+        response.cashflow && (response.cashflow.confidence ?? 0) >= THRESHOLD
+          ? response.cashflow
+          : null;
 
       setCat(newCat);
       setDup(newDup);
       setCash(newCash);
+      setTxCount(response._transaction_count ?? null);
       setRan(true);
-      // Persist the filtered results to localStorage so subsequent runs can
-      // immediately populate from cache without hitting the backend.
+
+      // Persist to localStorage
       try {
         if (typeof window !== "undefined") {
           window.localStorage.setItem(
             CACHE_KEY,
-            JSON.stringify({ cat: newCat, dup: newDup, cash: newCash }),
+            JSON.stringify({
+              cat: newCat,
+              dup: newDup,
+              cash: newCash,
+              txCount: response._transaction_count,
+            }),
           );
         }
       } catch (e) {
@@ -123,6 +155,23 @@ export function IntelligenceV1Panel() {
     }
   };
 
+  const clearCache = () => {
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(CACHE_KEY);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setCat(null);
+    setDup(null);
+    setCash(null);
+    setTxCount(null);
+    setRan(false);
+    setCached(false);
+    setError(null);
+  };
+
   const status = useMemo(() => {
     if (!ran) return { label: "Manual run", tone: "muted" as const };
     if (error) return { label: "Error", tone: "warn" as const };
@@ -130,7 +179,6 @@ export function IntelligenceV1Panel() {
     return { label: "Complete", tone: "ok" as const };
   }, [ran, error, cached]);
 
-  // BACKGROUND NORMALIZATION: Intelligence is ADVISORY - uses bg-card
   return (
     <Card className="border border-border bg-card">
       <CardHeader className="pb-3">
@@ -140,12 +188,20 @@ export function IntelligenceV1Panel() {
               Intelligence v1 (Advisory)
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Opt-in run. Read-only outputs must include confidence,
+              Claude-powered analysis. Read-only outputs with confidence,
               explanation, and evidence.
+              {txCount !== null && ran && (
+                <span className="ml-2">({txCount} transactions analyzed)</span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <StatusChip variant={status.tone}>{status.label}</StatusChip>
+            {cached && (
+              <Button variant="ghost" size="sm" onClick={clearCache}>
+                Clear
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => void run()}
@@ -158,7 +214,7 @@ export function IntelligenceV1Panel() {
       </CardHeader>
       <CardContent className="space-y-4">
         {error ? (
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <p className="text-sm text-destructive">{error}</p>
         ) : null}
 
         <section className="space-y-2">
@@ -183,15 +239,15 @@ export function IntelligenceV1Panel() {
                 />
               ))}
             </div>
-          ) : ran ? (
+          ) : ran && !error ? (
             <p className="text-sm text-muted-foreground">
               No suggestions met the confidence threshold.
             </p>
-          ) : (
+          ) : !ran ? (
             <p className="text-sm text-muted-foreground">
               Run to generate suggestions.
             </p>
-          )}
+          ) : null}
         </section>
 
         <section className="space-y-2">
@@ -217,15 +273,15 @@ export function IntelligenceV1Panel() {
                 />
               ))}
             </div>
-          ) : ran ? (
+          ) : ran && !error ? (
             <p className="text-sm text-muted-foreground">
               No duplicate groups met the confidence threshold.
             </p>
-          ) : (
+          ) : !ran ? (
             <p className="text-sm text-muted-foreground">
               Run to evaluate duplicate groups.
             </p>
-          )}
+          ) : null}
         </section>
 
         <section className="space-y-2">
@@ -247,15 +303,15 @@ export function IntelligenceV1Panel() {
               evidence={cash.evidence}
               threshold={THRESHOLD}
             />
-          ) : ran ? (
+          ) : ran && !error ? (
             <p className="text-sm text-muted-foreground">
               No cashflow insight met the confidence threshold.
             </p>
-          ) : (
+          ) : !ran ? (
             <p className="text-sm text-muted-foreground">
               Run to generate a cashflow summary.
             </p>
-          )}
+          ) : null}
         </section>
       </CardContent>
     </Card>

@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getBackendUrl } from "@/lib/config";
 
 /**
  * GET /api/intelligence/cashflow/insights
  *
  * Returns cashflow insights and trend analysis.
- * Proxies to backend or returns null insight.
+ * Calls the /api/intelligence/analyze endpoint and extracts cashflow.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const requestId = crypto.randomUUID();
+  const baseUrl = new URL(req.url).origin;
 
   try {
     const { userId, getToken } = await auth();
@@ -22,41 +22,47 @@ export async function GET() {
 
     const token = await getToken();
 
-    let backendUrl: string;
-    try {
-      backendUrl = getBackendUrl();
-    } catch {
-      // Backend not configured - return empty insight
-      return NextResponse.json(
-        { trend: null, confidence: 0, explanation: "Backend not configured", request_id: requestId },
-        { status: 200, headers: { "x-request-id": requestId } },
-      );
-    }
-
-    const resp = await fetch(`${backendUrl}/intelligence/cashflow/insights`, {
-      method: "GET",
+    // Call the analyze endpoint
+    const resp = await fetch(`${baseUrl}/api/intelligence/analyze`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-request-id": requestId,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      signal: AbortSignal.timeout(15000),
     });
 
     if (!resp.ok) {
-      console.error(
-        `[Cashflow insights] Backend error (${resp.status}):`,
-        await resp.text().catch(() => "unknown"),
-      );
       return NextResponse.json(
-        { trend: null, confidence: 0, explanation: "Backend unavailable", request_id: requestId },
+        { trend: null, confidence: 0, explanation: "Analysis unavailable", request_id: requestId },
         { status: 200, headers: { "x-request-id": requestId } },
       );
     }
 
     const data = await resp.json();
+
+    if (!data.cashflow) {
+      return NextResponse.json(
+        {
+          trend: null,
+          confidence: 0,
+          explanation: data._reason || "No cashflow data",
+          request_id: requestId,
+          _analyzed: data._analyzed,
+        },
+        { status: 200, headers: { "x-request-id": requestId } },
+      );
+    }
+
     return NextResponse.json(
-      { ...data, request_id: requestId },
+      {
+        trend: data.cashflow.trend,
+        forecast: data.cashflow.forecast,
+        confidence: data.cashflow.confidence,
+        explanation: data.cashflow.explanation,
+        request_id: requestId,
+        _analyzed: data._analyzed,
+        _timestamp: data._timestamp,
+      },
       { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {

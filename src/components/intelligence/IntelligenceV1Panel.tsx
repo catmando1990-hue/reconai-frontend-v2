@@ -5,7 +5,32 @@ import { useApi } from "@/lib/useApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusChip } from "@/components/dashboard/StatusChip";
-import { Check, X, Loader2 } from "lucide-react";
+import { Check, X, Loader2, ChevronDown } from "lucide-react";
+
+// Common transaction categories
+const CATEGORY_OPTIONS = [
+  "Software & SaaS",
+  "Transportation",
+  "Groceries",
+  "Dining & Restaurants",
+  "Utilities",
+  "Office Supplies",
+  "Professional Services",
+  "Insurance",
+  "Rent & Lease",
+  "Travel",
+  "Entertainment",
+  "Marketing & Advertising",
+  "Payroll",
+  "Equipment",
+  "Healthcare",
+  "Education & Training",
+  "Bank Fees",
+  "Taxes",
+  "Other",
+];
+
+const CUSTOM_OPTION = "✏️ Custom...";
 
 type CatSuggestion = {
   transaction_id: string;
@@ -14,6 +39,7 @@ type CatSuggestion = {
   amount?: number;
   date?: string;
   category?: string;
+  current_category?: string;
   suggested_category?: string;
   confidence: number;
   explanation: string;
@@ -44,6 +70,7 @@ type AnalyzeResponse = {
   _analyzed: boolean;
   _reason?: string;
   _transaction_count?: number;
+  _rules_applied?: number;
   _timestamp?: string;
 };
 
@@ -51,8 +78,167 @@ const THRESHOLD = 0.85;
 const CACHE_KEY = "intelligence_v1_cache";
 
 /**
+ * Category selector dropdown with custom text input option
+ */
+function CategorySelector({
+  suggestion,
+  onApply,
+  onDismiss,
+  isApplying,
+}: {
+  suggestion: CatSuggestion;
+  onApply: (suggestion: CatSuggestion, category: string) => Promise<void>;
+  onDismiss: (transactionId: string) => void;
+  isApplying: boolean;
+}) {
+  const [selectedCategory, setSelectedCategory] = useState(
+    suggestion.suggested_category || CATEGORY_OPTIONS[0],
+  );
+  const [customCategory, setCustomCategory] = useState("");
+  const [isCustomMode, setIsCustomMode] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSelectCategory = (cat: string) => {
+    if (cat === CUSTOM_OPTION) {
+      setIsCustomMode(true);
+      setCustomCategory("");
+    } else {
+      setIsCustomMode(false);
+      setSelectedCategory(cat);
+    }
+    setIsOpen(false);
+  };
+
+  const handleApply = async () => {
+    const categoryToApply = isCustomMode ? customCategory.trim() : selectedCategory;
+    if (!categoryToApply) return;
+    await onApply(suggestion, categoryToApply);
+  };
+
+  const displayValue = isCustomMode
+    ? customCategory || "Enter category..."
+    : selectedCategory;
+
+  const canApply = isCustomMode ? customCategory.trim().length > 0 : true;
+
+  return (
+    <div className="flex items-center gap-1 shrink-0">
+      {/* Custom text input mode */}
+      {isCustomMode ? (
+        <div className="flex items-center gap-1">
+          <input
+            type="text"
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            placeholder="Type category..."
+            className="w-36 rounded-md border border-border bg-card px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && canApply) {
+                void handleApply();
+              }
+              if (e.key === "Escape") {
+                setIsCustomMode(false);
+                setSelectedCategory(suggestion.suggested_category || CATEGORY_OPTIONS[0]);
+              }
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setIsCustomMode(false);
+              setSelectedCategory(suggestion.suggested_category || CATEGORY_OPTIONS[0]);
+            }}
+            className="text-muted-foreground"
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        /* Category dropdown */
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            disabled={isApplying}
+            className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
+          >
+            <span className="max-w-[120px] truncate">{displayValue}</span>
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </button>
+
+          {isOpen && (
+            <>
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsOpen(false)}
+              />
+              {/* Dropdown menu */}
+              <div className="absolute right-0 top-full z-20 mt-1 max-h-60 w-48 overflow-auto rounded-md border border-border bg-card shadow-lg">
+                {/* Custom option at top */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectCategory(CUSTOM_OPTION)}
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted border-b border-border text-primary font-medium"
+                >
+                  {CUSTOM_OPTION}
+                </button>
+                {CATEGORY_OPTIONS.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => handleSelectCategory(cat)}
+                    className={`w-full px-3 py-2 text-left text-sm hover:bg-muted ${
+                      cat === selectedCategory && !isCustomMode
+                        ? "bg-muted font-medium"
+                        : ""
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Apply button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => void handleApply()}
+        disabled={isApplying || !canApply}
+        className="text-primary border-primary hover:bg-primary/10"
+      >
+        {isApplying ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <>
+            <Check className="h-4 w-4 mr-1" />
+            Apply
+          </>
+        )}
+      </Button>
+
+      {/* Dismiss button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onDismiss(suggestion.transaction_id)}
+        disabled={isApplying}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+/**
  * Intelligence V1 Panel - Claude-powered transaction analysis
- * With Apply/Dismiss functionality for categorization suggestions
+ * Saves category rules for learning when user applies categories
  */
 export function IntelligenceV1Panel() {
   const { apiFetch } = useApi();
@@ -65,6 +251,7 @@ export function IntelligenceV1Panel() {
   const [error, setError] = useState<string | null>(null);
   const [cached, setCached] = useState(false);
   const [txCount, setTxCount] = useState<number | null>(null);
+  const [rulesApplied, setRulesApplied] = useState<number | null>(null);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [applyingId, setApplyingId] = useState<string | null>(null);
@@ -84,6 +271,7 @@ export function IntelligenceV1Panel() {
           setDup(cachedData.dup ?? null);
           setCash(cachedData.cash ?? null);
           setTxCount(cachedData.txCount ?? null);
+          setRulesApplied(cachedData.rulesApplied ?? null);
           setRan(true);
           setCached(true);
           setRunning(false);
@@ -130,6 +318,7 @@ export function IntelligenceV1Panel() {
       setDup(newDup);
       setCash(newCash);
       setTxCount(response._transaction_count ?? null);
+      setRulesApplied(response._rules_applied ?? null);
       setRan(true);
 
       // Cache
@@ -142,6 +331,7 @@ export function IntelligenceV1Panel() {
               dup: newDup,
               cash: newCash,
               txCount: response._transaction_count,
+              rulesApplied: response._rules_applied,
             }),
           );
         }
@@ -168,6 +358,7 @@ export function IntelligenceV1Panel() {
     setDup(null);
     setCash(null);
     setTxCount(null);
+    setRulesApplied(null);
     setRan(false);
     setCached(false);
     setError(null);
@@ -175,26 +366,40 @@ export function IntelligenceV1Panel() {
     setDismissedIds(new Set());
   };
 
-  const handleApply = async (suggestion: CatSuggestion) => {
-    if (!suggestion.suggested_category) return;
-    
+  const handleApply = async (suggestion: CatSuggestion, category: string) => {
     setApplyingId(suggestion.transaction_id);
     try {
-      const response = await fetch(
+      // 1. Update transaction category
+      const txResponse = await fetch(
         `/api/transactions/${suggestion.transaction_id}/category`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ category: suggestion.suggested_category }),
+          body: JSON.stringify({ category }),
         },
       );
 
-      if (response.ok) {
-        setAppliedIds((prev) => new Set(prev).add(suggestion.transaction_id));
-      } else {
-        const err = await response.json();
+      if (!txResponse.ok) {
+        const err = await txResponse.json();
         console.error("Failed to apply category:", err);
+        return;
       }
+
+      // 2. Save category rule for learning (merchant → category mapping)
+      const merchantPattern = suggestion.merchant_name || suggestion.description;
+      if (merchantPattern) {
+        await fetch("/api/intelligence/rules", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            merchant_pattern: merchantPattern,
+            category: category,
+          }),
+        });
+        // Don't fail if rule save fails - transaction is already updated
+      }
+
+      setAppliedIds((prev) => new Set(prev).add(suggestion.transaction_id));
     } catch (err) {
       console.error("Apply error:", err);
     } finally {
@@ -227,9 +432,14 @@ export function IntelligenceV1Panel() {
               Intelligence v1 (Advisory)
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Claude-powered analysis. Read-only outputs with confidence and explanation.
+              Claude-powered analysis with learning.
               {txCount !== null && ran && (
-                <span className="ml-2">({txCount} transactions analyzed)</span>
+                <span className="ml-1">
+                  {txCount} transactions
+                  {rulesApplied !== null && rulesApplied > 0 && (
+                    <span className="text-primary"> · {rulesApplied} rules applied</span>
+                  )}
+                </span>
               )}
             </p>
           </div>
@@ -270,50 +480,39 @@ export function IntelligenceV1Panel() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-primary">
-                          {s.suggested_category ?? s.category ?? "Suggestion"}
+                          Suggested: {s.suggested_category}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {Math.round(s.confidence * 100)}%
+                          {Math.round(s.confidence * 100)}% confidence
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
                         {s.explanation}
                       </p>
-                      {/* Show merchant/description instead of transaction_id */}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {s.merchant_name || s.description || `Transaction ${s.transaction_id.slice(0, 8)}...`}
-                        {s.amount !== undefined && ` · $${Math.abs(s.amount).toFixed(2)}`}
-                        {s.date && ` · ${s.date}`}
-                      </p>
+                      {/* Transaction details */}
+                      <div className="text-xs text-muted-foreground mt-2 space-y-0.5">
+                        <p className="font-medium text-foreground">
+                          {s.merchant_name || s.description || "Unknown merchant"}
+                        </p>
+                        <p>
+                          {s.amount !== undefined && s.amount !== null
+                            ? `$${Math.abs(s.amount).toFixed(2)}`
+                            : ""}
+                          {s.date && ` · ${s.date}`}
+                          {s.current_category && ` · Current: ${s.current_category}`}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void handleApply(s)}
-                        disabled={applyingId === s.transaction_id}
-                        className="text-primary border-primary hover:bg-primary/10"
-                      >
-                        {applyingId === s.transaction_id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Check className="h-4 w-4 mr-1" />
-                            Apply
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDismiss(s.transaction_id)}
-                        disabled={applyingId === s.transaction_id}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+
+                    {/* Category selector with Apply/Dismiss */}
+                    <CategorySelector
+                      suggestion={s}
+                      onApply={handleApply}
+                      onDismiss={handleDismiss}
+                      isApplying={applyingId === s.transaction_id}
+                    />
                   </div>
                 </div>
               ))}

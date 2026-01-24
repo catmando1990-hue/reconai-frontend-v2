@@ -7,6 +7,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  *
  * Claude-powered transaction intelligence.
  * Fetches user transactions from Supabase, sends to Claude for analysis.
+ * Includes user-defined category rules for learning.
  *
  * SECURITY INVARIANTS:
  * - Transactions scoped by authenticated user_id
@@ -28,6 +29,11 @@ interface Transaction {
   merchant_name: string | null;
   category: string[] | null;
   pending: boolean;
+}
+
+interface CategoryRule {
+  merchant_pattern: string;
+  category: string;
 }
 
 interface SanitizedTransaction {
@@ -76,13 +82,32 @@ function sanitizeTransactions(transactions: Transaction[]): SanitizedTransaction
   }));
 }
 
-function buildPrompt(transactions: SanitizedTransaction[]): string {
+function buildPrompt(
+  transactions: SanitizedTransaction[],
+  userRules: CategoryRule[],
+): string {
   const txList = transactions
     .map(
       (tx) =>
         `[${tx.index}] ${tx.date} | $${tx.amount.toFixed(2)} | ${tx.merchant || tx.description} | Category: ${tx.existing_category || "Uncategorized"}`,
     )
     .join("\n");
+
+  // Build user rules section if any exist
+  let rulesSection = "";
+  if (userRules.length > 0) {
+    const rulesList = userRules
+      .map((r) => `- "${r.merchant_pattern}" → "${r.category}"`)
+      .join("\n");
+    rulesSection = `
+USER-DEFINED CATEGORY RULES (MUST APPLY):
+The user has defined these merchant-to-category mappings. You MUST use these categories for matching merchants. These take priority over your own judgment.
+
+${rulesList}
+
+When a transaction's merchant or description contains any of these patterns (case-insensitive), use the user's specified category with 0.99 confidence.
+`;
+  }
 
   return `You are a financial analyst assistant. Analyze these transactions and provide:
 
@@ -91,7 +116,7 @@ function buildPrompt(transactions: SanitizedTransaction[]): string {
 2. DUPLICATE DETECTION: Identify potential duplicate transactions (same amount, similar dates, same merchant). Flag suspicious patterns.
 
 3. CASHFLOW INSIGHT: Provide a brief trend analysis and forecast based on spending patterns.
-
+${rulesSection}
 TRANSACTIONS:
 ${txList}
 
@@ -125,7 +150,8 @@ Rules:
 - Only include duplicates where confidence >= 0.85
 - If no issues found, return empty arrays
 - Do not invent transactions or indices
-- Base analysis only on provided data`;
+- Base analysis only on provided data
+- User-defined rules take absolute priority - use 0.99 confidence for matches`;
 }
 
 async function callClaude(prompt: string, apiKey: string): Promise<ClaudeAnalysisResponse | null> {
@@ -206,8 +232,20 @@ export async function POST() {
       return failClosed("api_not_configured");
     }
 
-    // Fetch transactions from Supabase (user-scoped)
     const supabase = supabaseAdmin();
+
+    // Fetch user's category rules for learning
+    const { data: rulesData } = await supabase
+      .from("category_rules")
+      .select("merchant_pattern, category")
+      .eq("user_id", userId);
+
+    const userRules: CategoryRule[] = (rulesData || []).map((r) => ({
+      merchant_pattern: r.merchant_pattern,
+      category: r.category,
+    }));
+
+    // Fetch transactions from Supabase (user-scoped)
     const { data: transactions, error } = await supabase
       .from("transactions")
       .select("id, transaction_id, date, amount, name, merchant_name, category, pending")
@@ -227,8 +265,8 @@ export async function POST() {
     // Sanitize before sending to Claude
     const sanitized = sanitizeTransactions(transactions as Transaction[]);
 
-    // Build prompt and call Claude
-    const prompt = buildPrompt(sanitized);
+    // Build prompt with user rules and call Claude
+    const prompt = buildPrompt(sanitized, userRules);
     const analysis = await callClaude(prompt, apiKey);
 
     if (!analysis) {
@@ -288,6 +326,7 @@ export async function POST() {
         request_id: requestId,
         _analyzed: true,
         _transaction_count: transactions.length,
+        _rules_applied: userRules.length,
         _timestamp: new Date().toISOString(),
       },
       { status: 200, headers: { "x-request-id": requestId } },

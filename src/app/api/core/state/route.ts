@@ -257,7 +257,10 @@ export async function GET() {
   try {
     const { userId, getToken } = await auth();
     if (!userId) {
-      return NextResponse.json(failClosedResponse(requestId), { status: 200 });
+      return NextResponse.json(failClosedResponse(requestId), {
+        status: 200,
+        headers: { "x-request-id": requestId },
+      });
     }
 
     const token = await getToken();
@@ -329,7 +332,10 @@ export async function GET() {
       (transactions !== null && transactions.length > 0);
 
     if (!hasAnyData) {
-      return NextResponse.json(failClosedResponse(requestId), { status: 200 });
+      return NextResponse.json(failClosedResponse(requestId), {
+        status: 200,
+        headers: { "x-request-id": requestId },
+      });
     }
 
     // Build Live State
@@ -484,9 +490,15 @@ export async function GET() {
       },
     };
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, {
+      status: 200,
+      headers: { "x-request-id": requestId },
+    });
   } catch (error) {
     console.error("Core state fetch error:", error);
-    return NextResponse.json(failClosedResponse(requestId), { status: 200 });
+    return NextResponse.json(failClosedResponse(requestId), {
+      status: 200,
+      headers: { "x-request-id": requestId },
+    });
   }
 }

@@ -37,11 +37,16 @@ const API_URL =
   "https://reconai-backend.onrender.com";
 
 export async function POST(req: Request) {
+  const requestId = crypto.randomUUID();
+
   try {
     const { userId, getToken } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized", request_id: requestId },
+        { status: 401, headers: { "x-request-id": requestId } },
+      );
     }
 
     const body = await req.json();
@@ -50,8 +55,8 @@ export async function POST(req: Request) {
     // Validate tier
     if (!tier || typeof tier !== "string") {
       return NextResponse.json(
-        { error: "Missing or invalid tier parameter" },
-        { status: 400 },
+        { error: "Missing or invalid tier parameter", request_id: requestId },
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -62,8 +67,9 @@ export async function POST(req: Request) {
         {
           error: "Invalid tier. Enterprise plans require direct contact.",
           allowed_tiers: Object.keys(TIER_NAMES),
+          request_id: requestId,
         },
-        { status: 400 },
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -87,21 +93,25 @@ export async function POST(req: Request) {
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       return NextResponse.json(
-        { error: errorData.detail || "Failed to create checkout session" },
-        { status: res.status },
+        { error: errorData.detail || "Failed to create checkout session", request_id: requestId },
+        { status: res.status, headers: { "x-request-id": requestId } },
       );
     }
 
     const data = await res.json();
-    return NextResponse.json({
-      checkout_url: data.checkout_url,
-      session_id: data.session_id,
-    });
+    return NextResponse.json(
+      {
+        checkout_url: data.checkout_url,
+        session_id: data.session_id,
+        request_id: requestId,
+      },
+      { status: 200, headers: { "x-request-id": requestId } },
+    );
   } catch (error) {
     console.error("Checkout session error:", error);
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
-      { status: 500 },
+      { error: "Failed to create checkout session", request_id: requestId },
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

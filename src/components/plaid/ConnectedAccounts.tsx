@@ -7,22 +7,17 @@ import {
   HttpError,
 } from "@/lib/auditedFetch";
 
-/**
- * P1 FIX: Item status is now based on actual backend values.
- * Status values match the PlaidItemStatus enum from backend.
- */
 type ItemStatus = "active" | "login_required" | "error" | string;
 
 type Item = {
   item_id: string;
+  institution_id?: string;
+  institution_name?: string;
   status: ItemStatus;
   created_at: string;
   updated_at: string;
 };
 
-/**
- * P1 FIX: Get human-readable status label with honest representation.
- */
 function getStatusLabel(status: ItemStatus): string {
   switch (status) {
     case "active":
@@ -36,9 +31,6 @@ function getStatusLabel(status: ItemStatus): string {
   }
 }
 
-/**
- * P1 FIX: Get status color class for visual indication.
- */
 function getStatusColorClass(status: ItemStatus): string {
   switch (status) {
     case "active":
@@ -56,26 +48,36 @@ export function ConnectedAccounts() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [noItemsYet, setNoItemsYet] = useState(false);
+  const [syncingItemId, setSyncingItemId] = useState<string | null>(null);
+  const [syncResult, setSyncResult] = useState<{
+    itemId: string;
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     let mounted = true;
     auditedFetch<{
       ok?: boolean;
       items?: Item[];
+      status?: string;
       code?: string;
       message?: string;
       request_id: string;
     }>("/api/plaid/items")
       .then((j) => {
         if (!mounted) return;
-        setItems(j.items || []);
+        if (j.status === "not_connected" || (j.items && j.items.length === 0)) {
+          setNoItemsYet(true);
+          setItems([]);
+        } else {
+          setItems(j.items || []);
+        }
       })
       .catch((e: unknown) => {
         if (!mounted) return;
 
-        // Handle NO_PLAID_ITEM gracefully - not an error state
         if (e instanceof HttpError && e.status === 400) {
-          // Try to parse the response body for the error code
           try {
             const body = e.body as
               | { code?: string; message?: string }
@@ -86,7 +88,7 @@ export function ConnectedAccounts() {
               return;
             }
           } catch {
-            // Fall through to error handling
+            // Fall through
           }
         }
 
@@ -105,6 +107,43 @@ export function ConnectedAccounts() {
       mounted = false;
     };
   }, []);
+
+  async function handleSync(itemId: string) {
+    setSyncingItemId(itemId);
+    setSyncResult(null);
+
+    try {
+      const response = await fetch("/api/plaid/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: itemId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSyncResult({
+          itemId,
+          success: false,
+          message: data.error || "Sync failed",
+        });
+      } else {
+        setSyncResult({
+          itemId,
+          success: true,
+          message: `Synced: ${data.added || 0} added, ${data.modified || 0} modified, ${data.removed || 0} removed`,
+        });
+      }
+    } catch (err) {
+      setSyncResult({
+        itemId,
+        success: false,
+        message: err instanceof Error ? err.message : "Sync failed",
+      });
+    } finally {
+      setSyncingItemId(null);
+    }
+  }
 
   return (
     <section className="rounded-2xl border bg-background p-6">
@@ -137,7 +176,7 @@ export function ConnectedAccounts() {
             <thead className="text-left text-muted-foreground">
               <tr className="border-b">
                 <th className="whitespace-nowrap py-2 pr-4 font-medium">
-                  Item ID
+                  Institution
                 </th>
                 <th className="whitespace-nowrap py-2 pr-4 font-medium">
                   Status
@@ -145,17 +184,38 @@ export function ConnectedAccounts() {
                 <th className="whitespace-nowrap py-2 pr-4 font-medium">
                   Connected
                 </th>
+                <th className="whitespace-nowrap py-2 pr-4 font-medium">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {items.map((it) => (
                 <tr key={it.item_id} className="border-b last:border-b-0">
-                  <td className="py-2 pr-4 font-mono text-xs">{it.item_id}</td>
+                  <td className="py-2 pr-4">
+                    {it.institution_name || "Unknown Institution"}
+                  </td>
                   <td className={`py-2 pr-4 ${getStatusColorClass(it.status)}`}>
                     {getStatusLabel(it.status)}
                   </td>
                   <td className="whitespace-nowrap py-2 pr-4">
                     {new Date(it.created_at).toLocaleString()}
+                  </td>
+                  <td className="whitespace-nowrap py-2 pr-4">
+                    <button
+                      onClick={() => handleSync(it.item_id)}
+                      disabled={syncingItemId === it.item_id}
+                      className="rounded bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {syncingItemId === it.item_id ? "Syncing..." : "Sync Now"}
+                    </button>
+                    {syncResult && syncResult.itemId === it.item_id && (
+                      <span
+                        className={`ml-2 text-xs ${syncResult.success ? "text-green-600" : "text-red-600"}`}
+                      >
+                        {syncResult.message}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

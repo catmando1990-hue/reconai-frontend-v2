@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  *
  * Exchanges Plaid public token for access token.
  * Calls Plaid API directly, then writes to Supabase.
+ * Auto-syncs transactions after successful connection.
  *
  * SECURITY: Access token is stored in Supabase, never returned to client.
  */
@@ -108,6 +109,9 @@ export async function POST(req: Request) {
         );
       }
 
+      // Sync transactions for existing item
+      await syncTransactions(plaid, supabase, accessToken, itemId, userId, requestId);
+
       return NextResponse.json(
         {
           item_id: itemId,
@@ -170,23 +174,50 @@ export async function POST(req: Request) {
         updated_at: new Date().toISOString(),
       }));
 
-      if (accounts.length > 0) {
-        const { error: accountsError } = await supabase
+      // Insert accounts one by one, handling duplicates manually
+      for (const acct of accounts) {
+        const { data: existing } = await supabase
           .from("plaid_accounts")
-          .upsert(accounts, { onConflict: "account_id" });
+          .select("id")
+          .eq("account_id", acct.account_id)
+          .single();
 
-        if (accountsError) {
-          console.error(
-            "[Plaid exchange] Failed to save accounts:",
-            accountsError,
-          );
-          // Non-fatal — item is saved, accounts can be synced later
+        if (existing) {
+          const { error: updateErr } = await supabase
+            .from("plaid_accounts")
+            .update({
+              name: acct.name,
+              official_name: acct.official_name,
+              type: acct.type,
+              subtype: acct.subtype,
+              mask: acct.mask,
+              balance_current: acct.balance_current,
+              balance_available: acct.balance_available,
+              iso_currency_code: acct.iso_currency_code,
+              last_synced: acct.last_synced,
+              updated_at: acct.updated_at,
+            })
+            .eq("account_id", acct.account_id);
+
+          if (updateErr) {
+            console.error("[Plaid exchange] Failed to update account:", updateErr);
+          }
+        } else {
+          const { error: insertErr } = await supabase
+            .from("plaid_accounts")
+            .insert(acct);
+
+          if (insertErr) {
+            console.error("[Plaid exchange] Failed to insert account:", insertErr);
+          }
         }
       }
     } catch (acctErr) {
       console.warn("[Plaid exchange] Could not fetch accounts:", acctErr);
-      // Non-fatal
     }
+
+    // Sync transactions immediately after successful connection
+    await syncTransactions(plaid, supabase, accessToken, itemId, userId, requestId);
 
     return NextResponse.json(
       {
@@ -200,7 +231,6 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     console.error("[Plaid exchange] Error:", err);
 
-    // Extract Plaid error details if available
     const plaidError = err as {
       response?: {
         data?: {
@@ -222,5 +252,129 @@ export async function POST(req: Request) {
       },
       { status: 500, headers: { "x-request-id": requestId } },
     );
+  }
+}
+
+/**
+ * Sync transactions from Plaid to Supabase using /transactions/sync endpoint.
+ */
+async function syncTransactions(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  plaid: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  accessToken: string,
+  itemId: string,
+  userId: string,
+  requestId: string,
+): Promise<void> {
+  console.log(`[Plaid sync] Starting auto-sync for item=${itemId}, requestId=${requestId}`);
+
+  try {
+    let cursor: string | undefined = undefined;
+    let hasMore = true;
+    let addedCount = 0;
+
+    while (hasMore) {
+      const syncResponse = await plaid.transactionsSync({
+        access_token: accessToken,
+        cursor: cursor,
+        count: 100,
+      });
+
+      const { added, modified, removed, next_cursor, has_more } = syncResponse.data;
+
+      // Process added transactions
+      if (added.length > 0) {
+        const addedRows = added.map((tx: {
+          transaction_id: string;
+          account_id: string;
+          amount: number;
+          date: string;
+          name: string;
+          merchant_name?: string;
+          category?: string[];
+          pending: boolean;
+          payment_channel?: string;
+          transaction_type?: string;
+        }) => ({
+          transaction_id: tx.transaction_id,
+          user_id: userId,
+          account_id: tx.account_id,
+          amount: tx.amount,
+          date: tx.date,
+          name: tx.name,
+          merchant_name: tx.merchant_name,
+          category: tx.category,
+          pending: tx.pending,
+          payment_channel: tx.payment_channel,
+          transaction_type: tx.transaction_type,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }));
+
+        // Insert transactions, handling duplicates
+        for (const row of addedRows) {
+          const { data: existing } = await supabase
+            .from("transactions")
+            .select("id")
+            .eq("transaction_id", row.transaction_id)
+            .single();
+
+          if (!existing) {
+            const { error: insertErr } = await supabase
+              .from("transactions")
+              .insert(row);
+
+            if (!insertErr) {
+              addedCount++;
+            } else {
+              console.error("[Plaid sync] Failed to insert transaction:", insertErr);
+            }
+          }
+        }
+      }
+
+      // Process modified transactions
+      for (const tx of modified) {
+        await supabase
+          .from("transactions")
+          .update({
+            amount: tx.amount,
+            date: tx.date,
+            name: tx.name,
+            merchant_name: tx.merchant_name,
+            category: tx.category,
+            pending: tx.pending,
+            payment_channel: tx.payment_channel,
+            transaction_type: tx.transaction_type,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("transaction_id", tx.transaction_id);
+      }
+
+      // Process removed transactions
+      if (removed.length > 0) {
+        const removedIds = removed.map((r: { transaction_id: string }) => r.transaction_id);
+        await supabase
+          .from("transactions")
+          .delete()
+          .in("transaction_id", removedIds);
+      }
+
+      cursor = next_cursor;
+      hasMore = has_more;
+    }
+
+    // Update item's last synced timestamp
+    await supabase
+      .from("plaid_items")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("item_id", itemId);
+
+    console.log(`[Plaid sync] Complete: added=${addedCount}, requestId=${requestId}`);
+  } catch (syncErr) {
+    console.error("[Plaid sync] Auto-sync failed:", syncErr);
+    // Non-fatal — connection is saved, user can sync later
   }
 }

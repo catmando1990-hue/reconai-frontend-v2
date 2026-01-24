@@ -76,10 +76,10 @@ function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
 
   const [step, setStep] = useState<SignInStep>("start");
 
-  // Redirect to accounts if already signed in
+  // Redirect to home if already signed in
   useEffect(() => {
     if (isSignedIn) {
-      router.replace(redirectUrl || "/accounts");
+      router.replace(redirectUrl || "/home");
     }
   }, [isSignedIn, router, redirectUrl]);
 
@@ -93,7 +93,7 @@ function SignInFormContent({ redirectUrl }: { redirectUrl?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
 
-  const finalRedirectUrl = redirectUrl || "/accounts";
+  const finalRedirectUrl = redirectUrl || "/home";
 
   const signInWithOAuth = useCallback(
     async (strategy: OAuthStrategy) => {

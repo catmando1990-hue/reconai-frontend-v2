@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -9,14 +10,11 @@ const API_URL =
 /**
  * CORE State API - Single source of truth for all CORE surfaces
  *
- * P0 FIX: Every CORE UI surface MUST be driven by this single endpoint.
- * - Dashboard home
- * - Accounts summary
- * - Invoicing/Bills cards
- * - Customers/Vendors
+ * DATA SOURCES:
+ * - Invoices, Bills, Customers, Vendors: Backend (FastAPI/SQLite)
+ * - Transactions, Plaid Items: Supabase (source of truth)
  *
  * FAIL-CLOSED: Returns { available: false } if data cannot be fetched.
- * Never returns placeholders, zeros, or partial data.
  */
 
 // Backend data types
@@ -47,40 +45,30 @@ interface TransactionData {
   date: string;
   amount: number;
   merchant_name?: string;
-  category?: string;
+  name?: string;
+  category?: string[];
   account_id?: string;
 }
 
 interface PlaidItemData {
   item_id: string;
   status: string;
-  last_synced_at?: string;
+  updated_at?: string;
   institution_name?: string;
 }
 
 // Response type for CORE state
 export interface CoreStateResponse {
-  /**
-   * MANDATORY CHECK: If false, render NOTHING for CORE widgets.
-   * Do not show "--", do not show empty cards, do not show placeholders.
-   */
   available: boolean;
-
-  /** Request tracking */
   request_id: string;
   fetched_at: string;
-
-  /** Sync lifecycle - only render UI for "running" or "failed" states */
   sync: {
-    /** Version of sync contract - frontend validates against supported versions */
     version: string;
     status: "running" | "failed" | "success" | "never";
     started_at: string | null;
     last_successful_at: string | null;
     error_reason: string | null;
   };
-
-  /** Live State - what needs attention NOW */
   live_state: {
     unpaid_invoices: {
       count: number;
@@ -93,7 +81,6 @@ export interface CoreStateResponse {
         is_overdue: boolean;
       }>;
     } | null;
-
     unpaid_bills: {
       count: number;
       total_due: number;
@@ -105,15 +92,12 @@ export interface CoreStateResponse {
         is_overdue: boolean;
       }>;
     } | null;
-
     bank_sync: {
       status: "healthy" | "stale" | "error" | "not_connected";
       last_synced_at: string | null;
       items_needing_attention: number;
     } | null;
   };
-
-  /** Evidence - actual backend data */
   evidence: {
     invoices: {
       total_count: number;
@@ -127,7 +111,6 @@ export interface CoreStateResponse {
         draft: number;
       };
     } | null;
-
     bills: {
       total_count: number;
       total_amount: number;
@@ -139,15 +122,8 @@ export interface CoreStateResponse {
         overdue: number;
       };
     } | null;
-
-    customers: {
-      total_count: number;
-    } | null;
-
-    vendors: {
-      total_count: number;
-    } | null;
-
+    customers: { total_count: number } | null;
+    vendors: { total_count: number } | null;
     recent_transactions: {
       count: number;
       items: Array<{
@@ -160,12 +136,8 @@ export interface CoreStateResponse {
   };
 }
 
-/** Current sync contract version */
 const SYNC_VERSION = "1";
 
-/**
- * Fail-closed response - returned when data cannot be fetched
- */
 function failClosedResponse(requestId: string): CoreStateResponse {
   return {
     available: false,
@@ -193,9 +165,6 @@ function failClosedResponse(requestId: string): CoreStateResponse {
   };
 }
 
-/**
- * Check if a date is in the past (overdue)
- */
 function isOverdue(dueDate: string | undefined | null): boolean {
   if (!dueDate) return false;
   try {
@@ -205,9 +174,6 @@ function isOverdue(dueDate: string | undefined | null): boolean {
   }
 }
 
-/**
- * Check if a sync is stale (>24h old)
- */
 function isSyncStale(lastSyncedAt: string | null): boolean {
   if (!lastSyncedAt) return true;
   try {
@@ -217,6 +183,71 @@ function isSyncStale(lastSyncedAt: string | null): boolean {
     return hoursDiff > 24;
   } catch {
     return true;
+  }
+}
+
+/**
+ * Fetch transactions from Supabase (source of truth)
+ */
+async function fetchTransactionsFromSupabase(
+  userId: string,
+): Promise<TransactionData[] | null> {
+  try {
+    const supabase = supabaseAdmin();
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("id, transaction_id, date, amount, name, merchant_name, category, account_id")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error("[Core state] Supabase transactions error:", error);
+      return null;
+    }
+
+    return (data || []).map((tx) => ({
+      id: tx.id || tx.transaction_id,
+      date: tx.date,
+      amount: tx.amount,
+      merchant_name: tx.merchant_name || tx.name,
+      name: tx.name,
+      category: tx.category,
+      account_id: tx.account_id,
+    }));
+  } catch (err) {
+    console.error("[Core state] Supabase transactions fetch failed:", err);
+    return null;
+  }
+}
+
+/**
+ * Fetch Plaid items from Supabase (source of truth)
+ */
+async function fetchPlaidItemsFromSupabase(
+  userId: string,
+): Promise<PlaidItemData[] | null> {
+  try {
+    const supabase = supabaseAdmin();
+    const { data, error } = await supabase
+      .from("plaid_items")
+      .select("item_id, status, updated_at, institution_name")
+      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+
+    if (error) {
+      console.error("[Core state] Supabase plaid_items error:", error);
+      return null;
+    }
+
+    return (data || []).map((item) => ({
+      item_id: item.item_id,
+      status: item.status || "active",
+      updated_at: item.updated_at,
+      institution_name: item.institution_name,
+    }));
+  } catch (err) {
+    console.error("[Core state] Supabase plaid_items fetch failed:", err);
+    return null;
   }
 }
 
@@ -235,7 +266,7 @@ export async function GET() {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
-    // Generic fetch helper with fail-closed behavior
+    // Fetch from backend (invoices, bills, customers, vendors)
     const fetchData = async <T>(endpoint: string): Promise<T[] | null> => {
       try {
         const res = await fetch(`${API_URL}${endpoint}`, {
@@ -269,7 +300,9 @@ export async function GET() {
       }
     };
 
-    // Fetch all data in parallel - SINGLE FETCH for all CORE data
+    // Fetch all data in parallel
+    // Backend: invoices, bills, customers, vendors
+    // Supabase: transactions, plaid_items (source of truth)
     const [
       invoices,
       bills,
@@ -282,24 +315,25 @@ export async function GET() {
       fetchData<BillData>("/api/bills?limit=1000"),
       fetchCount("/api/customers?limit=1000"),
       fetchCount("/api/vendors?limit=1000"),
-      fetchData<TransactionData>("/api/transactions?limit=50"),
-      fetchData<PlaidItemData>("/api/plaid/items"),
+      fetchTransactionsFromSupabase(userId),
+      fetchPlaidItemsFromSupabase(userId),
     ]);
 
-    // Determine overall availability - need at least some data
+    // Determine overall availability
+    // Now includes transactions from Supabase
     const hasAnyData =
       invoices !== null ||
       bills !== null ||
       customerCount !== null ||
-      vendorCount !== null;
+      vendorCount !== null ||
+      (transactions !== null && transactions.length > 0);
 
     if (!hasAnyData) {
       return NextResponse.json(failClosedResponse(requestId), { status: 200 });
     }
 
-    // Build Live State - what needs attention NOW
-    let unpaidInvoices: CoreStateResponse["live_state"]["unpaid_invoices"] =
-      null;
+    // Build Live State
+    let unpaidInvoices: CoreStateResponse["live_state"]["unpaid_invoices"] = null;
     if (invoices !== null) {
       const unpaid = invoices.filter(
         (inv) =>
@@ -310,10 +344,7 @@ export async function GET() {
       if (unpaid.length > 0) {
         unpaidInvoices = {
           count: unpaid.length,
-          total_due: unpaid.reduce(
-            (sum, inv) => sum + (inv.amount_due || 0),
-            0,
-          ),
+          total_due: unpaid.reduce((sum, inv) => sum + (inv.amount_due || 0), 0),
           items: unpaid.slice(0, 5).map((inv) => ({
             id: inv.id,
             customer_name: inv.customer_name || "Unknown",
@@ -333,10 +364,7 @@ export async function GET() {
       if (unpaid.length > 0) {
         unpaidBills = {
           count: unpaid.length,
-          total_due: unpaid.reduce(
-            (sum, bill) => sum + (bill.amount_due || 0),
-            0,
-          ),
+          total_due: unpaid.reduce((sum, bill) => sum + (bill.amount_due || 0), 0),
           items: unpaid.slice(0, 5).map((bill) => ({
             id: bill.id,
             vendor_name: bill.vendor_name || "Unknown",
@@ -362,7 +390,7 @@ export async function GET() {
         );
         const latestSync =
           plaidItems
-            .map((item) => item.last_synced_at)
+            .map((item) => item.updated_at)
             .filter((ts): ts is string => ts !== undefined && ts !== null)
             .sort()
             .reverse()[0] || null;
@@ -382,23 +410,14 @@ export async function GET() {
       }
     }
 
-    // Build Evidence - actual backend data
+    // Build Evidence
     let invoiceEvidence: CoreStateResponse["evidence"]["invoices"] = null;
     if (invoices !== null) {
       invoiceEvidence = {
         total_count: invoices.length,
-        total_amount: invoices.reduce(
-          (sum, inv) => sum + (inv.total_amount || 0),
-          0,
-        ),
-        paid_amount: invoices.reduce(
-          (sum, inv) => sum + (inv.amount_paid || 0),
-          0,
-        ),
-        due_amount: invoices.reduce(
-          (sum, inv) => sum + (inv.amount_due || 0),
-          0,
-        ),
+        total_amount: invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0),
+        paid_amount: invoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0),
+        due_amount: invoices.reduce((sum, inv) => sum + (inv.amount_due || 0), 0),
         by_status: {
           paid: invoices.filter((inv) => inv.status === "paid").length,
           pending: invoices.filter((inv) => inv.status === "sent").length,
@@ -412,30 +431,20 @@ export async function GET() {
     if (bills !== null) {
       billEvidence = {
         total_count: bills.length,
-        total_amount: bills.reduce(
-          (sum, bill) => sum + (bill.amount_total || 0),
-          0,
-        ),
-        paid_amount: bills.reduce(
-          (sum, bill) => sum + (bill.amount_paid || 0),
-          0,
-        ),
-        due_amount: bills.reduce(
-          (sum, bill) => sum + (bill.amount_due || 0),
-          0,
-        ),
+        total_amount: bills.reduce((sum, bill) => sum + (bill.amount_total || 0), 0),
+        paid_amount: bills.reduce((sum, bill) => sum + (bill.amount_paid || 0), 0),
+        due_amount: bills.reduce((sum, bill) => sum + (bill.amount_due || 0), 0),
         by_status: {
           paid: bills.filter((bill) => bill.status === "paid").length,
           pending: bills.filter(
             (bill) => bill.status === "pending" || bill.status === "partial",
           ).length,
-          overdue: 0, // Backend doesn't track overdue for bills
+          overdue: 0,
         },
       };
     }
 
-    let recentTransactions: CoreStateResponse["evidence"]["recent_transactions"] =
-      null;
+    let recentTransactions: CoreStateResponse["evidence"]["recent_transactions"] = null;
     if (transactions !== null && transactions.length > 0) {
       recentTransactions = {
         count: transactions.length,
@@ -443,14 +452,11 @@ export async function GET() {
           id: tx.id,
           date: tx.date,
           amount: tx.amount,
-          merchant_name: tx.merchant_name || "Unknown",
+          merchant_name: tx.merchant_name || tx.name || "Unknown",
         })),
       };
     }
 
-    // Determine sync status based on available data
-    // In production, this would come from a sync jobs table
-    // For now, derive from data availability
     const syncStatus: CoreStateResponse["sync"] = {
       version: SYNC_VERSION,
       status: hasAnyData ? "success" : "never",
@@ -472,8 +478,7 @@ export async function GET() {
       evidence: {
         invoices: invoiceEvidence,
         bills: billEvidence,
-        customers:
-          customerCount !== null ? { total_count: customerCount } : null,
+        customers: customerCount !== null ? { total_count: customerCount } : null,
         vendors: vendorCount !== null ? { total_count: vendorCount } : null,
         recent_transactions: recentTransactions,
       },

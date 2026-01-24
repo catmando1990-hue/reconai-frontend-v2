@@ -81,6 +81,11 @@ export async function GET(req: Request) {
 
     const token = await getToken();
 
+    // Log token presence for debugging (never log actual token)
+    console.log(
+      `[Plaid items] userId=${userId}, hasToken=${!!token}, requestId=${requestId}`,
+    );
+
     // Proxy to FastAPI backend /api/plaid/items
     const resp = await fetch(`${backendUrl}/api/plaid/items`, {
       method: "GET",
@@ -94,12 +99,13 @@ export async function GET(req: Request) {
     const { data, isJson, rawText } = await safeParseJson(resp);
 
     if (!resp.ok) {
-      // Log non-JSON responses for debugging
+      // Log full error details for debugging
+      console.error(
+        `[Plaid items] Backend error (${resp.status}):`,
+        isJson ? JSON.stringify(data, null, 2) : rawText?.slice(0, 500),
+      );
+
       if (!isJson) {
-        console.error(
-          `[Plaid items] Non-JSON error response (${resp.status}):`,
-          rawText?.slice(0, 500),
-        );
         return errorResponse(
           "UPSTREAM_ERROR",
           "Backend returned non-JSON response",
@@ -108,9 +114,23 @@ export async function GET(req: Request) {
         );
       }
 
-      const errorData = data as { detail?: string; error?: string } | null;
-      const message =
-        errorData?.detail || errorData?.error || "Failed to fetch items";
+      const errorData = data as {
+        detail?: { message?: string; error?: string } | string;
+        error?: string;
+      } | null;
+
+      // Extract message from various error response shapes
+      let message = "Failed to fetch items";
+      if (errorData?.detail) {
+        if (typeof errorData.detail === "string") {
+          message = errorData.detail;
+        } else if (errorData.detail.message) {
+          message = errorData.detail.message;
+        }
+      } else if (errorData?.error) {
+        message = errorData.error;
+      }
+
       return errorResponse("UPSTREAM_ERROR", message, resp.status, requestId);
     }
 

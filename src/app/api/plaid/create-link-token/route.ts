@@ -25,22 +25,29 @@ export async function POST(req: Request) {
     const protocol = host.includes("localhost") ? "http" : "https";
     const redirectUri = `${protocol}://${host}/plaid/oauth`;
 
-    const resp = await fetch(`${getBackendUrl()}${ENDPOINT}`, {
+    // Log token presence for debugging (never log actual token)
+    console.log(
+      `[Plaid create-link-token] userId=${userId}, hasToken=${!!token}, requestId=${requestId}`,
+    );
+
+    const backendUrl = getBackendUrl();
+    const resp = await fetch(`${backendUrl}${ENDPOINT}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-request-id": requestId,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
-        user_id: userId,
         redirect_uri: redirectUri,
       }),
     });
 
     const contentType = resp.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
+      const rawText = await resp.text();
       console.error(
-        `Plaid create-link-token: non-JSON response (${resp.status})`,
+        `[Plaid create-link-token] Non-JSON response (${resp.status}): ${rawText.slice(0, 500)}`,
       );
       return NextResponse.json(
         {
@@ -55,10 +62,19 @@ export async function POST(req: Request) {
     const data = await resp.json();
 
     if (!resp.ok) {
+      // Log full error details for debugging
+      console.error(
+        `[Plaid create-link-token] Backend error (${resp.status}):`,
+        JSON.stringify(data, null, 2),
+      );
       return NextResponse.json(
         {
-          error: data.detail || data.error || "Failed to create link token",
-          code: "UPSTREAM_ERROR",
+          error:
+            data.detail?.message ||
+            data.detail ||
+            data.error ||
+            "Failed to create link token",
+          code: data.detail?.error_code || data.detail?.error || "UPSTREAM_ERROR",
           request_id: requestId,
         },
         { status: resp.status, headers: { "x-request-id": requestId } },
@@ -74,7 +90,7 @@ export async function POST(req: Request) {
       { headers: { "x-request-id": requestId } },
     );
   } catch (err: unknown) {
-    console.error("Plaid link token error:", err);
+    console.error("[Plaid create-link-token] Unhandled error:", err);
     return NextResponse.json(
       {
         error: "Bank connection failed. Please retry.",

@@ -11,25 +11,12 @@ import { auth } from "@clerk/nextjs/server";
  * - Enterprise is contract-only (not available via Stripe)
  */
 
-// Allowlisted price IDs from environment
-const ALLOWED_PRICES: Record<string, string | undefined> = {
-  starter_monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY,
-  starter_yearly: process.env.STRIPE_PRICE_STARTER_YEARLY,
-  pro_monthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
-  pro_yearly: process.env.STRIPE_PRICE_PRO_YEARLY,
-  govcon_monthly: process.env.STRIPE_PRICE_GOVCON_MONTHLY,
-  govcon_yearly: process.env.STRIPE_PRICE_GOVCON_YEARLY,
-};
+// Valid tier keys
+const VALID_TIERS = ["starter", "pro", "govcon"] as const;
+const VALID_INTERVALS = ["monthly", "yearly"] as const;
 
-// Tier display names for validation
-const TIER_NAMES: Record<string, string> = {
-  starter_monthly: "Starter (Monthly)",
-  starter_yearly: "Starter (Annual)",
-  pro_monthly: "Pro (Monthly)",
-  pro_yearly: "Pro (Annual)",
-  govcon_monthly: "GovCon (Monthly)",
-  govcon_yearly: "GovCon (Annual)",
-};
+type TierKey = (typeof VALID_TIERS)[number];
+type IntervalKey = (typeof VALID_INTERVALS)[number];
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -52,7 +39,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { tier } = body;
 
-    // Validate tier
+    // Validate tier format: "starter_monthly", "pro_yearly", etc.
     if (!tier || typeof tier !== "string") {
       return NextResponse.json(
         { error: "Missing or invalid tier parameter", request_id: requestId },
@@ -60,25 +47,38 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if tier key exists
-    if (!(tier in ALLOWED_PRICES)) {
+    // Parse tier_interval format (e.g., "starter_monthly" → tier: "starter", interval: "monthly")
+    const parts = tier.split("_");
+    if (parts.length !== 2) {
       return NextResponse.json(
         {
-          error: "Invalid tier key. Enterprise plans require direct contact.",
-          allowed_tiers: Object.keys(TIER_NAMES),
+          error: "Invalid tier format. Expected: tier_interval (e.g., starter_monthly)",
           request_id: requestId,
         },
         { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
-    // Check if Stripe price is configured
-    const priceId = ALLOWED_PRICES[tier];
-    if (!priceId) {
-      console.error(`[Checkout] Stripe price not configured for tier: ${tier}`);
+    const [tierName, interval] = parts as [string, string];
+
+    // Validate tier name
+    if (!VALID_TIERS.includes(tierName as TierKey)) {
       return NextResponse.json(
         {
-          error: "This plan is not yet available. Please contact support.",
+          error: "Invalid tier. Enterprise plans require direct contact.",
+          allowed_tiers: [...VALID_TIERS],
+          request_id: requestId,
+        },
+        { status: 400, headers: { "x-request-id": requestId } },
+      );
+    }
+
+    // Validate interval
+    if (!VALID_INTERVALS.includes(interval as IntervalKey)) {
+      return NextResponse.json(
+        {
+          error: "Invalid billing interval.",
+          allowed_intervals: [...VALID_INTERVALS],
           request_id: requestId,
         },
         { status: 400, headers: { "x-request-id": requestId } },
@@ -88,6 +88,7 @@ export async function POST(req: Request) {
     const token = await getToken();
 
     // Call backend to create Stripe checkout session
+    // Backend expects: { tier: "starter", interval: "monthly" }
     const res = await fetch(`${API_URL}/api/billing/create-checkout-session`, {
       method: "POST",
       headers: {
@@ -95,10 +96,8 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        price_id: priceId,
-        tier_key: tier,
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.reconai.dev"}/settings?checkout=success`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.reconai.dev"}/settings?checkout=cancelled`,
+        tier: tierName,
+        interval: interval,
       }),
     });
 

@@ -60,13 +60,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if tier is allowed
-    const priceId = ALLOWED_PRICES[tier];
-    if (!priceId) {
+    // Check if tier key exists
+    if (!(tier in ALLOWED_PRICES)) {
       return NextResponse.json(
         {
-          error: "Invalid tier. Enterprise plans require direct contact.",
+          error: "Invalid tier key. Enterprise plans require direct contact.",
           allowed_tiers: Object.keys(TIER_NAMES),
+          request_id: requestId,
+        },
+        { status: 400, headers: { "x-request-id": requestId } },
+      );
+    }
+
+    // Check if Stripe price is configured
+    const priceId = ALLOWED_PRICES[tier];
+    if (!priceId) {
+      console.error(`[Checkout] Stripe price not configured for tier: ${tier}`);
+      return NextResponse.json(
+        {
+          error: "This plan is not yet available. Please contact support.",
           request_id: requestId,
         },
         { status: 400, headers: { "x-request-id": requestId } },

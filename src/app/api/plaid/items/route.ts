@@ -164,26 +164,24 @@ export async function GET(req: Request) {
     } | null;
 
     // ========================================================================
-    // ORDERING GUARD: Return 400 if NO Plaid Item exists (before Link)
-    // This prevents premature calls to /items before exchange-public-token
-    // Frontend should show "No bank connected yet" - NOT an error state
+    // EMPTY STATE: Return 200 with status indicator when no items exist
+    // This is a valid state (user hasn't connected bank yet), not an error
     // ========================================================================
     if (!itemsData?.items || itemsData.items.length === 0) {
       return NextResponse.json(
         {
-          ok: false,
-          status: "no_item",
-          reason: "No Plaid Item exists. Complete Plaid Link first.",
-          code: "NO_PLAID_ITEM",
+          ok: true,
+          items: [],
+          status: "not_connected",
           message: "No bank connected yet",
           request_id: requestId,
         },
-        { status: 400, headers: { "x-request-id": requestId } },
+        { status: 200, headers: { "x-request-id": requestId } },
       );
     }
 
     return NextResponse.json(
-      { ok: true, items: itemsData.items, request_id: requestId },
+      { ok: true, items: itemsData.items, status: "connected", request_id: requestId },
       { headers: { "x-request-id": requestId } },
     );
   } catch (err: unknown) {

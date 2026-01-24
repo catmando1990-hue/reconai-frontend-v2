@@ -161,6 +161,18 @@ export const NAV: Record<Route, NavEntry> = {
     icon: "FileText",
     order: 7,
   },
+  [ROUTES.STATEMENTS]: {
+    displayTitle: "Bank Statements",
+    shortLabel: "Statements",
+    subtitle: "Upload and manage bank statements",
+    module: "core",
+    breadcrumb: [
+      ["Core", ROUTES.CORE],
+      ["Statements", null],
+    ],
+    icon: "FileText",
+    order: 8,
+  },
 
   // ─────────────────────────────────────────
   // INTELLIGENCE MODULE

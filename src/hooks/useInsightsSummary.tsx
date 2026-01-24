@@ -10,7 +10,7 @@ import type {
   IntelligenceLifecycleStatus,
   IntelligenceReasonCode,
 } from "@/lib/api/types";
-import { fetchInsightsSummary } from "@/lib/api/fetchers";
+import { API_ENDPOINTS } from "@/lib/api/endpoints";
 
 // =============================================================================
 // VERSION ENFORCEMENT - Fail-closed on unknown/missing versions
@@ -129,7 +129,9 @@ export function useInsightsSummary(): UseInsightsSummaryState {
     setError(null);
 
     try {
-      const res = await fetchInsightsSummary(apiFetch, {});
+      const res = await apiFetch<InsightsSummaryResponse>(API_ENDPOINTS.insights, {
+        method: "GET",
+      });
 
       // FAIL-CLOSED: Validate response structure, version, and lifecycle
       if (res && isValidIntelligenceResponse(res)) {

@@ -5,7 +5,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import type { AlertsResponse } from "@/lib/intelligence/types";
-import { fetchAlerts } from "@/lib/intelligence/fetchers";
 
 export function useAlerts() {
   const { apiFetch } = useApi();
@@ -18,7 +17,9 @@ export function useAlerts() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetchAlerts(apiFetch, {});
+      const res = await apiFetch<AlertsResponse>("/api/intelligence/alerts", {
+        method: "GET",
+      });
       setData(res);
     } catch {
       setError("Unable to load alerts.");

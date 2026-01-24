@@ -10,7 +10,7 @@ import type {
   CfoLifecycleStatus,
   CfoReasonCode,
 } from "@/lib/api/types";
-import { fetchCfoSnapshot } from "@/lib/api/fetchers";
+import { API_ENDPOINTS } from "@/lib/api/endpoints";
 
 // =============================================================================
 // VERSION ENFORCEMENT - Fail-closed on unknown/missing versions
@@ -124,7 +124,9 @@ export function useCfoSnapshot(): UseCfoSnapshotState {
     setError(null);
 
     try {
-      const res = await fetchCfoSnapshot(apiFetch, {});
+      const res = await apiFetch<CfoSnapshotResponse>(API_ENDPOINTS.cfoSnapshot, {
+        method: "GET",
+      });
 
       // FAIL-CLOSED: Validate response structure, version, and lifecycle
       if (res && isValidCfoResponse(res)) {

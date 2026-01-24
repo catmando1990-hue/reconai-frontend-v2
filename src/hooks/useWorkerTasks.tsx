@@ -5,7 +5,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import type { WorkerTasksResponse } from "@/lib/intelligence/types";
-import { fetchWorkerTasks } from "@/lib/intelligence/fetchers";
 
 export function useWorkerTasks() {
   const { apiFetch } = useApi();
@@ -18,7 +17,9 @@ export function useWorkerTasks() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetchWorkerTasks(apiFetch, {});
+      const res = await apiFetch<WorkerTasksResponse>("/api/intelligence/worker/tasks", {
+        method: "GET",
+      });
       setData(res);
     } catch {
       setError("Unable to load AI Worker tasks.");

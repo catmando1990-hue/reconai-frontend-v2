@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
@@ -16,10 +17,11 @@ import { IntelligenceV1Panel } from "@/components/intelligence/IntelligenceV1Pan
 import {
   Sparkles,
   RefreshCw,
-  FlaskConical,
   Loader2,
   Clock,
   AlertCircle,
+  Check,
+  X,
 } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import type {
@@ -30,14 +32,25 @@ import type {
 /**
  * Intelligence Insights Page
  *
- * P0 FIX: Version and Lifecycle Enforcement
- * - Unknown/missing intelligence_version = fail-closed (no data rendered)
- * - Non-success lifecycle REQUIRES reason display
- * - Insights data only rendered when lifecycle is "success"
+ * Claude-powered transaction analysis with actionable insights.
+ * Includes confirm/dismiss functionality for categorization suggestions.
  */
 
+// Extended insight type with suggested_category
+interface InsightItem {
+  id: string;
+  type?: string;
+  title: string;
+  summary: string;
+  confidence: number;
+  source?: string;
+  transaction_ids?: string[];
+  suggested_category?: string;
+  created_at?: string;
+}
+
 // =============================================================================
-// LIFECYCLE STATUS BANNER - Required for non-success states
+// LIFECYCLE STATUS BANNER
 // =============================================================================
 
 interface LifecycleStatusBannerProps {
@@ -47,29 +60,17 @@ interface LifecycleStatusBannerProps {
   onRetry?: () => void;
 }
 
-/**
- * BACKGROUND NORMALIZATION: Lifecycle banners use border-only styling
- * No decorative colors - borders over backgrounds
- */
 function LifecycleStatusBanner({
   lifecycle,
   reasonCode,
   reasonMessage,
   onRetry,
 }: LifecycleStatusBannerProps) {
-  // Success state - no banner needed
-  if (lifecycle === "success") {
-    return null;
-  }
+  if (lifecycle === "success") return null;
 
-  // Pending state - show loading indicator (border only)
   if (lifecycle === "pending") {
     return (
-      <div
-        data-testid="intelligence-lifecycle-banner"
-        data-lifecycle="pending"
-        className="rounded-lg border border-border bg-muted p-4"
-      >
+      <div className="rounded-lg border border-border bg-muted p-4">
         <div className="flex items-start gap-3">
           <Loader2 className="h-5 w-5 text-muted-foreground animate-spin shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -87,14 +88,9 @@ function LifecycleStatusBanner({
     );
   }
 
-  // Stale state - show warning with reason (border only)
   if (lifecycle === "stale") {
     return (
-      <div
-        data-testid="intelligence-lifecycle-banner"
-        data-lifecycle="stale"
-        className="rounded-lg border border-border bg-muted p-4"
-      >
+      <div className="rounded-lg border border-border bg-muted p-4">
         <div className="flex items-start gap-3">
           <Clock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -105,12 +101,7 @@ function LifecycleStatusBanner({
               {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
             </p>
             {onRetry && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onRetry}
-                className="mt-2"
-              >
+              <Button variant="outline" size="sm" onClick={onRetry} className="mt-2">
                 <RefreshCw className="mr-2 h-3 w-3" />
                 Refresh
               </Button>
@@ -121,13 +112,8 @@ function LifecycleStatusBanner({
     );
   }
 
-  // Failed state - show error with reason (border only)
   return (
-    <div
-      data-testid="intelligence-lifecycle-banner"
-      data-lifecycle="failed"
-      className="rounded-lg border border-border bg-muted p-4"
-    >
+    <div className="rounded-lg border border-border bg-muted p-4">
       <div className="flex items-start gap-3">
         <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
         <div className="flex-1">
@@ -138,17 +124,140 @@ function LifecycleStatusBanner({
             {reasonMessage || `Error: ${reasonCode || "unknown"}`}
           </p>
           {onRetry && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRetry}
-              className="mt-2"
-            >
+            <Button variant="outline" size="sm" onClick={onRetry} className="mt-2">
               <RefreshCw className="mr-2 h-3 w-3" />
               Retry
             </Button>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// INSIGHT CARD WITH ACTIONS
+// =============================================================================
+
+interface InsightCardProps {
+  item: InsightItem;
+  onConfirm?: (transactionId: string, category: string) => Promise<void>;
+  onDismiss?: (insightId: string) => void;
+}
+
+function InsightCard({ item, onConfirm, onDismiss }: InsightCardProps) {
+  const [confirming, setConfirming] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!item.suggested_category || !item.transaction_ids?.length) return;
+    
+    setConfirming(true);
+    try {
+      // Apply category to all transactions in this insight
+      for (const txId of item.transaction_ids) {
+        await onConfirm?.(txId, item.suggested_category);
+      }
+      setConfirmed(true);
+    } catch (err) {
+      console.error("Failed to confirm:", err);
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    onDismiss?.(item.id);
+  };
+
+  if (dismissed) return null;
+
+  return (
+    <div
+      className={`rounded-lg border border-border bg-muted p-4 ${confirmed ? "opacity-60" : ""}`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2 min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-medium">{item.title}</h3>
+            <SeverityBadge severity={severityFromConfidence(item.confidence)} />
+            <span className="inline-flex items-center rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">
+              {item.source === "rules"
+                ? "Rule-based"
+                : item.source === "ml"
+                  ? "ML model"
+                  : item.source === "llm"
+                    ? "AI-generated"
+                    : "Hybrid"}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">{item.summary}</p>
+          
+          {/* Show suggested category if available */}
+          {item.suggested_category && (
+            <p className="text-sm">
+              <span className="text-muted-foreground">Suggested: </span>
+              <span className="font-medium text-primary">{item.suggested_category}</span>
+            </p>
+          )}
+          
+          {/* Show affected transactions */}
+          {item.transaction_ids && item.transaction_ids.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {item.transaction_ids.length} transaction{item.transaction_ids.length > 1 ? "s" : ""} affected
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <ConfidenceMeta confidence={item.confidence} />
+            <span className="text-muted-foreground/60">•</span>
+            <span>
+              {item.created_at
+                ? new Date(item.created_at).toLocaleString()
+                : "Time unknown"}
+            </span>
+          </div>
+        </div>
+
+        {/* Action buttons for categorization insights */}
+        {item.type === "categorization" && item.suggested_category && !confirmed && (
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleConfirm}
+              disabled={confirming}
+              className="text-primary border-primary hover:bg-primary/10"
+            >
+              {confirming ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Check className="mr-1 h-4 w-4" />
+                  Apply
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDismiss}
+              disabled={confirming}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Show confirmed state */}
+        {confirmed && (
+          <span className="text-xs text-primary font-medium flex items-center gap-1">
+            <Check className="h-4 w-4" />
+            Applied
+          </span>
+        )}
       </div>
     </div>
   );
@@ -169,138 +278,100 @@ export default function IntelligenceInsightsPage() {
     refetch,
   } = useInsightsSummary();
 
-  // P0 FIX: Check for demo mode flag from fetcher
-  const isDemo = (data as { _isDemo?: boolean })?._isDemo ?? false;
-  const demoDisclaimer = (data as { _demoDisclaimer?: string })
-    ?._demoDisclaimer;
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+
+  const handleConfirmCategory = async (transactionId: string, category: string) => {
+    const response = await fetch(`/api/transactions/${transactionId}/category`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to update category");
+    }
+  };
+
+  const handleDismiss = (insightId: string) => {
+    setDismissedIds((prev) => new Set(prev).add(insightId));
+  };
+
+  // Filter out dismissed insights
+  const visibleItems = (data?.items as InsightItem[] | null)?.filter(
+    (item) => !dismissedIds.has(item.id)
+  );
 
   return (
     <TierGate tier="intelligence" title="Insights">
       <RouteShell
         title="Insights"
-        subtitle="Decision-grade signals surfaced from transaction behavior and operating patterns"
+        subtitle="AI-powered signals from your transaction data"
         right={
-          <div className="flex items-center gap-2">
-            {/* P0 FIX: Show Demo badge when data is from mock */}
-            {/* BACKGROUND NORMALIZATION: No decorative colors */}
-            {isDemo && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                <FlaskConical className="h-3 w-3" />
-                Demo
-              </span>
-            )}
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => void refetch()}
-              disabled={isLoading}
-            >
-              <RefreshCw
-                className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void refetch()}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
         }
       >
         <DisclaimerNotice>{AI_DISCLAIMER}</DisclaimerNotice>
 
-        {/* P0 FIX: Show demo disclaimer when in demo mode */}
-        {/* BACKGROUND NORMALIZATION: No decorative colors */}
-        {isDemo && demoDisclaimer && (
-          <div className="mb-4 rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
-            {demoDisclaimer}
-          </div>
-        )}
-
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* BACKGROUND NORMALIZATION: Intelligence is ADVISORY (no bg-background) */}
-          {/* Main content uses bg-card, inner items use bg-muted */}
           <div className="lg:col-span-8">
             <div className="rounded-lg border border-border bg-card p-6">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">Active Insights</h2>
                 <p className="text-sm text-muted-foreground">
-                  AI-generated signals requiring review
+                  Claude-powered analysis of your transactions
                 </p>
               </div>
-              {/* P0 FIX: Lifecycle-based rendering */}
+
               {isLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading insights…
-                </p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analyzing transactions…
+                </div>
               ) : lifecycle && lifecycle !== "success" ? (
-                /* PART 2: Non-success lifecycle shows banner with reason */
                 <LifecycleStatusBanner
                   lifecycle={lifecycle}
                   reasonCode={reasonCode}
                   reasonMessage={reasonMessage}
                   onRetry={() => void refetch()}
                 />
-              ) : isSuccess && data?.items?.length ? (
-                /* SUCCESS: Render insights data */
-                <div className="space-y-4" data-testid="insights-content">
-                  {/* Lifecycle indicator - inline with insights (no decorative colors) */}
+              ) : isSuccess && visibleItems?.length ? (
+                <div className="space-y-4">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
-                      <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                       Live
                     </span>
                     <span>
                       as of{" "}
-                      {data.generated_at
+                      {data?.generated_at
                         ? new Date(data.generated_at).toLocaleString()
                         : "recently"}
                     </span>
                   </div>
 
-                  {data.items.map((item) => (
-                    <div
+                  {visibleItems.map((item) => (
+                    <InsightCard
                       key={item.id}
-                      className="rounded-lg border border-border bg-muted p-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-2 min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-medium">{item.title}</h3>
-                            <SeverityBadge
-                              severity={severityFromConfidence(item.confidence)}
-                            />
-                            {/* Source label: communicates HOW the insight was generated */}
-                            <span className="inline-flex items-center rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">
-                              {item.source === "rules"
-                                ? "Rule-based"
-                                : item.source === "ml"
-                                  ? "ML model"
-                                  : item.source === "llm"
-                                    ? "AI-generated"
-                                    : "Hybrid"}
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {item.summary}
-                          </p>
-                          {/* HIERARCHY: Confidence prominent + freshness inline */}
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <ConfidenceMeta confidence={item.confidence} />
-                            <span className="text-muted-foreground/60">•</span>
-                            <span>
-                              {item.created_at
-                                ? new Date(item.created_at).toLocaleString()
-                                : "Time unknown"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      item={item}
+                      onConfirm={handleConfirmCategory}
+                      onDismiss={handleDismiss}
+                    />
                   ))}
                 </div>
               ) : (
-                /* EMPTY STATE: No insights available */
                 <EmptyState
                   icon={Sparkles}
-                  title="No insights yet"
-                  description="Connect a bank and upload transactions to generate signals."
+                  title="No insights found"
+                  description="Your transactions look good! No issues detected."
                 />
               )}
             </div>
@@ -316,59 +387,23 @@ export default function IntelligenceInsightsPage() {
             <SecondaryPanel title="Insight Summary">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Total Insights
+                  <span className="text-sm text-muted-foreground">Total Insights</span>
+                  <span className="text-lg font-medium">
+                    {visibleItems?.length ?? 0}
                   </span>
-                  {/* P0 FIX: Show reason when data unavailable */}
-                  {isSuccess && data?.items ? (
-                    <span className="text-lg font-medium">
-                      {data.items.length}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground italic">
-                      {lifecycle === "pending" ? "Loading" : "No data"}
-                    </span>
-                  )}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    High Confidence
+                  <span className="text-sm text-muted-foreground">High Confidence</span>
+                  <span className="text-lg font-medium">
+                    {visibleItems?.filter((i) => i.confidence >= 0.85).length ?? 0}
                   </span>
-                  {isSuccess && data?.items ? (
-                    <span className="text-lg font-medium">
-                      {data.items.filter((i) => i.confidence >= 0.85).length}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground italic">
-                      {lifecycle === "pending" ? "Loading" : "No data"}
-                    </span>
-                  )}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Needs Review
+                  <span className="text-sm text-muted-foreground">Actionable</span>
+                  <span className="text-lg font-medium">
+                    {visibleItems?.filter((i) => i.type === "categorization" && i.suggested_category).length ?? 0}
                   </span>
-                  {isSuccess && data?.items ? (
-                    <span className="text-lg font-medium">
-                      {data.items.filter((i) => i.confidence < 0.85).length}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground italic">
-                      {lifecycle === "pending" ? "Loading" : "No data"}
-                    </span>
-                  )}
                 </div>
-                {/* Show lifecycle status when non-success */}
-                {lifecycle && lifecycle !== "success" && (
-                  <div className="pt-2 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      Status:{" "}
-                      <span className="capitalize font-medium">
-                        {lifecycle}
-                      </span>
-                    </p>
-                  </div>
-                )}
               </div>
             </SecondaryPanel>
 
@@ -379,38 +414,22 @@ export default function IntelligenceInsightsPage() {
                   <span className="text-primary">Actionable</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">
-                    Medium (0.70-0.84)
-                  </span>
+                  <span className="text-muted-foreground">Medium (0.70-0.84)</span>
                   <span className="text-foreground">Review recommended</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Low (&lt;0.70)</span>
-                  <span className="text-muted-foreground">
-                    Flagged for verification
-                  </span>
+                  <span className="text-muted-foreground">Flagged for verification</span>
                 </div>
               </div>
             </SecondaryPanel>
 
             <SecondaryPanel title="Quick Links" collapsible>
               <div className="space-y-2 text-sm">
-                <Link
-                  href={ROUTES.INTELLIGENCE_ALERTS}
-                  className="block text-primary hover:underline"
-                >
+                <Link href={ROUTES.INTELLIGENCE_ALERTS} className="block text-primary hover:underline">
                   View alerts
                 </Link>
-                <Link
-                  href={ROUTES.INTELLIGENCE_AI_WORKER}
-                  className="block text-primary hover:underline"
-                >
-                  AI Worker tasks
-                </Link>
-                <Link
-                  href={ROUTES.CORE_TRANSACTIONS}
-                  className="block text-primary hover:underline"
-                >
+                <Link href={ROUTES.CORE_TRANSACTIONS} className="block text-primary hover:underline">
                   Review transactions
                 </Link>
               </div>

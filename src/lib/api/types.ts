@@ -10,7 +10,10 @@ export type InsightType =
   | "duplicate_charge"
   | "vendor_risk"
   | "compliance"
-  | "opportunity";
+  | "opportunity"
+  | "categorization"
+  | "duplicate"
+  | "trend";
 
 export type Insight = {
   id: string;
@@ -21,6 +24,10 @@ export type Insight = {
   confidence: number; // 0..1
   created_at: string; // ISO8601
   source: "rules" | "ml" | "llm" | "hybrid";
+  /** Transaction IDs affected by this insight */
+  transaction_ids?: string[];
+  /** Suggested category for categorization insights */
+  suggested_category?: string;
 };
 
 /**
@@ -47,6 +54,9 @@ export type IntelligenceReasonCode =
   | "data_stale"
   | "no_transactions"
   | "not_configured"
+  | "not_authenticated"
+  | "database_error"
+  | "analysis_failed"
   | "unknown";
 
 export type InsightsSummaryResponse = {

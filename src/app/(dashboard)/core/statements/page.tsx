@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Button } from "@/components/ui/button";
-import { StatusChip } from "@/components/dashboard/StatusChip";
+import { StatusChip, type StatusVariant } from "@/components/dashboard/StatusChip";
 import {
   Upload,
   FileText,
@@ -69,15 +69,16 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function getStatusVariant(status: BankStatement["status"]): "ok" | "warn" | "error" | "muted" {
+function getStatusVariant(status: BankStatement["status"]): StatusVariant {
   switch (status) {
     case "uploaded":
     case "processed":
       return "ok";
     case "processing":
+    case "pending":
       return "warn";
     case "error":
-      return "error";
+      return "warn"; // StatusChip has no "error" variant
     default:
       return "muted";
   }

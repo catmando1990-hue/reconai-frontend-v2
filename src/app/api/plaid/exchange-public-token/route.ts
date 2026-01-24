@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getPlaidClient } from "@/lib/plaid";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import type { PlaidApi } from "plaid";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * POST /api/plaid/exchange-public-token
@@ -256,13 +258,31 @@ export async function POST(req: Request) {
 }
 
 /**
+ * Transaction shape from Plaid API
+ */
+interface PlaidTransaction {
+  transaction_id: string;
+  account_id: string;
+  amount: number;
+  date: string;
+  name: string;
+  merchant_name?: string;
+  category?: string[];
+  pending: boolean;
+  payment_channel?: string;
+  transaction_type?: string;
+}
+
+interface RemovedTransaction {
+  transaction_id: string;
+}
+
+/**
  * Sync transactions from Plaid to Supabase using /transactions/sync endpoint.
  */
 async function syncTransactions(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  plaid: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  plaid: PlaidApi,
+  supabase: SupabaseClient,
   accessToken: string,
   itemId: string,
   userId: string,
@@ -282,22 +302,15 @@ async function syncTransactions(
         count: 100,
       });
 
-      const { added, modified, removed, next_cursor, has_more } = syncResponse.data;
+      const added: PlaidTransaction[] = syncResponse.data.added;
+      const modified: PlaidTransaction[] = syncResponse.data.modified;
+      const removed: RemovedTransaction[] = syncResponse.data.removed;
+      const nextCursor: string = syncResponse.data.next_cursor;
+      const hasMoreData: boolean = syncResponse.data.has_more;
 
       // Process added transactions
       if (added.length > 0) {
-        const addedRows = added.map((tx: {
-          transaction_id: string;
-          account_id: string;
-          amount: number;
-          date: string;
-          name: string;
-          merchant_name?: string;
-          category?: string[];
-          pending: boolean;
-          payment_channel?: string;
-          transaction_type?: string;
-        }) => ({
+        const addedRows = added.map((tx) => ({
           transaction_id: tx.transaction_id,
           user_id: userId,
           account_id: tx.account_id,
@@ -355,15 +368,15 @@ async function syncTransactions(
 
       // Process removed transactions
       if (removed.length > 0) {
-        const removedIds = removed.map((r: { transaction_id: string }) => r.transaction_id);
+        const removedIds = removed.map((r) => r.transaction_id);
         await supabase
           .from("transactions")
           .delete()
           .in("transaction_id", removedIds);
       }
 
-      cursor = next_cursor;
-      hasMore = has_more;
+      cursor = nextCursor;
+      hasMore = hasMoreData;
     }
 
     // Update item's last synced timestamp

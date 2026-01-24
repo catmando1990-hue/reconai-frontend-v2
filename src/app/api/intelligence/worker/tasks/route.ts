@@ -3,12 +3,12 @@ import { auth } from "@clerk/nextjs/server";
 import { getBackendUrl } from "@/lib/config";
 
 /**
- * POST /api/policy/acknowledge
+ * GET /api/intelligence/worker/tasks
  *
- * Proxies to backend POST /api/policy/acknowledge
- * Backend handles persistence and audit logging.
+ * Proxies to backend GET /intelligence/worker/tasks
+ * Returns AI worker tasks for the current user.
  */
-export async function POST(req: Request) {
+export async function GET() {
   const requestId = crypto.randomUUID();
 
   try {
@@ -21,65 +21,68 @@ export async function POST(req: Request) {
     }
 
     const token = await getToken();
-    const body = await req.json().catch(() => ({}));
 
     let backendUrl: string;
     try {
       backendUrl = getBackendUrl();
     } catch {
-      // Backend not configured — accept silently for graceful degradation
-      console.warn("[Policy acknowledge] Backend URL not configured, returning success");
+      // Backend not configured - return empty tasks with lifecycle
       return NextResponse.json(
         {
-          ok: true,
-          acknowledged: true,
-          policy: body.policy,
-          timestamp: new Date().toISOString(),
+          generated_at: new Date().toISOString(),
+          items: [],
+          _isDemo: false,
           request_id: requestId,
         },
         { status: 200, headers: { "x-request-id": requestId } },
       );
     }
 
-    const resp = await fetch(`${backendUrl}/api/policy/acknowledge`, {
-      method: "POST",
+    // Proxy to backend /intelligence/worker/tasks
+    const resp = await fetch(`${backendUrl}/intelligence/worker/tasks`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
         "x-request-id": requestId,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
     });
 
-    const data = await resp.json().catch(() => ({}));
-
     if (!resp.ok) {
-      console.error(`[Policy acknowledge] Backend error (${resp.status}):`, data);
-      // Graceful degradation — don't block UI for policy failures
+      console.error(
+        `[Intelligence worker tasks] Backend error (${resp.status}):`,
+        await resp.text().catch(() => "unknown"),
+      );
+      // Return empty tasks on error
       return NextResponse.json(
         {
-          ok: true,
-          acknowledged: true,
-          policy: body.policy,
-          timestamp: new Date().toISOString(),
+          generated_at: new Date().toISOString(),
+          items: [],
+          _isDemo: false,
           request_id: requestId,
         },
         { status: 200, headers: { "x-request-id": requestId } },
       );
     }
 
+    const data = await resp.json();
+
+    // Return backend response directly (already has correct shape)
     return NextResponse.json(
-      { ...data, request_id: requestId },
+      {
+        ...data,
+        request_id: requestId,
+      },
       { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {
-    console.error("[Policy acknowledge] Error:", err);
-    // Graceful degradation
+    console.error("[Intelligence worker tasks] Error:", err);
     return NextResponse.json(
       {
-        ok: true,
-        acknowledged: true,
-        timestamp: new Date().toISOString(),
+        generated_at: new Date().toISOString(),
+        items: [],
+        _isDemo: false,
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

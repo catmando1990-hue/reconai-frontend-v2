@@ -5,8 +5,8 @@ import { getBackendUrl } from "@/lib/config";
 /**
  * GET /api/system/status
  *
- * Returns system health status for the admin dashboard.
- * Aggregates data from backend services.
+ * Proxies to backend GET /api/system/status
+ * Returns system health metrics for admin dashboard.
  */
 export async function GET() {
   const requestId = crypto.randomUUID();
@@ -22,84 +22,59 @@ export async function GET() {
 
     const token = await getToken();
 
-    // Try to get backend health status
-    let backendOk = false;
-    let maintenance = false;
-
+    let backendUrl: string;
     try {
-      const backendUrl = getBackendUrl();
-      const healthResp = await fetch(`${backendUrl}/`, {
-        method: "GET",
-        headers: {
-          "x-request-id": requestId,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        signal: AbortSignal.timeout(5000),
-      });
-      backendOk = healthResp.ok;
-
-      // Try maintenance status
-      try {
-        const maintResp = await fetch(`${backendUrl}/api/maintenance/status`, {
-          method: "GET",
-          headers: { "x-request-id": requestId },
-          signal: AbortSignal.timeout(2000),
-        });
-        if (maintResp.ok) {
-          const maintData = await maintResp.json();
-          maintenance = Boolean(maintData?.enabled);
-        }
-      } catch {
-        // Maintenance check failed, assume not in maintenance
-      }
+      backendUrl = getBackendUrl();
     } catch {
-      // Backend unreachable
-      backendOk = false;
+      // Backend not configured — return degraded status
+      return NextResponse.json(
+        {
+          ok: false,
+          api: "unavailable",
+          maintenance: false,
+          signals_24h: 0,
+          audit_total: 0,
+          last_plaid_sync: null,
+          timestamp: new Date().toISOString(),
+          request_id: requestId,
+        },
+        { status: 200, headers: { "x-request-id": requestId } },
+      );
     }
 
-    // Try to get Plaid status for last sync
-    let lastPlaidSync: string | null = null;
-    try {
-      const backendUrl = getBackendUrl();
-      const plaidResp = await fetch(`${backendUrl}/api/plaid/items`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-request-id": requestId,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        signal: AbortSignal.timeout(5000),
-      });
-      if (plaidResp.ok) {
-        const plaidData = await plaidResp.json();
-        const items = plaidData?.items || [];
-        // Find most recent sync timestamp
-        const syncTimes = items
-          .map((i: { last_synced_at?: string }) => i.last_synced_at)
-          .filter((t: string | undefined): t is string => !!t);
-        if (syncTimes.length > 0) {
-          lastPlaidSync = syncTimes.sort().reverse()[0];
-        }
-      }
-    } catch {
-      // Plaid status check failed
-    }
-
-    const status = {
-      ok: backendOk,
-      api: backendOk ? "ok" : "degraded",
-      maintenance,
-      signals_24h: 0,
-      audit_total: 0,
-      last_plaid_sync: lastPlaidSync,
-      timestamp: new Date().toISOString(),
-      request_id: requestId,
-    };
-
-    return NextResponse.json(status, {
-      status: 200,
-      headers: { "x-request-id": requestId },
+    const resp = await fetch(`${backendUrl}/api/system/status`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-request-id": requestId,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      signal: AbortSignal.timeout(10000),
     });
+
+    if (!resp.ok) {
+      console.error(`[System status] Backend error (${resp.status})`);
+      return NextResponse.json(
+        {
+          ok: false,
+          api: "degraded",
+          maintenance: false,
+          signals_24h: 0,
+          audit_total: 0,
+          last_plaid_sync: null,
+          timestamp: new Date().toISOString(),
+          request_id: requestId,
+        },
+        { status: 200, headers: { "x-request-id": requestId } },
+      );
+    }
+
+    const data = await resp.json();
+
+    return NextResponse.json(
+      { ...data, request_id: requestId },
+      { status: 200, headers: { "x-request-id": requestId } },
+    );
   } catch (err) {
     console.error("[System status] Error:", err);
     return NextResponse.json(

@@ -5,10 +5,10 @@ import { getBackendUrl } from "@/lib/config";
 /**
  * GET /api/transactions
  *
- * Returns transactions from the backend.
- * Currently returns empty array if backend call fails or no transactions exist.
+ * Proxies to backend GET /api/intelligence/transactions
+ * Returns transactions with classification overlay.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const requestId = crypto.randomUUID();
 
   try {
@@ -21,42 +21,84 @@ export async function GET() {
     }
 
     const token = await getToken();
+    const url = new URL(req.url);
+    const limit = url.searchParams.get("limit") || "50";
+    const offset = url.searchParams.get("offset") || "0";
 
-    // Try to get transactions from backend
-    // The backend may have a /api/transactions endpoint or we need to sync first
-    let transactions: unknown[] = [];
-
+    let backendUrl: string;
     try {
-      const backendUrl = getBackendUrl();
+      backendUrl = getBackendUrl();
+    } catch {
+      // Backend not configured — return empty array
+      return NextResponse.json([], {
+        status: 200,
+        headers: { "x-request-id": requestId },
+      });
+    }
 
-      // Try the transactions endpoint if it exists
-      const resp = await fetch(`${backendUrl}/api/transactions`, {
+    // Try intelligence/transactions endpoint first
+    const resp = await fetch(
+      `${backendUrl}/api/intelligence/transactions?limit=${limit}&offset=${offset}`,
+      {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "x-request-id": requestId,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        signal: AbortSignal.timeout(10000),
-      });
+        signal: AbortSignal.timeout(15000),
+      },
+    );
 
-      if (resp.ok) {
-        const data = await resp.json();
-        transactions = data?.transactions || data || [];
-      }
-    } catch {
-      // Backend transactions endpoint not available or failed
-      // Return empty array - this is a valid state
+    if (!resp.ok) {
+      console.error(`[Transactions] Backend error (${resp.status})`);
+      // Return empty array on error — graceful degradation
+      return NextResponse.json([], {
+        status: 200,
+        headers: { "x-request-id": requestId },
+      });
     }
 
-    // Return transactions (may be empty array)
-    return NextResponse.json(transactions, {
+    const data = await resp.json();
+
+    // The intelligence endpoint returns { transactions: [...], ... }
+    // Extract and transform for frontend table
+    const transactions = data.transactions || [];
+
+    // Map to frontend expected format
+    const mapped = transactions.map(
+      (tx: {
+        id?: string;
+        transaction_id?: string;
+        date?: string;
+        merchant_name?: string;
+        name?: string;
+        description?: string;
+        amount?: number;
+        account_name?: string;
+        account_id?: string;
+        category?: string[];
+        classification?: { category?: string };
+        duplicate_group?: string;
+      }) => ({
+        id: tx.id || tx.transaction_id,
+        date: tx.date,
+        merchant: tx.merchant_name || tx.name,
+        description: tx.description || tx.name,
+        amount: tx.amount,
+        account: tx.account_name || tx.account_id,
+        category: tx.classification?.category || (tx.category && tx.category[0]) || null,
+        duplicate: !!tx.duplicate_group,
+      }),
+    );
+
+    return NextResponse.json(mapped, {
       status: 200,
       headers: { "x-request-id": requestId },
     });
   } catch (err) {
     console.error("[Transactions] Error:", err);
-    // Return empty array on error - graceful degradation
+    // Return empty array on error
     return NextResponse.json([], {
       status: 200,
       headers: { "x-request-id": requestId },

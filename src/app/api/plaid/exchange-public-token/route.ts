@@ -258,26 +258,6 @@ export async function POST(req: Request) {
 }
 
 /**
- * Transaction shape from Plaid API
- */
-interface PlaidTransaction {
-  transaction_id: string;
-  account_id: string;
-  amount: number;
-  date: string;
-  name: string;
-  merchant_name?: string;
-  category?: string[];
-  pending: boolean;
-  payment_channel?: string;
-  transaction_type?: string;
-}
-
-interface RemovedTransaction {
-  transaction_id: string;
-}
-
-/**
  * Sync transactions from Plaid to Supabase using /transactions/sync endpoint.
  */
 async function syncTransactions(
@@ -302,11 +282,7 @@ async function syncTransactions(
         count: 100,
       });
 
-      const added: PlaidTransaction[] = syncResponse.data.added;
-      const modified: PlaidTransaction[] = syncResponse.data.modified;
-      const removed: RemovedTransaction[] = syncResponse.data.removed;
-      const nextCursor: string = syncResponse.data.next_cursor;
-      const hasMoreData: boolean = syncResponse.data.has_more;
+      const { added, modified, removed, next_cursor, has_more } = syncResponse.data;
 
       // Process added transactions
       if (added.length > 0) {
@@ -317,11 +293,11 @@ async function syncTransactions(
           amount: tx.amount,
           date: tx.date,
           name: tx.name,
-          merchant_name: tx.merchant_name,
-          category: tx.category,
+          merchant_name: tx.merchant_name ?? undefined,
+          category: tx.category ?? undefined,
           pending: tx.pending,
-          payment_channel: tx.payment_channel,
-          transaction_type: tx.transaction_type,
+          payment_channel: tx.payment_channel ?? undefined,
+          transaction_type: tx.transaction_type ?? undefined,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }));
@@ -356,11 +332,11 @@ async function syncTransactions(
             amount: tx.amount,
             date: tx.date,
             name: tx.name,
-            merchant_name: tx.merchant_name,
-            category: tx.category,
+            merchant_name: tx.merchant_name ?? undefined,
+            category: tx.category ?? undefined,
             pending: tx.pending,
-            payment_channel: tx.payment_channel,
-            transaction_type: tx.transaction_type,
+            payment_channel: tx.payment_channel ?? undefined,
+            transaction_type: tx.transaction_type ?? undefined,
             updated_at: new Date().toISOString(),
           })
           .eq("transaction_id", tx.transaction_id);
@@ -375,8 +351,8 @@ async function syncTransactions(
           .in("transaction_id", removedIds);
       }
 
-      cursor = nextCursor;
-      hasMore = hasMoreData;
+      cursor = next_cursor;
+      hasMore = has_more;
     }
 
     // Update item's last synced timestamp

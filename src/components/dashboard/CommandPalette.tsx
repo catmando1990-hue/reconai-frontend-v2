@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export type CommandItem = {
   id: string;
@@ -20,21 +21,17 @@ function normalize(s: string): string {
 function splitQuery(q: string): { verb?: string; text: string } {
   const raw = normalize(q);
   if (!raw) return { text: "" };
-  // Accept `go: x`, `open x`, `run: x`
   const m = raw.match(/^(go|open|run|nav)\s*[:\s]+(.+)$/i);
   if (!m) return { text: raw };
   return { verb: normalize(m[1]), text: normalize(m[2]) };
 }
 
 function fuzzyScore(haystack: string, needle: string): number {
-  // Lightweight, predictable scoring (no deps):
-  // - exact substring gets big boost
-  // - otherwise score by ordered character matches
   if (!needle) return 0;
   const h = haystack;
   const n = needle;
   const idx = h.indexOf(n);
-  if (idx >= 0) return 1000 - idx; // earlier is better
+  if (idx >= 0) return 1000 - idx;
 
   let score = 0;
   let hi = 0;
@@ -43,7 +40,6 @@ function fuzzyScore(haystack: string, needle: string): number {
     const found = h.indexOf(c, hi);
     if (found < 0) return -1;
     score += 10;
-    // contiguous bonus
     if (found === hi) score += 6;
     hi = found + 1;
   }
@@ -73,7 +69,7 @@ function writeRecent(id: string) {
 }
 
 function groupBy<T extends { group?: string }>(
-  items: T[],
+  items: T[]
 ): Array<[string, T[]]> {
   const map = new Map<string, T[]>();
   for (const it of items) {
@@ -82,7 +78,6 @@ function groupBy<T extends { group?: string }>(
     arr.push(it);
     map.set(g, arr);
   }
-  // stable group ordering (trust posture)
   const order = [
     "Recent",
     "Navigate",
@@ -117,15 +112,18 @@ export function CommandPalette({
 }) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Only render portal after mount (SSR safety)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
-    const resetState = () => {
-      setQuery("");
-      setActiveIndex(0);
-    };
-    resetState();
+    setQuery("");
+    setActiveIndex(0);
     const t = setTimeout(() => inputRef.current?.focus(), 0);
     return () => clearTimeout(t);
   }, [open]);
@@ -146,7 +144,6 @@ export function CommandPalette({
       filtered.sort((a, b) => b.score - a.score);
     }
 
-    // Verb bias: if query uses a verb, prefer matching group/label
     if (verb) {
       const v = verb;
       filtered.sort((a, b) => {
@@ -214,31 +211,29 @@ export function CommandPalette({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, onOpenChange, flat, activeIndex]);
 
-  // Keep activeIndex in range as results change
   useEffect(() => {
     if (!open) return;
-    const clampIndex = () => {
-      setActiveIndex((i) => {
-        const max = Math.max(0, flat.length - 1);
-        return Math.min(i, max);
-      });
-    };
-    clampIndex();
+    setActiveIndex((i) => {
+      const max = Math.max(0, flat.length - 1);
+      return Math.min(i, max);
+    });
   }, [open, flat.length]);
 
+  // Don't render until mounted (prevents SSR hydration issues)
+  if (!mounted) return null;
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-[60]">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999]">
       <button
         type="button"
         aria-label="Close command palette"
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 cursor-default"
         onClick={() => onOpenChange(false)}
       />
 
       <div className="absolute left-1/2 top-16 w-[min(920px,92vw)] -translate-x-1/2">
-        <div className="rounded-2xl border border-border bg-background/95 shadow-2xl backdrop-blur">
+        <div className="rounded-2xl border border-border bg-background shadow-2xl">
           <div className="border-b border-border px-4 py-3">
             <input
               ref={inputRef}
@@ -282,7 +277,7 @@ export function CommandPalette({
                                 c.onSelect();
                               }}
                               className={
-                                "w-full rounded-xl border px-3 py-2 text-left " +
+                                "w-full rounded-xl border px-3 py-2 text-left cursor-pointer " +
                                 (active
                                   ? "border-border bg-muted/40"
                                   : "border-transparent hover:border-border hover:bg-muted/30")
@@ -321,4 +316,7 @@ export function CommandPalette({
       </div>
     </div>
   );
+
+  // Use portal to render at document.body level, escaping any parent overflow/transform constraints
+  return createPortal(modalContent, document.body);
 }

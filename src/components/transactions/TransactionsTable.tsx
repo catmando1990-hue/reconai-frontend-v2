@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   DashTable,
   type DashTableColumn,
   type SeverityLevel,
 } from "@/components/dashboard/DashTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+
+const PAGE_SIZE = 25;
 
 type TransactionRow = {
   id: string | number;
@@ -102,6 +104,7 @@ export default function TransactionsTable() {
 
   const [rows, setRows] = useState<TransactionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
@@ -123,15 +126,39 @@ export default function TransactionsTable() {
     };
   }, [authReady, apiFetch]);
 
+  // Reset to page 1 when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rows.length]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  
+  const paginatedRows = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    return rows.slice(start, end);
+  }, [rows, currentPage]);
+
   const getRowSeverity = (tx: TransactionRow): SeverityLevel | undefined => {
     if (tx.duplicate) return "warning";
     return undefined;
   };
 
+  const handlePrevPage = () => {
+    setCurrentPage((p) => Math.max(1, p - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((p) => Math.min(totalPages, p + 1));
+  };
+
+  const startItem = rows.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const endItem = Math.min(currentPage * PAGE_SIZE, rows.length);
+
   return (
     <div className="mt-6">
       <DashTable
-        data={rows}
+        data={paginatedRows}
         columns={columns}
         getRowKey={(tx) => tx.id}
         getRowSeverity={getRowSeverity}
@@ -146,6 +173,38 @@ export default function TransactionsTable() {
           />
         }
       />
+
+      {/* Pagination Controls */}
+      {!loading && rows.length > PAGE_SIZE && (
+        <div className="mt-4 flex items-center justify-between border-t pt-4">
+          <div className="text-sm text-muted-foreground">
+            Showing {startItem}–{endItem} of {rows.length} transactions
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="inline-flex items-center gap-1 rounded-lg border bg-card/40 px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-card/60"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </button>
+            <span className="text-sm text-muted-foreground px-2">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="inline-flex items-center gap-1 rounded-lg border bg-card/40 px-3 py-1.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-card/60"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

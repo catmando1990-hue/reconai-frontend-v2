@@ -103,8 +103,8 @@ export default function CompleteProfilePage() {
         }>("/api/profile/complete", {
           method: "POST",
           body: JSON.stringify({
-            firstName: finalFirstName,
-            lastName: finalLastName,
+            first_name: finalFirstName,
+            last_name: finalLastName,
           }),
         });
 

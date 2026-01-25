@@ -6,13 +6,14 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  * GET /api/reports/ledger
  *
  * Transaction Ledger Report - Complete list of all transactions
- * Supports pagination and date filtering
+ * Paginated, sorted by date descending
  */
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   const requestId = crypto.randomUUID();
 
   try {
     const { userId } = await auth();
+
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
@@ -20,91 +21,106 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
-    const startDate = searchParams.get("start_date");
-    const endDate = searchParams.get("end_date");
-    const accountId = searchParams.get("account_id");
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("page_size") || "50", 10)));
+    const offset = (page - 1) * pageSize;
 
     const supabase = supabaseAdmin();
-    const offset = (page - 1) * limit;
 
-    // Build query
-    let query = supabase
+    // Get total count
+    const { count, error: countError } = await supabase
       .from("plaid_transactions")
-      .select("*", { count: "exact" })
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
-      .order("date", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .select("*", { count: "exact", head: true })
+      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
 
-    if (startDate) {
-      query = query.gte("date", startDate);
-    }
-    if (endDate) {
-      query = query.lte("date", endDate);
-    }
-    if (accountId) {
-      query = query.eq("account_id", accountId);
-    }
-
-    const { data: transactions, error, count } = await query;
-
-    if (error) {
-      console.error("[Ledger report] Supabase error:", error);
+    if (countError) {
+      console.error("[Ledger] Count error:", countError);
       return NextResponse.json(
-        { ok: false, error: { code: "QUERY_ERROR", message: error.message }, request_id: requestId },
+        { ok: false, error: "Failed to count transactions", request_id: requestId },
         { status: 500, headers: { "x-request-id": requestId } }
       );
     }
 
-    // Map to report format
-    const rows = (transactions || []).map((tx) => ({
-      id: tx.id,
-      transaction_id: tx.transaction_id,
-      date: tx.date,
-      merchant: tx.merchant_name || tx.name,
-      description: tx.name,
-      amount: tx.amount,
-      account_id: tx.account_id,
-      account_name: tx.account_name,
-      category: tx.category?.[0] || tx.personal_finance_category?.primary || "Uncategorized",
-      subcategory: tx.category?.[1] || tx.personal_finance_category?.detailed || null,
-      source: tx.source || "plaid",
-      status: tx.pending ? "pending" : "posted",
-      iso_currency_code: tx.iso_currency_code || "USD",
-      created_at: tx.created_at,
-    }));
+    // Fetch transactions with account info
+    const { data: transactions, error: txError } = await supabase
+      .from("plaid_transactions")
+      .select(`
+        id,
+        transaction_id,
+        date,
+        name,
+        merchant_name,
+        amount,
+        iso_currency_code,
+        category,
+        pending,
+        account_id,
+        created_at
+      `)
+      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .order("date", { ascending: false })
+      .range(offset, offset + pageSize - 1);
 
-    const totalPages = count ? Math.ceil(count / limit) : 1;
+    if (txError) {
+      console.error("[Ledger] Transaction fetch error:", txError);
+      return NextResponse.json(
+        { ok: false, error: "Failed to fetch transactions", request_id: requestId },
+        { status: 500, headers: { "x-request-id": requestId } }
+      );
+    }
+
+    // Get account details for the transactions
+    const accountIds = [...new Set((transactions || []).map((t) => t.account_id).filter(Boolean))];
+    
+    let accountMap: Record<string, { name: string; mask: string | null }> = {};
+    
+    if (accountIds.length > 0) {
+      const { data: accounts } = await supabase
+        .from("plaid_accounts")
+        .select("account_id, name, mask")
+        .in("account_id", accountIds);
+
+      if (accounts) {
+        accountMap = Object.fromEntries(
+          accounts.map((a) => [a.account_id, { name: a.name, mask: a.mask }])
+        );
+      }
+    }
+
+    // Map to response format
+    const mappedTransactions = (transactions || []).map((tx) => {
+      const account = accountMap[tx.account_id] || null;
+      return {
+        id: tx.id || tx.transaction_id,
+        date: tx.date,
+        name: tx.name || "",
+        merchant_name: tx.merchant_name,
+        amount: tx.amount,
+        iso_currency_code: tx.iso_currency_code || "USD",
+        category: Array.isArray(tx.category) ? tx.category[0] : tx.category,
+        account_name: account?.name || null,
+        account_mask: account?.mask || null,
+        source: "plaid" as const,
+        status: tx.pending ? "pending" as const : "posted" as const,
+      };
+    });
 
     return NextResponse.json(
       {
         ok: true,
-        report: "transaction_ledger",
-        data: rows,
-        pagination: {
-          page,
-          limit,
-          total: count || 0,
-          total_pages: totalPages,
-          has_next: page < totalPages,
-          has_prev: page > 1,
-        },
-        filters: {
-          start_date: startDate,
-          end_date: endDate,
-          account_id: accountId,
-        },
-        generated_at: new Date().toISOString(),
+        transactions: mappedTransactions,
+        total: count || 0,
+        page,
+        page_size: pageSize,
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } }
     );
-  } catch (err) {
-    console.error("[Ledger report] Error:", err);
+  } catch (error) {
+    console.error("[Ledger] Error:", error);
     return NextResponse.json(
-      { ok: false, error: { code: "INTERNAL_ERROR", message: "Failed to generate report" }, request_id: requestId },
+      { ok: false, error: "Internal server error", request_id: requestId },
       { status: 500, headers: { "x-request-id": requestId } }
     );
   }

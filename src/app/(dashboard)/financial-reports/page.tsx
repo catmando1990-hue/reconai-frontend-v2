@@ -1,23 +1,22 @@
 "use client";
 
-import { RouteShell } from "@/components/dashboard/RouteShell";
-import { PlaceholderSurface } from "@/components/dashboard/PlaceholderSurface";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Page() {
+/**
+ * Redirect /financial-reports to /core/reports
+ * The canonical reports location is now /core/reports
+ */
+export default function FinancialReportsRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/core/reports");
+  }, [router]);
+
   return (
-    <RouteShell
-      title="Financial Reports"
-      subtitle="Report surfaces staged for the next release phase."
-    >
-      <PlaceholderSurface
-        title="Financial Reports"
-        subtitle="Report surfaces staged for the next release phase."
-        bullets={[
-          "Read-only summaries",
-          "Export-ready structures",
-          "No official filing claims",
-        ]}
-      />
-    </RouteShell>
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <p className="text-sm text-muted-foreground">Redirecting to Reports…</p>
+    </div>
   );
 }

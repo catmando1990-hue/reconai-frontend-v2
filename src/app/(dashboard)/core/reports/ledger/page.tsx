@@ -1,40 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { ChevronLeft, ChevronRight, Download, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Download, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
-type LedgerRow = {
+interface Transaction {
   id: string;
-  transaction_id: string;
   date: string;
-  merchant: string | null;
-  description: string | null;
+  merchant_name: string | null;
+  name: string;
   amount: number;
-  account_id: string;
   account_name: string | null;
-  category: string;
-  subcategory: string | null;
-  source: string;
-  status: string;
-  iso_currency_code: string;
-};
+  account_mask: string | null;
+  category: string | null;
+  source: "plaid" | "manual" | "upload";
+  status: "posted" | "pending";
+  iso_currency_code: string | null;
+}
 
-type Pagination = {
-  page: number;
-  limit: number;
+interface LedgerResponse {
+  ok: boolean;
+  transactions: Transaction[];
   total: number;
-  total_pages: number;
-  has_next: boolean;
-  has_prev: boolean;
-};
+  page: number;
+  page_size: number;
+  request_id: string;
+}
 
-function formatCurrency(amount: number, currency: string = "USD"): string {
+const PAGE_SIZE = 50;
+
+function formatCurrency(amount: number, currency: string | null): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency,
-    signDisplay: "auto",
+    currency: currency || "USD",
   }).format(amount);
 }
 
@@ -46,236 +47,168 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function LedgerReportPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [rows, setRows] = useState<LedgerRow[]>([]);
-  const [pagination, setPagination] = useState<Pagination | null>(null);
+export default function TransactionLedgerPage() {
+  const { getToken } = useAuth();
+  const [data, setData] = useState<LedgerResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  // Filters from URL
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const startDate = searchParams.get("start_date") || "";
-  const endDate = searchParams.get("end_date") || "";
-
-  const fetchReport = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
+  const fetchData = async (pageNum: number) => {
     try {
-      const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("limit", "50");
-      if (startDate) params.set("start_date", startDate);
-      if (endDate) params.set("end_date", endDate);
-
-      const res = await fetch(`/api/reports/ledger?${params.toString()}`);
-      const data = await res.json();
-
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error?.message || "Failed to load report");
-      }
-
-      setRows(data.data || []);
-      setPagination(data.pagination || null);
+      setLoading(true);
+      setError(null);
+      const token = await getToken();
+      const res = await fetch(`/api/reports/ledger?page=${pageNum}&page_size=${PAGE_SIZE}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch ledger");
+      const json = await res.json();
+      setData(json);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unknown error");
-      setRows([]);
+      setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
       setLoading(false);
     }
-  }, [page, startDate, endDate]);
-
-  useEffect(() => {
-    fetchReport();
-  }, [fetchReport]);
-
-  const updateParams = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    for (const [key, value] of Object.entries(updates)) {
-      if (value === null || value === "") {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-    }
-    router.push(`/core/reports/ledger?${params.toString()}`);
   };
 
-  const handleExportCSV = () => {
-    if (rows.length === 0) return;
+  useEffect(() => {
+    fetchData(page);
+  }, [page]);
 
+  const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
+
+  const handleExportCSV = () => {
+    if (!data?.transactions.length) return;
+    
     const headers = ["Date", "Merchant", "Description", "Amount", "Account", "Category", "Source", "Status"];
-    const csvRows = rows.map((r) => [
-      r.date,
-      r.merchant || "",
-      r.description || "",
-      r.amount,
-      r.account_name || r.account_id,
-      r.category,
-      r.source,
-      r.status,
+    const rows = data.transactions.map((t) => [
+      t.date,
+      t.merchant_name || "",
+      t.name,
+      t.amount.toString(),
+      t.account_name ? `${t.account_name} (${t.account_mask || ""})` : "",
+      t.category || "Uncategorized",
+      t.source,
+      t.status,
     ]);
 
-    const csv = [headers, ...csvRows].map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [headers, ...rows].map((row) => row.map((c) => `"${c}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `transaction-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `transaction-ledger-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  // Summary stats
-  const summary = useMemo(() => {
-    const inflows = rows.filter((r) => r.amount < 0).reduce((sum, r) => sum + Math.abs(r.amount), 0);
-    const outflows = rows.filter((r) => r.amount > 0).reduce((sum, r) => sum + r.amount, 0);
-    return { inflows, outflows, net: inflows - outflows, count: rows.length };
-  }, [rows]);
-
   return (
     <RouteShell
       title="Transaction Ledger"
-      subtitle="Complete, immutable list of all transactions"
-      breadcrumbs={[
-        { label: "Reports", href: "/core/reports" },
-        { label: "Transaction Ledger" },
-      ]}
-    >
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border bg-card/50 p-4">
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">Start Date</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => updateParams({ start_date: e.target.value, page: "1" })}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">End Date</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => updateParams({ end_date: e.target.value, page: "1" })}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={() => updateParams({ start_date: null, end_date: null, page: "1" })}
-          className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm hover:bg-muted"
-        >
-          Clear Filters
-        </button>
-        <div className="ml-auto">
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            disabled={rows.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
-          >
-            <Download className="h-4 w-4" />
+      subtitle="Complete, immutable list of all transactions — audit baseline and source of truth"
+      right={
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!data?.transactions.length}>
+            <Download className="mr-2 h-4 w-4" />
             Export CSV
-          </button>
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => fetchData(page)} disabled={loading}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
         </div>
+      }
+    >
+      <div className="mb-4">
+        <Link href="/core/reports" className="text-sm text-muted-foreground hover:text-foreground">
+          ← Back to Reports
+        </Link>
       </div>
 
-      {/* Summary Stats */}
-      {!loading && rows.length > 0 && (
-        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="rounded-xl border border-border bg-card/50 p-4">
-            <div className="text-xs text-muted-foreground">Transactions</div>
-            <div className="mt-1 text-2xl font-semibold">{pagination?.total || summary.count}</div>
-          </div>
-          <div className="rounded-xl border border-border bg-card/50 p-4">
-            <div className="text-xs text-muted-foreground">Inflows</div>
-            <div className="mt-1 text-2xl font-semibold text-green-600">{formatCurrency(summary.inflows)}</div>
-          </div>
-          <div className="rounded-xl border border-border bg-card/50 p-4">
-            <div className="text-xs text-muted-foreground">Outflows</div>
-            <div className="mt-1 text-2xl font-semibold text-red-600">{formatCurrency(summary.outflows)}</div>
-          </div>
-          <div className="rounded-xl border border-border bg-card/50 p-4">
-            <div className="text-xs text-muted-foreground">Net (this page)</div>
-            <div className={`mt-1 text-2xl font-semibold ${summary.net >= 0 ? "text-green-600" : "text-red-600"}`}>
-              {formatCurrency(summary.net)}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Error */}
       {error && (
-        <div className="mb-6 rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 mb-4">
+          <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
 
-      {/* Table */}
       <div className="rounded-xl border border-border bg-card">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Merchant</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Amount</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Account</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Category</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Source</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+            <thead className="border-b border-border bg-muted/30">
+              <tr>
+                <th className="px-4 py-3 text-left font-medium">Date</th>
+                <th className="px-4 py-3 text-left font-medium">Merchant</th>
+                <th className="px-4 py-3 text-left font-medium">Description</th>
+                <th className="px-4 py-3 text-right font-medium">Amount</th>
+                <th className="px-4 py-3 text-left font-medium">Account</th>
+                <th className="px-4 py-3 text-left font-medium">Category</th>
+                <th className="px-4 py-3 text-left font-medium">Source</th>
+                <th className="px-4 py-3 text-left font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                Array.from({ length: 10 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border last:border-b-0">
-                    {Array.from({ length: 7 }).map((_, j) => (
-                      <td key={j} className="px-4 py-3">
-                        <div className="h-4 w-20 animate-pulse rounded bg-muted" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : rows.length === 0 ? (
+              {loading && !data ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
-                    No transactions found
+                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+                    <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
+                    Loading transactions...
+                  </td>
+                </tr>
+              ) : data?.transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+                    No transactions found. Connect a bank account to import transactions.
                   </td>
                 </tr>
               ) : (
-                rows.map((row) => (
-                  <tr key={row.id} className="border-b border-border last:border-b-0 hover:bg-muted/30">
-                    <td className="px-4 py-3 whitespace-nowrap">{formatDate(row.date)}</td>
+                data?.transactions.map((tx) => (
+                  <tr key={tx.id} className="border-b border-border last:border-b-0 hover:bg-muted/20">
+                    <td className="px-4 py-3 whitespace-nowrap">{formatDate(tx.date)}</td>
                     <td className="px-4 py-3">
-                      <div className="max-w-[200px] truncate font-medium">{row.merchant || row.description || "—"}</div>
-                      {row.merchant && row.description && row.merchant !== row.description && (
-                        <div className="max-w-[200px] truncate text-xs text-muted-foreground">{row.description}</div>
-                      )}
-                    </td>
-                    <td className={`px-4 py-3 text-right font-mono tabular-nums ${row.amount < 0 ? "text-green-600" : "text-red-600"}`}>
-                      {formatCurrency(Math.abs(row.amount), row.iso_currency_code)}
-                      {row.amount < 0 ? " ↓" : " ↑"}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{row.account_name || "—"}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs">
-                        {row.category}
+                      <span className="max-w-[150px] truncate block">
+                        {tx.merchant_name || "—"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground uppercase">{row.source}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
-                          row.status === "posted" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {row.status}
+                      <span className="max-w-[200px] truncate block">{tx.name}</span>
+                    </td>
+                    <td className={`px-4 py-3 text-right font-mono whitespace-nowrap ${tx.amount < 0 ? "text-green-600" : ""}`}>
+                      {formatCurrency(tx.amount, tx.iso_currency_code)}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {tx.account_name ? (
+                        <span className="text-xs">
+                          {tx.account_name}
+                          {tx.account_mask && <span className="ml-1">••{tx.account_mask}</span>}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs">
+                        {tx.category || "Uncategorized"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
+                        tx.source === "plaid" 
+                          ? "bg-blue-500/10 text-blue-600" 
+                          : tx.source === "manual"
+                          ? "bg-yellow-500/10 text-yellow-600"
+                          : "bg-purple-500/10 text-purple-600"
+                      }`}>
+                        {tx.source}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
+                        tx.status === "posted" 
+                          ? "bg-green-500/10 text-green-600" 
+                          : "bg-orange-500/10 text-orange-600"
+                      }`}>
+                        {tx.status}
                       </span>
                     </td>
                   </tr>
@@ -286,33 +219,46 @@ export default function LedgerReportPage() {
         </div>
 
         {/* Pagination */}
-        {pagination && pagination.total_pages > 1 && (
+        {data && data.total > PAGE_SIZE && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <div className="text-sm text-muted-foreground">
-              Page {pagination.page} of {pagination.total_pages} ({pagination.total} total)
+              Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, data.total)} of {data.total}
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => updateParams({ page: String(pagination.page - 1) })}
-                disabled={!pagination.has_prev}
-                className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-muted"
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1 || loading}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
-              </button>
-              <button
-                type="button"
-                onClick={() => updateParams({ page: String(pagination.page + 1) })}
-                disabled={!pagination.has_next}
-                className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-muted"
+              </Button>
+              <span className="text-sm text-muted-foreground px-2">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages || loading}
               >
                 Next
                 <ChevronRight className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
         )}
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+        <h3 className="font-medium text-sm">About This Report</h3>
+        <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+          <li>• Audit baseline — complete record of all transactions</li>
+          <li>• Reconciliation source of truth</li>
+          <li>• Includes date, merchant, amount, account, category, source, and status</li>
+          <li>• Negative amounts indicate money received (inflows)</li>
+        </ul>
       </div>
     </RouteShell>
   );

@@ -1,14 +1,33 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState, useCallback } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { OverviewSnapshot } from "@/components/overview/OverviewSnapshot";
 import { Button } from "@/components/ui/button";
-import { Download, Info } from "lucide-react";
-import { useCfoSnapshot } from "@/hooks/useCfoSnapshot";
+import { Download, Info, RefreshCw } from "lucide-react";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
+import { auditedFetch } from "@/lib/auditedFetch";
+
+type CfoMetrics = {
+  total_revenue: number;
+  total_expenses: number;
+  net_position: number;
+  transaction_count: number;
+  period: string;
+};
+
+type CfoOverviewResponse = {
+  cfo_version: string;
+  lifecycle: "success" | "pending" | "failed" | "stale";
+  reason_code: string | null;
+  reason_message: string | null;
+  metrics: CfoMetrics | null;
+};
 
 /**
  * CFO Overview Page
@@ -20,23 +39,44 @@ import { useCfoSnapshot } from "@/hooks/useCfoSnapshot";
  * - Lifecycle status visible inline with metrics
  */
 
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 function MetricWithReason({
   label,
   value,
   lifecycle,
   reasonCode,
+  isPositive,
 }: {
   label: string;
   value: string | number | null;
   lifecycle: string | null;
   reasonCode: string | null;
+  isPositive?: boolean;
 }) {
   // If we have actual data, show it (subordinate styling - text-lg, not text-xl)
   if (value !== null && lifecycle === "success") {
     return (
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">{label}</span>
-        <span className="text-lg font-medium">{value}</span>
+        <span
+          className={`text-lg font-medium ${
+            isPositive === true
+              ? "text-emerald-600"
+              : isPositive === false
+                ? "text-destructive"
+                : ""
+          }`}
+        >
+          {value}
+        </span>
       </div>
     );
   }
@@ -64,7 +104,63 @@ function MetricWithReason({
 }
 
 export default function CfoOverviewPage() {
-  const { lifecycle, reasonCode } = useCfoSnapshot();
+  const { apiFetch } = useApi();
+  const { isLoaded } = useOrg();
+
+  const [data, setData] = useState<CfoOverviewResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const fetchMetrics = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await apiFetch<CfoOverviewResponse>("/api/cfo/overview");
+      setData(result);
+    } catch {
+      setData({
+        cfo_version: "1",
+        lifecycle: "failed",
+        reason_code: "computation_error",
+        reason_message: "Failed to load metrics",
+        metrics: null,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchMetrics();
+  }, [isLoaded, fetchMetrics]);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const response = await auditedFetch<Response>("/api/cfo/export", {
+        method: "POST",
+        rawResponse: true,
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `cfo-overview-${new Date().toISOString().split("T")[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Export failed:", err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const lifecycle = data?.lifecycle || null;
+  const reasonCode = data?.reason_code || null;
+  const metrics = data?.metrics;
 
   return (
     <RouteShell
@@ -74,10 +170,14 @@ export default function CfoOverviewPage() {
         <Button
           variant="secondary"
           size="sm"
-          disabled
-          title="Export requires backend integration"
+          onClick={handleExport}
+          disabled={exporting || !metrics}
         >
-          <Download className="mr-2 h-4 w-4" />
+          {exporting ? (
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="mr-2 h-4 w-4" />
+          )}
           Export Report
         </Button>
       }
@@ -102,39 +202,60 @@ export default function CfoOverviewPage() {
         {/* Secondary Panels */}
         <div className="space-y-4 lg:col-span-4">
           <SecondaryPanel title="Key Metrics">
-            <div className="space-y-4">
-              {/* P0 FIX: Show reason for missing data, never ambiguous dashes */}
-              <MetricWithReason
-                label="Total Revenue"
-                value={null}
-                lifecycle={lifecycle}
-                reasonCode={reasonCode}
-              />
-              <MetricWithReason
-                label="Total Expenses"
-                value={null}
-                lifecycle={lifecycle}
-                reasonCode={reasonCode}
-              />
-              <MetricWithReason
-                label="Net Position"
-                value={null}
-                lifecycle={lifecycle}
-                reasonCode={reasonCode}
-              />
-              {/* Lifecycle context - always visible */}
-              <div className="pt-2 border-t">
-                <p className="text-xs text-muted-foreground">
-                  {lifecycle === "success"
-                    ? "Metrics from connected financial sources"
-                    : lifecycle === "pending"
-                      ? "Computing metrics from financial data…"
-                      : lifecycle === "stale"
-                        ? "Data is stale - refresh recommended"
-                        : "Connect financial sources to populate metrics"}
-                </p>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <MetricWithReason
+                  label="Total Revenue"
+                  value={metrics ? formatCurrency(metrics.total_revenue) : null}
+                  lifecycle={lifecycle}
+                  reasonCode={reasonCode}
+                  isPositive={true}
+                />
+                <MetricWithReason
+                  label="Total Expenses"
+                  value={
+                    metrics ? formatCurrency(metrics.total_expenses) : null
+                  }
+                  lifecycle={lifecycle}
+                  reasonCode={reasonCode}
+                  isPositive={false}
+                />
+                <MetricWithReason
+                  label="Net Position"
+                  value={metrics ? formatCurrency(metrics.net_position) : null}
+                  lifecycle={lifecycle}
+                  reasonCode={reasonCode}
+                  isPositive={metrics ? metrics.net_position >= 0 : undefined}
+                />
+                {/* Period context */}
+                {metrics?.period && (
+                  <div className="pt-2 border-t">
+                    <p className="text-xs text-muted-foreground">
+                      Period: {metrics.period}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {metrics.transaction_count} transactions analyzed
+                    </p>
+                  </div>
+                )}
+                {/* Lifecycle context - always visible */}
+                <div className={metrics?.period ? "" : "pt-2 border-t"}>
+                  <p className="text-xs text-muted-foreground">
+                    {lifecycle === "success"
+                      ? "Metrics from connected financial sources"
+                      : lifecycle === "pending"
+                        ? "Computing metrics from financial data…"
+                        : lifecycle === "stale"
+                          ? "Data is stale - refresh recommended"
+                          : "Connect financial sources to populate metrics"}
+                  </p>
+                </div>
+              </div>
+            )}
           </SecondaryPanel>
 
           <SecondaryPanel title="Report Purpose">
@@ -165,7 +286,7 @@ export default function CfoOverviewPage() {
                 Compliance
               </Link>
               <Link
-                href="/financial-reports"
+                href="/core/reports"
                 className="block text-primary hover:underline"
               >
                 Financial reports

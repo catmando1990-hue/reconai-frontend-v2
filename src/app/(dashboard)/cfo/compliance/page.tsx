@@ -19,7 +19,7 @@ import type { RbacSnapshot } from "@/lib/enterprise/rbac";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 
 /**
@@ -37,6 +37,7 @@ export default function CfoCompliancePage() {
     variant: "ok" | "warn";
     message: string;
   } | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
@@ -78,6 +79,38 @@ export default function CfoCompliancePage() {
     }
   }
 
+  async function handleExportAll() {
+    setExporting(true);
+    try {
+      const response = await apiFetch<Response>("/api/cfo/export", {
+        method: "POST",
+      });
+      if (response instanceof Response && response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `compliance_export_${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+      setExportResult({
+        variant: "ok",
+        message: "Compliance data exported successfully.",
+      });
+    } catch (error) {
+      console.error("Export failed", error);
+      setExportResult({
+        variant: "warn",
+        message: "Export failed. Please try again.",
+      });
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <RouteShell
       title="CFO Compliance"
@@ -86,10 +119,14 @@ export default function CfoCompliancePage() {
         <Button
           variant="secondary"
           size="sm"
-          disabled
-          title="Export coming soon"
+          onClick={handleExportAll}
+          disabled={exporting}
         >
-          <Download className="mr-2 h-4 w-4" />
+          {exporting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="mr-2 h-4 w-4" />
+          )}
           Export All
         </Button>
       }

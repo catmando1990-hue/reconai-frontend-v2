@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
@@ -10,6 +11,7 @@ import { PLATFORM_DISCLAIMER } from "@/lib/legal/disclaimers";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 import { STATUS, CTA } from "@/lib/dashboardCopy";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   BarChart3,
   PieChart,
@@ -17,6 +19,7 @@ import {
   ChevronRight,
   FileText,
   Download,
+  Loader2,
 } from "lucide-react";
 
 const cfoModules = [
@@ -54,6 +57,33 @@ const cfoModules = [
 ];
 
 export default function CfoOverviewPage() {
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const response = await auditedFetch<Response>("/api/cfo/export", {
+        method: "POST",
+        rawResponse: true,
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `cfo_report_${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error("Export failed", error);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <TierGate
       tier="cfo"
@@ -68,10 +98,14 @@ export default function CfoOverviewPage() {
             <Button
               variant="secondary"
               size="sm"
-              disabled
-              title="Export coming soon"
+              onClick={handleExport}
+              disabled={exporting}
             >
-              <Download className="mr-2 h-4 w-4" />
+              {exporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
               Export Report
             </Button>
             <Button asChild size="sm">

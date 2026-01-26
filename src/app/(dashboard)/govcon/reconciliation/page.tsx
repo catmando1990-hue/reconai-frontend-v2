@@ -1,7 +1,17 @@
 "use client";
 
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, Download, FileText, RefreshCw } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Download,
+  FileText,
+  RefreshCw,
+  Loader2,
+  X,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -9,6 +19,33 @@ import { StatusChip } from "@/components/dashboard/StatusChip";
 import { Button } from "@/components/ui/button";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { ROUTES } from "@/lib/routes";
+import { auditedFetch, HttpError } from "@/lib/auditedFetch";
+
+interface ReconciliationRun {
+  id: string;
+  run_type: string;
+  fiscal_year: number;
+  period_start: string | null;
+  period_end: string | null;
+  status: string;
+  summary: string | null;
+  notes: string | null;
+  started_at: string;
+  completed_at: string | null;
+  created_at: string;
+}
+
+interface Variance {
+  id: string;
+  run_id: string;
+  variance_type: string;
+  description: string;
+  amount: number | null;
+  status: string;
+  resolution_notes: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
 
 const ICS_SCHEDULES = [
   { schedule: "H", name: "Contract Brief" },
@@ -21,7 +58,179 @@ const ICS_SCHEDULES = [
   { schedule: "O", name: "Contract Closing" },
 ];
 
+const RUN_TYPES = [
+  { value: "labor", label: "Labor Reconciliation" },
+  { value: "indirect", label: "Indirect Cost Reconciliation" },
+  { value: "full", label: "Full ICS Reconciliation" },
+];
+
 export default function ReconciliationPage() {
+  const [runs, setRuns] = useState<ReconciliationRun[]>([]);
+  const [variances, setVariances] = useState<Variance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [runType, setRunType] = useState("full");
+  const [fiscalYear, setFiscalYear] = useState(
+    new Date().getFullYear().toString()
+  );
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Export state
+  const [exporting, setExporting] = useState(false);
+
+  // Fetch data
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await auditedFetch<{
+        runs: ReconciliationRun[];
+        variances: Variance[];
+      }>("/api/govcon/reconciliation", { skipBodyValidation: true });
+      setRuns(data.runs || []);
+      setVariances(data.variances || []);
+    } catch (err) {
+      if (err instanceof HttpError) {
+        if (err.status === 401) {
+          setError("Not authenticated. Please sign in.");
+        } else {
+          setError(`Failed to load data: ${err.status}`);
+        }
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to load data");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Calculate variance summary
+  const varianceSummary = useMemo(() => {
+    const open = variances.filter((v) => v.status === "open").length;
+    const resolved = variances.filter((v) => v.status === "resolved").length;
+    const escalated = variances.filter((v) => v.status === "escalated").length;
+    return { open, resolved, escalated };
+  }, [variances]);
+
+  // Open new run modal
+  const handleNewRun = () => {
+    setRunType("full");
+    setFiscalYear(new Date().getFullYear().toString());
+    setNotes("");
+    setFormError(null);
+    setModalOpen(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setFormError(null);
+  };
+
+  // Start reconciliation run
+  const handleStartRun = async () => {
+    setSubmitting(true);
+    setFormError(null);
+
+    try {
+      await auditedFetch("/api/govcon/reconciliation", {
+        method: "POST",
+        body: JSON.stringify({
+          run_type: runType,
+          fiscal_year: parseInt(fiscalYear) || new Date().getFullYear(),
+          notes: notes || null,
+        }),
+        skipBodyValidation: true,
+      });
+
+      handleCloseModal();
+      await fetchData();
+    } catch (err) {
+      if (err instanceof HttpError) {
+        const body = err.body as { error?: string } | undefined;
+        setFormError(body?.error || `Error: ${err.status}`);
+      } else {
+        setFormError(
+          err instanceof Error ? err.message : "Failed to start run"
+        );
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Export ICS
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const response = await auditedFetch<Response>(
+        "/api/govcon/reconciliation/export",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            fiscal_year: parseInt(fiscalYear) || new Date().getFullYear(),
+          }),
+          rawResponse: true,
+        }
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ICS_FY${fiscalYear}_${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Get run status variant
+  const getRunStatusVariant = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "ok";
+      case "running":
+        return "muted";
+      case "failed":
+        return "warn";
+      default:
+        return "muted";
+    }
+  };
+
+  // Format date
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "—";
+    try {
+      return new Date(dateStr).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <RouteShell
       title="Reconciliation"
@@ -31,13 +240,17 @@ export default function ReconciliationPage() {
           <Button
             variant="secondary"
             size="sm"
-            disabled
-            title="Export coming soon"
+            onClick={handleExport}
+            disabled={exporting}
           >
-            <Download className="mr-2 h-4 w-4" />
+            {exporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
             Export ICS
           </Button>
-          <Button size="sm" disabled title="Reconciliation coming soon">
+          <Button size="sm" onClick={handleNewRun}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Run Reconciliation
           </Button>
@@ -51,31 +264,85 @@ export default function ReconciliationPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
         <div className="lg:col-span-8">
           <div className="rounded-lg border border-border bg-card p-6">
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Reconciliation Runs</h2>
                 <p className="text-sm text-muted-foreground">
-                  Labor and indirect cost reconciliation history
+                  {runs.length} run{runs.length !== 1 ? "s" : ""} completed
                 </p>
               </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled
-                title="New run coming soon"
-              >
+              <Button variant="secondary" size="sm" onClick={handleNewRun}>
                 <ArrowLeftRight className="mr-2 h-4 w-4" />
                 New Run
               </Button>
             </div>
-            <EmptyState
-              icon={ArrowLeftRight}
-              title="No reconciliation runs"
-              description="Reconciliation requires backend integration. Use the disabled 'Run Reconciliation' button above when available."
-            />
+
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && runs.length === 0 && (
+              <EmptyState
+                icon={ArrowLeftRight}
+                title="No reconciliation runs"
+                description="Start your first reconciliation to compare labor and indirect costs."
+              />
+            )}
+
+            {!loading && !error && runs.length > 0 && (
+              <div className="space-y-3">
+                {runs.map((run) => (
+                  <div
+                    key={run.id}
+                    className="rounded-lg border border-border/70 bg-muted/30 p-4"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          {run.status === "completed" ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : run.status === "failed" ? (
+                            <AlertTriangle className="h-4 w-4 text-amber-500" />
+                          ) : (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          )}
+                          <span className="font-medium">
+                            {run.run_type === "full"
+                              ? "Full ICS"
+                              : run.run_type === "labor"
+                                ? "Labor"
+                                : "Indirect"}{" "}
+                            Reconciliation
+                          </span>
+                          <StatusChip variant={getRunStatusVariant(run.status)}>
+                            {run.status.toUpperCase()}
+                          </StatusChip>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          FY {run.fiscal_year} • Started{" "}
+                          {formatDate(run.started_at)}
+                        </div>
+                        {run.summary && (
+                          <p className="text-sm text-muted-foreground">
+                            {run.summary}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Variances Panel */}
@@ -87,11 +354,43 @@ export default function ReconciliationPage() {
                   Variance analysis and resolution tracking
                 </p>
               </div>
-              <EmptyState
-                icon={FileText}
-                title="No variances"
-                description="Variances will appear here after a reconciliation run identifies discrepancies."
-              />
+
+              {!loading && variances.length === 0 && (
+                <EmptyState
+                  icon={FileText}
+                  title="No variances"
+                  description="Variances will appear here after a reconciliation run identifies discrepancies."
+                />
+              )}
+
+              {!loading && variances.length > 0 && (
+                <div className="space-y-2">
+                  {variances.map((v) => (
+                    <div
+                      key={v.id}
+                      className="flex items-center justify-between p-3 rounded bg-muted/50"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{v.variance_type}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {v.description}
+                        </p>
+                      </div>
+                      <StatusChip
+                        variant={
+                          v.status === "resolved"
+                            ? "ok"
+                            : v.status === "escalated"
+                              ? "warn"
+                              : "muted"
+                        }
+                      >
+                        {v.status.toUpperCase()}
+                      </StatusChip>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -104,32 +403,30 @@ export default function ReconciliationPage() {
                 <span className="text-sm text-muted-foreground">
                   Active Runs
                 </span>
-                {/* HIERARCHY: text-base font-medium (subordinate to Intelligence) */}
-                <span className="text-base font-medium text-muted-foreground italic">
-                  No data
+                <span className="text-base font-medium">
+                  {runs.filter((r) => r.status === "running").length}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Open Variances
                 </span>
-                <span className="text-base font-medium text-muted-foreground italic">
-                  No data
+                <span className="text-base font-medium">
+                  {varianceSummary.open}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Resolved</span>
-                <span className="text-base font-medium text-muted-foreground italic">
-                  No data
+                <span className="text-base font-medium text-green-600">
+                  {varianceSummary.resolved}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Escalated</span>
-                <span className="text-base font-medium text-muted-foreground italic">
-                  No data
+                <span className="text-base font-medium text-amber-600">
+                  {varianceSummary.escalated}
                 </span>
               </div>
-              {/* SF-1408 reference */}
               <div className="pt-2 border-t">
                 <p className="text-xs text-muted-foreground">
                   SF-1408 § cost-1 through cost-5 (Direct / Indirect Costs)
@@ -149,18 +446,25 @@ export default function ReconciliationPage() {
                     <span className="font-mono text-xs font-medium">
                       Schedule {schedule.schedule}
                     </span>
-                    <p className="text-xs text-muted-foreground truncate max-w-[160px]">
+                    <p className="text-xs text-muted-foreground truncate max-w-40">
                       {schedule.name}
                     </p>
                   </div>
-                  <StatusChip variant="muted">Pending</StatusChip>
+                  <StatusChip
+                    variant={
+                      runs.some((r) => r.status === "completed") ? "ok" : "muted"
+                    }
+                  >
+                    {runs.some((r) => r.status === "completed")
+                      ? "Ready"
+                      : "Pending"}
+                  </StatusChip>
                 </div>
               ))}
             </div>
           </SecondaryPanel>
 
           <SecondaryPanel title="SF-1408 Preaward">
-            {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
             <div className="flex items-start gap-3">
               <div className="h-10 w-10 rounded-lg border border-border bg-muted flex items-center justify-center shrink-0">
                 <FileText className="h-5 w-5 text-muted-foreground" />
@@ -204,6 +508,85 @@ export default function ReconciliationPage() {
           </SecondaryPanel>
         </div>
       </div>
+
+      {/* New Run Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-card shadow-xl">
+            <div className="flex items-center justify-between border-b border-border p-4">
+              <h2 className="text-base font-semibold">Start Reconciliation</h2>
+              <Button variant="ghost" size="sm" onClick={handleCloseModal}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Reconciliation Type
+                </label>
+                <select
+                  value={runType}
+                  onChange={(e) => setRunType(e.target.value)}
+                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                >
+                  {RUN_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Fiscal Year
+                </label>
+                <input
+                  type="number"
+                  value={fiscalYear}
+                  onChange={(e) => setFiscalYear(e.target.value)}
+                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  min="2000"
+                  max="2100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Notes (optional)
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  rows={2}
+                  placeholder="Any notes for this run..."
+                />
+              </div>
+
+              {formError && (
+                <p className="text-xs text-destructive">{formError}</p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" size="sm" onClick={handleCloseModal}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleStartRun} disabled={submitting}>
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Starting...
+                    </>
+                  ) : (
+                    "Start Reconciliation"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </RouteShell>
   );
 }

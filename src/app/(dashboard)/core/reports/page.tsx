@@ -10,7 +10,6 @@ import {
   AlertTriangle,
   Database,
   Calendar,
-  RefreshCw,
   Repeat,
   Scale,
   FileCheck,
@@ -21,6 +20,10 @@ import { CounterpartyReport } from "@/components/reports/CounterpartyReport";
 import { ExceptionReport } from "@/components/reports/ExceptionReport";
 import { CashFlowReport } from "@/components/reports/CashFlowReport";
 import { AccountActivityReport } from "@/components/reports/AccountActivityReport";
+import { RecurringActivityReport } from "@/components/reports/RecurringActivityReport";
+import { BalanceHistoryReport } from "@/components/reports/BalanceHistoryReport";
+import { ReconciliationReport } from "@/components/reports/ReconciliationReport";
+import { DataIntegrityReport } from "@/components/reports/DataIntegrityReport";
 
 type ReportId =
   | "ledger"
@@ -76,21 +79,21 @@ const REPORTS: ReportDef[] = [
     label: "Recurring Activity",
     description: "Detected repeating inflows and outflows",
     icon: <Repeat className="h-4 w-4" />,
-    available: false,
+    available: true,
   },
   {
     id: "balance-history",
     label: "Balance History",
     description: "Historical balance changes over time",
     icon: <Calendar className="h-4 w-4" />,
-    available: false,
+    available: true,
   },
   {
     id: "reconciliation",
     label: "Statement Reconciliation",
     description: "Compare uploaded statements vs ingested data",
     icon: <FileCheck className="h-4 w-4" />,
-    available: false,
+    available: true,
   },
   {
     id: "counterparties",
@@ -111,7 +114,7 @@ const REPORTS: ReportDef[] = [
     label: "Data Integrity",
     description: "Source lineage and trust report",
     icon: <Database className="h-4 w-4" />,
-    available: false,
+    available: true,
   },
 ];
 
@@ -128,19 +131,18 @@ export default function ReportsPage() {
         return <AccountActivityReport />;
       case "category-spend":
         return <CategorySpendReport />;
+      case "recurring":
+        return <RecurringActivityReport />;
+      case "balance-history":
+        return <BalanceHistoryReport />;
+      case "reconciliation":
+        return <ReconciliationReport />;
       case "counterparties":
         return <CounterpartyReport />;
       case "exceptions":
         return <ExceptionReport />;
-      default:
-        return (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <RefreshCw className="h-8 w-8 text-muted-foreground/50 mb-4" />
-            <p className="text-sm text-muted-foreground">
-              This report is staged for a future release.
-            </p>
-          </div>
-        );
+      case "integrity":
+        return <DataIntegrityReport />;
     }
   };
 
@@ -186,11 +188,6 @@ export default function ReportsPage() {
                     ].join(" ")}
                   >
                     {report.label}
-                    {!report.available && (
-                      <span className="ml-2 text-[10px] text-muted-foreground">
-                        Coming soon
-                      </span>
-                    )}
                   </div>
                   <div className="text-xs text-muted-foreground truncate">
                     {report.description}

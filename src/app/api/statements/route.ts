@@ -1,23 +1,27 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 /**
  * GET /api/statements
- * 
+ *
  * List all bank statements for the authenticated user.
  * Optional account_id filter.
  */
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function GET(req: Request) {
   const requestId = crypto.randomUUID();
 
   try {
+    // Lazy initialization - safe during build
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Storage service not configured", request_id: requestId },
+        { status: 503, headers: { "x-request-id": requestId } }
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {

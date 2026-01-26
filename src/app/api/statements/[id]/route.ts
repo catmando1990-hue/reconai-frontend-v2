@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 /**
  * DELETE /api/statements/[id]
@@ -8,19 +8,23 @@ import { createClient } from "@supabase/supabase-js";
  * Delete a bank statement and its file from storage.
  */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const requestId = crypto.randomUUID();
   const { id } = await params;
 
   try {
+    // Lazy initialization - safe during build
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Storage service not configured", request_id: requestId },
+        { status: 503, headers: { "x-request-id": requestId } }
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {

@@ -1,21 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 /**
  * POST /api/statements/upload
- * 
+ *
  * Upload a bank statement file linked to a specific account.
  * - Validates file type and size
  * - Requires account_id
  * - Uploads to Supabase Storage
  * - Creates metadata record in bank_statements table
  */
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 const ALLOWED_EXTENSIONS = ["pdf", "csv", "ofx", "qfx"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -31,6 +26,15 @@ export async function POST(req: Request) {
   const requestId = crypto.randomUUID();
 
   try {
+    // Lazy initialization - safe during build
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Storage service not configured", request_id: requestId },
+        { status: 503, headers: { "x-request-id": requestId } }
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {

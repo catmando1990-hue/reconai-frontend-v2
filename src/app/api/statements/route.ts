@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     if (!supabase) {
       return NextResponse.json(
         { error: "Storage service not configured", request_id: requestId },
-        { status: 503, headers: { "x-request-id": requestId } }
+        { status: 503, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -50,19 +50,19 @@ export async function GET(req: Request) {
       console.error("[Statements] Supabase error:", error);
       return NextResponse.json(
         { error: "Failed to fetch statements", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
     return NextResponse.json(
       { statements: data || [], request_id: requestId },
-      { status: 200, headers: { "x-request-id": requestId } }
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (error) {
     console.error("[Statements] Error:", error);
     return NextResponse.json(
       { error: "Internal server error", request_id: requestId },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

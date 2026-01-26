@@ -196,7 +196,9 @@ async function fetchTransactionsFromSupabase(
     const supabase = supabaseAdmin();
     const { data, error } = await supabase
       .from("transactions")
-      .select("id, transaction_id, date, amount, name, merchant_name, category, account_id")
+      .select(
+        "id, transaction_id, date, amount, name, merchant_name, category, account_id",
+      )
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(50);
@@ -339,7 +341,8 @@ export async function GET() {
     }
 
     // Build Live State
-    let unpaidInvoices: CoreStateResponse["live_state"]["unpaid_invoices"] = null;
+    let unpaidInvoices: CoreStateResponse["live_state"]["unpaid_invoices"] =
+      null;
     if (invoices !== null) {
       const unpaid = invoices.filter(
         (inv) =>
@@ -350,7 +353,10 @@ export async function GET() {
       if (unpaid.length > 0) {
         unpaidInvoices = {
           count: unpaid.length,
-          total_due: unpaid.reduce((sum, inv) => sum + (inv.amount_due || 0), 0),
+          total_due: unpaid.reduce(
+            (sum, inv) => sum + (inv.amount_due || 0),
+            0,
+          ),
           items: unpaid.slice(0, 5).map((inv) => ({
             id: inv.id,
             customer_name: inv.customer_name || "Unknown",
@@ -370,7 +376,10 @@ export async function GET() {
       if (unpaid.length > 0) {
         unpaidBills = {
           count: unpaid.length,
-          total_due: unpaid.reduce((sum, bill) => sum + (bill.amount_due || 0), 0),
+          total_due: unpaid.reduce(
+            (sum, bill) => sum + (bill.amount_due || 0),
+            0,
+          ),
           items: unpaid.slice(0, 5).map((bill) => ({
             id: bill.id,
             vendor_name: bill.vendor_name || "Unknown",
@@ -421,9 +430,18 @@ export async function GET() {
     if (invoices !== null) {
       invoiceEvidence = {
         total_count: invoices.length,
-        total_amount: invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0),
-        paid_amount: invoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0),
-        due_amount: invoices.reduce((sum, inv) => sum + (inv.amount_due || 0), 0),
+        total_amount: invoices.reduce(
+          (sum, inv) => sum + (inv.total_amount || 0),
+          0,
+        ),
+        paid_amount: invoices.reduce(
+          (sum, inv) => sum + (inv.amount_paid || 0),
+          0,
+        ),
+        due_amount: invoices.reduce(
+          (sum, inv) => sum + (inv.amount_due || 0),
+          0,
+        ),
         by_status: {
           paid: invoices.filter((inv) => inv.status === "paid").length,
           pending: invoices.filter((inv) => inv.status === "sent").length,
@@ -437,9 +455,18 @@ export async function GET() {
     if (bills !== null) {
       billEvidence = {
         total_count: bills.length,
-        total_amount: bills.reduce((sum, bill) => sum + (bill.amount_total || 0), 0),
-        paid_amount: bills.reduce((sum, bill) => sum + (bill.amount_paid || 0), 0),
-        due_amount: bills.reduce((sum, bill) => sum + (bill.amount_due || 0), 0),
+        total_amount: bills.reduce(
+          (sum, bill) => sum + (bill.amount_total || 0),
+          0,
+        ),
+        paid_amount: bills.reduce(
+          (sum, bill) => sum + (bill.amount_paid || 0),
+          0,
+        ),
+        due_amount: bills.reduce(
+          (sum, bill) => sum + (bill.amount_due || 0),
+          0,
+        ),
         by_status: {
           paid: bills.filter((bill) => bill.status === "paid").length,
           pending: bills.filter(
@@ -450,7 +477,8 @@ export async function GET() {
       };
     }
 
-    let recentTransactions: CoreStateResponse["evidence"]["recent_transactions"] = null;
+    let recentTransactions: CoreStateResponse["evidence"]["recent_transactions"] =
+      null;
     if (transactions !== null && transactions.length > 0) {
       recentTransactions = {
         count: transactions.length,
@@ -484,7 +512,8 @@ export async function GET() {
       evidence: {
         invoices: invoiceEvidence,
         bills: billEvidence,
-        customers: customerCount !== null ? { total_count: customerCount } : null,
+        customers:
+          customerCount !== null ? { total_count: customerCount } : null,
         vendors: vendorCount !== null ? { total_count: vendorCount } : null,
         recent_transactions: recentTransactions,
       },

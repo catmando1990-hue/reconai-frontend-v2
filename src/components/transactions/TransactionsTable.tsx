@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import {
   DashTable,
   type DashTableColumn,
@@ -132,7 +137,7 @@ export default function TransactionsTable() {
   }, [rows.length]);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
-  
+
   const paginatedRows = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;

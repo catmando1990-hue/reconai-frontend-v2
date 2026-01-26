@@ -14,6 +14,7 @@ import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
 import { IntelligenceV1Panel } from "@/components/intelligence/IntelligenceV1Panel";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   Sparkles,
   RefreshCw,
@@ -101,7 +102,12 @@ function LifecycleStatusBanner({
               {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
             </p>
             {onRetry && (
-              <Button variant="outline" size="sm" onClick={onRetry} className="mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRetry}
+                className="mt-2"
+              >
                 <RefreshCw className="mr-2 h-3 w-3" />
                 Refresh
               </Button>
@@ -124,7 +130,12 @@ function LifecycleStatusBanner({
             {reasonMessage || `Error: ${reasonCode || "unknown"}`}
           </p>
           {onRetry && (
-            <Button variant="outline" size="sm" onClick={onRetry} className="mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              className="mt-2"
+            >
               <RefreshCw className="mr-2 h-3 w-3" />
               Retry
             </Button>
@@ -152,7 +163,7 @@ function InsightCard({ item, onConfirm, onDismiss }: InsightCardProps) {
 
   const handleConfirm = async () => {
     if (!item.suggested_category || !item.transaction_ids?.length) return;
-    
+
     setConfirming(true);
     try {
       // Apply category to all transactions in this insight
@@ -194,19 +205,22 @@ function InsightCard({ item, onConfirm, onDismiss }: InsightCardProps) {
             </span>
           </div>
           <p className="text-sm text-muted-foreground">{item.summary}</p>
-          
+
           {/* Show suggested category if available */}
           {item.suggested_category && (
             <p className="text-sm">
               <span className="text-muted-foreground">Suggested: </span>
-              <span className="font-medium text-primary">{item.suggested_category}</span>
+              <span className="font-medium text-primary">
+                {item.suggested_category}
+              </span>
             </p>
           )}
-          
+
           {/* Show affected transactions */}
           {item.transaction_ids && item.transaction_ids.length > 0 && (
             <p className="text-xs text-muted-foreground">
-              {item.transaction_ids.length} transaction{item.transaction_ids.length > 1 ? "s" : ""} affected
+              {item.transaction_ids.length} transaction
+              {item.transaction_ids.length > 1 ? "s" : ""} affected
             </p>
           )}
 
@@ -222,34 +236,36 @@ function InsightCard({ item, onConfirm, onDismiss }: InsightCardProps) {
         </div>
 
         {/* Action buttons for categorization insights */}
-        {item.type === "categorization" && item.suggested_category && !confirmed && (
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleConfirm}
-              disabled={confirming}
-              className="text-primary border-primary hover:bg-primary/10"
-            >
-              {confirming ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Check className="mr-1 h-4 w-4" />
-                  Apply
-                </>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDismiss}
-              disabled={confirming}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        {item.type === "categorization" &&
+          item.suggested_category &&
+          !confirmed && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleConfirm}
+                disabled={confirming}
+                className="text-primary border-primary hover:bg-primary/10"
+              >
+                {confirming ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="mr-1 h-4 w-4" />
+                    Apply
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDismiss}
+                disabled={confirming}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
         {/* Show confirmed state */}
         {confirmed && (
@@ -280,17 +296,15 @@ export default function IntelligenceInsightsPage() {
 
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
-  const handleConfirmCategory = async (transactionId: string, category: string) => {
-    const response = await fetch(`/api/transactions/${transactionId}/category`, {
+  const handleConfirmCategory = async (
+    transactionId: string,
+    category: string,
+  ) => {
+    await auditedFetch(`/api/transactions/${transactionId}/category`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ category }),
+      skipBodyValidation: true,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to update category");
-    }
   };
 
   const handleDismiss = (insightId: string) => {
@@ -299,7 +313,7 @@ export default function IntelligenceInsightsPage() {
 
   // Filter out dismissed insights
   const visibleItems = (data?.items as InsightItem[] | null)?.filter(
-    (item) => !dismissedIds.has(item.id)
+    (item) => !dismissedIds.has(item.id),
   );
 
   return (
@@ -314,7 +328,9 @@ export default function IntelligenceInsightsPage() {
             onClick={() => void refetch()}
             disabled={isLoading}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         }
@@ -387,21 +403,31 @@ export default function IntelligenceInsightsPage() {
             <SecondaryPanel title="Insight Summary">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Insights</span>
+                  <span className="text-sm text-muted-foreground">
+                    Total Insights
+                  </span>
                   <span className="text-lg font-medium">
                     {visibleItems?.length ?? 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">High Confidence</span>
+                  <span className="text-sm text-muted-foreground">
+                    High Confidence
+                  </span>
                   <span className="text-lg font-medium">
-                    {visibleItems?.filter((i) => i.confidence >= 0.85).length ?? 0}
+                    {visibleItems?.filter((i) => i.confidence >= 0.85).length ??
+                      0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Actionable</span>
+                  <span className="text-sm text-muted-foreground">
+                    Actionable
+                  </span>
                   <span className="text-lg font-medium">
-                    {visibleItems?.filter((i) => i.type === "categorization" && i.suggested_category).length ?? 0}
+                    {visibleItems?.filter(
+                      (i) =>
+                        i.type === "categorization" && i.suggested_category,
+                    ).length ?? 0}
                   </span>
                 </div>
               </div>
@@ -414,22 +440,32 @@ export default function IntelligenceInsightsPage() {
                   <span className="text-primary">Actionable</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Medium (0.70-0.84)</span>
+                  <span className="text-muted-foreground">
+                    Medium (0.70-0.84)
+                  </span>
                   <span className="text-foreground">Review recommended</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Low (&lt;0.70)</span>
-                  <span className="text-muted-foreground">Flagged for verification</span>
+                  <span className="text-muted-foreground">
+                    Flagged for verification
+                  </span>
                 </div>
               </div>
             </SecondaryPanel>
 
             <SecondaryPanel title="Quick Links" collapsible>
               <div className="space-y-2 text-sm">
-                <Link href={ROUTES.INTELLIGENCE_ALERTS} className="block text-primary hover:underline">
+                <Link
+                  href={ROUTES.INTELLIGENCE_ALERTS}
+                  className="block text-primary hover:underline"
+                >
                   View alerts
                 </Link>
-                <Link href={ROUTES.CORE_TRANSACTIONS} className="block text-primary hover:underline">
+                <Link
+                  href={ROUTES.CORE_TRANSACTIONS}
+                  className="block text-primary hover:underline"
+                >
                   Review transactions
                 </Link>
               </div>

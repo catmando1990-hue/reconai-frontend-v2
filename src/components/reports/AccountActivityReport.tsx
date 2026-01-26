@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw, Wallet } from "lucide-react";
@@ -48,28 +48,23 @@ export function AccountActivityReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    let alive = true;
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    try {
+      const data = await apiFetch<Transaction[]>("/api/transactions");
+      setTransactions(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
-    apiFetch<Transaction[]>("/api/transactions")
-      .then((data) => {
-        if (alive) setTransactions(data);
-      })
-      .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [isLoaded, apiFetch]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchData();
+  }, [isLoaded, fetchData]);
 
   const accountSummaries = useMemo(() => {
     const map = new Map<
@@ -116,7 +111,7 @@ export function AccountActivityReport() {
           firstTxDate: sortedDates[0] || null,
           lastTxDate: sortedDates[sortedDates.length - 1] || null,
         };
-      }
+      },
     );
 
     // Sort by transaction count descending
@@ -165,7 +160,7 @@ export function AccountActivityReport() {
         netChange: acc.netChange + curr.netChange,
         count: acc.count + curr.transactionCount,
       }),
-      { inflows: 0, outflows: 0, netChange: 0, count: 0 }
+      { inflows: 0, outflows: 0, netChange: 0, count: 0 },
     );
   }, [accountSummaries]);
 
@@ -220,7 +215,9 @@ export function AccountActivityReport() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">Total Outflows</div>
+              <div className="text-xs text-muted-foreground">
+                Total Outflows
+              </div>
               <div className="font-mono text-sm font-semibold text-destructive">
                 -{formatCurrency(totals.outflows)}
               </div>
@@ -230,7 +227,9 @@ export function AccountActivityReport() {
               <div
                 className={[
                   "font-mono text-sm font-semibold",
-                  totals.netChange >= 0 ? "text-emerald-600" : "text-destructive",
+                  totals.netChange >= 0
+                    ? "text-emerald-600"
+                    : "text-destructive",
                 ].join(" ")}
               >
                 {totals.netChange >= 0 ? "+" : "-"}
@@ -283,7 +282,9 @@ export function AccountActivityReport() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-muted-foreground">Transactions</div>
+                        <div className="text-muted-foreground">
+                          Transactions
+                        </div>
                         <div>{acc.transactionCount}</div>
                       </div>
                       <div>
@@ -311,7 +312,8 @@ export function AccountActivityReport() {
                           className="bg-destructive"
                           style={{
                             width: `${
-                              (acc.outflows / (acc.inflows + acc.outflows)) * 100
+                              (acc.outflows / (acc.inflows + acc.outflows)) *
+                              100
                             }%`,
                           }}
                         />

@@ -4,10 +4,7 @@ import { useState, useCallback } from "react";
 import { Copy, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { DashTable, DashTableColumn } from "@/components/dashboard/DashTable";
 import { StatusChip } from "@/components/dashboard/StatusChip";
-import type {
-  ExportRecord,
-  ExportStatusVariant,
-} from "@/types/admin-exports";
+import type { ExportRecord, ExportStatusVariant } from "@/types/admin-exports";
 
 interface AdminExportsTableProps {
   exports: ExportRecord[];

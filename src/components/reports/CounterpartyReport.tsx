@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw } from "lucide-react";
@@ -37,28 +37,23 @@ export function CounterpartyReport() {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"volume" | "frequency">("volume");
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    let alive = true;
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    try {
+      const data = await apiFetch<Transaction[]>("/api/transactions");
+      setTransactions(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
-    apiFetch<Transaction[]>("/api/transactions")
-      .then((data) => {
-        if (alive) setTransactions(data);
-      })
-      .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [isLoaded, apiFetch]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchData();
+  }, [isLoaded, fetchData]);
 
   const counterparties = useMemo(() => {
     const map = new Map<
@@ -86,13 +81,13 @@ export function CounterpartyReport() {
         totalOutflow: outflow,
         netFlow: inflow - outflow,
         transactionCount: count,
-      })
+      }),
     );
 
     if (sortBy === "volume") {
       result.sort(
         (a, b) =>
-          b.totalInflow + b.totalOutflow - (a.totalInflow + a.totalOutflow)
+          b.totalInflow + b.totalOutflow - (a.totalInflow + a.totalOutflow),
       );
     } else {
       result.sort((a, b) => b.transactionCount - a.transactionCount);
@@ -141,7 +136,9 @@ export function CounterpartyReport() {
         <div className="flex items-center gap-2">
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "volume" | "frequency")}
+            onChange={(e) =>
+              setSortBy(e.target.value as "volume" | "frequency")
+            }
             className="rounded-lg border bg-background px-2 py-1 text-xs"
           >
             <option value="volume">Sort by Volume</option>
@@ -198,10 +195,14 @@ export function CounterpartyReport() {
                     </div>
                   </td>
                   <td className="px-4 py-2.5 text-right font-mono text-emerald-600">
-                    {cp.totalInflow > 0 ? `+${formatCurrency(cp.totalInflow)}` : "—"}
+                    {cp.totalInflow > 0
+                      ? `+${formatCurrency(cp.totalInflow)}`
+                      : "—"}
                   </td>
                   <td className="px-4 py-2.5 text-right font-mono text-destructive">
-                    {cp.totalOutflow > 0 ? `-${formatCurrency(cp.totalOutflow)}` : "—"}
+                    {cp.totalOutflow > 0
+                      ? `-${formatCurrency(cp.totalOutflow)}`
+                      : "—"}
                   </td>
                   <td
                     className={[

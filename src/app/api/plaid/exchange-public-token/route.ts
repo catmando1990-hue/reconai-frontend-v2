@@ -112,7 +112,14 @@ export async function POST(req: Request) {
       }
 
       // Sync transactions for existing item
-      await syncTransactions(plaid, supabase, accessToken, itemId, userId, requestId);
+      await syncTransactions(
+        plaid,
+        supabase,
+        accessToken,
+        itemId,
+        userId,
+        requestId,
+      );
 
       return NextResponse.json(
         {
@@ -202,7 +209,10 @@ export async function POST(req: Request) {
             .eq("account_id", acct.account_id);
 
           if (updateErr) {
-            console.error("[Plaid exchange] Failed to update account:", updateErr);
+            console.error(
+              "[Plaid exchange] Failed to update account:",
+              updateErr,
+            );
           }
         } else {
           const { error: insertErr } = await supabase
@@ -210,7 +220,10 @@ export async function POST(req: Request) {
             .insert(acct);
 
           if (insertErr) {
-            console.error("[Plaid exchange] Failed to insert account:", insertErr);
+            console.error(
+              "[Plaid exchange] Failed to insert account:",
+              insertErr,
+            );
           }
         }
       }
@@ -219,7 +232,14 @@ export async function POST(req: Request) {
     }
 
     // Sync transactions immediately after successful connection
-    await syncTransactions(plaid, supabase, accessToken, itemId, userId, requestId);
+    await syncTransactions(
+      plaid,
+      supabase,
+      accessToken,
+      itemId,
+      userId,
+      requestId,
+    );
 
     return NextResponse.json(
       {
@@ -268,7 +288,9 @@ async function syncTransactions(
   userId: string,
   requestId: string,
 ): Promise<void> {
-  console.log(`[Plaid sync] Starting auto-sync for item=${itemId}, requestId=${requestId}`);
+  console.log(
+    `[Plaid sync] Starting auto-sync for item=${itemId}, requestId=${requestId}`,
+  );
 
   try {
     let cursor: string | undefined = undefined;
@@ -282,7 +304,8 @@ async function syncTransactions(
         count: 100,
       });
 
-      const { added, modified, removed, next_cursor, has_more } = syncResponse.data;
+      const { added, modified, removed, next_cursor, has_more } =
+        syncResponse.data;
 
       // Process added transactions
       if (added.length > 0) {
@@ -318,7 +341,10 @@ async function syncTransactions(
             if (!insertErr) {
               addedCount++;
             } else {
-              console.error("[Plaid sync] Failed to insert transaction:", insertErr);
+              console.error(
+                "[Plaid sync] Failed to insert transaction:",
+                insertErr,
+              );
             }
           }
         }
@@ -361,7 +387,9 @@ async function syncTransactions(
       .update({ updated_at: new Date().toISOString() })
       .eq("item_id", itemId);
 
-    console.log(`[Plaid sync] Complete: added=${addedCount}, requestId=${requestId}`);
+    console.log(
+      `[Plaid sync] Complete: added=${addedCount}, requestId=${requestId}`,
+    );
   } catch (syncErr) {
     console.error("[Plaid sync] Auto-sync failed:", syncErr);
     // Non-fatal — connection is saved, user can sync later

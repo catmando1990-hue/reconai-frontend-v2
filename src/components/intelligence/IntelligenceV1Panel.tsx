@@ -111,7 +111,9 @@ function CategorySelector({
   };
 
   const handleApply = async () => {
-    const categoryToApply = isCustomMode ? customCategory.trim() : selectedCategory;
+    const categoryToApply = isCustomMode
+      ? customCategory.trim()
+      : selectedCategory;
     if (!categoryToApply) return;
     await onApply(suggestion, categoryToApply);
   };
@@ -140,7 +142,9 @@ function CategorySelector({
               }
               if (e.key === "Escape") {
                 setIsCustomMode(false);
-                setSelectedCategory(suggestion.suggested_category || CATEGORY_OPTIONS[0]);
+                setSelectedCategory(
+                  suggestion.suggested_category || CATEGORY_OPTIONS[0],
+                );
               }
             }}
           />
@@ -149,7 +153,9 @@ function CategorySelector({
             size="sm"
             onClick={() => {
               setIsCustomMode(false);
-              setSelectedCategory(suggestion.suggested_category || CATEGORY_OPTIONS[0]);
+              setSelectedCategory(
+                suggestion.suggested_category || CATEGORY_OPTIONS[0],
+              );
             }}
             className="text-muted-foreground"
           >
@@ -382,7 +388,8 @@ export function IntelligenceV1Panel() {
       );
 
       // 2. Save category rule for learning (merchant → category mapping)
-      const merchantPattern = suggestion.merchant_name || suggestion.description;
+      const merchantPattern =
+        suggestion.merchant_name || suggestion.description;
       if (merchantPattern) {
         try {
           await auditedFetch("/api/intelligence/rules", {
@@ -419,7 +426,8 @@ export function IntelligenceV1Panel() {
 
   // Filter out dismissed and applied
   const visibleCat = cat?.filter(
-    (s) => !dismissedIds.has(s.transaction_id) && !appliedIds.has(s.transaction_id),
+    (s) =>
+      !dismissedIds.has(s.transaction_id) && !appliedIds.has(s.transaction_id),
   );
 
   return (
@@ -436,7 +444,10 @@ export function IntelligenceV1Panel() {
                 <span className="ml-1">
                   {txCount} transactions
                   {rulesApplied !== null && rulesApplied > 0 && (
-                    <span className="text-primary"> · {rulesApplied} rules applied</span>
+                    <span className="text-primary">
+                      {" "}
+                      · {rulesApplied} rules applied
+                    </span>
                   )}
                 </span>
               )}
@@ -493,14 +504,17 @@ export function IntelligenceV1Panel() {
                       {/* Transaction details */}
                       <div className="text-xs text-muted-foreground mt-2 space-y-0.5">
                         <p className="font-medium text-foreground">
-                          {s.merchant_name || s.description || "Unknown merchant"}
+                          {s.merchant_name ||
+                            s.description ||
+                            "Unknown merchant"}
                         </p>
                         <p>
                           {s.amount !== undefined && s.amount !== null
                             ? `$${Math.abs(s.amount).toFixed(2)}`
                             : ""}
                           {s.date && ` · ${s.date}`}
-                          {s.current_category && ` · Current: ${s.current_category}`}
+                          {s.current_category &&
+                            ` · Current: ${s.current_category}`}
                         </p>
                       </div>
                     </div>

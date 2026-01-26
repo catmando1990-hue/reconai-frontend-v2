@@ -16,7 +16,7 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -33,7 +33,7 @@ export async function GET() {
         type,
         subtype,
         institution_name
-      `
+      `,
       )
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .order("institution_name", { ascending: true });
@@ -46,7 +46,7 @@ export async function GET() {
           error: { code: "SUPABASE_ERROR", message: error.message },
           request_id: requestId,
         },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -56,7 +56,7 @@ export async function GET() {
         accounts: accounts || [],
         request_id: requestId,
       },
-      { status: 200, headers: { "x-request-id": requestId } }
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {
     console.error("[stored-accounts] Unhandled error:", err);
@@ -67,7 +67,7 @@ export async function GET() {
         error: { code: "INTERNAL_ERROR", message },
         request_id: requestId,
       },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

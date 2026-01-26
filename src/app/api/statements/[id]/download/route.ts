@@ -10,7 +10,7 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const requestId = crypto.randomUUID();
   const { id } = await params;
@@ -21,7 +21,7 @@ export async function GET(
     if (!supabase) {
       return NextResponse.json(
         { error: "Storage service not configured", request_id: requestId },
-        { status: 503, headers: { "x-request-id": requestId } }
+        { status: 503, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -30,14 +30,14 @@ export async function GET(
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
     if (!id) {
       return NextResponse.json(
         { error: "Missing statement ID", request_id: requestId },
-        { status: 400, headers: { "x-request-id": requestId } }
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -51,7 +51,7 @@ export async function GET(
     if (fetchError || !statement) {
       return NextResponse.json(
         { error: "Statement not found", request_id: requestId },
-        { status: 404, headers: { "x-request-id": requestId } }
+        { status: 404, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -59,14 +59,14 @@ export async function GET(
     if (statement.user_id !== userId) {
       return NextResponse.json(
         { error: "Access denied", request_id: requestId },
-        { status: 403, headers: { "x-request-id": requestId } }
+        { status: 403, headers: { "x-request-id": requestId } },
       );
     }
 
     if (!statement.storage_path) {
       return NextResponse.json(
         { error: "File not found", request_id: requestId },
-        { status: 404, headers: { "x-request-id": requestId } }
+        { status: 404, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -79,7 +79,7 @@ export async function GET(
       console.error("[Statement download] Storage error:", downloadError);
       return NextResponse.json(
         { error: "Failed to download file", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -108,7 +108,7 @@ export async function GET(
     console.error("[Statement download] Error:", error);
     return NextResponse.json(
       { error: "Internal server error", request_id: requestId },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

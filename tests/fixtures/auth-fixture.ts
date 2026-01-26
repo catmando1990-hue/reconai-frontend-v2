@@ -71,7 +71,6 @@ function checkAuthState(): boolean {
  * Use this in all tests under tests/auth/*.spec.ts
  */
 export const test = base.extend<object>({
-  // eslint-disable-next-line no-empty-pattern
   page: async ({ page }, use) => {
     if (!checkAuthState()) {
       test.skip(

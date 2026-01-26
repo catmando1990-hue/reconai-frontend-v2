@@ -28,7 +28,9 @@ export async function POST(req: Request) {
       backendUrl = getBackendUrl();
     } catch {
       // Backend not configured — accept silently for graceful degradation
-      console.warn("[Policy acknowledge] Backend URL not configured, returning success");
+      console.warn(
+        "[Policy acknowledge] Backend URL not configured, returning success",
+      );
       return NextResponse.json(
         {
           ok: true,
@@ -54,7 +56,10 @@ export async function POST(req: Request) {
     const data = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      console.error(`[Policy acknowledge] Backend error (${resp.status}):`, data);
+      console.error(
+        `[Policy acknowledge] Backend error (${resp.status}):`,
+        data,
+      );
       // Graceful degradation — don't block UI for policy failures
       return NextResponse.json(
         {

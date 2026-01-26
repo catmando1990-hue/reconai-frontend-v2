@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Download, Building2, TrendingUp, TrendingDown } from "lucide-react";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 type AccountActivity = {
   account_id: string;
@@ -57,10 +58,17 @@ export default function AccountActivityReportPage() {
       if (startDate) params.set("start_date", startDate);
       if (endDate) params.set("end_date", endDate);
 
-      const res = await fetch(`/api/reports/account-activity?${params.toString()}`);
-      const data = await res.json();
+      const data = await auditedFetch<{
+        ok: boolean;
+        data?: AccountActivity[];
+        summary?: Summary;
+        error?: { message?: string };
+        request_id: string;
+      }>(`/api/reports/account-activity?${params.toString()}`, {
+        skipBodyValidation: true,
+      });
 
-      if (!res.ok || !data.ok) {
+      if (!data.ok) {
         throw new Error(data.error?.message || "Failed to load report");
       }
 
@@ -93,7 +101,17 @@ export default function AccountActivityReportPage() {
   const handleExportCSV = () => {
     if (accounts.length === 0) return;
 
-    const headers = ["Account", "Institution", "Type", "Mask", "Current Balance", "Inflows", "Outflows", "Net Change", "Transactions"];
+    const headers = [
+      "Account",
+      "Institution",
+      "Type",
+      "Mask",
+      "Current Balance",
+      "Inflows",
+      "Outflows",
+      "Net Change",
+      "Transactions",
+    ];
     const csvRows = accounts.map((a) => [
       a.name,
       a.institution_name || "",
@@ -106,7 +124,11 @@ export default function AccountActivityReportPage() {
       a.transaction_count,
     ]);
 
-    const csv = [headers, ...csvRows].map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [headers, ...csvRows]
+      .map((row) =>
+        row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -124,7 +146,9 @@ export default function AccountActivityReportPage() {
       {/* Filters */}
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border bg-card/50 p-4">
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">Start Date</label>
+          <label className="block text-xs text-muted-foreground mb-1">
+            Start Date
+          </label>
           <input
             type="date"
             value={startDate}
@@ -133,7 +157,9 @@ export default function AccountActivityReportPage() {
           />
         </div>
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">End Date</label>
+          <label className="block text-xs text-muted-foreground mb-1">
+            End Date
+          </label>
           <input
             type="date"
             value={endDate}
@@ -166,29 +192,39 @@ export default function AccountActivityReportPage() {
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="text-xs text-muted-foreground">Accounts</div>
-            <div className="mt-1 text-2xl font-semibold">{summary.total_accounts}</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {summary.total_accounts}
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="text-xs text-muted-foreground">Total Balance</div>
-            <div className="mt-1 text-2xl font-semibold">{formatCurrency(summary.total_current_balance)}</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {formatCurrency(summary.total_current_balance)}
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3 text-green-600" />
               Inflows
             </div>
-            <div className="mt-1 text-2xl font-semibold text-green-600">{formatCurrency(summary.total_inflows)}</div>
+            <div className="mt-1 text-2xl font-semibold text-green-600">
+              {formatCurrency(summary.total_inflows)}
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <TrendingDown className="h-3 w-3 text-red-600" />
               Outflows
             </div>
-            <div className="mt-1 text-2xl font-semibold text-red-600">{formatCurrency(summary.total_outflows)}</div>
+            <div className="mt-1 text-2xl font-semibold text-red-600">
+              {formatCurrency(summary.total_outflows)}
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="text-xs text-muted-foreground">Net Change</div>
-            <div className={`mt-1 text-2xl font-semibold ${summary.net_change >= 0 ? "text-green-600" : "text-red-600"}`}>
+            <div
+              className={`mt-1 text-2xl font-semibold ${summary.net_change >= 0 ? "text-green-600" : "text-red-600"}`}
+            >
               {formatCurrency(summary.net_change)}
             </div>
           </div>
@@ -214,7 +250,10 @@ export default function AccountActivityReportPage() {
           </div>
         ) : (
           accounts.map((acct) => (
-            <div key={acct.account_id} className="rounded-xl border border-border bg-card">
+            <div
+              key={acct.account_id}
+              className="rounded-xl border border-border bg-card"
+            >
               <div className="flex items-start justify-between border-b border-border p-4">
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg border border-border bg-muted p-2">
@@ -223,39 +262,57 @@ export default function AccountActivityReportPage() {
                   <div>
                     <div className="font-semibold">{acct.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {acct.institution_name || "Bank"} •••• {acct.mask} • {acct.type}
+                      {acct.institution_name || "Bank"} •••• {acct.mask} •{" "}
+                      {acct.type}
                       {acct.subtype && ` / ${acct.subtype}`}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-muted-foreground">Current Balance</div>
-                  <div className="text-xl font-semibold">{formatCurrency(acct.current_balance)}</div>
-                  {acct.available_balance !== null && acct.available_balance !== acct.current_balance && (
-                    <div className="text-xs text-muted-foreground">
-                      {formatCurrency(acct.available_balance)} available
-                    </div>
-                  )}
+                  <div className="text-xs text-muted-foreground">
+                    Current Balance
+                  </div>
+                  <div className="text-xl font-semibold">
+                    {formatCurrency(acct.current_balance)}
+                  </div>
+                  {acct.available_balance !== null &&
+                    acct.available_balance !== acct.current_balance && (
+                      <div className="text-xs text-muted-foreground">
+                        {formatCurrency(acct.available_balance)} available
+                      </div>
+                    )}
                 </div>
               </div>
               <div className="grid grid-cols-4 divide-x divide-border">
                 <div className="p-4 text-center">
                   <div className="text-xs text-muted-foreground">Inflows</div>
-                  <div className="mt-1 font-semibold text-green-600">{formatCurrency(acct.inflows)}</div>
+                  <div className="mt-1 font-semibold text-green-600">
+                    {formatCurrency(acct.inflows)}
+                  </div>
                 </div>
                 <div className="p-4 text-center">
                   <div className="text-xs text-muted-foreground">Outflows</div>
-                  <div className="mt-1 font-semibold text-red-600">{formatCurrency(acct.outflows)}</div>
+                  <div className="mt-1 font-semibold text-red-600">
+                    {formatCurrency(acct.outflows)}
+                  </div>
                 </div>
                 <div className="p-4 text-center">
-                  <div className="text-xs text-muted-foreground">Net Change</div>
-                  <div className={`mt-1 font-semibold ${acct.net_change >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  <div className="text-xs text-muted-foreground">
+                    Net Change
+                  </div>
+                  <div
+                    className={`mt-1 font-semibold ${acct.net_change >= 0 ? "text-green-600" : "text-red-600"}`}
+                  >
                     {formatCurrency(acct.net_change)}
                   </div>
                 </div>
                 <div className="p-4 text-center">
-                  <div className="text-xs text-muted-foreground">Transactions</div>
-                  <div className="mt-1 font-semibold">{acct.transaction_count}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Transactions
+                  </div>
+                  <div className="mt-1 font-semibold">
+                    {acct.transaction_count}
+                  </div>
                 </div>
               </div>
             </div>

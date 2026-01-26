@@ -65,8 +65,7 @@ export async function POST() {
         };
       };
     };
-    const errorCode =
-      plaidError.response?.data?.error_code || "PLAID_ERROR";
+    const errorCode = plaidError.response?.data?.error_code || "PLAID_ERROR";
     const errorMessage =
       plaidError.response?.data?.error_message ||
       (err instanceof Error ? err.message : "Failed to create link token");

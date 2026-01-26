@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { AdminExportsTable } from "@/components/admin/AdminExportsTable";
 import { ExportProvenanceDrawer } from "@/components/admin/ExportProvenanceDrawer";
 import type { ExportRecord, ExportsListResponse } from "@/types/admin-exports";
+import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 
 /**
  * Admin Exports Page
@@ -24,41 +25,41 @@ export default function AdminExportsPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Fetch exports list
-  const fetchExports = useCallback(async (pageNum: number) => {
-    setLoading(true);
-    setError(null);
+  const fetchExports = useCallback(
+    async (pageNum: number) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const res = await fetch(
-        `/api/admin/exports?page=${pageNum}&page_size=${pageSize}`,
-        { cache: "no-store" }
-      );
-
-      if (res.status === 401) {
-        setError("Not authenticated. Please sign in.");
-        return;
+      try {
+        const data = await auditedFetch<ExportsListResponse>(
+          `/api/admin/exports?page=${pageNum}&page_size=${pageSize}`,
+          { skipBodyValidation: true },
+        );
+        setExports(data.exports || []);
+        setTotalCount(data.total_count || 0);
+      } catch (err) {
+        if (err instanceof HttpError) {
+          if (err.status === 401) {
+            setError("Not authenticated. Please sign in.");
+          } else if (err.status === 403) {
+            setError("Access denied. Admin only.");
+          } else {
+            const body = err.body as
+              | { message?: string; error?: string }
+              | undefined;
+            setError(body?.message || body?.error || `Error: ${err.status}`);
+          }
+        } else {
+          setError(
+            `Failed to fetch exports: ${err instanceof Error ? err.message : "Unknown error"}`,
+          );
+        }
+      } finally {
+        setLoading(false);
       }
-      if (res.status === 403) {
-        setError("Access denied. Admin only.");
-        return;
-      }
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.message || data.error || `Error: ${res.status}`);
-        return;
-      }
-
-      const data: ExportsListResponse = await res.json();
-      setExports(data.exports || []);
-      setTotalCount(data.total_count || 0);
-    } catch (err) {
-      setError(
-        `Failed to fetch exports: ${err instanceof Error ? err.message : "Unknown error"}`
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [pageSize]);
+    },
+    [pageSize],
+  );
 
   // Initial fetch
   useEffect(() => {
@@ -99,7 +100,8 @@ export default function AdminExportsPage() {
         <div>
           <h1 className="text-xl font-semibold">Exports Management</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Read-only view of exports and their evidence provenance. Internal admin only.
+            Read-only view of exports and their evidence provenance. Internal
+            admin only.
           </p>
         </div>
 
@@ -124,7 +126,7 @@ export default function AdminExportsPage() {
               {loading
                 ? "—"
                 : exports.filter(
-                    (e) => e.status === "pending" || e.status === "processing"
+                    (e) => e.status === "pending" || e.status === "processing",
                   ).length}
             </div>
             <div className="text-sm text-muted-foreground">In Progress</div>
@@ -134,7 +136,7 @@ export default function AdminExportsPage() {
               {loading
                 ? "—"
                 : exports.filter(
-                    (e) => e.status === "failed" || e.status === "expired"
+                    (e) => e.status === "failed" || e.status === "expired",
                   ).length}
             </div>
             <div className="text-sm text-muted-foreground">Failed/Expired</div>
@@ -170,9 +172,9 @@ export default function AdminExportsPage() {
         <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-xs text-muted-foreground">
           <p>
             <strong>Note:</strong> This page provides read-only visibility into
-            exports for compliance and auditing purposes. No actions can be taken
-            from this interface. Evidence provenance shows the audit trail linking
-            exports to their source evidence.
+            exports for compliance and auditing purposes. No actions can be
+            taken from this interface. Evidence provenance shows the audit trail
+            linking exports to their source evidence.
           </p>
         </div>
       </div>

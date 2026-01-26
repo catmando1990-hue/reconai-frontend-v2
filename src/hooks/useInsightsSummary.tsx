@@ -129,9 +129,12 @@ export function useInsightsSummary(): UseInsightsSummaryState {
     setError(null);
 
     try {
-      const res = await apiFetch<InsightsSummaryResponse>(API_ENDPOINTS.insights, {
-        method: "GET",
-      });
+      const res = await apiFetch<InsightsSummaryResponse>(
+        API_ENDPOINTS.insights,
+        {
+          method: "GET",
+        },
+      );
 
       // FAIL-CLOSED: Validate response structure, version, and lifecycle
       if (res && isValidIntelligenceResponse(res)) {

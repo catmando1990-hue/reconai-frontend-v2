@@ -164,8 +164,8 @@ export default function ReportsPage() {
                   activeReport === report.id
                     ? "bg-primary/10 border border-primary/20"
                     : report.available
-                    ? "hover:bg-muted/50 border border-transparent"
-                    : "opacity-50 cursor-not-allowed border border-transparent",
+                      ? "hover:bg-muted/50 border border-transparent"
+                      : "opacity-50 cursor-not-allowed border border-transparent",
                 ].join(" ")}
               >
                 <div

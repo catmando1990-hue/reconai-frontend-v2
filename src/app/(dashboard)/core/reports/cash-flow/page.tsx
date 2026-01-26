@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 type CashFlowData = {
   period: string;
@@ -40,7 +40,7 @@ export default function CashFlowPage() {
     (async () => {
       try {
         const result = await apiFetch<{ cashflow: CashFlowData }>(
-          "/api/reports/cash-flow"
+          "/api/reports/cash-flow",
         );
         if (alive) setData(result.cashflow);
       } catch (e) {

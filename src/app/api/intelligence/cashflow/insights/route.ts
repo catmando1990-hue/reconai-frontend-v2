@@ -15,7 +15,12 @@ export async function GET(req: Request) {
     const { userId, getToken } = await auth();
     if (!userId) {
       return NextResponse.json(
-        { trend: null, confidence: 0, explanation: "Not authenticated", request_id: requestId },
+        {
+          trend: null,
+          confidence: 0,
+          explanation: "Not authenticated",
+          request_id: requestId,
+        },
         { status: 200, headers: { "x-request-id": requestId } },
       );
     }
@@ -33,7 +38,12 @@ export async function GET(req: Request) {
 
     if (!resp.ok) {
       return NextResponse.json(
-        { trend: null, confidence: 0, explanation: "Analysis unavailable", request_id: requestId },
+        {
+          trend: null,
+          confidence: 0,
+          explanation: "Analysis unavailable",
+          request_id: requestId,
+        },
         { status: 200, headers: { "x-request-id": requestId } },
       );
     }
@@ -68,7 +78,12 @@ export async function GET(req: Request) {
   } catch (err) {
     console.error("[Cashflow insights] Error:", err);
     return NextResponse.json(
-      { trend: null, confidence: 0, explanation: "Request failed", request_id: requestId },
+      {
+        trend: null,
+        confidence: 0,
+        explanation: "Request failed",
+        request_id: requestId,
+      },
       { status: 200, headers: { "x-request-id": requestId } },
     );
   }

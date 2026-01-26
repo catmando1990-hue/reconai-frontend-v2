@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw } from "lucide-react";
@@ -40,33 +40,31 @@ export function CategorySpendReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    let alive = true;
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    try {
+      const data = await apiFetch<Transaction[]>("/api/transactions");
+      setTransactions(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
-    apiFetch<Transaction[]>("/api/transactions")
-      .then((data) => {
-        if (alive) setTransactions(data);
-      })
-      .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [isLoaded, apiFetch]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchData();
+  }, [isLoaded, fetchData]);
 
   const { categoryTotals, totalSpend } = useMemo(() => {
     // Only count outflows (negative amounts = spending)
     const outflows = transactions.filter((tx) => tx.amount < 0);
-    const totalSpend = outflows.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+    const totalSpend = outflows.reduce(
+      (sum, tx) => sum + Math.abs(tx.amount),
+      0,
+    );
 
     const categoryMap = new Map<string, { total: number; count: number }>();
 
@@ -93,7 +91,12 @@ export function CategorySpendReport() {
   const handleExportCSV = () => {
     if (categoryTotals.length === 0) return;
 
-    const headers = ["Category", "Total Spend", "Transaction Count", "% of Total"];
+    const headers = [
+      "Category",
+      "Total Spend",
+      "Transaction Count",
+      "% of Total",
+    ];
     const rows = categoryTotals.map((cat) => [
       cat.category,
       cat.total.toFixed(2),

@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     if (!supabase) {
       return NextResponse.json(
         { error: "Storage service not configured", request_id: requestId },
-        { status: 503, headers: { "x-request-id": requestId } }
+        { status: 503, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -51,14 +51,14 @@ export async function POST(req: Request) {
     if (!file) {
       return NextResponse.json(
         { error: "No file provided", request_id: requestId },
-        { status: 400, headers: { "x-request-id": requestId } }
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
     if (!accountId) {
       return NextResponse.json(
         { error: "Account ID required", request_id: requestId },
-        { status: 400, headers: { "x-request-id": requestId } }
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
           error: `Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(", ")}`,
           request_id: requestId,
         },
-        { status: 400, headers: { "x-request-id": requestId } }
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: "File too large. Maximum size: 10MB", request_id: requestId },
-        { status: 400, headers: { "x-request-id": requestId } }
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
       console.error("[Upload] Storage error:", uploadError);
       return NextResponse.json(
         { error: "Failed to upload file", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
       await supabase.storage.from("bank-statements").remove([storagePath]);
       return NextResponse.json(
         { error: "Failed to save statement record", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -135,13 +135,13 @@ export async function POST(req: Request) {
         statement: data,
         request_id: requestId,
       },
-      { status: 201, headers: { "x-request-id": requestId } }
+      { status: 201, headers: { "x-request-id": requestId } },
     );
   } catch (error) {
     console.error("[Upload] Error:", error);
     return NextResponse.json(
       { error: "Internal server error", request_id: requestId },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

@@ -8,8 +8,7 @@ let _supabaseClient: SupabaseClient | null = null;
  * Use this to guard Supabase-dependent code paths.
  */
 export function isSupabaseConfigured(): boolean {
-  const url =
-    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return Boolean(url && key);
 }
@@ -20,8 +19,7 @@ export function isSupabaseConfigured(): boolean {
  * This is safe to call during build time - will not throw.
  */
 export function getSupabaseAdmin(): SupabaseClient | null {
-  const url =
-    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
@@ -50,7 +48,7 @@ export function supabaseAdmin(): SupabaseClient {
 
   if (!client) {
     throw new Error(
-      "Supabase is not configured. Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
+      "Supabase is not configured. Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
     );
   }
 

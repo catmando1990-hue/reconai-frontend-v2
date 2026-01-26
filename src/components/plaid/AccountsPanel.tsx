@@ -111,7 +111,7 @@ export function AccountsPanel() {
   const handleRemoveClick = useCallback(
     async (itemId: string, institutionName: string) => {
       const confirmed = window.confirm(
-        `Are you sure you want to remove ${institutionName}?\n\nThis will disconnect all accounts from this bank. This action cannot be undone.`
+        `Are you sure you want to remove ${institutionName}?\n\nThis will disconnect all accounts from this bank. This action cannot be undone.`,
       );
       if (!confirmed) return;
 
@@ -125,13 +125,13 @@ export function AccountsPanel() {
         setAccounts(refreshed);
       } catch (e: unknown) {
         setError(
-          e instanceof Error ? e.message : "Failed to remove bank connection"
+          e instanceof Error ? e.message : "Failed to remove bank connection",
         );
       } finally {
         setRemovingItemId(null);
       }
     },
-    []
+    [],
   );
 
   return (
@@ -169,9 +169,7 @@ export function AccountsPanel() {
         <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
       )}
 
-      {error && (
-        <p className="mt-4 text-sm text-destructive">Error: {error}</p>
-      )}
+      {error && <p className="mt-4 text-sm text-destructive">Error: {error}</p>}
 
       {accounts !== null && accounts.length === 0 && !error && (
         <p className="mt-4 text-sm text-muted-foreground">

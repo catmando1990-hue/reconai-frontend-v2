@@ -14,7 +14,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ itemId: string }> }
+  { params }: { params: Promise<{ itemId: string }> },
 ) {
   const requestId = crypto.randomUUID();
   const { itemId } = await params;
@@ -24,14 +24,14 @@ export async function DELETE(
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
     if (!itemId) {
       return NextResponse.json(
         { ok: false, error: "Missing item_id", request_id: requestId },
-        { status: 400, headers: { "x-request-id": requestId } }
+        { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -46,14 +46,20 @@ export async function DELETE(
       .single();
 
     if (fetchError || !item) {
-      console.error("[Plaid delete] Item not found or access denied:", fetchError);
+      console.error(
+        "[Plaid delete] Item not found or access denied:",
+        fetchError,
+      );
       return NextResponse.json(
         {
           ok: false,
-          error: { code: "ITEM_NOT_FOUND", message: "Item not found or access denied" },
+          error: {
+            code: "ITEM_NOT_FOUND",
+            message: "Item not found or access denied",
+          },
           request_id: requestId,
         },
-        { status: 404, headers: { "x-request-id": requestId } }
+        { status: 404, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -70,13 +76,13 @@ export async function DELETE(
               "Content-Type": "application/json",
               "X-Request-ID": requestId,
             },
-          }
+          },
         );
 
         if (!backendResponse.ok) {
           const errorBody = await backendResponse.text();
           console.warn(
-            `[Plaid delete] Backend revoke failed (${backendResponse.status}): ${errorBody}`
+            `[Plaid delete] Backend revoke failed (${backendResponse.status}): ${errorBody}`,
           );
         }
       } catch (backendErr) {
@@ -91,7 +97,10 @@ export async function DELETE(
       .eq("item_id", itemId);
 
     if (accountsDeleteError) {
-      console.error("[Plaid delete] Failed to delete accounts:", accountsDeleteError);
+      console.error(
+        "[Plaid delete] Failed to delete accounts:",
+        accountsDeleteError,
+      );
     }
 
     // 4. Delete the item itself
@@ -109,7 +118,7 @@ export async function DELETE(
           error: { code: "DELETE_FAILED", message: itemDeleteError.message },
           request_id: requestId,
         },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -120,7 +129,10 @@ export async function DELETE(
       .eq("item_id", itemId);
 
     if (txDeleteError) {
-      console.warn("[Plaid delete] Failed to delete transactions:", txDeleteError);
+      console.warn(
+        "[Plaid delete] Failed to delete transactions:",
+        txDeleteError,
+      );
     }
 
     return NextResponse.json(
@@ -130,7 +142,7 @@ export async function DELETE(
         message: `Removed ${item.institution_name || "bank connection"}`,
         request_id: requestId,
       },
-      { status: 200, headers: { "x-request-id": requestId } }
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {
     console.error("[Plaid delete] Unhandled error:", err);
@@ -141,7 +153,7 @@ export async function DELETE(
         error: { code: "INTERNAL_ERROR", message },
         request_id: requestId,
       },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

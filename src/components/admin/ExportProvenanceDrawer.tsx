@@ -7,6 +7,7 @@ import type {
   ExportProvenanceResponse,
   EvidenceLink,
 } from "@/types/admin-exports";
+import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 
 interface ExportProvenanceDrawerProps {
   open: boolean;
@@ -54,7 +55,7 @@ export function ExportProvenanceDrawer({
   exportId,
 }: ExportProvenanceDrawerProps) {
   const [provenance, setProvenance] = useState<ExportProvenanceResponse | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,38 +76,31 @@ export function ExportProvenanceDrawer({
       setError(null);
 
       try {
-        const res = await fetch(`/api/admin/exports/${exportId}/provenance`, {
-          cache: "no-store",
-        });
+        const data = await auditedFetch<ExportProvenanceResponse>(
+          `/api/admin/exports/${exportId}/provenance`,
+          { skipBodyValidation: true },
+        );
 
-        if (cancelled) return;
-
-        if (res.status === 401) {
-          setError("Not authenticated. Please sign in.");
-          return;
-        }
-        if (res.status === 403) {
-          setError("Access denied. Admin only.");
-          return;
-        }
-        if (res.status === 404) {
-          setError("Export not found.");
-          return;
-        }
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          setError(data.error || `Error: ${res.status}`);
-          return;
-        }
-
-        const data: ExportProvenanceResponse = await res.json();
         if (!cancelled) {
           setProvenance(data);
         }
       } catch (err) {
-        if (!cancelled) {
+        if (cancelled) return;
+
+        if (err instanceof HttpError) {
+          if (err.status === 401) {
+            setError("Not authenticated. Please sign in.");
+          } else if (err.status === 403) {
+            setError("Access denied. Admin only.");
+          } else if (err.status === 404) {
+            setError("Export not found.");
+          } else {
+            const body = err.body as { error?: string } | undefined;
+            setError(body?.error || `Error: ${err.status}`);
+          }
+        } else {
           setError(
-            `Failed to fetch: ${err instanceof Error ? err.message : "Unknown error"}`
+            `Failed to fetch: ${err instanceof Error ? err.message : "Unknown error"}`,
           );
         }
       } finally {
@@ -370,7 +364,9 @@ function EvidenceLinkCard({
           {/* Audit Event ID */}
           {link.audit_event_id && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Audit Event:</span>
+              <span className="text-xs text-muted-foreground">
+                Audit Event:
+              </span>
               <code className="text-xs font-mono bg-muted/30 rounded px-1.5 py-0.5">
                 {link.audit_event_id.slice(0, 12)}...
               </code>

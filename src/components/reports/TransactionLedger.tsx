@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
@@ -51,34 +51,27 @@ export function TransactionLedger() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    let alive = true;
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    try {
+      const data = await apiFetch<Transaction[]>("/api/transactions");
+      // Sort by date descending
+      const sorted = [...data].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
+      setTransactions(sorted);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
-    apiFetch<Transaction[]>("/api/transactions")
-      .then((data) => {
-        if (alive) {
-          // Sort by date descending
-          const sorted = [...data].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-          setTransactions(sorted);
-        }
-      })
-      .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [isLoaded, apiFetch]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchData();
+  }, [isLoaded, fetchData]);
 
   const totalPages = Math.max(1, Math.ceil(transactions.length / PAGE_SIZE));
 
@@ -121,7 +114,8 @@ export function TransactionLedger() {
     URL.revokeObjectURL(url);
   };
 
-  const startItem = transactions.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const startItem =
+    transactions.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const endItem = Math.min(currentPage * PAGE_SIZE, transactions.length);
 
   return (
@@ -229,7 +223,8 @@ export function TransactionLedger() {
           {/* Pagination */}
           <div className="flex items-center justify-between border-t px-4 py-3">
             <div className="text-xs text-muted-foreground">
-              Showing {startItem}–{endItem} of {transactions.length} transactions
+              Showing {startItem}–{endItem} of {transactions.length}{" "}
+              transactions
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -246,7 +241,9 @@ export function TransactionLedger() {
               </span>
               <button
                 type="button"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
                 disabled={currentPage === totalPages}
                 className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs disabled:opacity-50"
               >

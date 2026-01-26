@@ -69,7 +69,10 @@ export async function PATCH(req: Request, context: Params) {
     // Security: Verify ownership
     if (existing.user_id !== userId) {
       return NextResponse.json(
-        { error: "Not authorized to update this transaction", request_id: requestId },
+        {
+          error: "Not authorized to update this transaction",
+          request_id: requestId,
+        },
         { status: 403, headers: { "x-request-id": requestId } },
       );
     }
@@ -84,7 +87,10 @@ export async function PATCH(req: Request, context: Params) {
       .eq("transaction_id", transactionId);
 
     if (updateError) {
-      console.error("[Transaction category] Update error:", updateError.message);
+      console.error(
+        "[Transaction category] Update error:",
+        updateError.message,
+      );
       return NextResponse.json(
         { error: "Failed to update category", request_id: requestId },
         { status: 500, headers: { "x-request-id": requestId } },

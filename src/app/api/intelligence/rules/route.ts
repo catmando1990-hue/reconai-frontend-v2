@@ -15,15 +15,6 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  * - Fail-closed on errors
  */
 
-interface CategoryRule {
-  id: string;
-  user_id: string;
-  merchant_pattern: string;
-  category: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export async function GET() {
   const requestId = crypto.randomUUID();
 
@@ -85,7 +76,10 @@ export async function POST(req: Request) {
 
     if (!merchant_pattern || !category) {
       return NextResponse.json(
-        { error: "merchant_pattern and category required", request_id: requestId },
+        {
+          error: "merchant_pattern and category required",
+          request_id: requestId,
+        },
         { status: 400, headers: { "x-request-id": requestId } },
       );
     }
@@ -129,13 +123,15 @@ export async function POST(req: Request) {
     }
 
     // Create new rule
-    const { error: insertError } = await supabase.from("category_rules").insert({
-      user_id: userId,
-      merchant_pattern: merchant_pattern.toLowerCase().trim(),
-      category: category.trim(),
-      created_at: now,
-      updated_at: now,
-    });
+    const { error: insertError } = await supabase
+      .from("category_rules")
+      .insert({
+        user_id: userId,
+        merchant_pattern: merchant_pattern.toLowerCase().trim(),
+        category: category.trim(),
+        created_at: now,
+        updated_at: now,
+      });
 
     if (insertError) {
       console.error("[Category rules] Insert error:", insertError.message);
@@ -158,7 +154,10 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[Category rules] Error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Unknown error", request_id: requestId },
+      {
+        error: err instanceof Error ? err.message : "Unknown error",
+        request_id: requestId,
+      },
       { status: 500, headers: { "x-request-id": requestId } },
     );
   }

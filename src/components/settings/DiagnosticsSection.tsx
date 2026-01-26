@@ -137,32 +137,41 @@ export function DiagnosticsSection() {
     // Check Frontend API
     try {
       const start = performance.now();
-      const res = await fetch("/api/me", { cache: "no-store" });
+      await auditedFetch("/api/me", { skipBodyValidation: true });
       const latency = Math.round(performance.now() - start);
       checks[0] = {
         name: "Frontend API",
-        status: res.ok ? "ok" : "warning",
-        message: res.ok ? `Responding (${latency}ms)` : `Status ${res.status}`,
+        status: "ok",
+        message: `Responding (${latency}ms)`,
         latency,
       };
     } catch (e) {
-      checks[0] = {
-        name: "Frontend API",
-        status: "error",
-        message: e instanceof Error ? e.message : "Connection failed",
-      };
+      const latency = Math.round(performance.now());
+      if (e instanceof HttpError) {
+        checks[0] = {
+          name: "Frontend API",
+          status: "warning",
+          message: `Status ${e.status}`,
+          latency,
+        };
+      } else {
+        checks[0] = {
+          name: "Frontend API",
+          status: "error",
+          message: e instanceof Error ? e.message : "Connection failed",
+        };
+      }
     }
     setHealthChecks([...checks]);
 
-    // Check Backend API
+    // Check Backend API (external - use skipBodyValidation and rawResponse)
     try {
       const backendUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         "https://reconai-backend.onrender.com";
       const start = performance.now();
-      const res = await fetch(`${backendUrl}/health`, {
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
+      const res = await auditedFetch<Response>(`${backendUrl}/health`, {
+        rawResponse: true,
       });
       const latency = Math.round(performance.now() - start);
       checks[1] = {
@@ -197,27 +206,31 @@ export function DiagnosticsSection() {
 
     // Check Authentication
     try {
-      const res = await fetch("/api/admin/debug-claims", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await auditedFetch<{ userId?: string }>(
+        "/api/admin/debug-claims",
+        {
+          skipBodyValidation: true,
+        },
+      );
+      checks[3] = {
+        name: "Authentication",
+        status: data.userId ? "ok" : "warning",
+        message: data.userId ? "Clerk session active" : "No session",
+      };
+    } catch (e) {
+      if (e instanceof HttpError) {
         checks[3] = {
           name: "Authentication",
-          status: data.userId ? "ok" : "warning",
-          message: data.userId ? "Clerk session active" : "No session",
+          status: "warning",
+          message: `Status ${e.status}`,
         };
       } else {
         checks[3] = {
           name: "Authentication",
-          status: "warning",
-          message: `Status ${res.status}`,
+          status: "error",
+          message: e instanceof Error ? e.message : "Check failed",
         };
       }
-    } catch (e) {
-      checks[3] = {
-        name: "Authentication",
-        status: "error",
-        message: e instanceof Error ? e.message : "Check failed",
-      };
     }
     setHealthChecks([...checks]);
 

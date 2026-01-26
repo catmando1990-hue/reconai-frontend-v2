@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw, AlertTriangle } from "lucide-react";
@@ -53,41 +53,40 @@ export function ExceptionReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    let alive = true;
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    try {
+      const data = await apiFetch<Transaction[]>("/api/transactions");
+      setTransactions(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
-    apiFetch<Transaction[]>("/api/transactions")
-      .then((data) => {
-        if (alive) setTransactions(data);
-      })
-      .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [isLoaded, apiFetch]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchData();
+  }, [isLoaded, fetchData]);
 
   const exceptions = useMemo(() => {
     const result: Exception[] = [];
 
     // Calculate statistics for anomaly detection
     const amounts = transactions.map((tx) => Math.abs(tx.amount));
-    const mean = amounts.length > 0 ? amounts.reduce((a, b) => a + b, 0) / amounts.length : 0;
-    const stdDev = amounts.length > 0
-      ? Math.sqrt(
-          amounts.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
-            amounts.length
-        )
-      : 0;
+    const mean =
+      amounts.length > 0
+        ? amounts.reduce((a, b) => a + b, 0) / amounts.length
+        : 0;
+    const stdDev =
+      amounts.length > 0
+        ? Math.sqrt(
+            amounts.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+              amounts.length,
+          )
+        : 0;
 
     const highThreshold = mean + 3 * stdDev;
     const mediumThreshold = mean + 2 * stdDev;
@@ -151,13 +150,13 @@ export function ExceptionReport() {
       const key = `${merchant}-${tx.date}`;
       const sameDay = merchantDateMap.get(key) || [];
       const duplicates = sameDay.filter(
-        (t) => t.id !== tx.id && Math.abs(t.amount - tx.amount) < 0.01
+        (t) => t.id !== tx.id && Math.abs(t.amount - tx.amount) < 0.01,
       );
       if (duplicates.length > 0) {
         // Only flag once per duplicate group
         const minId = Math.min(
           tx.id as unknown as number,
-          ...duplicates.map((d) => d.id as unknown as number)
+          ...duplicates.map((d) => d.id as unknown as number),
         );
         if ((tx.id as unknown as number) === minId) {
           result.push({
@@ -281,15 +280,18 @@ export function ExceptionReport() {
           {/* Exception List */}
           <div className="divide-y">
             {exceptions.map((ex) => (
-              <div key={ex.id} className="flex items-start gap-3 px-4 py-3 hover:bg-muted/20">
+              <div
+                key={ex.id}
+                className="flex items-start gap-3 px-4 py-3 hover:bg-muted/20"
+              >
                 <div
                   className={[
                     "mt-0.5 rounded-full p-1",
                     ex.severity === "high"
                       ? "bg-destructive/20 text-destructive"
                       : ex.severity === "medium"
-                      ? "bg-amber-500/20 text-amber-600"
-                      : "bg-muted text-muted-foreground",
+                        ? "bg-amber-500/20 text-amber-600"
+                        : "bg-muted text-muted-foreground",
                   ].join(" ")}
                 >
                   <AlertTriangle className="h-3.5 w-3.5" />

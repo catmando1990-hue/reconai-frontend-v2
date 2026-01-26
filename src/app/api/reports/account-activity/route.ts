@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -28,14 +28,20 @@ export async function GET(request: NextRequest) {
     // Get accounts with current balances
     const { data: accounts, error: accountsError } = await supabase
       .from("plaid_accounts")
-      .select("account_id, name, official_name, type, subtype, mask, institution_name, balance_current, balance_available")
+      .select(
+        "account_id, name, official_name, type, subtype, mask, institution_name, balance_current, balance_available",
+      )
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
 
     if (accountsError) {
       console.error("[Account activity] Accounts error:", accountsError);
       return NextResponse.json(
-        { ok: false, error: { code: "QUERY_ERROR", message: accountsError.message }, request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        {
+          ok: false,
+          error: { code: "QUERY_ERROR", message: accountsError.message },
+          request_id: requestId,
+        },
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -58,16 +64,27 @@ export async function GET(request: NextRequest) {
     if (txError) {
       console.error("[Account activity] Transactions error:", txError);
       return NextResponse.json(
-        { ok: false, error: { code: "QUERY_ERROR", message: txError.message }, request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        {
+          ok: false,
+          error: { code: "QUERY_ERROR", message: txError.message },
+          request_id: requestId,
+        },
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
     // Aggregate by account
-    const activityMap = new Map<string, { inflows: number; outflows: number; count: number }>();
+    const activityMap = new Map<
+      string,
+      { inflows: number; outflows: number; count: number }
+    >();
 
     for (const tx of transactions || []) {
-      const existing = activityMap.get(tx.account_id) || { inflows: 0, outflows: 0, count: 0 };
+      const existing = activityMap.get(tx.account_id) || {
+        inflows: 0,
+        outflows: 0,
+        count: 0,
+      };
       if (tx.amount < 0) {
         existing.inflows += Math.abs(tx.amount);
       } else {
@@ -79,7 +96,11 @@ export async function GET(request: NextRequest) {
 
     // Combine accounts with activity
     const accountActivity = (accounts || []).map((acct) => {
-      const activity = activityMap.get(acct.account_id) || { inflows: 0, outflows: 0, count: 0 };
+      const activity = activityMap.get(acct.account_id) || {
+        inflows: 0,
+        outflows: 0,
+        count: 0,
+      };
       return {
         account_id: acct.account_id,
         name: acct.name || acct.official_name || "Account",
@@ -91,15 +112,22 @@ export async function GET(request: NextRequest) {
         available_balance: acct.balance_available,
         inflows: Math.round(activity.inflows * 100) / 100,
         outflows: Math.round(activity.outflows * 100) / 100,
-        net_change: Math.round((activity.inflows - activity.outflows) * 100) / 100,
+        net_change:
+          Math.round((activity.inflows - activity.outflows) * 100) / 100,
         transaction_count: activity.count,
       };
     });
 
     // Summary
     const totalInflows = accountActivity.reduce((sum, a) => sum + a.inflows, 0);
-    const totalOutflows = accountActivity.reduce((sum, a) => sum + a.outflows, 0);
-    const totalBalance = accountActivity.reduce((sum, a) => sum + (a.current_balance || 0), 0);
+    const totalOutflows = accountActivity.reduce(
+      (sum, a) => sum + a.outflows,
+      0,
+    );
+    const totalBalance = accountActivity.reduce(
+      (sum, a) => sum + (a.current_balance || 0),
+      0,
+    );
 
     return NextResponse.json(
       {
@@ -120,13 +148,17 @@ export async function GET(request: NextRequest) {
         generated_at: new Date().toISOString(),
         request_id: requestId,
       },
-      { status: 200, headers: { "x-request-id": requestId } }
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {
     console.error("[Account activity] Error:", err);
     return NextResponse.json(
-      { ok: false, error: { code: "INTERNAL_ERROR", message: "Failed to generate report" }, request_id: requestId },
-      { status: 500, headers: { "x-request-id": requestId } }
+      {
+        ok: false,
+        error: { code: "INTERNAL_ERROR", message: "Failed to generate report" },
+        request_id: requestId,
+      },
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

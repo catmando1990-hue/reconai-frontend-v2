@@ -31,7 +31,7 @@ interface AlertItem {
 
 export default function AlertsPage() {
   const { data, isLoading, error, refetch } = useAlerts();
-  
+
   // Track resolved and reviewed alerts locally (no persistence yet)
   const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
@@ -50,9 +50,7 @@ export default function AlertsPage() {
 
   // Filter and categorize alerts
   const allItems = (data?.items as AlertItem[] | null) ?? [];
-  const activeItems = allItems.filter(
-    (item) => !resolvedIds.has(item.id),
-  );
+  const activeItems = allItems.filter((item) => !resolvedIds.has(item.id));
   const newCount = activeItems.filter(
     (a) => a.status === "new" && !reviewedIds.has(a.id),
   ).length;
@@ -75,7 +73,9 @@ export default function AlertsPage() {
             onClick={() => void refetch()}
             disabled={isLoading}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         }
@@ -94,13 +94,19 @@ export default function AlertsPage() {
                   Signals requiring review or documentation
                 </p>
               </div>
-              
+
               {isLoading ? (
-                <p className="text-sm text-muted-foreground">Analyzing transactions…</p>
+                <p className="text-sm text-muted-foreground">
+                  Analyzing transactions…
+                </p>
               ) : error ? (
                 <div className="space-y-2">
                   <p className="text-sm text-destructive">{error}</p>
-                  <Button variant="secondary" size="sm" onClick={() => void refetch()}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void refetch()}
+                  >
                     Retry
                   </Button>
                 </div>
@@ -108,7 +114,7 @@ export default function AlertsPage() {
                 <div className="space-y-4">
                   {activeItems.map((item) => {
                     const isReviewed = reviewedIds.has(item.id);
-                    
+
                     return (
                       <div
                         key={item.id}
@@ -118,24 +124,39 @@ export default function AlertsPage() {
                           <div className="space-y-2 min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="font-medium">{item.title}</h3>
-                              <SeverityBadge severity={severityFromConfidence(item.confidence)} />
+                              <SeverityBadge
+                                severity={severityFromConfidence(
+                                  item.confidence,
+                                )}
+                              />
                               <StatusChip variant={isReviewed ? "ok" : "muted"}>
                                 {isReviewed ? "reviewed" : item.status}
                               </StatusChip>
-                              <StatusChip variant="muted">{item.kind}</StatusChip>
+                              <StatusChip variant="muted">
+                                {item.kind}
+                              </StatusChip>
                             </div>
-                            <p className="text-sm text-muted-foreground">{item.summary}</p>
-                            
+                            <p className="text-sm text-muted-foreground">
+                              {item.summary}
+                            </p>
+
                             {/* Show affected transactions */}
-                            {item.transaction_ids && item.transaction_ids.length > 0 && (
-                              <p className="text-xs text-muted-foreground">
-                                {item.transaction_ids.length} transaction{item.transaction_ids.length > 1 ? "s" : ""} affected
-                              </p>
-                            )}
-                            
+                            {item.transaction_ids &&
+                              item.transaction_ids.length > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  {item.transaction_ids.length} transaction
+                                  {item.transaction_ids.length > 1
+                                    ? "s"
+                                    : ""}{" "}
+                                  affected
+                                </p>
+                              )}
+
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               <ConfidenceMeta confidence={item.confidence} />
-                              <span className="text-muted-foreground/60">•</span>
+                              <span className="text-muted-foreground/60">
+                                •
+                              </span>
                               <span>
                                 {item.created_at
                                   ? new Date(item.created_at).toLocaleString()
@@ -143,7 +164,7 @@ export default function AlertsPage() {
                               </span>
                             </div>
                           </div>
-                          
+
                           {/* Action buttons */}
                           <div className="flex items-center gap-1 shrink-0">
                             {!isReviewed && (
@@ -193,18 +214,26 @@ export default function AlertsPage() {
             <SecondaryPanel title="Alert Summary">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Alerts</span>
+                  <span className="text-sm text-muted-foreground">
+                    Total Alerts
+                  </span>
                   <span className="text-lg font-medium">
                     {formatCount(activeItems.length)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">New</span>
-                  <span className="text-lg font-medium">{formatCount(newCount)}</span>
+                  <span className="text-lg font-medium">
+                    {formatCount(newCount)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Resolved</span>
-                  <span className="text-lg font-medium">{formatCount(resolvedCount)}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Resolved
+                  </span>
+                  <span className="text-lg font-medium">
+                    {formatCount(resolvedCount)}
+                  </span>
                 </div>
               </div>
             </SecondaryPanel>
@@ -234,10 +263,16 @@ export default function AlertsPage() {
 
             <SecondaryPanel title="Quick Links" collapsible>
               <div className="space-y-2 text-sm">
-                <Link href={ROUTES.INTELLIGENCE_INSIGHTS} className="block text-primary hover:underline">
+                <Link
+                  href={ROUTES.INTELLIGENCE_INSIGHTS}
+                  className="block text-primary hover:underline"
+                >
                   View insights
                 </Link>
-                <Link href={ROUTES.CORE_TRANSACTIONS} className="block text-primary hover:underline">
+                <Link
+                  href={ROUTES.CORE_TRANSACTIONS}
+                  className="block text-primary hover:underline"
+                >
                   Review transactions
                 </Link>
               </div>

@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://reconai-backend.onrender.com";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://reconai-backend.onrender.com";
 
 /**
  * Assert that the current user has admin role.
@@ -14,7 +15,7 @@ async function assertAdmin() {
   if (!userId) {
     return NextResponse.json(
       { error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -28,16 +29,15 @@ async function assertAdmin() {
 
   // Fallback: fetch user directly
   const user = await currentUser();
-  const userRole = (
-    user?.publicMetadata as Record<string, unknown> | undefined
-  )?.role;
+  const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
+    ?.role;
   if (userRole === "admin" || userRole === "org:admin") {
     return null;
   }
 
   return NextResponse.json(
     { error: "Forbidden", message: "Admin access required" },
-    { status: 403 }
+    { status: 403 },
   );
 }
 
@@ -49,7 +49,7 @@ async function assertAdmin() {
  */
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ exportId: string }> }
+  { params }: { params: Promise<{ exportId: string }> },
 ) {
   const forbidden = await assertAdmin();
   if (forbidden) return forbidden;
@@ -59,7 +59,7 @@ export async function GET(
   if (!exportId) {
     return NextResponse.json(
       { error: "Bad request", message: "Export ID is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -76,13 +76,13 @@ export async function GET(
           "Content-Type": "application/json",
         },
         cache: "no-store",
-      }
+      },
     );
 
     if (res.status === 404) {
       return NextResponse.json(
         { error: "Not found", message: "Export not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -93,7 +93,7 @@ export async function GET(
           error: "Backend error",
           message: errorData.detail || `Status ${res.status}`,
         },
-        { status: res.status }
+        { status: res.status },
       );
     }
 
@@ -106,7 +106,7 @@ export async function GET(
         error: "Internal error",
         message: err instanceof Error ? err.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

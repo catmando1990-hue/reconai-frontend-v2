@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
@@ -28,68 +28,64 @@ export function CashFlowReport() {
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<"30" | "60" | "90" | "all">("30");
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    let alive = true;
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    try {
+      const data = await apiFetch<Transaction[]>("/api/transactions");
+      setTransactions(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
-    apiFetch<Transaction[]>("/api/transactions")
-      .then((data) => {
-        if (alive) setTransactions(data);
-      })
-      .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchData();
+  }, [isLoaded, fetchData]);
+
+  const { filteredTx, inflows, outflows, netCash, periodLabel } =
+    useMemo(() => {
+      const now = new Date();
+      let cutoff: Date | null = null;
+      let periodLabel = "All Time";
+
+      if (period !== "all") {
+        const days = parseInt(period);
+        cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+        periodLabel = `Last ${days} Days`;
+      }
+
+      // Only cleared transactions (not pending) for direct method
+      const filteredTx = transactions.filter((tx) => {
+        if (tx.pending) return false;
+        if (cutoff) {
+          return new Date(tx.date) >= cutoff;
+        }
+        return true;
       });
 
-    return () => {
-      alive = false;
-    };
-  }, [isLoaded, apiFetch]);
+      let inflows = 0;
+      let outflows = 0;
 
-  const { filteredTx, inflows, outflows, netCash, periodLabel } = useMemo(() => {
-    const now = new Date();
-    let cutoff: Date | null = null;
-    let periodLabel = "All Time";
-
-    if (period !== "all") {
-      const days = parseInt(period);
-      cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-      periodLabel = `Last ${days} Days`;
-    }
-
-    // Only cleared transactions (not pending) for direct method
-    const filteredTx = transactions.filter((tx) => {
-      if (tx.pending) return false;
-      if (cutoff) {
-        return new Date(tx.date) >= cutoff;
+      for (const tx of filteredTx) {
+        if (tx.amount > 0) {
+          inflows += tx.amount;
+        } else {
+          outflows += Math.abs(tx.amount);
+        }
       }
-      return true;
-    });
 
-    let inflows = 0;
-    let outflows = 0;
-
-    for (const tx of filteredTx) {
-      if (tx.amount > 0) {
-        inflows += tx.amount;
-      } else {
-        outflows += Math.abs(tx.amount);
-      }
-    }
-
-    return {
-      filteredTx,
-      inflows,
-      outflows,
-      netCash: inflows - outflows,
-      periodLabel,
-    };
-  }, [transactions, period]);
+      return {
+        filteredTx,
+        inflows,
+        outflows,
+        netCash: inflows - outflows,
+        periodLabel,
+      };
+    }, [transactions, period]);
 
   const handleExportCSV = () => {
     const headers = ["Metric", "Amount"];
@@ -248,8 +244,8 @@ export function CashFlowReport() {
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
-                  Inflows:{" "}
-                  {((inflows / (inflows + outflows)) * 100).toFixed(1)}%
+                  Inflows: {((inflows / (inflows + outflows)) * 100).toFixed(1)}
+                  %
                 </span>
                 <span>
                   Outflows:{" "}

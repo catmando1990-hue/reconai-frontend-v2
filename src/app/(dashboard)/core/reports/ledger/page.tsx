@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useEffect, useState, useCallback } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Button } from "@/components/ui/button";
 import { Download, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 
 interface Transaction {
   id: string;
@@ -48,40 +48,50 @@ function formatDate(dateStr: string): string {
 }
 
 export default function TransactionLedgerPage() {
-  const { getToken } = useAuth();
   const [data, setData] = useState<LedgerResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  const fetchData = async (pageNum: number) => {
+  const fetchData = useCallback(async (pageNum: number) => {
     try {
       setLoading(true);
       setError(null);
-      const token = await getToken();
-      const res = await fetch(`/api/reports/ledger?page=${pageNum}&page_size=${PAGE_SIZE}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch ledger");
-      const json = await res.json();
+      const json = await auditedFetch<LedgerResponse>(
+        `/api/reports/ledger?page=${pageNum}&page_size=${PAGE_SIZE}`,
+        { skipBodyValidation: true },
+      );
       setData(json);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
+      if (e instanceof HttpError) {
+        setError(`Failed to fetch ledger (${e.status})`);
+      } else {
+        setError(e instanceof Error ? e.message : "Failed to load");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData(page);
-  }, [page]);
+  }, [page, fetchData]);
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
   const handleExportCSV = () => {
     if (!data?.transactions.length) return;
-    
-    const headers = ["Date", "Merchant", "Description", "Amount", "Account", "Category", "Source", "Status"];
+
+    const headers = [
+      "Date",
+      "Merchant",
+      "Description",
+      "Amount",
+      "Account",
+      "Category",
+      "Source",
+      "Status",
+    ];
     const rows = data.transactions.map((t) => [
       t.date,
       t.merchant_name || "",
@@ -93,7 +103,9 @@ export default function TransactionLedgerPage() {
       t.status,
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.map((c) => `"${c}"`).join(",")).join("\n");
+    const csv = [headers, ...rows]
+      .map((row) => row.map((c) => `"${c}"`).join(","))
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -109,19 +121,34 @@ export default function TransactionLedgerPage() {
       subtitle="Complete, immutable list of all transactions — audit baseline and source of truth"
       right={
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!data?.transactions.length}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={!data?.transactions.length}
+          >
             <Download className="mr-2 h-4 w-4" />
             Export CSV
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => fetchData(page)} disabled={loading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => fetchData(page)}
+            disabled={loading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         </div>
       }
     >
       <div className="mb-4">
-        <Link href="/core/reports" className="text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          href="/core/reports"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
           ← Back to Reports
         </Link>
       </div>
@@ -150,37 +177,55 @@ export default function TransactionLedgerPage() {
             <tbody>
               {loading && !data ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+                  <td
+                    colSpan={8}
+                    className="px-4 py-12 text-center text-muted-foreground"
+                  >
                     <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
                     Loading transactions...
                   </td>
                 </tr>
               ) : data?.transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
-                    No transactions found. Connect a bank account to import transactions.
+                  <td
+                    colSpan={8}
+                    className="px-4 py-12 text-center text-muted-foreground"
+                  >
+                    No transactions found. Connect a bank account to import
+                    transactions.
                   </td>
                 </tr>
               ) : (
                 data?.transactions.map((tx) => (
-                  <tr key={tx.id} className="border-b border-border last:border-b-0 hover:bg-muted/20">
-                    <td className="px-4 py-3 whitespace-nowrap">{formatDate(tx.date)}</td>
+                  <tr
+                    key={tx.id}
+                    className="border-b border-border last:border-b-0 hover:bg-muted/20"
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {formatDate(tx.date)}
+                    </td>
                     <td className="px-4 py-3">
                       <span className="max-w-[150px] truncate block">
                         {tx.merchant_name || "—"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="max-w-[200px] truncate block">{tx.name}</span>
+                      <span className="max-w-[200px] truncate block">
+                        {tx.name}
+                      </span>
                     </td>
-                    <td className={`px-4 py-3 text-right font-mono whitespace-nowrap ${tx.amount < 0 ? "text-green-600" : ""}`}>
+                    <td
+                      className={`px-4 py-3 text-right font-mono whitespace-nowrap ${tx.amount < 0 ? "text-green-600" : ""}`}
+                    >
                       {formatCurrency(tx.amount, tx.iso_currency_code)}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {tx.account_name ? (
                         <span className="text-xs">
                           {tx.account_name}
-                          {tx.account_mask && <span className="ml-1">••{tx.account_mask}</span>}
+                          {tx.account_mask && (
+                            <span className="ml-1">••{tx.account_mask}</span>
+                          )}
                         </span>
                       ) : (
                         "—"
@@ -192,22 +237,26 @@ export default function TransactionLedgerPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
-                        tx.source === "plaid" 
-                          ? "bg-blue-500/10 text-blue-600" 
-                          : tx.source === "manual"
-                          ? "bg-yellow-500/10 text-yellow-600"
-                          : "bg-purple-500/10 text-purple-600"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
+                          tx.source === "plaid"
+                            ? "bg-blue-500/10 text-blue-600"
+                            : tx.source === "manual"
+                              ? "bg-yellow-500/10 text-yellow-600"
+                              : "bg-purple-500/10 text-purple-600"
+                        }`}
+                      >
                         {tx.source}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
-                        tx.status === "posted" 
-                          ? "bg-green-500/10 text-green-600" 
-                          : "bg-orange-500/10 text-orange-600"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
+                          tx.status === "posted"
+                            ? "bg-green-500/10 text-green-600"
+                            : "bg-orange-500/10 text-orange-600"
+                        }`}
+                      >
                         {tx.status}
                       </span>
                     </td>
@@ -222,7 +271,8 @@ export default function TransactionLedgerPage() {
         {data && data.total > PAGE_SIZE && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <div className="text-sm text-muted-foreground">
-              Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, data.total)} of {data.total}
+              Showing {(page - 1) * PAGE_SIZE + 1}–
+              {Math.min(page * PAGE_SIZE, data.total)} of {data.total}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -256,7 +306,10 @@ export default function TransactionLedgerPage() {
         <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
           <li>• Audit baseline — complete record of all transactions</li>
           <li>• Reconciliation source of truth</li>
-          <li>• Includes date, merchant, amount, account, category, source, and status</li>
+          <li>
+            • Includes date, merchant, amount, account, category, source, and
+            status
+          </li>
           <li>• Negative amounts indicate money received (inflows)</li>
         </ul>
       </div>

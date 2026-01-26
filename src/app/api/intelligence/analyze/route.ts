@@ -71,7 +71,9 @@ interface ClaudeAnalysisResponse {
   cashflow: CashflowInsight | null;
 }
 
-function sanitizeTransactions(transactions: Transaction[]): SanitizedTransaction[] {
+function sanitizeTransactions(
+  transactions: Transaction[],
+): SanitizedTransaction[] {
   return transactions.map((tx, index) => ({
     index,
     date: tx.date,
@@ -154,7 +156,10 @@ Rules:
 - User-defined rules take absolute priority - use 0.99 confidence for matches`;
 }
 
-async function callClaude(prompt: string, apiKey: string): Promise<ClaudeAnalysisResponse | null> {
+async function callClaude(
+  prompt: string,
+  apiKey: string,
+): Promise<ClaudeAnalysisResponse | null> {
   const response = await fetch(ANTHROPIC_API_URL, {
     method: "POST",
     headers: {
@@ -196,7 +201,10 @@ async function callClaude(prompt: string, apiKey: string): Promise<ClaudeAnalysi
     }
     return JSON.parse(jsonMatch[0]) as ClaudeAnalysisResponse;
   } catch (err) {
-    console.error("[Intelligence analyze] Failed to parse Claude response:", err);
+    console.error(
+      "[Intelligence analyze] Failed to parse Claude response:",
+      err,
+    );
     return null;
   }
 }
@@ -248,7 +256,9 @@ export async function POST() {
     // Fetch transactions from Supabase (user-scoped)
     const { data: transactions, error } = await supabase
       .from("transactions")
-      .select("id, transaction_id, date, amount, name, merchant_name, category, pending")
+      .select(
+        "id, transaction_id, date, amount, name, merchant_name, category, pending",
+      )
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(100);
@@ -300,7 +310,9 @@ export async function POST() {
       .filter((d) => d.confidence >= CONFIDENCE_THRESHOLD)
       .map((d, idx) => ({
         group_id: `dup_${requestId.slice(0, 8)}_${idx}`,
-        transactions: d.indices.map((i) => transactions[i]?.transaction_id || `tx_${i}`),
+        transactions: d.indices.map(
+          (i) => transactions[i]?.transaction_id || `tx_${i}`,
+        ),
         confidence: d.confidence,
         explanation: d.explanation,
         evidence: [

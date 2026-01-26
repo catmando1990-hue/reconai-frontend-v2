@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 
 interface HealthCheck {
   name: string;
@@ -108,30 +109,27 @@ export default function AdminSettingsPage() {
 
     async function fetchStatus() {
       try {
-        const res = await fetch("/api/admin/maintenance", {
-          cache: "no-store",
-        });
-        if (cancelled) return;
-
-        if (res.status === 401) {
-          setError("Not authenticated. Please sign in.");
-          return;
-        }
-        if (res.status === 403) {
-          setError("Access denied. Admin only.");
-          return;
-        }
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          setError(data.error || `Error: ${res.status}`);
-          return;
-        }
-        const data = await res.json();
+        const data = await auditedFetch<{ maintenance?: boolean }>(
+          "/api/admin/maintenance",
+          {
+            skipBodyValidation: true,
+          },
+        );
         if (!cancelled) {
           setMaintenance(Boolean(data.maintenance));
         }
       } catch (err) {
-        if (!cancelled) {
+        if (cancelled) return;
+        if (err instanceof HttpError) {
+          if (err.status === 401) {
+            setError("Not authenticated. Please sign in.");
+          } else if (err.status === 403) {
+            setError("Access denied. Admin only.");
+          } else {
+            const body = err.body as { error?: string } | undefined;
+            setError(body?.error || `Error: ${err.status}`);
+          }
+        } else {
           setError(
             `Failed to fetch: ${err instanceof Error ? err.message : "Unknown error"}`,
           );
@@ -152,14 +150,18 @@ export default function AdminSettingsPage() {
 
   async function handleToggle() {
     setLoading(true);
-    const res = await fetch("/api/admin/maintenance", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled: !maintenance }),
-    });
-    if (res.ok) {
-      const data = await res.json();
+    try {
+      const data = await auditedFetch<{ maintenance?: boolean }>(
+        "/api/admin/maintenance",
+        {
+          method: "POST",
+          body: JSON.stringify({ enabled: !maintenance }),
+          skipBodyValidation: true,
+        },
+      );
       setMaintenance(Boolean(data.maintenance));
+    } catch {
+      // Silently fail - status will remain unchanged
     }
     setLoading(false);
   }
@@ -167,14 +169,18 @@ export default function AdminSettingsPage() {
   async function handleKillSwitch() {
     setLoading(true);
     setShowKillConfirm(false);
-    const res = await fetch("/api/admin/maintenance", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled: true }),
-    });
-    if (res.ok) {
-      const data = await res.json();
+    try {
+      const data = await auditedFetch<{ maintenance?: boolean }>(
+        "/api/admin/maintenance",
+        {
+          method: "POST",
+          body: JSON.stringify({ enabled: true }),
+          skipBodyValidation: true,
+        },
+      );
       setMaintenance(Boolean(data.maintenance));
+    } catch {
+      // Silently fail - status will remain unchanged
     }
     setLoading(false);
   }
@@ -184,22 +190,19 @@ export default function AdminSettingsPage() {
     type: "health" | "performance" | "security" | "bugs",
   ): Promise<DiagnosticResult | null> {
     try {
-      const res = await fetch(`/api/admin/diagnose/${type}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type,
-          depth: "standard",
-          include_fixes: true,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Diagnostic failed: ${res.status}`);
-      }
-
-      return await res.json();
+      const result = await auditedFetch<DiagnosticResult>(
+        `/api/admin/diagnose/${type}`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            type,
+            depth: "standard",
+            include_fixes: true,
+          }),
+          skipBodyValidation: true,
+        },
+      );
+      return result;
     } catch (err) {
       console.error("Backend diagnostic error:", err);
       return null;
@@ -382,24 +385,18 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
     setApprovalDialog((d) => ({ ...d, isApproving: true, error: null }));
 
     try {
-      const res = await fetch(
+      const data = await auditedFetch<{ success?: boolean; message?: string }>(
         `/api/admin/fixes/${approvalDialog.fix.fix_id}/approve`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: approvalDialog.fix.action,
             confirmation_code: approvalDialog.confirmationInput,
             admin_notes: approvalDialog.adminNotes || null,
           }),
+          skipBodyValidation: true,
         },
       );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || data.detail || "Failed to approve fix");
-      }
 
       if (data.success) {
         // Success - close dialog and show success
@@ -419,9 +416,18 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
         }));
       }
     } catch (err) {
+      let errorMsg = "Unknown error";
+      if (err instanceof HttpError) {
+        const body = err.body as
+          | { error?: string; detail?: string }
+          | undefined;
+        errorMsg = body?.error || body?.detail || "Failed to approve fix";
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
       setApprovalDialog((d) => ({
         ...d,
-        error: err instanceof Error ? err.message : "Unknown error",
+        error: errorMsg,
         isApproving: false,
       }));
     }
@@ -450,34 +456,42 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
     // Check Frontend API (/api/me)
     try {
       const start = performance.now();
-      const res = await fetch("/api/me", { cache: "no-store" });
+      await auditedFetch("/api/me", { skipBodyValidation: true });
       const latency = Math.round(performance.now() - start);
       checks[0] = {
         name: "Frontend API",
-        status: res.ok ? "ok" : "warning",
-        message: res.ok ? `Responding (${latency}ms)` : `Status ${res.status}`,
+        status: "ok",
+        message: `Responding (${latency}ms)`,
         latency,
       };
-      if (!res.ok) {
+    } catch (e) {
+      const latency = Math.round(performance.now());
+      if (e instanceof HttpError) {
+        checks[0] = {
+          name: "Frontend API",
+          status: "warning",
+          message: `Status ${e.status}`,
+          latency,
+        };
         errors.push({
           timestamp: new Date().toISOString(),
           type: "API Error",
-          message: `Frontend API returned ${res.status}`,
+          message: `Frontend API returned ${e.status}`,
+          source: "/api/me",
+        });
+      } else {
+        checks[0] = {
+          name: "Frontend API",
+          status: "error",
+          message: e instanceof Error ? e.message : "Connection failed",
+        };
+        errors.push({
+          timestamp: new Date().toISOString(),
+          type: "Connection Error",
+          message: e instanceof Error ? e.message : "Unknown error",
           source: "/api/me",
         });
       }
-    } catch (e) {
-      checks[0] = {
-        name: "Frontend API",
-        status: "error",
-        message: e instanceof Error ? e.message : "Connection failed",
-      };
-      errors.push({
-        timestamp: new Date().toISOString(),
-        type: "Connection Error",
-        message: e instanceof Error ? e.message : "Unknown error",
-        source: "/api/me",
-      });
     }
     setHealthChecks([...checks]);
 
@@ -487,9 +501,8 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
         process.env.NEXT_PUBLIC_API_BASE_URL ||
         "https://reconai-backend.onrender.com";
       const start = performance.now();
-      const res = await fetch(`${backendUrl}/health`, {
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
+      const res = await auditedFetch<Response>(`${backendUrl}/health`, {
+        rawResponse: true,
       });
       const latency = Math.round(performance.now() - start);
       checks[1] = {
@@ -499,30 +512,7 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
         latency,
       };
       setPerformanceMetrics((p) => ({ ...p, avgResponseTime: latency }));
-    } catch (e) {
-      checks[1] = {
-        name: "Backend API",
-        status: "error",
-        message: e instanceof Error ? e.message : "Connection failed",
-      };
-      errors.push({
-        timestamp: new Date().toISOString(),
-        type: "Backend Error",
-        message: e instanceof Error ? e.message : "Unknown error",
-        source: "Backend /health",
-      });
-    }
-    setHealthChecks([...checks]);
-
-    // Check Database (via backend)
-    try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL ||
-        "https://reconai-backend.onrender.com";
-      const res = await fetch(`${backendUrl}/health`, {
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
+      // Also check database from the same response
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         checks[2] = {
@@ -537,7 +527,18 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
           message: "Unable to verify",
         };
       }
-    } catch {
+    } catch (e) {
+      checks[1] = {
+        name: "Backend API",
+        status: "error",
+        message: e instanceof Error ? e.message : "Connection failed",
+      };
+      errors.push({
+        timestamp: new Date().toISOString(),
+        type: "Backend Error",
+        message: e instanceof Error ? e.message : "Unknown error",
+        source: "Backend /health",
+      });
       checks[2] = {
         name: "Database",
         status: "warning",
@@ -548,89 +549,97 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
 
     // Check Authentication
     try {
-      const res = await fetch("/api/admin/debug-claims", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await auditedFetch<{ userId?: string }>(
+        "/api/admin/debug-claims",
+        {
+          skipBodyValidation: true,
+        },
+      );
+      checks[3] = {
+        name: "Authentication",
+        status: data.userId ? "ok" : "warning",
+        message: data.userId ? "Clerk session active" : "No session",
+      };
+    } catch (e) {
+      if (e instanceof HttpError) {
         checks[3] = {
           name: "Authentication",
-          status: data.userId ? "ok" : "warning",
-          message: data.userId ? "Clerk session active" : "No session",
+          status: "warning",
+          message: `Status ${e.status}`,
         };
       } else {
         checks[3] = {
           name: "Authentication",
-          status: "warning",
-          message: `Status ${res.status}`,
+          status: "error",
+          message: e instanceof Error ? e.message : "Check failed",
         };
       }
-    } catch (e) {
-      checks[3] = {
-        name: "Authentication",
-        status: "error",
-        message: e instanceof Error ? e.message : "Check failed",
-      };
     }
     setHealthChecks([...checks]);
 
     // Check Plaid
     try {
-      const res = await fetch("/api/plaid/status", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await auditedFetch<{
+        status?: string;
+        environment?: string;
+      }>("/api/plaid/status", {
+        skipBodyValidation: true,
+      });
+      checks[4] = {
+        name: "Plaid Integration",
+        status: data.status === "healthy" ? "ok" : "warning",
+        message:
+          data.status === "healthy"
+            ? `Connected (${data.environment})`
+            : data.status || "Unknown status",
+      };
+    } catch (e) {
+      if (e instanceof HttpError) {
         checks[4] = {
           name: "Plaid Integration",
-          status: data.status === "healthy" ? "ok" : "warning",
-          message:
-            data.status === "healthy"
-              ? `Connected (${data.environment})`
-              : data.status || "Unknown status",
+          status: "warning",
+          message: `Status ${e.status}`,
         };
       } else {
         checks[4] = {
           name: "Plaid Integration",
-          status: "warning",
-          message: `Status ${res.status}`,
+          status: "error",
+          message: e instanceof Error ? e.message : "Check failed",
         };
+        errors.push({
+          timestamp: new Date().toISOString(),
+          type: "Integration Error",
+          message: e instanceof Error ? e.message : "Unknown error",
+          source: "Plaid Status",
+        });
       }
-    } catch (e) {
-      checks[4] = {
-        name: "Plaid Integration",
-        status: "error",
-        message: e instanceof Error ? e.message : "Check failed",
-      };
-      errors.push({
-        timestamp: new Date().toISOString(),
-        type: "Integration Error",
-        message: e instanceof Error ? e.message : "Unknown error",
-        source: "Plaid Status",
-      });
     }
     setHealthChecks([...checks]);
 
     // Check Intelligence Service
     try {
-      const res = await fetch("/api/intelligence/status", {
-        cache: "no-store",
+      await auditedFetch("/api/intelligence/status", {
+        skipBodyValidation: true,
       });
-      if (res.ok) {
+      checks[5] = {
+        name: "Intelligence Service",
+        status: "ok",
+        message: "Advisory mode active",
+      };
+    } catch (e) {
+      if (e instanceof HttpError) {
         checks[5] = {
           name: "Intelligence Service",
-          status: "ok",
-          message: "Advisory mode active",
+          status: "warning",
+          message: `Status ${e.status}`,
         };
       } else {
         checks[5] = {
           name: "Intelligence Service",
-          status: "warning",
-          message: `Status ${res.status}`,
+          status: "error",
+          message: e instanceof Error ? e.message : "Check failed",
         };
       }
-    } catch (e) {
-      checks[5] = {
-        name: "Intelligence Service",
-        status: "error",
-        message: e instanceof Error ? e.message : "Check failed",
-      };
     }
     setHealthChecks([...checks]);
 

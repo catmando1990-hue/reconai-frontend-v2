@@ -1,7 +1,19 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useCallback,
+} from "react";
 import { createPortal } from "react-dom";
+
+// SSR-safe mounted detection using useSyncExternalStore
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export type CommandItem = {
   id: string;
@@ -69,7 +81,7 @@ function writeRecent(id: string) {
 }
 
 function groupBy<T extends { group?: string }>(
-  items: T[]
+  items: T[],
 ): Array<[string, T[]]> {
   const map = new Map<string, T[]>();
   for (const it of items) {
@@ -112,21 +124,32 @@ export function CommandPalette({
 }) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const prevOpenRef = useRef(open);
 
-  // Only render portal after mount (SSR safety)
-  useEffect(() => {
-    setMounted(true);
+  // SSR-safe mounted detection using useSyncExternalStore
+  const mounted = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
+
+  // Reset state when opening the palette (use queueMicrotask for async state update)
+  const resetOnOpen = useCallback(() => {
+    queueMicrotask(() => {
+      setQuery("");
+      setActiveIndex(0);
+    });
+    setTimeout(() => inputRef.current?.focus(), 0);
   }, []);
 
   useEffect(() => {
-    if (!open) return;
-    setQuery("");
-    setActiveIndex(0);
-    const t = setTimeout(() => inputRef.current?.focus(), 0);
-    return () => clearTimeout(t);
-  }, [open]);
+    // Only reset when transitioning from closed to open
+    if (open && !prevOpenRef.current) {
+      resetOnOpen();
+    }
+    prevOpenRef.current = open;
+  }, [open, resetOnOpen]);
 
   const ranked = useMemo(() => {
     const { verb, text } = splitQuery(query);
@@ -180,6 +203,12 @@ export function CommandPalette({
   const flat = withRecents;
   const groups = useMemo(() => groupBy(flat), [flat]);
 
+  // Compute bounded index - ensure activeIndex is within valid range
+  const boundedActiveIndex = useMemo(() => {
+    const max = Math.max(0, flat.length - 1);
+    return Math.min(activeIndex, max);
+  }, [activeIndex, flat.length]);
+
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -200,7 +229,7 @@ export function CommandPalette({
       }
       if (e.key === "Enter") {
         e.preventDefault();
-        const item = flat[activeIndex];
+        const item = flat[boundedActiveIndex];
         if (!item) return;
         writeRecent(item.id);
         onOpenChange(false);
@@ -209,15 +238,7 @@ export function CommandPalette({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onOpenChange, flat, activeIndex]);
-
-  useEffect(() => {
-    if (!open) return;
-    setActiveIndex((i) => {
-      const max = Math.max(0, flat.length - 1);
-      return Math.min(i, max);
-    });
-  }, [open, flat.length]);
+  }, [open, onOpenChange, flat, boundedActiveIndex]);
 
   // Don't render until mounted (prevents SSR hydration issues)
   if (!mounted) return null;
@@ -265,7 +286,7 @@ export function CommandPalette({
                     <ul className="space-y-1">
                       {items.map((c) => {
                         const index = flat.findIndex((x) => x.id === c.id);
-                        const active = index === activeIndex;
+                        const active = index === boundedActiveIndex;
                         return (
                           <li key={c.id}>
                             <button

@@ -17,13 +17,16 @@ export async function GET(req: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("page_size") || "50", 10)));
+    const pageSize = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get("page_size") || "50", 10)),
+    );
     const offset = (page - 1) * pageSize;
 
     const supabase = supabaseAdmin();
@@ -37,15 +40,20 @@ export async function GET(req: NextRequest) {
     if (countError) {
       console.error("[Ledger] Count error:", countError);
       return NextResponse.json(
-        { ok: false, error: "Failed to count transactions", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        {
+          ok: false,
+          error: "Failed to count transactions",
+          request_id: requestId,
+        },
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
     // Fetch transactions with account info
     const { data: transactions, error: txError } = await supabase
       .from("plaid_transactions")
-      .select(`
+      .select(
+        `
         id,
         transaction_id,
         date,
@@ -57,7 +65,8 @@ export async function GET(req: NextRequest) {
         pending,
         account_id,
         created_at
-      `)
+      `,
+      )
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .order("date", { ascending: false })
       .range(offset, offset + pageSize - 1);
@@ -65,16 +74,22 @@ export async function GET(req: NextRequest) {
     if (txError) {
       console.error("[Ledger] Transaction fetch error:", txError);
       return NextResponse.json(
-        { ok: false, error: "Failed to fetch transactions", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        {
+          ok: false,
+          error: "Failed to fetch transactions",
+          request_id: requestId,
+        },
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
     // Get account details for the transactions
-    const accountIds = [...new Set((transactions || []).map((t) => t.account_id).filter(Boolean))];
-    
+    const accountIds = [
+      ...new Set((transactions || []).map((t) => t.account_id).filter(Boolean)),
+    ];
+
     let accountMap: Record<string, { name: string; mask: string | null }> = {};
-    
+
     if (accountIds.length > 0) {
       const { data: accounts } = await supabase
         .from("plaid_accounts")
@@ -83,7 +98,7 @@ export async function GET(req: NextRequest) {
 
       if (accounts) {
         accountMap = Object.fromEntries(
-          accounts.map((a) => [a.account_id, { name: a.name, mask: a.mask }])
+          accounts.map((a) => [a.account_id, { name: a.name, mask: a.mask }]),
         );
       }
     }
@@ -102,7 +117,7 @@ export async function GET(req: NextRequest) {
         account_name: account?.name || null,
         account_mask: account?.mask || null,
         source: "plaid" as const,
-        status: tx.pending ? "pending" as const : "posted" as const,
+        status: tx.pending ? ("pending" as const) : ("posted" as const),
       };
     });
 
@@ -115,13 +130,13 @@ export async function GET(req: NextRequest) {
         page_size: pageSize,
         request_id: requestId,
       },
-      { status: 200, headers: { "x-request-id": requestId } }
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (error) {
     console.error("[Ledger] Error:", error);
     return NextResponse.json(
       { ok: false, error: "Internal server error", request_id: requestId },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

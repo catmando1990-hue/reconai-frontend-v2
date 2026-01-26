@@ -52,7 +52,8 @@ export async function POST(req: Request) {
     if (parts.length !== 2) {
       return NextResponse.json(
         {
-          error: "Invalid tier format. Expected: tier_interval (e.g., starter_monthly)",
+          error:
+            "Invalid tier format. Expected: tier_interval (e.g., starter_monthly)",
           request_id: requestId,
         },
         { status: 400, headers: { "x-request-id": requestId } },
@@ -104,7 +105,10 @@ export async function POST(req: Request) {
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       return NextResponse.json(
-        { error: errorData.detail || "Failed to create checkout session", request_id: requestId },
+        {
+          error: errorData.detail || "Failed to create checkout session",
+          request_id: requestId,
+        },
         { status: res.status, headers: { "x-request-id": requestId } },
       );
     }

@@ -57,7 +57,9 @@ interface ClaudeAlertsResponse {
   }>;
 }
 
-function sanitizeTransactions(transactions: Transaction[]): SanitizedTransaction[] {
+function sanitizeTransactions(
+  transactions: Transaction[],
+): SanitizedTransaction[] {
   return transactions.map((tx, index) => ({
     index,
     date: tx.date,
@@ -184,7 +186,9 @@ export async function GET() {
     const supabase = supabaseAdmin();
     const { data: transactions, error } = await supabase
       .from("transactions")
-      .select("id, transaction_id, date, amount, name, merchant_name, category, pending")
+      .select(
+        "id, transaction_id, date, amount, name, merchant_name, category, pending",
+      )
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(100);

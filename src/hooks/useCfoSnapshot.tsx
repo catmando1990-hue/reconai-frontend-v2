@@ -124,9 +124,12 @@ export function useCfoSnapshot(): UseCfoSnapshotState {
     setError(null);
 
     try {
-      const res = await apiFetch<CfoSnapshotResponse>(API_ENDPOINTS.cfoSnapshot, {
-        method: "GET",
-      });
+      const res = await apiFetch<CfoSnapshotResponse>(
+        API_ENDPOINTS.cfoSnapshot,
+        {
+          method: "GET",
+        },
+      );
 
       // FAIL-CLOSED: Validate response structure, version, and lifecycle
       if (res && isValidCfoResponse(res)) {

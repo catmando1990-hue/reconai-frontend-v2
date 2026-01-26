@@ -48,7 +48,11 @@ export async function GET(
     });
 
     if (!res.ok) {
-      console.error("[Documents Audit] Backend error:", res.status, res.statusText);
+      console.error(
+        "[Documents Audit] Backend error:",
+        res.status,
+        res.statusText,
+      );
       return NextResponse.json(
         {
           document_id: id,

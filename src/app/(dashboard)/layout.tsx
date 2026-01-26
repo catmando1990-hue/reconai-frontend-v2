@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
 import { getBackendUrl } from "@/lib/config";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 /**
  * P0: Check profile completion status from backend (single source of truth)
@@ -16,21 +17,17 @@ async function checkProfileCompleted(
   if (!token) return null;
 
   try {
-    const resp = await fetch(`${getBackendUrl()}/api/profile/status`, {
+    const data = await auditedFetch<{
+      profileCompleted?: boolean;
+      request_id?: string;
+    }>(`${getBackendUrl()}/api/profile/status`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      cache: "no-store",
+      skipBodyValidation: true,
     });
 
-    if (!resp.ok) {
-      console.warn("Profile status check failed:", resp.status);
-      return null;
-    }
-
-    const data = await resp.json();
     return data.profileCompleted === true;
   } catch (err) {
     console.warn("Profile status check error:", err);

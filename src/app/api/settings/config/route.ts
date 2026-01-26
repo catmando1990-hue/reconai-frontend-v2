@@ -28,7 +28,10 @@ export async function GET() {
     }
 
     const user = await currentUser();
-    const publicMetadata = (user?.publicMetadata || {}) as Record<string, unknown>;
+    const publicMetadata = (user?.publicMetadata || {}) as Record<
+      string,
+      unknown
+    >;
     const tier = (publicMetadata.tier as string) || "free";
 
     // Construct settings from available data
@@ -43,7 +46,8 @@ export async function GET() {
         plaid_enabled: true,
         ai_diagnostics_enabled: publicMetadata.role === "admin",
       },
-      policy_acknowledged_at: (publicMetadata.policy_acknowledged_at as string) || null,
+      policy_acknowledged_at:
+        (publicMetadata.policy_acknowledged_at as string) || null,
     };
 
     return NextResponse.json(

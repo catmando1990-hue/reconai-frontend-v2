@@ -29,7 +29,11 @@ export async function POST(req: Request) {
 
     if (!item_id) {
       return NextResponse.json(
-        { error: "Missing item_id", code: "MISSING_ITEM_ID", request_id: requestId },
+        {
+          error: "Missing item_id",
+          code: "MISSING_ITEM_ID",
+          request_id: requestId,
+        },
         { status: 400, headers: { "x-request-id": requestId } },
       );
     }
@@ -45,7 +49,11 @@ export async function POST(req: Request) {
 
     if (itemError || !item) {
       return NextResponse.json(
-        { error: "Item not found", code: "ITEM_NOT_FOUND", request_id: requestId },
+        {
+          error: "Item not found",
+          code: "ITEM_NOT_FOUND",
+          request_id: requestId,
+        },
         { status: 404, headers: { "x-request-id": requestId } },
       );
     }
@@ -53,7 +61,11 @@ export async function POST(req: Request) {
     // Verify ownership
     if (item.user_id !== userId && item.clerk_user_id !== userId) {
       return NextResponse.json(
-        { error: "Not authorized to sync this item", code: "FORBIDDEN", request_id: requestId },
+        {
+          error: "Not authorized to sync this item",
+          code: "FORBIDDEN",
+          request_id: requestId,
+        },
         { status: 403, headers: { "x-request-id": requestId } },
       );
     }
@@ -61,12 +73,18 @@ export async function POST(req: Request) {
     const accessToken = item.access_token;
     if (!accessToken) {
       return NextResponse.json(
-        { error: "Item has no access token", code: "NO_ACCESS_TOKEN", request_id: requestId },
+        {
+          error: "Item has no access token",
+          code: "NO_ACCESS_TOKEN",
+          request_id: requestId,
+        },
         { status: 400, headers: { "x-request-id": requestId } },
       );
     }
 
-    console.log(`[Plaid sync] Starting sync for item=${item_id}, user=${userId}, requestId=${requestId}`);
+    console.log(
+      `[Plaid sync] Starting sync for item=${item_id}, user=${userId}, requestId=${requestId}`,
+    );
 
     const plaid = getPlaidClient();
 
@@ -84,7 +102,8 @@ export async function POST(req: Request) {
         count: 100,
       });
 
-      const { added, modified, removed, next_cursor, has_more } = syncResponse.data;
+      const { added, modified, removed, next_cursor, has_more } =
+        syncResponse.data;
 
       // Process added transactions
       if (added.length > 0) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,24 +48,28 @@ export default function CoreTransactionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<TransactionsResponse>("/api/transactions?limit=100");
+      const data = await apiFetch<TransactionsResponse>(
+        "/api/transactions?limit=100",
+      );
       setTransactions(data?.items || []);
     } catch (err) {
       console.error("[CoreTransactions] Fetch error:", err);
-      setError(err instanceof Error ? err.message : "Failed to load transactions");
+      setError(
+        err instanceof Error ? err.message : "Failed to load transactions",
+      );
       setTransactions([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [apiFetch]);
 
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [fetchTransactions]);
 
   return (
     <RouteShell
@@ -78,7 +82,9 @@ export default function CoreTransactionsPage() {
           onClick={fetchTransactions}
           disabled={isLoading}
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       }
@@ -101,7 +107,8 @@ export default function CoreTransactionsPage() {
             <div className="text-center py-8 text-destructive">{error}</div>
           ) : transactions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No transactions found. Connect a bank account to sync transactions.
+              No transactions found. Connect a bank account to sync
+              transactions.
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -117,7 +124,10 @@ export default function CoreTransactionsPage() {
                 </thead>
                 <tbody>
                   {transactions.map((tx) => (
-                    <tr key={tx.id} className="border-b border-border last:border-0">
+                    <tr
+                      key={tx.id}
+                      className="border-b border-border last:border-0"
+                    >
                       <td className="py-3 text-muted-foreground">
                         {formatDate(tx.date)}
                       </td>
@@ -125,16 +135,20 @@ export default function CoreTransactionsPage() {
                         <div className="font-medium text-foreground">
                           {tx.merchant || tx.description || "Unknown"}
                         </div>
-                        {tx.description && tx.merchant && tx.description !== tx.merchant && (
-                          <div className="text-xs text-muted-foreground truncate max-w-[200px]">
-                            {tx.description}
-                          </div>
-                        )}
+                        {tx.description &&
+                          tx.merchant &&
+                          tx.description !== tx.merchant && (
+                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                              {tx.description}
+                            </div>
+                          )}
                       </td>
                       <td className="py-3 text-muted-foreground">
                         {tx.category || "—"}
                       </td>
-                      <td className={`py-3 text-right font-medium ${tx.amount < 0 ? "text-green-500" : "text-foreground"}`}>
+                      <td
+                        className={`py-3 text-right font-medium ${tx.amount < 0 ? "text-green-500" : "text-foreground"}`}
+                      >
                         {formatCurrency(tx.amount)}
                       </td>
                       <td className="py-3 text-center">

@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Button } from "@/components/ui/button";
-import { StatusChip, type StatusVariant } from "@/components/dashboard/StatusChip";
+import {
+  StatusChip,
+  type StatusVariant,
+} from "@/components/dashboard/StatusChip";
+import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 import {
   Upload,
   FileText,
@@ -19,7 +22,7 @@ import {
 
 /**
  * Bank Statements Page
- * 
+ *
  * Allows customers to upload bank statements (PDF, CSV, OFX, QFX)
  * linked to specific accounts. User-scoped storage in Supabase.
  */
@@ -99,7 +102,6 @@ function getStatusIcon(status: BankStatement["status"]) {
 }
 
 export default function StatementsPage() {
-  const { getToken } = useAuth();
   const [statements, setStatements] = useState<BankStatement[]>([]);
   const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
@@ -111,42 +113,39 @@ export default function StatementsPage() {
 
   const fetchAccounts = useCallback(async () => {
     try {
-      const token = await getToken();
-      const res = await fetch("/api/plaid/stored-accounts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch accounts");
-      const data = await res.json();
-      setAccounts(data.accounts || []);
+      const data = await auditedFetch<{
+        accounts?: LinkedAccount[];
+        request_id?: string;
+      }>("/api/plaid/stored-accounts", { skipBodyValidation: true });
+      const accountsList = data.accounts || [];
+      setAccounts(accountsList);
       // Auto-select first account if none selected
-      if (data.accounts?.length > 0 && !selectedAccountId) {
-        setSelectedAccountId(data.accounts[0].account_id);
+      if (accountsList.length > 0 && !selectedAccountId) {
+        setSelectedAccountId(accountsList[0].account_id);
       }
     } catch (e) {
       console.error("Failed to fetch accounts:", e);
     }
-  }, [getToken, selectedAccountId]);
+  }, [selectedAccountId]);
 
   const fetchStatements = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const token = await getToken();
       const url = selectedAccountId
         ? `/api/statements?account_id=${selectedAccountId}`
         : "/api/statements";
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch statements");
-      const data = await res.json();
+      const data = await auditedFetch<{
+        statements?: BankStatement[];
+        request_id?: string;
+      }>(url, { skipBodyValidation: true });
       setStatements(data.statements || []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load statements");
     } finally {
       setLoading(false);
     }
-  }, [getToken, selectedAccountId]);
+  }, [selectedAccountId]);
 
   useEffect(() => {
     fetchAccounts();
@@ -186,25 +185,24 @@ export default function StatementsPage() {
       setUploading(true);
       setError(null);
 
-      const token = await getToken();
       const formData = new FormData();
       formData.append("file", file);
       formData.append("account_id", selectedAccountId);
 
-      const res = await fetch("/api/statements/upload", {
+      await auditedFetch("/api/statements/upload", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
+        skipBodyValidation: true,
       });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Upload failed");
-      }
 
       await fetchStatements();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
+      if (e instanceof HttpError) {
+        const body = e.body as { error?: string } | undefined;
+        setError(body?.error || "Upload failed");
+      } else {
+        setError(e instanceof Error ? e.message : "Upload failed");
+      }
     } finally {
       setUploading(false);
     }
@@ -214,13 +212,10 @@ export default function StatementsPage() {
     if (!confirm("Delete this statement? This cannot be undone.")) return;
 
     try {
-      const token = await getToken();
-      const res = await fetch(`/api/statements/${id}`, {
+      await auditedFetch(`/api/statements/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        skipBodyValidation: true,
       });
-
-      if (!res.ok) throw new Error("Delete failed");
       await fetchStatements();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Delete failed");
@@ -229,12 +224,12 @@ export default function StatementsPage() {
 
   const handleDownload = async (statement: BankStatement) => {
     try {
-      const token = await getToken();
-      const res = await fetch(`/api/statements/${statement.id}/download`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) throw new Error("Download failed");
+      const res = await auditedFetch<Response>(
+        `/api/statements/${statement.id}/download`,
+        {
+          rawResponse: true,
+        },
+      );
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -267,7 +262,9 @@ export default function StatementsPage() {
     handleUpload(e.dataTransfer.files);
   };
 
-  const selectedAccount = accounts.find((a) => a.account_id === selectedAccountId);
+  const selectedAccount = accounts.find(
+    (a) => a.account_id === selectedAccountId,
+  );
 
   return (
     <RouteShell
@@ -280,7 +277,9 @@ export default function StatementsPage() {
           onClick={() => fetchStatements()}
           disabled={loading}
         >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       }
@@ -317,12 +316,15 @@ export default function StatementsPage() {
                 <div>
                   <p className="font-medium">{selectedAccount.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {selectedAccount.institution_name} •••• {selectedAccount.mask}
+                    {selectedAccount.institution_name} ••••{" "}
+                    {selectedAccount.mask}
                   </p>
                 </div>
               ) : (
                 <span className="text-muted-foreground">
-                  {accounts.length === 0 ? "No accounts linked" : "Select an account"}
+                  {accounts.length === 0
+                    ? "No accounts linked"
+                    : "Select an account"}
                 </span>
               )}
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -339,12 +341,15 @@ export default function StatementsPage() {
                       setShowAccountDropdown(false);
                     }}
                     className={`w-full px-4 py-3 text-left hover:bg-muted/50 first:rounded-t-lg last:rounded-b-lg ${
-                      account.account_id === selectedAccountId ? "bg-muted/30" : ""
+                      account.account_id === selectedAccountId
+                        ? "bg-muted/30"
+                        : ""
                     }`}
                   >
                     <p className="font-medium">{account.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {account.institution_name} •••• {account.mask} • {account.type}
+                      {account.institution_name} •••• {account.mask} •{" "}
+                      {account.type}
                     </p>
                   </button>
                 ))}
@@ -359,8 +364,8 @@ export default function StatementsPage() {
             !selectedAccountId
               ? "border-border/50 bg-muted/20 cursor-not-allowed"
               : dragActive
-              ? "border-primary bg-primary/5"
-              : "border-border hover:border-primary/50"
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/50"
           }`}
           onDragEnter={selectedAccountId ? handleDrag : undefined}
           onDragLeave={selectedAccountId ? handleDrag : undefined}
@@ -377,22 +382,31 @@ export default function StatementsPage() {
             />
           )}
           <div className="flex flex-col items-center gap-4">
-            <div className={`rounded-full p-4 ${selectedAccountId ? "bg-muted" : "bg-muted/50"}`}>
-              <Upload className={`h-8 w-8 ${selectedAccountId ? "text-muted-foreground" : "text-muted-foreground/50"}`} />
+            <div
+              className={`rounded-full p-4 ${selectedAccountId ? "bg-muted" : "bg-muted/50"}`}
+            >
+              <Upload
+                className={`h-8 w-8 ${selectedAccountId ? "text-muted-foreground" : "text-muted-foreground/50"}`}
+              />
             </div>
             <div>
-              <p className={`text-lg font-medium ${!selectedAccountId ? "text-muted-foreground" : ""}`}>
+              <p
+                className={`text-lg font-medium ${!selectedAccountId ? "text-muted-foreground" : ""}`}
+              >
                 {!selectedAccountId
                   ? "Select an account to upload statements"
                   : uploading
-                  ? "Uploading..."
-                  : "Drop statement here or click to upload"}
+                    ? "Uploading..."
+                    : "Drop statement here or click to upload"}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Supported formats: PDF, CSV, OFX, QFX • Max size: 10MB
               </p>
             </div>
-            <Button variant="outline" disabled={uploading || !selectedAccountId}>
+            <Button
+              variant="outline"
+              disabled={uploading || !selectedAccountId}
+            >
               {uploading ? (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -447,10 +461,14 @@ export default function StatementsPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">{statement.file_name}</p>
+                      <p className="font-medium truncate">
+                        {statement.file_name}
+                      </p>
                       <StatusChip variant={getStatusVariant(statement.status)}>
                         {getStatusIcon(statement.status)}
-                        <span className="ml-1 capitalize">{statement.status}</span>
+                        <span className="ml-1 capitalize">
+                          {statement.status}
+                        </span>
                       </StatusChip>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
@@ -500,7 +518,9 @@ export default function StatementsPage() {
         <div className="rounded-lg border border-border bg-muted/30 p-4">
           <h3 className="font-medium">About Bank Statement Uploads</h3>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-            <li>• Statements are linked to specific accounts for organization</li>
+            <li>
+              • Statements are linked to specific accounts for organization
+            </li>
             <li>• PDF, CSV, OFX, and QFX formats are supported</li>
             <li>• Uploaded files are encrypted at rest in Supabase Storage</li>
             <li>• Only you can access your uploaded statements</li>

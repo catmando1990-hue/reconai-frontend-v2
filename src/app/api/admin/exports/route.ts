@@ -2,19 +2,20 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://reconai-backend.onrender.com";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://reconai-backend.onrender.com";
 
 /**
  * Assert that the current user has admin role.
  * Returns a NextResponse error if not admin, null otherwise.
  */
 async function assertAdmin() {
-  const { userId, sessionClaims, getToken } = await auth();
+  const { userId, sessionClaims } = await auth();
 
   if (!userId) {
     return NextResponse.json(
       { error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -28,16 +29,15 @@ async function assertAdmin() {
 
   // Fallback: fetch user directly
   const user = await currentUser();
-  const userRole = (
-    user?.publicMetadata as Record<string, unknown> | undefined
-  )?.role;
+  const userRole = (user?.publicMetadata as Record<string, unknown> | undefined)
+    ?.role;
   if (userRole === "admin" || userRole === "org:admin") {
     return null;
   }
 
   return NextResponse.json(
     { error: "Forbidden", message: "Admin access required" },
-    { status: 403 }
+    { status: 403 },
   );
 }
 
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
           "Content-Type": "application/json",
         },
         cache: "no-store",
-      }
+      },
     );
 
     if (!res.ok) {
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
           error: "Backend error",
           message: errorData.detail || `Status ${res.status}`,
         },
-        { status: res.status }
+        { status: res.status },
       );
     }
 
@@ -95,7 +95,7 @@ export async function GET(req: Request) {
         error: "Internal error",
         message: err instanceof Error ? err.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

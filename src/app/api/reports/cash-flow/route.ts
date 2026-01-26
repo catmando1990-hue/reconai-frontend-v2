@@ -19,7 +19,7 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -36,7 +36,7 @@ export async function GET() {
       console.error("[CashFlow] Supabase error:", error);
       return NextResponse.json(
         { error: "Failed to fetch transactions", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -91,13 +91,13 @@ export async function GET() {
         },
         request_id: requestId,
       },
-      { status: 200, headers: { "x-request-id": requestId } }
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {
     console.error("[CashFlow] Error:", err);
     return NextResponse.json(
       { error: "Internal server error", request_id: requestId },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

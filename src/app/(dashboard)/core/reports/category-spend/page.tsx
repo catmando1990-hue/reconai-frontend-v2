@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Download } from "lucide-react";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 type CategoryRow = {
   category: string;
@@ -46,10 +47,17 @@ export default function CategorySpendReportPage() {
       if (startDate) params.set("start_date", startDate);
       if (endDate) params.set("end_date", endDate);
 
-      const res = await fetch(`/api/reports/category-spend?${params.toString()}`);
-      const data = await res.json();
+      const data = await auditedFetch<{
+        ok: boolean;
+        data?: CategoryRow[];
+        summary?: Summary;
+        error?: { message?: string };
+        request_id: string;
+      }>(`/api/reports/category-spend?${params.toString()}`, {
+        skipBodyValidation: true,
+      });
 
-      if (!res.ok || !data.ok) {
+      if (!data.ok) {
         throw new Error(data.error?.message || "Failed to load report");
       }
 
@@ -83,9 +91,18 @@ export default function CategorySpendReportPage() {
     if (rows.length === 0) return;
 
     const headers = ["Category", "Total", "Transactions", "% of Total"];
-    const csvRows = rows.map((r) => [r.category, r.total, r.count, r.percent_of_total]);
+    const csvRows = rows.map((r) => [
+      r.category,
+      r.total,
+      r.count,
+      r.percent_of_total,
+    ]);
 
-    const csv = [headers, ...csvRows].map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [headers, ...csvRows]
+      .map((row) =>
+        row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -106,7 +123,9 @@ export default function CategorySpendReportPage() {
       {/* Filters */}
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border bg-card/50 p-4">
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">Start Date</label>
+          <label className="block text-xs text-muted-foreground mb-1">
+            Start Date
+          </label>
           <input
             type="date"
             value={startDate}
@@ -115,7 +134,9 @@ export default function CategorySpendReportPage() {
           />
         </div>
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">End Date</label>
+          <label className="block text-xs text-muted-foreground mb-1">
+            End Date
+          </label>
           <input
             type="date"
             value={endDate}
@@ -148,15 +169,21 @@ export default function CategorySpendReportPage() {
         <div className="mb-6 grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="text-xs text-muted-foreground">Total Spend</div>
-            <div className="mt-1 text-2xl font-semibold">{formatCurrency(summary.total_spend)}</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {formatCurrency(summary.total_spend)}
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="text-xs text-muted-foreground">Categories</div>
-            <div className="mt-1 text-2xl font-semibold">{summary.category_count}</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {summary.category_count}
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="text-xs text-muted-foreground">Transactions</div>
-            <div className="mt-1 text-2xl font-semibold">{summary.transaction_count}</div>
+            <div className="mt-1 text-2xl font-semibold">
+              {summary.transaction_count}
+            </div>
           </div>
         </div>
       )}
@@ -190,20 +217,30 @@ export default function CategorySpendReportPage() {
               <div key={row.category} className="px-4 py-3">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground w-6">{i + 1}.</span>
+                    <span className="text-xs text-muted-foreground w-6">
+                      {i + 1}.
+                    </span>
                     <span className="font-medium">{row.category}</span>
-                    <span className="text-xs text-muted-foreground">({row.count} txns)</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({row.count} txns)
+                    </span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-muted-foreground">{row.percent_of_total}%</span>
-                    <span className="font-mono font-semibold tabular-nums">{formatCurrency(row.total)}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {row.percent_of_total}%
+                    </span>
+                    <span className="font-mono font-semibold tabular-nums">
+                      {formatCurrency(row.total)}
+                    </span>
                   </div>
                 </div>
                 {/* Visual bar */}
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full bg-primary/70 transition-all"
-                    style={{ width: `${maxTotal > 0 ? (row.total / maxTotal) * 100 : 0}%` }}
+                    style={{
+                      width: `${maxTotal > 0 ? (row.total / maxTotal) * 100 : 0}%`,
+                    }}
                   />
                 </div>
               </div>

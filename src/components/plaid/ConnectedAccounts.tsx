@@ -113,32 +113,34 @@ export function ConnectedAccounts() {
     setSyncResult(null);
 
     try {
-      const response = await fetch("/api/plaid/sync", {
+      const data = await auditedFetch<{
+        added?: number;
+        modified?: number;
+        removed?: number;
+        request_id: string;
+      }>("/api/plaid/sync", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item_id: itemId }),
+        skipBodyValidation: true,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setSyncResult({
-          itemId,
-          success: false,
-          message: data.error || "Sync failed",
-        });
-      } else {
-        setSyncResult({
-          itemId,
-          success: true,
-          message: `Synced: ${data.added || 0} added, ${data.modified || 0} modified, ${data.removed || 0} removed`,
-        });
-      }
+      setSyncResult({
+        itemId,
+        success: true,
+        message: `Synced: ${data.added || 0} added, ${data.modified || 0} modified, ${data.removed || 0} removed`,
+      });
     } catch (err) {
+      let message = "Sync failed";
+      if (err instanceof HttpError) {
+        const body = err.body as { error?: string } | undefined;
+        message = body?.error || `Sync failed (${err.status})`;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       setSyncResult({
         itemId,
         success: false,
-        message: err instanceof Error ? err.message : "Sync failed",
+        message,
       });
     } finally {
       setSyncingItemId(null);

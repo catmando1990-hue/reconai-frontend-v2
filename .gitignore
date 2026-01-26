@@ -71,6 +71,9 @@ tmpclaude-*
 *.swp
 *.swo
 *~
+tree.txt
+lint-build-results.txt
+*-results.txt
 
 .vercel
 .env*.local

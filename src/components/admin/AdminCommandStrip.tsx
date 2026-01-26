@@ -1,8 +1,9 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import MaintenanceToggle from "./MaintenanceToggle";
-import { Shield } from "lucide-react";
+import { Shield, Settings, FileOutput } from "lucide-react";
 import { StatusChip } from "@/components/dashboard/StatusChip";
 
 /**
@@ -32,6 +33,21 @@ export function AdminCommandStrip() {
           <Shield className="h-3 w-3" />
           <span className="font-medium text-foreground">Admin</span>
           <StatusChip variant="muted">Controls</StatusChip>
+          <span className="mx-2 text-border">|</span>
+          <Link
+            href="/admin/settings"
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          >
+            <Settings className="h-3 w-3" />
+            Settings
+          </Link>
+          <Link
+            href="/admin/exports"
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          >
+            <FileOutput className="h-3 w-3" />
+            Exports
+          </Link>
         </div>
 
         <div className="flex items-center gap-3">

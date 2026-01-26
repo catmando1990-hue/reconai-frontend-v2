@@ -120,10 +120,6 @@ export default function AccountActivityReportPage() {
     <RouteShell
       title="Account Activity"
       subtitle="Per-account transaction summaries with balances"
-      breadcrumbs={[
-        { label: "Reports", href: "/core/reports" },
-        { label: "Account Activity" },
-      ]}
     >
       {/* Filters */}
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border bg-card/50 p-4">

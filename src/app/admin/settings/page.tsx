@@ -1260,6 +1260,12 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
           <span className="mb-3 block font-medium">Quick Actions</span>
           <div className="flex flex-wrap gap-2">
             <button
+              onClick={() => (window.location.href = "/admin/exports")}
+              className="rounded border px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Exports & Provenance
+            </button>
+            <button
               onClick={() => window.open("/api/admin/debug-claims", "_blank")}
               className="rounded border px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
             >

@@ -59,10 +59,6 @@ export default function CashFlowPage() {
     <RouteShell
       title="Cash Flow Statement"
       subtitle="Direct method — actual money in vs money out. Based only on cleared transactions."
-      breadcrumbs={[
-        { label: "Reports", href: "/core/reports" },
-        { label: "Cash Flow" },
-      ]}
     >
       {error && (
         <div className="mb-4 rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">

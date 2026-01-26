@@ -102,10 +102,6 @@ export default function CategorySpendReportPage() {
     <RouteShell
       title="Category Spend"
       subtitle="Aggregated spending by category"
-      breadcrumbs={[
-        { label: "Reports", href: "/core/reports" },
-        { label: "Category Spend" },
-      ]}
     >
       {/* Filters */}
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border bg-card/50 p-4">

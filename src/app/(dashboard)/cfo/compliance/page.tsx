@@ -38,6 +38,7 @@ export default function CfoCompliancePage() {
     message: string;
   } | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [exportPackSubmitting, setExportPackSubmitting] = useState(false);
 
   useEffect(() => {
     // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
@@ -61,6 +62,8 @@ export default function CfoCompliancePage() {
   }, [authReady, apiFetch]);
 
   async function handleExport(req: ExportPackRequest) {
+    // P1 FIX: Add loading state to prevent double-click
+    setExportPackSubmitting(true);
     try {
       await apiFetch("/api/export-pack", {
         method: "POST",
@@ -76,6 +79,8 @@ export default function CfoCompliancePage() {
         variant: "warn",
         message: "Export pack request failed. Please try again.",
       });
+    } finally {
+      setExportPackSubmitting(false);
     }
   }
 
@@ -171,7 +176,11 @@ export default function CfoCompliancePage() {
                 <p className="text-sm text-muted-foreground">
                   Request compliance export packages
                 </p>
-                <ExportPackRequestPanel rbac={rbac} onRequest={handleExport} />
+                <ExportPackRequestPanel
+                  rbac={rbac}
+                  onRequest={handleExport}
+                  submitting={exportPackSubmitting}
+                />
               </div>
             </SecondaryPanel>
           </div>

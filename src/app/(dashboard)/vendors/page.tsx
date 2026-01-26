@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Store } from "lucide-react";
+import { Store, AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Vendor = {
   id: string;
@@ -23,35 +24,61 @@ export default function VendorsPage() {
 
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchVendors = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiFetch<Vendor[]>("/api/vendors");
+      setVendors(data);
+    } catch (err) {
+      // P1 FIX: Surface errors to user instead of silent failure
+      setError(err instanceof Error ? err.message : "Failed to load vendors");
+      setVendors([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
   useEffect(() => {
     // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
     if (!authReady) return;
-
-    let alive = true;
-    (async () => {
-      try {
-        const data = await apiFetch<Vendor[]>("/api/vendors");
-        if (alive) setVendors(data);
-      } catch {
-        // Silent: empty array on failure
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [authReady, apiFetch]);
+    fetchVendors();
+  }, [authReady, fetchVendors]);
 
   return (
     <RouteShell title="Vendors" subtitle="Manage your vendor relationships.">
+      {/* P1 FIX: Error state banner */}
+      {error && (
+        <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-destructive font-medium">
+                Failed to load vendors
+              </p>
+              <p className="text-xs text-destructive/80 mt-1">{error}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchVendors}
+              className="shrink-0"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="animate-pulse space-y-3">
           <div className="h-10 bg-card/20 rounded" />
           <div className="h-10 bg-card/20 rounded" />
         </div>
-      ) : vendors.length === 0 ? (
+      ) : error ? null : vendors.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center max-w-md mx-auto">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/10 mb-4">
             <Store className="h-6 w-6 text-purple-400" />

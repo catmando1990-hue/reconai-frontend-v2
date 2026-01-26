@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import {
   AlertTriangle,
+  AlertCircle,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DashTable,
   type DashTableColumn,
@@ -109,27 +112,31 @@ export default function TransactionsTable() {
 
   const [rows, setRows] = useState<TransactionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiFetch<TransactionRow[]>("/api/transactions");
+      setRows(data);
+    } catch (err) {
+      // P1 FIX: Surface errors to user instead of silent failure
+      setError(
+        err instanceof Error ? err.message : "Failed to load transactions",
+      );
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
 
   useEffect(() => {
     // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
     if (!authReady) return;
-
-    let alive = true;
-    (async () => {
-      try {
-        const data = await apiFetch<TransactionRow[]>("/api/transactions");
-        if (alive) setRows(data);
-      } catch {
-        // Silent: empty array on failure
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [authReady, apiFetch]);
+    fetchTransactions();
+  }, [authReady, fetchTransactions]);
 
   // Reset to page 1 when data changes
   useEffect(() => {
@@ -162,6 +169,23 @@ export default function TransactionsTable() {
 
   return (
     <div className="mt-6">
+      {error && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-red-500/20 bg-red-500/10 p-3">
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm">{error}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchTransactions}
+            className="text-red-400 hover:text-red-300"
+          >
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Retry
+          </Button>
+        </div>
+      )}
       <DashTable
         data={paginatedRows}
         columns={columns}

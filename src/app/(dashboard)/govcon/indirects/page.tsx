@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Layers, Plus, Pencil, Trash2, X, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Layers, Plus, Pencil, Trash2, X, Loader2, LogIn } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -88,9 +89,11 @@ const FAR_REFERENCES = [
  * DCAA-compliant indirect rate management with FAR 31.201 allowability tracking
  */
 export default function IndirectsPage() {
+  const router = useRouter();
   const [pools, setPools] = useState<IndirectPool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthError, setIsAuthError] = useState(false);
 
   // Form state
   const [modalOpen, setModalOpen] = useState(false);
@@ -107,6 +110,7 @@ export default function IndirectsPage() {
   const fetchPools = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setIsAuthError(false);
     try {
       const data = await auditedFetch<{ pools: IndirectPool[] }>(
         "/api/govcon/indirects",
@@ -116,6 +120,8 @@ export default function IndirectsPage() {
     } catch (err) {
       if (err instanceof HttpError) {
         if (err.status === 401) {
+          // P1 FIX: Track auth errors to show sign-in button
+          setIsAuthError(true);
           setError("Not authenticated. Please sign in.");
         } else {
           setError(`Failed to load pools: ${err.status}`);
@@ -288,7 +294,20 @@ export default function IndirectsPage() {
 
             {error && (
               <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-                <p className="text-sm text-destructive">{error}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-destructive">{error}</p>
+                  {isAuthError && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => router.push("/sign-in")}
+                      className="ml-4"
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign In
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 

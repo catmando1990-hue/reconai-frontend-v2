@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Clock,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 
 /**
@@ -110,6 +111,7 @@ export default function StatementsPage() {
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -211,6 +213,8 @@ export default function StatementsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this statement? This cannot be undone.")) return;
 
+    // P1 FIX: Prevent double-click by tracking deletion state
+    setDeletingId(id);
     try {
       await auditedFetch(`/api/statements/${id}`, {
         method: "DELETE",
@@ -219,6 +223,8 @@ export default function StatementsPage() {
       await fetchStatements();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -504,8 +510,13 @@ export default function StatementsPage() {
                       onClick={() => handleDelete(statement.id)}
                       title="Delete"
                       className="text-destructive hover:text-destructive"
+                      disabled={deletingId === statement.id}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      {deletingId === statement.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>

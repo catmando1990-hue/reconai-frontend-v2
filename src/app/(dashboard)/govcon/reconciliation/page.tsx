@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeftRight,
   Download,
@@ -11,6 +12,7 @@ import {
   X,
   CheckCircle,
   AlertTriangle,
+  LogIn,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
@@ -65,10 +67,12 @@ const RUN_TYPES = [
 ];
 
 export default function ReconciliationPage() {
+  const router = useRouter();
   const [runs, setRuns] = useState<ReconciliationRun[]>([]);
   const [variances, setVariances] = useState<Variance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthError, setIsAuthError] = useState(false);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -87,6 +91,7 @@ export default function ReconciliationPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setIsAuthError(false);
     try {
       const data = await auditedFetch<{
         runs: ReconciliationRun[];
@@ -97,6 +102,8 @@ export default function ReconciliationPage() {
     } catch (err) {
       if (err instanceof HttpError) {
         if (err.status === 401) {
+          // P1 FIX: Track auth errors to show sign-in button
+          setIsAuthError(true);
           setError("Not authenticated. Please sign in.");
         } else {
           setError(`Failed to load data: ${err.status}`);
@@ -287,7 +294,20 @@ export default function ReconciliationPage() {
 
             {error && (
               <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-                <p className="text-sm text-destructive">{error}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-destructive">{error}</p>
+                  {isAuthError && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => router.push("/sign-in")}
+                      className="ml-4"
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign In
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 

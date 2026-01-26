@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Clock,
   Plus,
@@ -10,6 +11,7 @@ import {
   Loader2,
   X,
   Trash2,
+  LogIn,
 } from "lucide-react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -109,10 +111,12 @@ function getWeekDays(startDate: Date): Date[] {
  * DCAA-compliant labor tracking with weekly grid and time entry
  */
 export default function TimekeepingPage() {
+  const router = useRouter();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthError, setIsAuthError] = useState(false);
 
   // Week navigation
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
@@ -157,6 +161,7 @@ export default function TimekeepingPage() {
   const fetchEntries = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setIsAuthError(false);
     try {
       const startDate = formatDateISO(currentWeekStart);
       const endDate = formatDateISO(weekEnd);
@@ -169,6 +174,8 @@ export default function TimekeepingPage() {
     } catch (err) {
       if (err instanceof HttpError) {
         if (err.status === 401) {
+          // P1 FIX: Track auth errors to show sign-in button
+          setIsAuthError(true);
           setError("Not authenticated. Please sign in.");
         } else {
           setError(`Failed to load time entries: ${err.status}`);
@@ -373,7 +380,20 @@ export default function TimekeepingPage() {
 
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-            <p className="text-sm text-destructive">{error}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-destructive">{error}</p>
+              {isAuthError && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push("/sign-in")}
+                  className="ml-4"
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
+                </Button>
+              )}
+            </div>
           </div>
         )}
 

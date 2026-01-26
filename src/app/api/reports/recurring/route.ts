@@ -121,11 +121,16 @@ export async function GET() {
 
       // Calculate confidence based on how consistent the intervals are
       const variance =
-        intervals.reduce((sum, int) => sum + Math.pow(int - avgInterval, 2), 0) /
-        intervals.length;
+        intervals.reduce(
+          (sum, int) => sum + Math.pow(int - avgInterval, 2),
+          0,
+        ) / intervals.length;
       const stdDev = Math.sqrt(variance);
       const consistency = Math.max(0, 1 - stdDev / expectedDays);
-      const confidence = Math.min(0.99, consistency * 0.7 + 0.3 * (txs.length / 12));
+      const confidence = Math.min(
+        0.99,
+        consistency * 0.7 + 0.3 * (txs.length / 12),
+      );
 
       // Only include if confidence is above threshold
       if (confidence < 0.5) continue;

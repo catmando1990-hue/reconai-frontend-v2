@@ -64,9 +64,9 @@ export function ReconciliationReport() {
   const [summary, setSummary] = useState<ReconciliationSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<ReconciliationStatus | "all">(
-    "all"
-  );
+  const [filterStatus, setFilterStatus] = useState<
+    ReconciliationStatus | "all"
+  >("all");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -74,7 +74,7 @@ export function ReconciliationReport() {
     try {
       const data = await apiFetch<ReconciliationResponse>(
         "/api/reports/reconciliation",
-        { method: "POST", body: JSON.stringify({}) }
+        { method: "POST", body: JSON.stringify({}) },
       );
       setItems(data.items || []);
       setSummary(data.summary || null);
@@ -247,7 +247,9 @@ export function ReconciliationReport() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">Total Difference</div>
+              <div className="text-xs text-muted-foreground">
+                Total Difference
+              </div>
               <div
                 className={`font-mono text-lg font-semibold ${
                   summary.total_difference === 0
@@ -293,7 +295,9 @@ export function ReconciliationReport() {
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         {statusIcon(item.status)}
-                        <span className="text-xs">{statusLabel(item.status)}</span>
+                        <span className="text-xs">
+                          {statusLabel(item.status)}
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-2.5">

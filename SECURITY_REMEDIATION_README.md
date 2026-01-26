@@ -15,6 +15,7 @@ This document details all security and code quality fixes applied to the ReconAI
 **Fix:** Replaced all client-side `fetch()` calls with the canonical `auditedFetch` client from `@/lib/auditedFetch`.
 
 **Files Modified:**
+
 - `src/app/(dashboard)/core/reports/account-activity/page.tsx`
 - `src/app/(dashboard)/core/reports/category-spend/page.tsx`
 - `src/app/(dashboard)/core/reports/ledger/page.tsx`
@@ -28,6 +29,7 @@ This document details all security and code quality fixes applied to the ReconAI
 - `src/components/settings/DiagnosticsSection.tsx`
 
 **Pattern Applied:**
+
 ```typescript
 // Before
 const res = await fetch("/api/endpoint", { ... });
@@ -41,6 +43,7 @@ const res = await auditedFetch("/api/endpoint", {
 ```
 
 **Notes:**
+
 - `skipBodyValidation: true` used for local Next.js API routes that don't implement full provenance response format
 - `rawResponse: true` used for blob/binary downloads (e.g., PDF statements)
 - Server-side API routes (`src/app/api/`) are NOT modified as they don't use client-side fetch
@@ -56,6 +59,7 @@ const res = await auditedFetch("/api/endpoint", {
 **Fix:** Applied multiple patterns to eliminate violations:
 
 #### Pattern A: Extract async fetch logic into `useCallback`
+
 ```typescript
 // Before
 useEffect(() => {
@@ -81,19 +85,27 @@ useEffect(() => {
 ```
 
 #### Pattern B: Use `useSyncExternalStore` for SSR-safe mounting
+
 ```typescript
 // Before
 const [mounted, setMounted] = useState(false);
-useEffect(() => { setMounted(true); }, []);
+useEffect(() => {
+  setMounted(true);
+}, []);
 
 // After
 const subscribe = () => () => {};
 const getClientSnapshot = () => true;
 const getServerSnapshot = () => false;
-const mounted = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
+const mounted = useSyncExternalStore(
+  subscribe,
+  getClientSnapshot,
+  getServerSnapshot,
+);
 ```
 
 #### Pattern C: Use `queueMicrotask` for async state updates
+
 ```typescript
 // Before
 useEffect(() => {
@@ -113,6 +125,7 @@ const resetOnOpen = useCallback(() => {
 ```
 
 **Files Modified:**
+
 - `src/app/(dashboard)/core/transactions/page.tsx`
 - `src/components/dashboard/CommandPalette.tsx`
 - `src/components/reports/AccountActivityReport.tsx`
@@ -129,6 +142,7 @@ const resetOnOpen = useCallback(() => {
 **Issue:** TypeScript and ESLint flagged unused declarations.
 
 **Files Modified:**
+
 - `src/app/(dashboard)/core/reports/cash-flow/page.tsx` - Removed unused `Download` import
 - `src/app/api/admin/exports/route.ts` - Removed unused `getToken` from destructuring
 - `src/app/api/intelligence/rules/route.ts` - Removed unused `CategoryRule` interface
@@ -142,6 +156,7 @@ const resetOnOpen = useCallback(() => {
 **Issue:** `npm audit` reported high-severity vulnerability in `tar` package.
 
 **Fix:** Added override in `package.json`:
+
 ```json
 {
   "overrides": {
@@ -151,6 +166,7 @@ const resetOnOpen = useCallback(() => {
 ```
 
 **File Modified:**
+
 - `package.json`
 
 ---
@@ -158,6 +174,7 @@ const resetOnOpen = useCallback(() => {
 ## Verification
 
 All fixes verified by successful execution of:
+
 ```bash
 npm run build  # Runs: next build && npm run lint && npm run format
 ```
@@ -168,38 +185,39 @@ npm run build  # Runs: next build && npm run lint && npm run format
 
 ## Files Changed Summary
 
-| File | Change Type |
-|------|-------------|
-| `package.json` | Security patch (tar override) |
-| `src/app/(dashboard)/core/reports/account-activity/page.tsx` | auditedFetch |
-| `src/app/(dashboard)/core/reports/category-spend/page.tsx` | auditedFetch |
-| `src/app/(dashboard)/core/reports/cash-flow/page.tsx` | Removed unused import |
-| `src/app/(dashboard)/core/reports/ledger/page.tsx` | auditedFetch + useCallback |
-| `src/app/(dashboard)/core/statements/page.tsx` | auditedFetch |
-| `src/app/(dashboard)/core/transactions/page.tsx` | useCallback pattern |
-| `src/app/(dashboard)/intelligence/insights/page.tsx` | auditedFetch |
-| `src/app/(dashboard)/layout.tsx` | auditedFetch |
-| `src/app/admin/exports/page.tsx` | auditedFetch |
-| `src/app/admin/settings/page.tsx` | auditedFetch |
-| `src/app/api/admin/exports/route.ts` | Removed unused var |
-| `src/app/api/intelligence/rules/route.ts` | Removed unused interface |
-| `src/components/admin/ExportProvenanceDrawer.tsx` | auditedFetch |
-| `src/components/dashboard/CommandPalette.tsx` | useSyncExternalStore + queueMicrotask |
-| `src/components/plaid/ConnectedAccounts.tsx` | auditedFetch |
-| `src/components/reports/AccountActivityReport.tsx` | useCallback pattern |
-| `src/components/reports/CashFlowReport.tsx` | useCallback pattern |
-| `src/components/reports/CategorySpendReport.tsx` | useCallback pattern |
-| `src/components/reports/CounterpartyReport.tsx` | useCallback pattern |
-| `src/components/reports/ExceptionReport.tsx` | useCallback pattern |
-| `src/components/reports/TransactionLedger.tsx` | useCallback pattern |
-| `src/components/settings/DiagnosticsSection.tsx` | auditedFetch |
-| `tests/fixtures/auth-fixture.ts` | Removed unused eslint-disable |
+| File                                                         | Change Type                           |
+| ------------------------------------------------------------ | ------------------------------------- |
+| `package.json`                                               | Security patch (tar override)         |
+| `src/app/(dashboard)/core/reports/account-activity/page.tsx` | auditedFetch                          |
+| `src/app/(dashboard)/core/reports/category-spend/page.tsx`   | auditedFetch                          |
+| `src/app/(dashboard)/core/reports/cash-flow/page.tsx`        | Removed unused import                 |
+| `src/app/(dashboard)/core/reports/ledger/page.tsx`           | auditedFetch + useCallback            |
+| `src/app/(dashboard)/core/statements/page.tsx`               | auditedFetch                          |
+| `src/app/(dashboard)/core/transactions/page.tsx`             | useCallback pattern                   |
+| `src/app/(dashboard)/intelligence/insights/page.tsx`         | auditedFetch                          |
+| `src/app/(dashboard)/layout.tsx`                             | auditedFetch                          |
+| `src/app/admin/exports/page.tsx`                             | auditedFetch                          |
+| `src/app/admin/settings/page.tsx`                            | auditedFetch                          |
+| `src/app/api/admin/exports/route.ts`                         | Removed unused var                    |
+| `src/app/api/intelligence/rules/route.ts`                    | Removed unused interface              |
+| `src/components/admin/ExportProvenanceDrawer.tsx`            | auditedFetch                          |
+| `src/components/dashboard/CommandPalette.tsx`                | useSyncExternalStore + queueMicrotask |
+| `src/components/plaid/ConnectedAccounts.tsx`                 | auditedFetch                          |
+| `src/components/reports/AccountActivityReport.tsx`           | useCallback pattern                   |
+| `src/components/reports/CashFlowReport.tsx`                  | useCallback pattern                   |
+| `src/components/reports/CategorySpendReport.tsx`             | useCallback pattern                   |
+| `src/components/reports/CounterpartyReport.tsx`              | useCallback pattern                   |
+| `src/components/reports/ExceptionReport.tsx`                 | useCallback pattern                   |
+| `src/components/reports/TransactionLedger.tsx`               | useCallback pattern                   |
+| `src/components/settings/DiagnosticsSection.tsx`             | auditedFetch                          |
+| `tests/fixtures/auth-fixture.ts`                             | Removed unused eslint-disable         |
 
 ---
 
 ## Agent Compliance
 
 This remediation follows the ReconAI Canonical Law protocol:
+
 - No unauthorized code patterns introduced
 - All changes verified against build + lint + format
 - Provenance tracking maintained via auditedFetch
@@ -207,4 +225,4 @@ This remediation follows the ReconAI Canonical Law protocol:
 
 ---
 
-*Generated: 2026-01-26*
+_Generated: 2026-01-26_

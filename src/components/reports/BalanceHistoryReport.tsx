@@ -3,7 +3,13 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from "lucide-react";
 
 type BalancePoint = {
   date: string;
@@ -54,7 +60,7 @@ export function BalanceHistoryReport() {
     setError(null);
     try {
       const data = await apiFetch<BalanceHistoryResponse>(
-        "/api/reports/balance-history"
+        "/api/reports/balance-history",
       );
       setHistory(data.history || []);
       setAccounts(data.accounts || []);
@@ -184,7 +190,9 @@ export function BalanceHistoryReport() {
           {/* Summary Cards */}
           <div className="grid grid-cols-3 gap-4 border-b bg-muted/20 px-4 py-3">
             <div>
-              <div className="text-xs text-muted-foreground">Current Balance</div>
+              <div className="text-xs text-muted-foreground">
+                Current Balance
+              </div>
               <div className="font-mono text-lg font-semibold">
                 {formatCurrency(totalCurrentBalance)}
               </div>
@@ -203,7 +211,9 @@ export function BalanceHistoryReport() {
                     )}
                     <span
                       className={`font-mono text-lg font-semibold ${
-                        balanceChange >= 0 ? "text-emerald-600" : "text-destructive"
+                        balanceChange >= 0
+                          ? "text-emerald-600"
+                          : "text-destructive"
                       }`}
                     >
                       {balanceChange >= 0 ? "+" : ""}
@@ -215,7 +225,9 @@ export function BalanceHistoryReport() {
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Data Points</div>
-              <div className="text-lg font-semibold">{groupedByDate.length}</div>
+              <div className="text-lg font-semibold">
+                {groupedByDate.length}
+              </div>
             </div>
           </div>
 
@@ -245,7 +257,9 @@ export function BalanceHistoryReport() {
                         {change !== null ? (
                           <span
                             className={
-                              change >= 0 ? "text-emerald-600" : "text-destructive"
+                              change >= 0
+                                ? "text-emerald-600"
+                                : "text-destructive"
                             }
                           >
                             {change >= 0 ? "+" : ""}

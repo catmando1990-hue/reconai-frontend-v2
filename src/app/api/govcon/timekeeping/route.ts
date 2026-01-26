@@ -179,7 +179,10 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { id, ...updates } = body as { id?: string } & Record<string, unknown>;
+    const { id, ...updates } = body as { id?: string } & Record<
+      string,
+      unknown
+    >;
 
     if (!id) {
       return NextResponse.json(

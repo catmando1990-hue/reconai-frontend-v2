@@ -76,7 +76,7 @@ export function DataIntegrityReport() {
     setError(null);
     try {
       const data = await apiFetch<DataIntegrityResponse>(
-        "/api/reports/data-integrity"
+        "/api/reports/data-integrity",
       );
       setSources(data.sources || []);
       setSummary(data.summary || null);
@@ -233,7 +233,8 @@ export function DataIntegrityReport() {
             No data sources connected.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Connect bank accounts or upload statements to see data integrity status.
+            Connect bank accounts or upload statements to see data integrity
+            status.
           </p>
         </div>
       )}
@@ -243,7 +244,7 @@ export function DataIntegrityReport() {
           {/* Overall Status Banner */}
           <div
             className={`mx-4 mt-4 rounded-lg border p-4 ${overallStatusColor(
-              summary.overall_status
+              summary.overall_status,
             )}`}
           >
             <div className="flex items-center justify-between">
@@ -259,7 +260,9 @@ export function DataIntegrityReport() {
                 </div>
               </div>
               <div className="text-right text-sm">
-                <div>{summary.total_records.toLocaleString()} total records</div>
+                <div>
+                  {summary.total_records.toLocaleString()} total records
+                </div>
                 <div className="text-xs opacity-80">
                   across {summary.total_sources} sources
                 </div>
@@ -342,7 +345,7 @@ export function DataIntegrityReport() {
                         <div>
                           {source.coverage_start && source.coverage_end
                             ? `${formatDate(source.coverage_start)} – ${formatDate(
-                                source.coverage_end
+                                source.coverage_end,
                               )}`
                             : "Unknown"}
                         </div>

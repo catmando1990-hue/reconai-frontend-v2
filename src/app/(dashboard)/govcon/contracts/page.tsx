@@ -87,7 +87,7 @@ export default function ContractsPage() {
     try {
       const data = await auditedFetch<{ contracts: Contract[] }>(
         "/api/govcon/contracts",
-        { skipBodyValidation: true }
+        { skipBodyValidation: true },
       );
       setContracts(data.contracts || []);
     } catch (err) {
@@ -99,7 +99,7 @@ export default function ContractsPage() {
         }
       } else {
         setError(
-          err instanceof Error ? err.message : "Failed to load contracts"
+          err instanceof Error ? err.message : "Failed to load contracts",
         );
       }
     } finally {
@@ -184,7 +184,7 @@ export default function ContractsPage() {
         setFormError(body?.error || `Error: ${err.status}`);
       } else {
         setFormError(
-          err instanceof Error ? err.message : "Failed to save contract"
+          err instanceof Error ? err.message : "Failed to save contract",
         );
       }
     } finally {
@@ -419,7 +419,10 @@ export default function ContractsPage() {
                   type="text"
                   value={formData.contract_name}
                   onChange={(e) =>
-                    setFormData((f) => ({ ...f, contract_name: e.target.value }))
+                    setFormData((f) => ({
+                      ...f,
+                      contract_name: e.target.value,
+                    }))
                   }
                   className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
                   placeholder="e.g., IT Support Services"
@@ -500,7 +503,10 @@ export default function ContractsPage() {
                     type="number"
                     value={formData.total_value}
                     onChange={(e) =>
-                      setFormData((f) => ({ ...f, total_value: e.target.value }))
+                      setFormData((f) => ({
+                        ...f,
+                        total_value: e.target.value,
+                      }))
                     }
                     className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
                     placeholder="0"

@@ -3,7 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw, Repeat, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  Repeat,
+  ArrowUpCircle,
+  ArrowDownCircle,
+} from "lucide-react";
 
 type RecurringItem = {
   id: string;
@@ -133,7 +139,9 @@ export function RecurringActivityReport() {
             disabled={loading}
             className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+            />
             Refresh
           </button>
           <button

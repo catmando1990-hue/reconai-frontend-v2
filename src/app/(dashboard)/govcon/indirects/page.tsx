@@ -110,7 +110,7 @@ export default function IndirectsPage() {
     try {
       const data = await auditedFetch<{ pools: IndirectPool[] }>(
         "/api/govcon/indirects",
-        { skipBodyValidation: true }
+        { skipBodyValidation: true },
       );
       setPools(data.pools || []);
     } catch (err) {
@@ -204,7 +204,9 @@ export default function IndirectsPage() {
         const body = err.body as { error?: string } | undefined;
         setFormError(body?.error || `Error: ${err.status}`);
       } else {
-        setFormError(err instanceof Error ? err.message : "Failed to save pool");
+        setFormError(
+          err instanceof Error ? err.message : "Failed to save pool",
+        );
       }
     } finally {
       setSubmitting(false);

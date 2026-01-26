@@ -153,8 +153,7 @@ export async function POST() {
 
       // Try partial match by date only
       const partialMatch =
-        !matchingTx &&
-        (transactions || []).find((tx) => tx.date === line.date);
+        !matchingTx && (transactions || []).find((tx) => tx.date === line.date);
 
       let status: "matched" | "unmatched" | "partial";
       let ingestedAmount: number | null = null;

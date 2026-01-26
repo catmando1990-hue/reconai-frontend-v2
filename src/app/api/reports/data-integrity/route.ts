@@ -117,7 +117,9 @@ export async function GET() {
       // Check for pending transactions
       const pendingCount = itemTxs.filter((t) => t.pending).length;
       if (pendingCount > 10) {
-        issues.push(`${pendingCount} pending transactions - may indicate sync issues`);
+        issues.push(
+          `${pendingCount} pending transactions - may indicate sync issues`,
+        );
         if (status !== "error") status = "warning";
       }
 

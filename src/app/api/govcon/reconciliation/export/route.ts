@@ -61,10 +61,12 @@ export async function POST(req: NextRequest) {
     // Schedule H - Contract Brief
     if (!schedules || schedules.includes("H")) {
       lines.push("--- Schedule H: Contract Brief ---");
-      lines.push("Contract Number,Contract Name,Agency,Type,Total Value,Status");
+      lines.push(
+        "Contract Number,Contract Name,Agency,Type,Total Value,Status",
+      );
       for (const c of contracts || []) {
         lines.push(
-          `"${c.contract_number}","${c.contract_name}","${c.agency || ""}","${c.contract_type || ""}","${c.total_value || 0}","${c.status}"`
+          `"${c.contract_number}","${c.contract_name}","${c.agency || ""}","${c.contract_type || ""}","${c.total_value || 0}","${c.status}"`,
         );
       }
       lines.push("");
@@ -73,10 +75,12 @@ export async function POST(req: NextRequest) {
     // Schedule K - Summary of Hours and Amounts
     if (!schedules || schedules.includes("K")) {
       lines.push("--- Schedule K: Summary of Hours and Amounts ---");
-      lines.push("Contract ID,Date,Hours,Description,Task Code,Labor Category,Status");
+      lines.push(
+        "Contract ID,Date,Hours,Description,Task Code,Labor Category,Status",
+      );
       for (const t of timeEntries || []) {
         lines.push(
-          `"${t.contract_id}","${t.entry_date}","${t.hours}","${t.description || ""}","${t.task_code || ""}","${t.labor_category || ""}","${t.status}"`
+          `"${t.contract_id}","${t.entry_date}","${t.hours}","${t.description || ""}","${t.task_code || ""}","${t.labor_category || ""}","${t.status}"`,
         );
       }
       lines.push("");
@@ -85,10 +89,12 @@ export async function POST(req: NextRequest) {
     // Schedule M - Indirect Cost Pools
     if (!schedules || schedules.includes("M")) {
       lines.push("--- Schedule M: Indirect Cost Pools ---");
-      lines.push("Pool Name,Pool Type,Base Type,Rate %,FAR Reference,Allowability,Fiscal Year");
+      lines.push(
+        "Pool Name,Pool Type,Base Type,Rate %,FAR Reference,Allowability,Fiscal Year",
+      );
       for (const p of pools || []) {
         lines.push(
-          `"${p.pool_name}","${p.pool_type}","${p.base_type || ""}","${p.rate_percentage || ""}","${p.far_reference || ""}","${p.allowability_status}","${p.fiscal_year}"`
+          `"${p.pool_name}","${p.pool_type}","${p.base_type || ""}","${p.rate_percentage || ""}","${p.far_reference || ""}","${p.allowability_status}","${p.fiscal_year}"`,
         );
       }
       lines.push("");

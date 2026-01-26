@@ -132,7 +132,8 @@ export async function POST(req: NextRequest) {
       .update({
         status: "completed",
         completed_at: new Date().toISOString(),
-        summary: "Reconciliation completed. Review variances for any discrepancies.",
+        summary:
+          "Reconciliation completed. Review variances for any discrepancies.",
         updated_at: new Date().toISOString(),
       })
       .eq("id", run.id)

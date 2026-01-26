@@ -132,7 +132,7 @@ export default function TimekeepingPage() {
 
   const weekDays = useMemo(
     () => getWeekDays(currentWeekStart),
-    [currentWeekStart]
+    [currentWeekStart],
   );
   const weekEnd = useMemo(() => {
     const end = new Date(currentWeekStart);
@@ -145,7 +145,7 @@ export default function TimekeepingPage() {
     try {
       const data = await auditedFetch<{ contracts: Contract[] }>(
         "/api/govcon/contracts",
-        { skipBodyValidation: true }
+        { skipBodyValidation: true },
       );
       setContracts(data.contracts || []);
     } catch (err) {
@@ -163,7 +163,7 @@ export default function TimekeepingPage() {
 
       const data = await auditedFetch<{ entries: TimeEntry[] }>(
         `/api/govcon/timekeeping?start_date=${startDate}&end_date=${endDate}`,
-        { skipBodyValidation: true }
+        { skipBodyValidation: true },
       );
       setEntries(data.entries || []);
     } catch (err) {
@@ -175,7 +175,7 @@ export default function TimekeepingPage() {
         }
       } else {
         setError(
-          err instanceof Error ? err.message : "Failed to load time entries"
+          err instanceof Error ? err.message : "Failed to load time entries",
         );
       }
     } finally {
@@ -265,7 +265,7 @@ export default function TimekeepingPage() {
         setFormError(body?.error || `Error: ${err.status}`);
       } else {
         setFormError(
-          err instanceof Error ? err.message : "Failed to save entry"
+          err instanceof Error ? err.message : "Failed to save entry",
         );
       }
     } finally {
@@ -307,7 +307,7 @@ export default function TimekeepingPage() {
   // Calculate totals
   const totalHours = useMemo(
     () => entries.reduce((sum, e) => sum + e.hours, 0),
-    [entries]
+    [entries],
   );
 
   const dailyTotals = useMemo(() => {
@@ -402,8 +402,7 @@ export default function TimekeepingPage() {
                   {weekDays.map((day) => {
                     const dateStr = formatDateISO(day);
                     const dayEntries = entriesByDate[dateStr] || [];
-                    const isToday =
-                      formatDateISO(new Date()) === dateStr;
+                    const isToday = formatDateISO(new Date()) === dateStr;
                     const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
                     return (

@@ -74,7 +74,7 @@ export default function ReconciliationPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [runType, setRunType] = useState("full");
   const [fiscalYear, setFiscalYear] = useState(
-    new Date().getFullYear().toString()
+    new Date().getFullYear().toString(),
   );
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -160,7 +160,7 @@ export default function ReconciliationPage() {
         setFormError(body?.error || `Error: ${err.status}`);
       } else {
         setFormError(
-          err instanceof Error ? err.message : "Failed to start run"
+          err instanceof Error ? err.message : "Failed to start run",
         );
       }
     } finally {
@@ -180,7 +180,7 @@ export default function ReconciliationPage() {
             fiscal_year: parseInt(fiscalYear) || new Date().getFullYear(),
           }),
           rawResponse: true,
-        }
+        },
       );
 
       if (response.ok) {
@@ -452,7 +452,9 @@ export default function ReconciliationPage() {
                   </div>
                   <StatusChip
                     variant={
-                      runs.some((r) => r.status === "completed") ? "ok" : "muted"
+                      runs.some((r) => r.status === "completed")
+                        ? "ok"
+                        : "muted"
                     }
                   >
                     {runs.some((r) => r.status === "completed")
@@ -572,7 +574,11 @@ export default function ReconciliationPage() {
                 <Button variant="outline" size="sm" onClick={handleCloseModal}>
                   Cancel
                 </Button>
-                <Button size="sm" onClick={handleStartRun} disabled={submitting}>
+                <Button
+                  size="sm"
+                  onClick={handleStartRun}
+                  disabled={submitting}
+                >
                   {submitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -86,6 +86,7 @@ export default function ReconciliationPage() {
 
   // Export state
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   // Fetch data
   const fetchData = useCallback(async () => {
@@ -178,6 +179,7 @@ export default function ReconciliationPage() {
   // Export ICS
   const handleExport = async () => {
     setExporting(true);
+    setExportError(null);
     try {
       const response = await auditedFetch<Response>(
         "/api/govcon/reconciliation/export",
@@ -200,9 +202,20 @@ export default function ReconciliationPage() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+      } else {
+        // P2 FIX: Show user-visible error for non-ok response
+        setExportError(`Export failed: ${response.status}`);
       }
     } catch (err) {
-      console.error("Export error:", err);
+      // P2 FIX: Show user-visible error instead of silent console.error
+      if (err instanceof HttpError) {
+        const body = err.body as { error?: string } | undefined;
+        setExportError(body?.error || `Export failed: ${err.status}`);
+      } else {
+        setExportError(
+          err instanceof Error ? err.message : "Failed to export ICS",
+        );
+      }
     } finally {
       setExporting(false);
     }
@@ -269,6 +282,29 @@ export default function ReconciliationPage() {
         message="Reconciliation supports DCAA Incurred Cost Submission (ICS) per FAR 52.216-7. All variances must be resolved with documented evidence before final submission."
         context="govcon"
       />
+
+      {/* P2 FIX: Show export error with retry ability */}
+      {exportError && (
+        <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-destructive">{exportError}</p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExport}
+              disabled={exporting}
+              className="ml-4"
+            >
+              {exporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              Retry Export
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-8">

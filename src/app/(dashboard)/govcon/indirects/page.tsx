@@ -105,6 +105,7 @@ export default function IndirectsPage() {
   // Delete confirmation
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Fetch pools
   const fetchPools = useCallback(async () => {
@@ -223,6 +224,7 @@ export default function IndirectsPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       await auditedFetch(`/api/govcon/indirects?id=${deleteId}`, {
         method: "DELETE",
@@ -231,10 +233,24 @@ export default function IndirectsPage() {
       setDeleteId(null);
       await fetchPools();
     } catch (err) {
-      console.error("Delete error:", err);
+      // P2 FIX: Show user-visible error instead of silent console.error
+      if (err instanceof HttpError) {
+        const body = err.body as { error?: string } | undefined;
+        setDeleteError(body?.error || `Delete failed: ${err.status}`);
+      } else {
+        setDeleteError(
+          err instanceof Error ? err.message : "Failed to delete pool",
+        );
+      }
     } finally {
       setDeleting(false);
     }
+  };
+
+  // Close delete modal and reset error
+  const handleCloseDeleteModal = () => {
+    setDeleteId(null);
+    setDeleteError(null);
   };
 
   // Get status variant
@@ -665,11 +681,17 @@ export default function IndirectsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               This action cannot be undone. All rate history will be removed.
             </p>
+            {/* P2 FIX: Show delete error with retry ability */}
+            {deleteError && (
+              <div className="mb-4 rounded border border-destructive/50 bg-destructive/10 p-3">
+                <p className="text-sm text-destructive">{deleteError}</p>
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setDeleteId(null)}
+                onClick={handleCloseDeleteModal}
               >
                 Cancel
               </Button>
@@ -684,6 +706,8 @@ export default function IndirectsPage() {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Deleting...
                   </>
+                ) : deleteError ? (
+                  "Retry"
                 ) : (
                   "Delete"
                 )}

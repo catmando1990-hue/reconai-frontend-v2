@@ -3,10 +3,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw, AlertTriangle, FileText } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  AlertTriangle,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 
 /**
- * Exception signal from backend engine
+ * Exception signal from Phase 6.2 backend engine
  */
 type ExceptionSignal = {
   id: string;
@@ -15,6 +22,7 @@ type ExceptionSignal = {
   description?: string;
   entity_id?: string;
   evidence_ref?: string;
+  evidence?: Record<string, unknown>;
   created_at: string;
   confidence?: number;
 };
@@ -30,18 +38,17 @@ type SignalsResponse = {
 };
 
 /**
- * Known exception rule types from the backend engine
+ * Phase 6.2 Exception Signal Titles (E1–E6)
+ * These are the exact titles produced by the backend engine.
  */
-const EXCEPTION_RULE_TYPES = [
-  "duplicate_transaction",
-  "missing_receipt",
-  "uncategorized_expense",
-  "policy_violation",
-  "threshold_exceeded",
-  "approval_required",
-  "reconciliation_mismatch",
-  "vendor_not_approved",
-];
+const EXCEPTION_TITLES = [
+  "Uncategorized Transaction",
+  "Duplicate Transaction",
+  "Amount Threshold Breach",
+  "Out-of-Period Posting",
+  "Missing Counterparty",
+  "Negative Balance Event",
+] as const;
 
 function formatDateTime(dateStr: string): string {
   return new Date(dateStr).toLocaleString("en-US", {
@@ -54,13 +61,13 @@ function formatDateTime(dateStr: string): string {
 }
 
 /**
- * ExceptionReport - Displays exception signals from backend engine
+ * ExceptionReport - Displays exception signals from Phase 6.2 backend engine
  *
  * Endpoint: GET /api/signals/p1?min_confidence=1.0
  *
  * Rules:
  * - Fetches real exception signals from backend
- * - Filters to known exception rule types
+ * - Filters to exact E1–E6 exception titles
  * - No auto-refresh or polling
  * - Advisory only, no enforcement implied
  */
@@ -72,6 +79,19 @@ export function ExceptionReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ran, setRan] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -89,16 +109,12 @@ export function ExceptionReport() {
         signals = data.signals ?? [];
       }
 
-      // Filter to known exception rule types only
+      // Filter to exact E1–E6 exception titles only
       const filtered = signals.filter((s) =>
-        EXCEPTION_RULE_TYPES.some(
-          (ruleType) =>
-            s.type?.toLowerCase().includes(ruleType) ||
-            s.title?.toLowerCase().includes(ruleType.replace(/_/g, " ")),
-        ),
+        EXCEPTION_TITLES.some((title) => s.title === title),
       );
 
-      // Sort by created_at descending (most recent first)
+      // Sort by created_at descending (newest first)
       filtered.sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -125,7 +141,12 @@ export function ExceptionReport() {
   const handleExportCSV = () => {
     if (exceptions.length === 0) return;
 
-    const headers = ["Title", "Description", "Evidence Reference", "Created At"];
+    const headers = [
+      "Title",
+      "Description",
+      "Evidence Reference",
+      "Created At",
+    ];
     const rows = exceptions.map((ex) => [
       `"${ex.title || ex.type}"`,
       `"${ex.description || ""}"`,
@@ -176,6 +197,14 @@ export function ExceptionReport() {
         </div>
       </div>
 
+      {/* Advisory Banner - MANDATORY */}
+      <div className="border-b bg-amber-500/5 px-4 py-2">
+        <p className="text-xs text-amber-700 dark:text-amber-400">
+          Exceptions are advisory and rule-based. They do not imply enforcement
+          or automated action.
+        </p>
+      </div>
+
       {loading && (
         <div className="flex items-center justify-center py-12">
           <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -197,7 +226,7 @@ export function ExceptionReport() {
             No exceptions detected.
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            This means all evaluated rules passed.
+            This means all evaluated rules passed for the selected period.
           </p>
         </div>
       )}
@@ -214,46 +243,94 @@ export function ExceptionReport() {
 
           {/* Exception List */}
           <div className="divide-y">
-            {exceptions.map((ex) => (
-              <div
-                key={ex.id}
-                className="flex items-start gap-3 px-4 py-3 hover:bg-muted/20"
-              >
-                <div className="mt-0.5 rounded-full bg-amber-500/20 p-1 text-amber-600">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  {/* Title */}
-                  <div className="font-medium">{ex.title || ex.type}</div>
+            {exceptions.map((ex) => {
+              const isExpanded = expandedIds.has(ex.id);
+              const hasEvidence =
+                ex.evidence_ref || ex.entity_id || ex.evidence;
 
-                  {/* Description */}
-                  {ex.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {ex.description}
-                    </p>
-                  )}
+              return (
+                <div key={ex.id} className="px-4 py-3 hover:bg-muted/20">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 rounded-full bg-amber-500/20 p-1 text-amber-600">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      {/* Title */}
+                      <div className="font-medium">{ex.title || ex.type}</div>
 
-                  {/* Evidence Reference & Timestamp */}
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    {(ex.evidence_ref || ex.entity_id) && (
-                      <span className="font-mono">
-                        Ref: {ex.evidence_ref || ex.entity_id}
-                      </span>
-                    )}
-                    <span>{formatDateTime(ex.created_at)}</span>
+                      {/* Description */}
+                      {ex.description && (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {ex.description}
+                        </p>
+                      )}
+
+                      {/* Timestamp */}
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        {formatDateTime(ex.created_at)}
+                      </div>
+
+                      {/* Evidence Reference - Expandable */}
+                      {hasEvidence && (
+                        <div className="mt-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleExpanded(ex.id)}
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-3 w-3" />
+                            ) : (
+                              <ChevronRight className="h-3 w-3" />
+                            )}
+                            Evidence Reference
+                          </button>
+
+                          {isExpanded && (
+                            <div className="mt-2 rounded-lg border bg-muted/30 p-3">
+                              {ex.evidence_ref && (
+                                <div className="text-xs">
+                                  <span className="text-muted-foreground">
+                                    Ref:{" "}
+                                  </span>
+                                  <span className="font-mono">
+                                    {ex.evidence_ref}
+                                  </span>
+                                </div>
+                              )}
+                              {ex.entity_id && (
+                                <div className="text-xs mt-1">
+                                  <span className="text-muted-foreground">
+                                    Entity:{" "}
+                                  </span>
+                                  <span className="font-mono">
+                                    {ex.entity_id}
+                                  </span>
+                                </div>
+                              )}
+                              {ex.evidence && (
+                                <pre className="mt-2 text-[10px] text-muted-foreground overflow-x-auto">
+                                  {JSON.stringify(ex.evidence, null, 2)}
+                                </pre>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
 
-      {/* Disclaimer - MANDATORY */}
+      {/* Footer Disclaimer */}
       <div className="border-t bg-muted/20 px-4 py-2">
         <p className="text-[10px] text-muted-foreground">
-          Exceptions are advisory and rule-based. They do not imply enforcement
-          or action.
+          Exception signals are generated by rule evaluation. Review evidence
+          before taking action.
         </p>
       </div>
     </div>

@@ -113,3 +113,65 @@ export interface AuditExportV2DownloadResult {
   filename: string;
   request_id: string;
 }
+
+// =============================================================================
+// GOVCON PRESET TYPES (Phase 12B)
+// =============================================================================
+
+/**
+ * Available preset identifiers.
+ * Display-only typing; no validation logic.
+ */
+export type GovConPreset = "sf1408_pre_award";
+
+/**
+ * Preset option definition for UI rendering.
+ */
+export interface GovConPresetOption {
+  id: GovConPreset;
+  label: string;
+  description: string;
+}
+
+/**
+ * Request body for POST /api/exports/audit-package-v2/presets
+ * Display-only typing; no validation logic.
+ */
+export interface GovConPresetRequest {
+  preset: GovConPreset;
+  options?: {
+    statement_period?: {
+      from: string;
+      to: string;
+    };
+    asset_snapshot_id?: string;
+  };
+}
+
+/**
+ * Response from POST /api/exports/audit-package-v2/presets
+ */
+export interface GovConPresetGenerateResponse {
+  ok: boolean;
+  export_id?: string;
+  generated_at?: string;
+  preset?: string;
+  sections?: string[];
+  download_url?: string;
+  govcon_mapping?: GovconMappingMetadata;
+  integrity?: ExportIntegrityMetadata;
+  error?: string;
+  request_id: string;
+}
+
+/**
+ * UI state for preset generation result.
+ */
+export interface GovConPresetResult {
+  exportId: string;
+  generatedAt: string;
+  preset: string;
+  sections: string[];
+  hasGovconMapping: boolean;
+  integrity?: ExportIntegrityMetadata;
+}

@@ -8,6 +8,7 @@ import LiabilitiesPanel from "@/components/govcon/audit/LiabilitiesPanel";
 import InvestmentsPanel from "@/components/govcon/audit/InvestmentsPanel";
 import ConsistencyAdvisory from "@/components/govcon/audit/ConsistencyAdvisory";
 import AuditExportV2Panel from "@/components/govcon/audit/AuditExportV2Panel";
+import GovConPresetPanel from "@/components/govcon/audit/GovConPresetPanel";
 
 export default function EvidencePage() {
   return (
@@ -20,6 +21,9 @@ export default function EvidencePage() {
 
         {/* Audit Export v2 - RBAC gated (renders null for non-admin) */}
         <AuditExportV2Panel />
+
+        {/* GovCon Packet Presets - RBAC gated (renders null for non-admin) */}
+        <GovConPresetPanel />
 
         {/* Plaid Statements Section - RBAC gated (renders null for non-admin) */}
         <PlaidStatementsEvidence />

@@ -15,10 +15,23 @@ type ReceiptItem = {
 };
 
 /**
- * P0 FIX: Auth Propagation
- * - Uses useApi() hook for org context and auth headers
- * - Gates fetch behind isLoaded to prevent fetching before Clerk is ready
+ * P1 FIX: Receipts Page with P1 Backend Alignment
+ *
+ * Endpoint: GET /api/receipts/p1
+ *
+ * P1 Requirements:
+ * - Surface request_id on errors
+ * - Explicit empty states
+ * - Advisory semantics preserved
+ * - No polling or auto-exec
  */
+
+// P1: Response type with request_id for provenance
+type ReceiptsP1Response = {
+  receipts: ReceiptItem[];
+  request_id: string;
+};
+
 export default function ReceiptsPage() {
   const { apiFetch } = useApi();
   const { isLoaded: authReady } = useOrg();
@@ -34,10 +47,20 @@ export default function ReceiptsPage() {
     let alive = true;
     (async () => {
       try {
-        const data = await apiFetch<ReceiptItem[]>("/api/receipts");
-        if (alive) setReceipts(data);
+        // P1: Use P1 endpoint with structured response
+        const response = await apiFetch<ReceiptsP1Response>("/api/receipts/p1");
+
+        if (alive) {
+          // P1: Handle both legacy array and new object format
+          if (Array.isArray(response)) {
+            setReceipts(response);
+          } else {
+            setReceipts(response.receipts ?? []);
+          }
+          setError(null);
+        }
       } catch (err) {
-        // Silent fallback: show empty state with error context
+        // P1: Surface request_id on errors
         if (alive) {
           const requestId = crypto.randomUUID();
           const msg = err instanceof Error ? err.message : "Failed to load";
@@ -70,11 +93,7 @@ export default function ReceiptsPage() {
             Receipt records are created when you upload expense documentation or
             when ReconAI processes transactions with receipt attachments.
           </p>
-          {error && (
-            <p className="text-muted-foreground text-xs text-amber-500">
-              Note: {error}
-            </p>
-          )}
+          {error && <p className="text-xs text-amber-500">Note: {error}</p>}
           <p className="text-muted-foreground text-xs">
             Next step: Upload receipts or connect a bank account to start
             tracking expenses.

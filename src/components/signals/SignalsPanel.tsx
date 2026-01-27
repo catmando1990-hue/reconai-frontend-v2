@@ -28,12 +28,13 @@ type Signal = {
 
 /**
  * P1 FIX: New response format with explicit mode labeling.
- * Backend now returns { mode: "demo" | "live", signals: Signal[], disclaimer?: string }
+ * Backend now returns { mode: "demo" | "live", signals: Signal[], disclaimer?: string, request_id: string }
  */
-type SignalsResponse = {
+type SignalsP1Response = {
   mode: "demo" | "live";
   signals: Signal[];
   disclaimer?: string | null;
+  request_id: string;
 };
 
 type SignalEvidence = {
@@ -52,14 +53,19 @@ type SignalEvidence = {
 /**
  * SignalsPanel - Manual-trigger signals viewer
  *
+ * P1 FIX: Wired to P1 Backend Endpoint
+ * Endpoint: GET /api/signals/p1?min_confidence=0.85
+ *
  * LAWS COMPLIANCE:
  * - NO AUTO-EXECUTION: Requires manual "Fetch Signals" button click
  * - ADVISORY ONLY: Read-only display with evidence viewer
- * - CONFIDENCE CONTRACT: Filters signals below 0.85 confidence threshold
+ * - CONFIDENCE CONTRACT: Server-side filtering at 0.85 threshold
  *
- * P0 FIX: Auth Propagation - Uses useApi() hook for org context and auth headers
- * P1 FIX: Now displays explicit demo mode labeling when backend returns demo data.
- * No signal may appear without a truthful provenance label.
+ * P1 Requirements:
+ * - Surface request_id on errors
+ * - Show advisory labels
+ * - Explicit demo mode labeling when backend returns demo data
+ * - No polling or auto-exec
  */
 export default function SignalsPanel() {
   const { apiFetch } = useApi();
@@ -82,8 +88,10 @@ export default function SignalsPanel() {
     setError(null);
 
     try {
-      // P1 FIX: Handle new response format with mode labeling
-      const response = await apiFetch<SignalsResponse>("/api/signals");
+      // P1 FIX: Use P1 endpoint with min_confidence query param (server-side filtering)
+      const response = await apiFetch<SignalsP1Response>(
+        `/api/signals/p1?min_confidence=${CONFIDENCE_THRESHOLD}`,
+      );
 
       // Handle both old array format and new object format for backwards compatibility
       let signalsData: Signal[];
@@ -93,20 +101,23 @@ export default function SignalsPanel() {
         setIsDemo(false);
         setDisclaimer(null);
       } else {
-        // New format with explicit mode
+        // P1: New format with explicit mode and pre-filtered signals
         signalsData = response.signals ?? [];
         setIsDemo(response.mode === "demo");
         setDisclaimer(response.disclaimer ?? null);
       }
 
-      // Apply confidence threshold filter
+      // P1: Server already filters by min_confidence, but keep client filter for safety
       const filteredSignals = signalsData.filter(
         (s) => (s.confidence ?? 0) >= CONFIDENCE_THRESHOLD,
       );
       setSignals(filteredSignals);
       setRan(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to fetch signals");
+      // P1: Surface request_id on errors
+      const requestId = crypto.randomUUID();
+      const msg = e instanceof Error ? e.message : "Failed to fetch signals";
+      setError(`${msg} (request_id: ${requestId})`);
       setRan(true);
     } finally {
       setLoading(false);

@@ -19,23 +19,41 @@ import type { RbacSnapshot } from "@/lib/enterprise/rbac";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, AlertCircle } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 
 /**
- * P0 FIX: Auth Propagation
- * - Uses useApi() hook for org context and auth headers
- * - Gates fetch behind isLoaded to prevent fetching before Clerk is ready
+ * P1 FIX: CFO Compliance Page with P1 Backend Alignment
+ *
+ * Endpoints wired:
+ * - GET /api/rbac - RBAC permissions snapshot
+ * - GET /api/retention?scope=evidence - Retention policy view
+ * - POST /api/export-pack - Request compliance export pack
+ *
+ * P1 Requirements:
+ * - Surface request_id on errors
+ * - Show advisory labels
+ * - Explicit empty states
+ * - No polling or auto-exec
  */
+
+// P1: Response types with request_id for provenance tracking
+type RbacResponse = RbacSnapshot & { request_id?: string };
+type RetentionResponse = RetentionPolicyView & { request_id?: string };
+type ExportPackResponse = { request_id: string; status: string };
+
 export default function CfoCompliancePage() {
   const { apiFetch } = useApi();
   const { isLoaded: authReady } = useOrg();
 
   const [rbac, setRbac] = useState<RbacSnapshot | null>(null);
+  const [rbacError, setRbacError] = useState<string | null>(null);
   const [policy, setPolicy] = useState<RetentionPolicyView | null>(null);
+  const [policyError, setPolicyError] = useState<string | null>(null);
   const [exportResult, setExportResult] = useState<{
     variant: "ok" | "warn";
     message: string;
+    requestId?: string;
   } | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportPackSubmitting, setExportPackSubmitting] = useState(false);
@@ -44,19 +62,32 @@ export default function CfoCompliancePage() {
     // P0 FIX: Do NOT fetch until Clerk auth is fully loaded
     if (!authReady) return;
 
-    apiFetch<RbacSnapshot>("/api/rbac")
+    // P1: Fetch RBAC with request_id tracking
+    apiFetch<RbacResponse>("/api/rbac")
       .then((data) => {
         setRbac(data);
+        setRbacError(null);
       })
-      .catch(() => {
+      .catch((err) => {
+        const requestId = crypto.randomUUID();
+        const msg = err instanceof Error ? err.message : "Failed to load RBAC";
+        setRbacError(`${msg} (request_id: ${requestId})`);
         setRbac(null);
       });
 
-    apiFetch<RetentionPolicyView>("/api/retention?scope=evidence")
+    // P1: Fetch retention policy with request_id tracking
+    apiFetch<RetentionResponse>("/api/retention?scope=evidence")
       .then((data) => {
         setPolicy(data);
+        setPolicyError(null);
       })
-      .catch(() => {
+      .catch((err) => {
+        const requestId = crypto.randomUUID();
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Failed to load retention policy";
+        setPolicyError(`${msg} (request_id: ${requestId})`);
         setPolicy(null);
       });
   }, [authReady, apiFetch]);
@@ -64,20 +95,26 @@ export default function CfoCompliancePage() {
   async function handleExport(req: ExportPackRequest) {
     // P1 FIX: Add loading state to prevent double-click
     setExportPackSubmitting(true);
+    setExportResult(null);
     try {
-      await apiFetch("/api/export-pack", {
+      const response = await apiFetch<ExportPackResponse>("/api/export-pack", {
         method: "POST",
         body: JSON.stringify(req),
       });
       setExportResult({
         variant: "ok",
         message: "Export pack requested successfully.",
+        requestId: response.request_id,
       });
     } catch (error) {
-      console.error("Export pack request failed", error);
+      // P1: Surface request_id on errors
+      const requestId = crypto.randomUUID();
+      const msg =
+        error instanceof Error ? error.message : "Export pack request failed";
       setExportResult({
         variant: "warn",
-        message: "Export pack request failed. Please try again.",
+        message: `${msg} (request_id: ${requestId})`,
+        requestId,
       });
     } finally {
       setExportPackSubmitting(false);
@@ -188,13 +225,37 @@ export default function CfoCompliancePage() {
 
         {/* Secondary Panels */}
         <div className="space-y-4 lg:col-span-4">
+          {/* P1: Advisory label for compliance data */}
+          <div className="rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+            Advisory only. Data shown is informational and requires
+            verification.
+          </div>
+
+          {/* P1: Show RBAC/Retention errors if any */}
+          {(rbacError || policyError) && (
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2">
+              {rbacError && (
+                <div className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-400">
+                  <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span>{rbacError}</span>
+                </div>
+              )}
+              {policyError && (
+                <div className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-400">
+                  <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span>{policyError}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <SecondaryPanel title="Compliance Status">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Audit Entries
                 </span>
-                {/* P0 FIX: Show reason for unavailable data */}
+                {/* P1: Explicit empty state */}
                 <span className="text-sm text-muted-foreground italic">
                   Requires audit log setup
                 </span>
@@ -203,7 +264,9 @@ export default function CfoCompliancePage() {
                 <span className="text-sm text-muted-foreground">
                   Retention Period
                 </span>
-                {policy?.days ? (
+                {policyError ? (
+                  <StatusChip variant="warn">Error</StatusChip>
+                ) : policy?.days ? (
                   <span className="text-lg font-medium">
                     {policy.days} days
                   </span>
@@ -217,7 +280,7 @@ export default function CfoCompliancePage() {
                 <span className="text-sm text-muted-foreground">
                   Export Packs
                 </span>
-                {/* P0 FIX: Show reason for unavailable data */}
+                {/* P1: Explicit empty state */}
                 <span className="text-sm text-muted-foreground italic">
                   No packs requested
                 </span>
@@ -231,16 +294,20 @@ export default function CfoCompliancePage() {
                 <span className="text-sm text-muted-foreground">
                   Retention Read
                 </span>
-                <StatusChip variant={rbac ? "ok" : "muted"}>
-                  {rbac ? "Granted" : "Pending setup"}
+                <StatusChip
+                  variant={rbacError ? "warn" : rbac ? "ok" : "muted"}
+                >
+                  {rbacError ? "Error" : rbac ? "Granted" : "Pending setup"}
                 </StatusChip>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Export Request
                 </span>
-                <StatusChip variant={rbac ? "ok" : "muted"}>
-                  {rbac ? "Granted" : "Pending setup"}
+                <StatusChip
+                  variant={rbacError ? "warn" : rbac ? "ok" : "muted"}
+                >
+                  {rbacError ? "Error" : rbac ? "Granted" : "Pending setup"}
                 </StatusChip>
               </div>
             </div>

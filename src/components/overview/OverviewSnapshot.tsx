@@ -77,13 +77,17 @@ export function OverviewSnapshot({ className }: { className?: string }) {
     async function load() {
       setLoading(true);
       try {
-        const [sys, tx] = await Promise.all([
+        const [sys, txRes] = await Promise.all([
           apiFetch<SystemStatus>("/api/system/status"),
-          apiFetch<TxRow[]>("/api/transactions").catch(() => []),
+          apiFetch<{ items: TxRow[] } | TxRow[]>("/api/transactions").catch(
+            () => ({ items: [] }),
+          ),
         ]);
         if (cancelled) return;
         setSystem(sys);
-        setTxs(tx ?? []);
+        // API returns { items: [...] } — extract the array
+        const txArr = Array.isArray(txRes) ? txRes : txRes?.items ?? [];
+        setTxs(txArr);
       } catch {
         if (cancelled) return;
         setSystem(null);

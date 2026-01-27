@@ -400,8 +400,8 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                       {new Date(tx.date).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="text-sm font-medium text-foreground">
-                    {tx.amount < 0 ? "-" : "+"}
+                  <div className={`text-sm font-medium font-mono ${tx.amount > 0 ? "text-destructive" : "text-emerald-600"}`}>
+                    {tx.amount > 0 ? "-" : "+"}
                     {formatCurrency(Math.abs(tx.amount))}
                   </div>
                 </div>

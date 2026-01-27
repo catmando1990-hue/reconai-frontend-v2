@@ -149,7 +149,7 @@ export default function CoreTransactionsPage() {
                       <td
                         className={`py-3 text-right font-medium font-mono ${tx.amount > 0 ? "text-destructive" : "text-emerald-600"}`}
                       >
-                        {tx.amount > 0 ? "-" : "+"}{formatCurrency(tx.amount)}
+                        {tx.amount > 0 ? "-" : "+"}{formatCurrency(Math.abs(tx.amount))}
                       </td>
                       <td className="py-3 text-center">
                         {tx.pending ? (

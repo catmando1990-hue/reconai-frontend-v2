@@ -9,13 +9,13 @@ const BACKEND_URL =
  * Assert that the current user has admin role.
  * Returns a NextResponse error if not admin, null otherwise.
  */
-async function assertAdmin() {
+async function assertAdmin(requestId: string) {
   const { userId, sessionClaims } = await auth();
 
   if (!userId) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 },
+      { error: "Unauthorized", message: "Not authenticated", request_id: requestId },
+      { status: 401, headers: { "x-request-id": requestId } },
     );
   }
 
@@ -36,8 +36,8 @@ async function assertAdmin() {
   }
 
   return NextResponse.json(
-    { error: "Forbidden", message: "Admin access required" },
-    { status: 403 },
+    { error: "Forbidden", message: "Admin access required", request_id: requestId },
+    { status: 403, headers: { "x-request-id": requestId } },
   );
 }
 
@@ -48,18 +48,20 @@ async function assertAdmin() {
  * Admin-only, read-only.
  */
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ exportId: string }> },
 ) {
-  const forbidden = await assertAdmin();
+  const requestId = crypto.randomUUID();
+
+  const forbidden = await assertAdmin(requestId);
   if (forbidden) return forbidden;
 
   const { exportId } = await params;
 
   if (!exportId) {
     return NextResponse.json(
-      { error: "Bad request", message: "Export ID is required" },
-      { status: 400 },
+      { error: "Bad request", message: "Export ID is required", request_id: requestId },
+      { status: 400, headers: { "x-request-id": requestId } },
     );
   }
 
@@ -74,6 +76,7 @@ export async function GET(
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "x-request-id": requestId,
         },
         cache: "no-store",
       },
@@ -81,8 +84,8 @@ export async function GET(
 
     if (res.status === 404) {
       return NextResponse.json(
-        { error: "Not found", message: "Export not found" },
-        { status: 404 },
+        { error: "Not found", message: "Export not found", request_id: requestId },
+        { status: 404, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -92,21 +95,26 @@ export async function GET(
         {
           error: "Backend error",
           message: errorData.detail || `Status ${res.status}`,
+          request_id: requestId,
         },
-        { status: res.status },
+        { status: res.status, headers: { "x-request-id": requestId } },
       );
     }
 
     const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(
+      { ...data, request_id: requestId },
+      { status: 200, headers: { "x-request-id": requestId } },
+    );
   } catch (err) {
     console.error("Error fetching export provenance:", err);
     return NextResponse.json(
       {
         error: "Internal error",
         message: err instanceof Error ? err.message : "Unknown error",
+        request_id: requestId,
       },
-      { status: 500 },
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

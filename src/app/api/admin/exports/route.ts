@@ -79,6 +79,20 @@ export async function GET(req: Request) {
     );
 
     if (!res.ok) {
+      // Handle 404 - backend endpoint not yet implemented
+      if (res.status === 404) {
+        return NextResponse.json(
+          {
+            exports: [],
+            total_count: 0,
+            page: parseInt(page),
+            page_size: parseInt(pageSize),
+            request_id: requestId,
+          },
+          { status: 200, headers: { "x-request-id": requestId } },
+        );
+      }
+
       const errorData = await res.json().catch(() => ({}));
       return NextResponse.json(
         {
@@ -97,13 +111,16 @@ export async function GET(req: Request) {
     );
   } catch (err) {
     console.error("Error fetching exports:", err);
+    // Network errors or backend unavailable - return empty list
     return NextResponse.json(
       {
-        error: "Internal error",
-        message: err instanceof Error ? err.message : "Unknown error",
+        exports: [],
+        total_count: 0,
+        page: parseInt(page),
+        page_size: parseInt(pageSize),
         request_id: requestId,
       },
-      { status: 500, headers: { "x-request-id": requestId } },
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   }
 }

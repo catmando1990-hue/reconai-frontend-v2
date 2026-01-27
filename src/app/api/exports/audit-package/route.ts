@@ -69,6 +69,7 @@ export async function POST() {
         "Content-Type": "application/json",
         "x-request-id": requestId,
       },
+      body: JSON.stringify({}),
     });
 
     if (!res.ok) {

@@ -79,7 +79,10 @@ export function ReconciliationReport() {
       setItems(data.items || []);
       setSummary(data.summary || null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
+      // Surface request_id on errors
+      const requestId = crypto.randomUUID();
+      const msg = e instanceof Error ? e.message : "Failed to load";
+      setError(`${msg} (request_id: ${requestId})`);
     } finally {
       setLoading(false);
     }

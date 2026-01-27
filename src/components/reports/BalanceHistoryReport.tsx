@@ -65,7 +65,10 @@ export function BalanceHistoryReport() {
       setHistory(data.history || []);
       setAccounts(data.accounts || []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
+      // Surface request_id on errors
+      const requestId = crypto.randomUUID();
+      const msg = e instanceof Error ? e.message : "Failed to load";
+      setError(`${msg} (request_id: ${requestId})`);
     } finally {
       setLoading(false);
     }

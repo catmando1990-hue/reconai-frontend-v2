@@ -14,6 +14,15 @@ type Transaction = {
   pending: boolean;
 };
 
+/**
+ * FIX: Backend response may be either:
+ * - Legacy: Transaction[] (direct array)
+ * - New: { items: Transaction[], request_id: string }
+ */
+type TransactionsResponse =
+  | Transaction[]
+  | { items: Transaction[]; request_id: string };
+
 type AccountSummary = {
   account_id: string;
   account_name: string;
@@ -52,10 +61,21 @@ export function AccountActivityReport() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<Transaction[]>("/api/transactions");
-      setTransactions(data);
+      const data = await apiFetch<TransactionsResponse>("/api/transactions");
+
+      // FIX: Normalize response - handle both array and object formats
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+
+      setTransactions(items);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
+      // Surface request_id on errors
+      const requestId = crypto.randomUUID();
+      const msg = e instanceof Error ? e.message : "Failed to load";
+      setError(`${msg} (request_id: ${requestId})`);
     } finally {
       setLoading(false);
     }

@@ -7,8 +7,12 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  *
  * Returns Plaid items from Supabase for the authenticated user.
  * Source of truth: Supabase `plaid_items` table.
+ *
+ * Optional query params:
+ * - context: "personal" | "business" — filter by item context
+ *   If omitted, returns all items (backwards-compatible).
  */
-export async function GET() {
+export async function GET(req: Request) {
   const requestId = crypto.randomUUID();
 
   try {
@@ -20,10 +24,18 @@ export async function GET() {
       );
     }
 
+    // Parse optional context filter from query params
+    const { searchParams } = new URL(req.url);
+    const contextParam = searchParams.get("context");
+    const context =
+      contextParam === "personal" || contextParam === "business"
+        ? contextParam
+        : null;
+
     // Query Supabase directly
     const supabase = supabaseAdmin();
 
-    const { data: items, error } = await supabase
+    let query = supabase
       .from("plaid_items")
       .select(
         `
@@ -32,12 +44,20 @@ export async function GET() {
         institution_id,
         institution_name,
         status,
+        context,
         created_at,
         updated_at
       `,
       )
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
-      .order("created_at", { ascending: false });
+      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+
+    if (context) {
+      query = query.eq("context", context);
+    }
+
+    const { data: items, error } = await query.order("created_at", {
+      ascending: false,
+    });
 
     if (error) {
       console.error("[Plaid items] Supabase error:", error);

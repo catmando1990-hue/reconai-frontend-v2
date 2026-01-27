@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { TierGate } from "@/components/legal/TierGate";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
@@ -42,7 +43,7 @@ type RbacResponse = RbacSnapshot & { request_id?: string };
 type RetentionResponse = RetentionPolicyView & { request_id?: string };
 type ExportPackResponse = { request_id: string; status: string };
 
-export default function CfoCompliancePage() {
+function CfoComplianceBody() {
   const { apiFetch } = useApi();
   const { isLoaded: authReady } = useOrg();
 
@@ -352,5 +353,17 @@ export default function CfoCompliancePage() {
         </div>
       </div>
     </RouteShell>
+  );
+}
+
+export default function CfoCompliancePage() {
+  return (
+    <TierGate
+      tier="cfo"
+      title="Compliance"
+      subtitle="Upgrade or request access to unlock CFO tools."
+    >
+      <CfoComplianceBody />
+    </TierGate>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
+import { TierGate } from "@/components/legal/TierGate";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
@@ -103,7 +104,7 @@ function MetricWithReason({
   );
 }
 
-export default function CfoOverviewPage() {
+function CfoOverviewBody() {
   const { apiFetch } = useApi();
   const { isLoaded } = useOrg();
 
@@ -296,5 +297,17 @@ export default function CfoOverviewPage() {
         </div>
       </div>
     </RouteShell>
+  );
+}
+
+export default function CfoOverviewPage() {
+  return (
+    <TierGate
+      tier="cfo"
+      title="CFO Overview"
+      subtitle="Upgrade or request access to unlock CFO tools."
+    >
+      <CfoOverviewBody />
+    </TierGate>
   );
 }

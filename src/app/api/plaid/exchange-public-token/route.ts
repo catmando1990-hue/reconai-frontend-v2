@@ -27,11 +27,16 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { public_token, institution_id, institution_name } = body as {
+    const { public_token, institution_id, institution_name, context: rawContext } = body as {
       public_token?: string;
       institution_id?: string;
       institution_name?: string;
+      context?: string;
     };
+
+    // Validate context — defaults to "personal" for Core, "business" for CFO
+    const context: "personal" | "business" =
+      rawContext === "business" ? "business" : "personal";
 
     if (!public_token || typeof public_token !== "string") {
       return NextResponse.json(
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
     }
 
     console.log(
-      `[Plaid exchange] userId=${userId}, institution=${institution_name || "unknown"}, requestId=${requestId}`,
+      `[Plaid exchange] userId=${userId}, context=${context}, institution=${institution_name || "unknown"}, requestId=${requestId}`,
     );
 
     // Exchange public token for access token via Plaid API
@@ -94,6 +99,7 @@ export async function POST(req: Request) {
           access_token: accessToken,
           institution_id: institutionId,
           institution_name: institutionNameResolved,
+          context,
           status: "active",
           updated_at: new Date().toISOString(),
         })
@@ -140,6 +146,7 @@ export async function POST(req: Request) {
       access_token: accessToken,
       institution_id: institutionId,
       institution_name: institutionNameResolved,
+      context,
       status: "active",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -170,6 +177,7 @@ export async function POST(req: Request) {
         account_id: acct.account_id,
         institution_id: institutionId,
         institution_name: institutionNameResolved,
+        context,
         name: acct.name,
         official_name: acct.official_name,
         type: acct.type,
@@ -203,6 +211,7 @@ export async function POST(req: Request) {
               balance_current: acct.balance_current,
               balance_available: acct.balance_available,
               iso_currency_code: acct.iso_currency_code,
+              context: acct.context,
               last_synced: acct.last_synced,
               updated_at: acct.updated_at,
             })

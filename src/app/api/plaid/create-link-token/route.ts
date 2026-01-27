@@ -9,8 +9,12 @@ import { CountryCode, Products } from "plaid";
  *
  * Creates a Plaid Link token for connecting a bank account.
  * Calls Plaid API directly (no backend proxy).
+ *
+ * Optional body:
+ * - context: "personal" | "business" (default: "personal")
+ *   Used to scope Plaid items to Core (personal) or CFO (business).
  */
-export async function POST() {
+export async function POST(req: Request) {
   const requestId = crypto.randomUUID();
 
   try {
@@ -22,13 +26,24 @@ export async function POST() {
       );
     }
 
+    // Parse optional context from body
+    let context: "personal" | "business" = "personal";
+    try {
+      const body = await req.json().catch(() => ({}));
+      if (body.context === "business") {
+        context = "business";
+      }
+    } catch {
+      // Use default
+    }
+
     const headersList = await headers();
     const host = headersList.get("host") || "www.reconaitechnology.com";
     const protocol = host.includes("localhost") ? "http" : "https";
     const redirectUri = `${protocol}://${host}/plaid/oauth`;
 
     console.log(
-      `[Plaid create-link-token] userId=${userId}, redirectUri=${redirectUri}, requestId=${requestId}`,
+      `[Plaid create-link-token] userId=${userId}, context=${context}, redirectUri=${redirectUri}, requestId=${requestId}`,
     );
 
     const plaid = getPlaidClient();

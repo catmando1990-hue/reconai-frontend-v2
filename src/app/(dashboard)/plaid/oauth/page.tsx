@@ -26,14 +26,20 @@ export default function PlaidOAuthCallbackPage() {
   }, [oauthStateId]);
 
   useEffect(() => {
+    // Check if the Plaid flow was started from CFO (stored before opening Link)
+    const returnTo =
+      typeof window !== "undefined"
+        ? sessionStorage.getItem("plaid_return_to")
+        : null;
+    const defaultPath = returnTo || "/connect-bank";
+
     if (oauthStateId) {
-      // Redirect to connect-bank with the oauth state so PlaidLink can resume
-      router.replace(`/connect-bank?oauth_state_id=${oauthStateId}`);
+      // Redirect with oauth state so PlaidLink can resume the flow
+      router.replace(`${defaultPath}?oauth_state_id=${oauthStateId}`);
     } else {
       // No oauth_state_id means direct navigation or error
-      // Redirect to connect-bank after a short delay
       const timeout = setTimeout(() => {
-        router.replace("/connect-bank");
+        router.replace(defaultPath);
       }, 2000);
       return () => clearTimeout(timeout);
     }

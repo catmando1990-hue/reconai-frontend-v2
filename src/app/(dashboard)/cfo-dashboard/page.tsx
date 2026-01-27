@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 import { STATUS, CTA } from "@/lib/dashboardCopy";
 import { auditedFetch } from "@/lib/auditedFetch";
+import { ConnectBusinessBankButton } from "@/components/plaid/ConnectBusinessBankButton";
 import {
   BarChart3,
   PieChart,
@@ -20,6 +21,7 @@ import {
   FileText,
   Download,
   Loader2,
+  Building2,
 } from "lucide-react";
 
 const cfoModules = [
@@ -56,8 +58,34 @@ const cfoModules = [
   },
 ];
 
+type BusinessItem = {
+  item_id: string;
+  institution_name: string;
+  status: string;
+};
+
 export default function CfoOverviewPage() {
   const [exporting, setExporting] = useState(false);
+  const [businessItems, setBusinessItems] = useState<BusinessItem[]>([]);
+  const [loadingItems, setLoadingItems] = useState(true);
+
+  const fetchBusinessItems = useCallback(async () => {
+    setLoadingItems(true);
+    try {
+      const data = await auditedFetch<{ items: BusinessItem[] }>(
+        "/api/plaid/items?context=business",
+      );
+      setBusinessItems(data?.items || []);
+    } catch {
+      setBusinessItems([]);
+    } finally {
+      setLoadingItems(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBusinessItems();
+  }, [fetchBusinessItems]);
 
   async function handleExport() {
     setExporting(true);
@@ -210,6 +238,44 @@ export default function CfoOverviewPage() {
                     {STATUS.NOT_EVALUATED}
                   </span>
                 </div>
+              </div>
+            </SecondaryPanel>
+
+            <SecondaryPanel title="Business Banking">
+              <div className="space-y-3">
+                {loadingItems ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                ) : businessItems.length > 0 ? (
+                  <div className="space-y-2">
+                    {businessItems.map((item) => (
+                      <div
+                        key={item.item_id}
+                        className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"
+                      >
+                        <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {item.institution_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {item.status}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    <ConnectBusinessBankButton />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Connect a business bank account to populate CFO financial
+                      data.
+                    </p>
+                    <ConnectBusinessBankButton />
+                  </div>
+                )}
               </div>
             </SecondaryPanel>
 

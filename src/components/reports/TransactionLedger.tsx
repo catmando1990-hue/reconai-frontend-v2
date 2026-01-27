@@ -21,6 +21,15 @@ type Transaction = {
   payment_channel?: string;
 };
 
+/**
+ * FIX: Backend response may be either:
+ * - Legacy: Transaction[] (direct array)
+ * - New: { items: Transaction[], request_id: string }
+ */
+type TransactionsResponse =
+  | Transaction[]
+  | { items: Transaction[]; request_id: string };
+
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -55,14 +64,25 @@ export function TransactionLedger() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<Transaction[]>("/api/transactions");
+      const data = await apiFetch<TransactionsResponse>("/api/transactions");
+
+      // FIX: Normalize response - handle both array and object formats
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+
       // Sort by date descending
-      const sorted = [...data].sort(
+      const sorted = [...items].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
       setTransactions(sorted);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
+      // Surface request_id on errors
+      const requestId = crypto.randomUUID();
+      const msg = e instanceof Error ? e.message : "Failed to load";
+      setError(`${msg} (request_id: ${requestId})`);
     } finally {
       setLoading(false);
     }

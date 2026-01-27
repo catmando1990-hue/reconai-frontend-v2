@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { useApi } from "@/lib/useApi";
+
+const PAGE_SIZE = 15;
 
 interface Transaction {
   id: string;
@@ -47,6 +49,13 @@ export default function CoreTransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.ceil(transactions.length / PAGE_SIZE);
+  const paginatedRows = useMemo(
+    () => transactions.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [transactions, page],
+  );
 
   const fetchTransactions = useCallback(async () => {
     setIsLoading(true);
@@ -123,7 +132,7 @@ export default function CoreTransactionsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((tx) => (
+                  {paginatedRows.map((tx) => (
                     <tr
                       key={tx.id}
                       className="border-b border-border last:border-0"
@@ -166,6 +175,36 @@ export default function CoreTransactionsPage() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-border pt-4 mt-4">
+                  <span className="text-sm text-muted-foreground">
+                    Showing {page * PAGE_SIZE + 1}–
+                    {Math.min((page + 1) * PAGE_SIZE, transactions.length)} of{" "}
+                    {transactions.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setPage((p) => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                      className="rounded p-1.5 hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="px-2 text-sm text-muted-foreground">
+                      {page + 1} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={page >= totalPages - 1}
+                      className="rounded p-1.5 hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

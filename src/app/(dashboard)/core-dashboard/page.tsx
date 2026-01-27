@@ -36,6 +36,13 @@ type WorkQueueItem = {
   pending?: boolean;
 };
 
+type SystemStatus = {
+  dataSync: "active" | "stale" | "not_configured";
+  categorization: "complete" | "partial" | "not_evaluated";
+  reconciliation: "ready" | "requires_setup";
+  lastSync: string | null;
+};
+
 const coreModules = [
   {
     name: "Transactions",
@@ -89,6 +96,12 @@ export default function CoreOverviewPage() {
   const [workQueue, setWorkQueue] = useState<WorkQueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>({
+    dataSync: "not_configured",
+    categorization: "not_evaluated",
+    reconciliation: "requires_setup",
+    lastSync: null,
+  });
 
   const fetchWorkQueue = useCallback(async () => {
     setLoading(true);
@@ -97,17 +110,48 @@ export default function CoreOverviewPage() {
       type TransactionsResponse =
         | WorkQueueItem[]
         | { items: WorkQueueItem[]; count?: number; request_id?: string };
-      const data = await apiFetch<TransactionsResponse>("/api/transactions?limit=10");
+      const data = await apiFetch<TransactionsResponse>("/api/transactions?limit=50");
       const items = Array.isArray(data)
         ? data
         : Array.isArray(data?.items)
           ? data.items
           : [];
+
       // Filter to items needing attention (uncategorized or pending)
       const needsAttention = items.filter(
         (tx) => !tx.category || tx.category === "Uncategorized" || tx.pending,
       );
       setWorkQueue(needsAttention.slice(0, 5));
+
+      // Calculate system status based on transactions
+      if (items.length > 0) {
+        // Data Sync: Check if we have recent transactions
+        const mostRecent = items[0]?.date ? new Date(items[0].date) : null;
+        const daysSinceSync = mostRecent
+          ? Math.floor((Date.now() - mostRecent.getTime()) / (1000 * 60 * 60 * 24))
+          : null;
+
+        // Categorization: Check how many have categories
+        const categorized = items.filter(
+          (tx) => tx.category && tx.category !== "Uncategorized"
+        ).length;
+        const categorizationRate = items.length > 0 ? categorized / items.length : 0;
+
+        setSystemStatus({
+          dataSync: daysSinceSync === null
+            ? "not_configured"
+            : daysSinceSync <= 1
+              ? "active"
+              : "stale",
+          categorization: categorizationRate >= 0.9
+            ? "complete"
+            : categorizationRate > 0
+              ? "partial"
+              : "not_evaluated",
+          reconciliation: items.length > 0 ? "ready" : "requires_setup",
+          lastSync: mostRecent?.toISOString() ?? null,
+        });
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
@@ -249,24 +293,56 @@ export default function CoreOverviewPage() {
                   <span className="text-sm text-muted-foreground">
                     Data Sync
                   </span>
-                  <StatusChip variant="unknown">
-                    {STATUS.NOT_CONFIGURED}
+                  <StatusChip
+                    variant={
+                      systemStatus.dataSync === "active"
+                        ? "ok"
+                        : systemStatus.dataSync === "stale"
+                          ? "warn"
+                          : "unknown"
+                    }
+                  >
+                    {systemStatus.dataSync === "active"
+                      ? "Active"
+                      : systemStatus.dataSync === "stale"
+                        ? "Stale"
+                        : STATUS.NOT_CONFIGURED}
                   </StatusChip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Categorization
                   </span>
-                  <StatusChip variant="unknown">
-                    {STATUS.NOT_EVALUATED}
+                  <StatusChip
+                    variant={
+                      systemStatus.categorization === "complete"
+                        ? "ok"
+                        : systemStatus.categorization === "partial"
+                          ? "warn"
+                          : "unknown"
+                    }
+                  >
+                    {systemStatus.categorization === "complete"
+                      ? "Complete"
+                      : systemStatus.categorization === "partial"
+                        ? "Partial"
+                        : STATUS.NOT_EVALUATED}
                   </StatusChip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     Reconciliation
                   </span>
-                  <StatusChip variant="muted">
-                    {STATUS.REQUIRES_SETUP}
+                  <StatusChip
+                    variant={
+                      systemStatus.reconciliation === "ready"
+                        ? "ok"
+                        : "muted"
+                    }
+                  >
+                    {systemStatus.reconciliation === "ready"
+                      ? "Ready"
+                      : STATUS.REQUIRES_SETUP}
                   </StatusChip>
                 </div>
               </div>

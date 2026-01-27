@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { RouteShell } from "@/components/dashboard/RouteShell";
+import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
+import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { TierGate } from "@/components/legal/TierGate";
 import { ROUTES } from "@/lib/routes";
 import {
@@ -18,8 +20,7 @@ import {
   Camera,
   BarChart3,
   Settings,
-  UserCheck,
-  UserCog,
+  ChevronRight,
 } from "lucide-react";
 
 const payrollModules = [
@@ -33,19 +34,7 @@ const payrollModules = [
     name: "People",
     href: ROUTES.PAYROLL_PEOPLE,
     icon: Users,
-    description: "Workforce directory",
-  },
-  {
-    name: "Employees",
-    href: ROUTES.PAYROLL_EMPLOYEES,
-    icon: UserCheck,
-    description: "W-2 employee records",
-  },
-  {
-    name: "Contractors",
-    href: ROUTES.PAYROLL_CONTRACTORS,
-    icon: UserCog,
-    description: "1099 contractor records",
+    description: "Employee and contractor directory",
   },
   {
     name: "Compensation",
@@ -121,27 +110,94 @@ function PayrollDashboardBody() {
       title="Payroll"
       subtitle="Payroll operations and workforce management"
     >
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {payrollModules.map((module) => {
-          const Icon = module.icon;
-          return (
-            <Link
-              key={module.href}
-              href={module.href}
-              className="group flex flex-col items-center gap-3 rounded-lg border border-border bg-muted p-5 text-center transition hover:bg-card"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card">
-                <Icon className="h-5 w-5 text-muted-foreground" />
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-8">
+          <PrimaryPanel
+            title="Payroll Modules"
+            subtitle="Operational payroll surfaces"
+          >
+            <div className="space-y-4">
+              {payrollModules.map((module) => {
+                const Icon = module.icon;
+                return (
+                  <Link
+                    key={module.href}
+                    href={module.href}
+                    className="group flex items-start gap-4 rounded-lg border border-border bg-muted p-5 transition hover:bg-card"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-card">
+                      <Icon className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-medium">
+                          {module.name}
+                        </h3>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {module.description}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </PrimaryPanel>
+        </div>
+
+        <div className="space-y-4 lg:col-span-4">
+          <SecondaryPanel title="Payroll Status">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Active Employees
+                </span>
+                <span className="text-sm text-muted-foreground italic">
+                  No data
+                </span>
               </div>
-              <div>
-                <h3 className="text-sm font-medium">{module.name}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {module.description}
-                </p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Active Contractors
+                </span>
+                <span className="text-sm text-muted-foreground italic">
+                  No data
+                </span>
               </div>
-            </Link>
-          );
-        })}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Next Pay Run
+                </span>
+                <span className="text-sm text-muted-foreground italic">
+                  Not scheduled
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Last Pay Run
+                </span>
+                <span className="text-sm text-muted-foreground italic">
+                  None completed
+                </span>
+              </div>
+            </div>
+          </SecondaryPanel>
+
+          <SecondaryPanel title="About Payroll">
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                The Payroll module provides operational surfaces for workforce
+                management, compensation tracking, tax compliance, and payroll
+                processing.
+              </p>
+              <p>
+                All payroll data is read-only until operational workflows are
+                configured by an administrator.
+              </p>
+            </div>
+          </SecondaryPanel>
+        </div>
       </div>
     </RouteShell>
   );

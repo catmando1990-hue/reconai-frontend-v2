@@ -72,8 +72,8 @@ export async function POST() {
     });
 
     if (!res.ok) {
-      // Handle 404 - backend endpoint not yet implemented
-      if (res.status === 404) {
+      // Handle 400/404 - backend endpoint not yet implemented or bad request
+      if (res.status === 404 || res.status === 400) {
         return NextResponse.json(
           {
             export_id: `stub-${requestId.slice(0, 8)}`,

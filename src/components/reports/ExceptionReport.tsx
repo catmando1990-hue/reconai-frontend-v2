@@ -10,6 +10,8 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 
 /**
@@ -34,6 +36,21 @@ type SignalsResponse = {
   mode: "demo" | "live";
   signals: ExceptionSignal[];
   disclaimer?: string | null;
+  request_id: string;
+};
+
+/**
+ * Resolution note - immutable documentation of exception review
+ */
+type ResolutionNote = {
+  id: string;
+  content: string;
+  user: string;
+  created_at: string;
+};
+
+type NotesResponse = {
+  notes: ResolutionNote[];
   request_id: string;
 };
 
@@ -81,6 +98,17 @@ export function ExceptionReport() {
   const [ran, setRan] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
+  // Resolution notes state
+  const [notesMap, setNotesMap] = useState<Map<string, ResolutionNote[]>>(
+    new Map(),
+  );
+  const [notesExpandedIds, setNotesExpandedIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [noteInputs, setNoteInputs] = useState<Map<string, string>>(new Map());
+  const [notesLoading, setNotesLoading] = useState<Set<string>>(new Set());
+  const [notesError, setNotesError] = useState<Map<string, string>>(new Map());
+
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -92,6 +120,108 @@ export function ExceptionReport() {
       return next;
     });
   };
+
+  const toggleNotesExpanded = (id: string) => {
+    setNotesExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        // Fetch notes when expanding if not already loaded
+        if (!notesMap.has(id)) {
+          void fetchNotes(id);
+        }
+      }
+      return next;
+    });
+  };
+
+  const fetchNotes = useCallback(
+    async (exceptionId: string) => {
+      setNotesLoading((prev) => new Set(prev).add(exceptionId));
+      setNotesError((prev) => {
+        const next = new Map(prev);
+        next.delete(exceptionId);
+        return next;
+      });
+
+      try {
+        const data = await apiFetch<NotesResponse>(
+          `/api/exceptions/${exceptionId}/notes`,
+        );
+        const notes = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.notes)
+            ? data.notes
+            : [];
+        setNotesMap((prev) => new Map(prev).set(exceptionId, notes));
+      } catch (e) {
+        const requestId = crypto.randomUUID();
+        const msg = e instanceof Error ? e.message : "Failed to load notes";
+        setNotesError((prev) =>
+          new Map(prev).set(exceptionId, `${msg} (request_id: ${requestId})`),
+        );
+      } finally {
+        setNotesLoading((prev) => {
+          const next = new Set(prev);
+          next.delete(exceptionId);
+          return next;
+        });
+      }
+    },
+    [apiFetch],
+  );
+
+  const addNote = useCallback(
+    async (exceptionId: string) => {
+      const content = noteInputs.get(exceptionId)?.trim();
+      if (!content) return;
+
+      setNotesLoading((prev) => new Set(prev).add(exceptionId));
+      setNotesError((prev) => {
+        const next = new Map(prev);
+        next.delete(exceptionId);
+        return next;
+      });
+
+      try {
+        const newNote = await apiFetch<ResolutionNote>(
+          `/api/exceptions/${exceptionId}/notes`,
+          {
+            method: "POST",
+            body: JSON.stringify({ content }),
+          },
+        );
+
+        // Add new note to existing notes
+        setNotesMap((prev) => {
+          const existing = prev.get(exceptionId) || [];
+          return new Map(prev).set(exceptionId, [...existing, newNote]);
+        });
+
+        // Clear input
+        setNoteInputs((prev) => {
+          const next = new Map(prev);
+          next.delete(exceptionId);
+          return next;
+        });
+      } catch (e) {
+        const requestId = crypto.randomUUID();
+        const msg = e instanceof Error ? e.message : "Failed to add note";
+        setNotesError((prev) =>
+          new Map(prev).set(exceptionId, `${msg} (request_id: ${requestId})`),
+        );
+      } finally {
+        setNotesLoading((prev) => {
+          const next = new Set(prev);
+          next.delete(exceptionId);
+          return next;
+        });
+      }
+    },
+    [apiFetch, noteInputs],
+  );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -317,6 +447,107 @@ export function ExceptionReport() {
                           )}
                         </div>
                       )}
+
+                      {/* Resolution Notes - Expandable */}
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleNotesExpanded(ex.id)}
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          {notesExpandedIds.has(ex.id) ? (
+                            <ChevronDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                          <MessageSquare className="h-3 w-3" />
+                          Resolution Notes
+                          {notesMap.get(ex.id)?.length
+                            ? ` (${notesMap.get(ex.id)?.length})`
+                            : ""}
+                        </button>
+
+                        {notesExpandedIds.has(ex.id) && (
+                          <div className="mt-2 rounded-lg border bg-muted/30 p-3">
+                            {/* Notes loading state */}
+                            {notesLoading.has(ex.id) && (
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                Loading notes...
+                              </div>
+                            )}
+
+                            {/* Notes error state */}
+                            {notesError.get(ex.id) && (
+                              <div className="text-xs text-destructive">
+                                {notesError.get(ex.id)}
+                              </div>
+                            )}
+
+                            {/* Existing notes */}
+                            {!notesLoading.has(ex.id) &&
+                              (notesMap.get(ex.id)?.length ?? 0) > 0 && (
+                                <div className="space-y-2 mb-3">
+                                  {notesMap.get(ex.id)?.map((note) => (
+                                    <div
+                                      key={note.id}
+                                      className="rounded border bg-background p-2"
+                                    >
+                                      <p className="text-xs">{note.content}</p>
+                                      <div className="mt-1 text-[10px] text-muted-foreground">
+                                        {note.user} •{" "}
+                                        {formatDateTime(note.created_at)}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                            {/* No notes message */}
+                            {!notesLoading.has(ex.id) &&
+                              !notesError.get(ex.id) &&
+                              (notesMap.get(ex.id)?.length ?? 0) === 0 && (
+                                <p className="text-xs text-muted-foreground mb-3">
+                                  No resolution notes yet.
+                                </p>
+                              )}
+
+                            {/* Add note input */}
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="Document your review..."
+                                value={noteInputs.get(ex.id) || ""}
+                                onChange={(e) =>
+                                  setNoteInputs((prev) =>
+                                    new Map(prev).set(ex.id, e.target.value),
+                                  )
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    void addNote(ex.id);
+                                  }
+                                }}
+                                className="flex-1 rounded border bg-background px-2 py-1 text-xs placeholder:text-muted-foreground"
+                                disabled={notesLoading.has(ex.id)}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void addNote(ex.id)}
+                                disabled={
+                                  notesLoading.has(ex.id) ||
+                                  !noteInputs.get(ex.id)?.trim()
+                                }
+                                className="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs hover:bg-muted/50 disabled:opacity-50"
+                              >
+                                <Send className="h-3 w-3" />
+                                Add
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

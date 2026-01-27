@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { AdminExportsTable } from "@/components/admin/AdminExportsTable";
 import { ExportProvenanceDrawer } from "@/components/admin/ExportProvenanceDrawer";
-import { AuditExportButton } from "@/components/admin/AuditExportButton";
 import type { ExportRecord, ExportsListResponse } from "@/types/admin-exports";
 import { auditedFetch, HttpError } from "@/lib/auditedFetch";
+
+// Dynamic import to avoid SSR issues with useUser hook
+const AuditExportButton = dynamic(
+  () =>
+    import("@/components/admin/AuditExportButton").then(
+      (mod) => mod.AuditExportButton,
+    ),
+  { ssr: false },
+);
 
 /**
  * Admin Exports Page

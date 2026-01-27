@@ -119,13 +119,30 @@ export default function TransactionsTable() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<TransactionRow[]>("/api/transactions");
-      setRows(data);
+      // API returns { items: [...], count, request_id }
+      type TransactionsResponse = {
+        items?: TransactionRow[];
+        count?: number;
+        request_id?: string;
+      };
+      const data = await apiFetch<TransactionsResponse>("/api/transactions");
+      // Normalize response - handle both array and { items: [] } formats
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+      setRows(items);
     } catch (err) {
       // P1 FIX: Surface errors to user instead of silent failure
-      setError(
-        err instanceof Error ? err.message : "Failed to load transactions",
-      );
+      // Surface request_id if available
+      const requestId =
+        err && typeof err === "object" && "request_id" in err
+          ? (err as { request_id?: string }).request_id
+          : undefined;
+      const baseMsg =
+        err instanceof Error ? err.message : "Failed to load transactions";
+      setError(requestId ? `${baseMsg} (request_id: ${requestId})` : baseMsg);
       setRows([]);
     } finally {
       setLoading(false);
@@ -169,6 +186,23 @@ export default function TransactionsTable() {
 
   return (
     <div className="mt-6">
+      {/* Header with manual refresh trigger */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          {!loading && rows.length > 0 && `${rows.length} transactions`}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void fetchTransactions()}
+          disabled={loading}
+          className="gap-1.5"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
+      </div>
+
       {error && (
         <div className="mb-4 flex items-center justify-between rounded-lg border border-red-500/20 bg-red-500/10 p-3">
           <div className="flex items-center gap-2 text-red-400">
@@ -178,7 +212,7 @@ export default function TransactionsTable() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={fetchTransactions}
+            onClick={() => void fetchTransactions()}
             className="text-red-400 hover:text-red-300"
           >
             <RefreshCw className="h-4 w-4 mr-1" />

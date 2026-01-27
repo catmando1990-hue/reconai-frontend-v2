@@ -366,3 +366,70 @@ Inherits from parent `AuditExportV2Panel`:
 - [ ] No new navigation
 - [ ] No icons implying approval (no checkmarks, shields, stars in metadata)
 
+---
+
+# Phase 13B — External Verification (Offline) Helper
+
+## Overview
+
+Phase 13B refines the integrity metadata panel (Phase 11B) into an **"External Verification (Offline)"** helper. This is a read-only display that shows export signing metadata and references the offline ReconAI verifier. No cryptographic verification is performed in the browser.
+
+## Purpose
+
+- Display integrity metadata already returned by the backend
+- Explain how to verify exports **offline** using the ReconAI verifier tool
+- Provide copyable values (chain root, key ID) for manual use
+
+## What It Shows
+
+When `integrity` metadata is present in the export response:
+
+- **Title:** "External Verification (Offline)"
+- **Status badge:** "Signed"
+- **Algorithm:** From `signature.algorithm` (e.g., ed25519)
+- **Key ID:** Copyable value from `signature.key_id`
+- **Signed at (UTC):** From `signature.signed_at`
+- **Hash algorithm:** From `hash_chain.algorithm` (e.g., sha256) with "(hash chain)" suffix
+- **Chain root:** Copyable value from `hash_chain.root`
+
+### Offline Verification Instructions (verbatim)
+
+> "To independently verify this export, run the offline ReconAI verifier against the extracted export directory. The verifier recomputes file hashes, rebuilds the deterministic hash chain, and verifies the Ed25519 signature using the included public key. ReconAI does not verify signatures in the browser."
+
+## What This Does NOT Do
+
+- **NOT** in-browser cryptographic verification
+- **NOT** compliance certification or approval
+- **NOT** automated integrity checking
+- **NOT** a guarantee of data accuracy
+- ReconAI does not verify signatures in the browser
+
+## How to Use with the Offline Verifier
+
+1. Generate and download an Audit Export v2 bundle
+2. Extract the ZIP to a local directory
+3. Run the offline ReconAI verifier against the extracted directory
+4. The verifier will:
+   - Recompute file hashes
+   - Rebuild the deterministic hash chain
+   - Verify the Ed25519 signature using the included public key
+5. Compare the chain root displayed in the UI with the verifier output
+
+## Files Modified (Phase 13B)
+
+| File | Change |
+|------|--------|
+| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Renamed panel title to "External Verification (Offline)", updated instructions text |
+| `README_PHASE_9B.md` | Added Phase 13B documentation |
+
+## Verification Checklist (Phase 13B)
+
+- [ ] Helper shows only when `integrity` metadata exists
+- [ ] Title reads "External Verification (Offline)"
+- [ ] Admin-only visibility (inherited from parent)
+- [ ] No crypto performed in browser
+- [ ] Neutral language — no compliance claims
+- [ ] Instructions text matches exact verbatim block
+- [ ] Copyable fields for chain root and key ID
+- [ ] No new routes or redesigns
+- [ ] Missing/malformed data fails silently

@@ -96,7 +96,7 @@ function CopyableField({ label, value }: { label: string; value: string }) {
 }
 
 // =============================================================================
-// INTEGRITY METADATA PANEL (Phase 11B)
+// EXTERNAL VERIFICATION HELPER (Phase 11B + Phase 13B)
 // =============================================================================
 
 function IntegrityMetadataPanel({
@@ -111,7 +111,7 @@ function IntegrityMetadataPanel({
       <div className="flex items-center gap-2">
         <Info className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium text-muted-foreground">
-          Integrity Metadata
+          External Verification (Offline)
         </span>
         <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
           Signed
@@ -150,12 +150,13 @@ function IntegrityMetadataPanel({
         )}
       </div>
 
-      {/* Offline verification instructions */}
+      {/* Offline verification instructions (Phase 13B) */}
       <div className="rounded border border-border bg-background/50 p-3 text-[10px] text-muted-foreground leading-relaxed">
-        This export includes a cryptographic signature. To verify integrity,
-        recompute the SHA-256 hash chain over the exported files in order, then
-        verify the Ed25519 signature using the included public key. ReconAI does
-        not perform verification on your behalf.
+        To independently verify this export, run the offline ReconAI verifier
+        against the extracted export directory. The verifier recomputes file
+        hashes, rebuilds the deterministic hash chain, and verifies the Ed25519
+        signature using the included public key. ReconAI does not verify
+        signatures in the browser.
       </div>
     </div>
   );

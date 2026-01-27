@@ -211,10 +211,10 @@ export function TransactionLedger() {
                     <td
                       className={[
                         "px-4 py-2.5 text-right font-mono whitespace-nowrap",
-                        tx.amount < 0 ? "text-destructive" : "text-emerald-600",
+                        tx.amount > 0 ? "text-destructive" : "text-emerald-600",
                       ].join(" ")}
                     >
-                      {tx.amount < 0 ? "-" : "+"}
+                      {tx.amount > 0 ? "-" : "+"}
                       {formatCurrency(tx.amount)}
                     </td>
                     <td className="px-4 py-2.5 text-muted-foreground">

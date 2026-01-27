@@ -196,10 +196,10 @@ export default function CoreOverviewPage() {
                       <div
                         className={[
                           "font-mono text-sm font-medium",
-                          item.amount < 0 ? "text-destructive" : "text-emerald-600",
+                          item.amount > 0 ? "text-destructive" : "text-emerald-600",
                         ].join(" ")}
                       >
-                        {item.amount < 0 ? "-" : "+"}
+                        {item.amount > 0 ? "-" : "+"}
                         {formatCurrency(item.amount)}
                       </div>
                     </div>

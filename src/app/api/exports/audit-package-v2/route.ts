@@ -166,6 +166,11 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     const backendData = data.data || data;
 
+    // Pass through govcon_mapping if present (Phase 10B)
+    // Silently omit if not present or malformed
+    const govconMapping = backendData.govcon_mapping;
+    const hasGovconMapping = govconMapping !== undefined && govconMapping !== null && govconMapping !== false;
+
     return NextResponse.json(
       {
         ok: true,
@@ -173,6 +178,7 @@ export async function POST(request: NextRequest) {
         generated_at: backendData.generated_at || new Date().toISOString(),
         sections: sections,
         download_url: backendData.download_url || null,
+        ...(hasGovconMapping ? { govcon_mapping: govconMapping } : {}),
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

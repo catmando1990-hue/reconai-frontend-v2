@@ -140,3 +140,104 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
 - **RBAC Fail-closed**: Non-admin users see nothing (no disabled buttons or hints)
 - **Request Tracking**: All errors include `request_id` for audit provenance
 - **Streaming Response**: ZIP downloads use browser streaming via blob
+
+---
+
+# Phase 10B — GovCon / DCAA Mapping Badge
+
+## Overview
+
+Phase 10B adds a visual indicator when an Audit Export v2 includes GovCon/DCAA mapping metadata. This is **labeling only** — no compliance scoring, certification, or approval is implied.
+
+## What the Badge Indicates
+
+When present, the badge displays:
+
+**"GovCon / DCAA Mapping Included"**
+
+With tooltip (hover over info icon):
+
+> "This audit export includes static references to applicable DCAA and FAR sections. ReconAI does not certify compliance."
+
+### What This Means
+
+- The export bundle contains static reference mappings to DCAA and FAR sections
+- These are informational references only
+- The mappings are included in the export's `manifest.json.govcon_mapping` field
+
+### What This Does NOT Mean
+
+- **NOT** a compliance certification
+- **NOT** an approval or endorsement
+- **NOT** a guarantee of audit readiness
+- **NOT** a validation of data accuracy
+- ReconAI does not certify compliance with any regulation
+
+## Badge Location
+
+The badge appears in the "Export Ready" success state, positioned inline with other metadata:
+- Generated timestamp
+- Included sections list
+- Export ID
+- **GovCon / DCAA Mapping badge** (when present)
+
+## Styling
+
+- **Neutral**: Uses `border-border`, `bg-muted/50`, `text-muted-foreground`
+- **No success semantics**: No green, no checkmarks, no shields
+- **Informational only**: Info icon for tooltip, not approval icon
+
+## RBAC
+
+The badge inherits RBAC from the parent `AuditExportV2Panel`:
+- Visible only to `admin` or `org:admin` roles
+- Non-admin users see nothing (component renders `null`)
+
+## Error Handling
+
+- If `govcon_mapping` is **missing**: Badge does not render (silent)
+- If `govcon_mapping` is **malformed**: Badge does not render (silent)
+- If `govcon_mapping.standard` is **falsy**: Badge does not render (silent)
+- No errors logged, no user-facing error messages
+
+## Files Modified (Phase 10B)
+
+| File | Change |
+|------|--------|
+| `src/types/audit.ts` | Added `GovconMappingMetadata` type, `hasGovconMapping` to result |
+| `src/app/api/exports/audit-package-v2/route.ts` | Pass through `govcon_mapping` from backend |
+| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Added badge rendering logic |
+| `README_PHASE_9B.md` | Added Phase 10B documentation |
+
+## How to Verify
+
+### Test: Badge Appears When Mapping Present
+
+1. Generate an Audit Export v2 where backend returns `govcon_mapping` in response
+2. Observe the "Export Ready" state
+3. **Expected**: Badge "GovCon / DCAA Mapping Included" appears below Export ID
+4. Hover over the info icon
+5. **Expected**: Tooltip displays exact text: "This audit export includes static references to applicable DCAA and FAR sections. ReconAI does not certify compliance."
+
+### Test: Badge Hidden When Mapping Absent
+
+1. Generate an Audit Export v2 where backend does NOT return `govcon_mapping`
+2. Observe the "Export Ready" state
+3. **Expected**: No GovCon/DCAA badge visible
+4. **Expected**: No errors in console
+
+### Test: RBAC Enforcement
+
+1. Log in as non-admin user
+2. Navigate to `/govcon/evidence`
+3. **Expected**: Entire AuditExportV2Panel is hidden (including any potential badge)
+
+## Verification Checklist (Phase 10B)
+
+- [ ] Badge renders only when `govcon_mapping` exists and is valid
+- [ ] Tooltip text matches exactly: "This audit export includes static references to applicable DCAA and FAR sections. ReconAI does not certify compliance."
+- [ ] Neutral styling (no success/error semantics, no green)
+- [ ] RBAC hides badge for non-admins (inherited from parent)
+- [ ] Missing/malformed data fails silently (no errors, no badge)
+- [ ] No new navigation or UI redesign
+- [ ] No icons implying approval (no checkmarks, shields, stars)

@@ -33,6 +33,20 @@ export interface AuditExportV2Sections {
 export type AuditExportV2State = "idle" | "building" | "ready" | "error";
 
 // =============================================================================
+// GOVCON MAPPING (Phase 10B)
+// =============================================================================
+
+/**
+ * GovCon/DCAA mapping metadata shape.
+ * Display-only, no validation logic.
+ */
+export interface GovconMappingMetadata {
+  standard: string;
+  version: string;
+  sections: Record<string, unknown>;
+}
+
+// =============================================================================
 // API RESPONSES
 // =============================================================================
 
@@ -46,6 +60,8 @@ export interface AuditExportV2GenerateResponse {
   generated_at?: string;
   sections?: string[];
   download_url?: string;
+  /** GovCon/DCAA mapping metadata from manifest.json (Phase 10B) */
+  govcon_mapping?: GovconMappingMetadata;
   error?: string;
   request_id: string;
 }
@@ -57,6 +73,8 @@ export interface AuditExportV2Result {
   exportId: string;
   generatedAt: string;
   sections: string[];
+  /** Indicates GovCon/DCAA mapping is included (Phase 10B) */
+  hasGovconMapping: boolean;
 }
 
 /**

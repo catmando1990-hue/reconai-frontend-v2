@@ -51,12 +51,20 @@ export async function generateAuditExportV2(
     throw error;
   }
 
+  // Check for govcon_mapping presence (Phase 10B)
+  const hasGovconMapping = !!(
+    json.govcon_mapping &&
+    typeof json.govcon_mapping === "object" &&
+    json.govcon_mapping.standard
+  );
+
   return {
     ok: true,
     result: {
       exportId: json.export_id || "",
       generatedAt: json.generated_at || new Date().toISOString(),
       sections: json.sections || [],
+      hasGovconMapping,
     },
     request_id: requestId,
   };

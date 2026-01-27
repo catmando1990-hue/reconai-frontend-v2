@@ -13,6 +13,7 @@ import {
   FileText,
   Wallet,
   Building2,
+  Info,
 } from "lucide-react";
 import type {
   AuditExportV2State,
@@ -154,10 +155,19 @@ export function AuditExportV2Panel() {
         return;
       }
 
+      // Check for govcon_mapping presence (Phase 10B)
+      // Silently suppress if malformed or missing
+      const hasGovconMapping = !!(
+        json.govcon_mapping &&
+        typeof json.govcon_mapping === "object" &&
+        json.govcon_mapping.standard
+      );
+
       setExportResult({
         exportId: json.export_id || "",
         generatedAt: json.generated_at || new Date().toISOString(),
         sections: json.sections || [],
+        hasGovconMapping,
       });
       setExportState("ready");
     } catch (err) {
@@ -368,6 +378,21 @@ export function AuditExportV2Panel() {
                 <div className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
                   Export ID: {exportResult.exportId}
                 </div>
+
+                {/* GovCon/DCAA Mapping Badge (Phase 10B) */}
+                {exportResult.hasGovconMapping && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      GovCon / DCAA Mapping Included
+                      <span
+                        className="cursor-help"
+                        title="This audit export includes static references to applicable DCAA and FAR sections. ReconAI does not certify compliance."
+                      >
+                        <Info className="h-3 w-3" />
+                      </span>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

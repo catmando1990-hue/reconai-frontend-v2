@@ -23,6 +23,7 @@ export type ModuleKey =
   | "core"
   | "intelligence"
   | "cfo"
+  | "payroll"
   | "govcon"
   | "settings";
 
@@ -297,6 +298,201 @@ export const NAV: Record<Route, NavEntry> = {
   },
 
   // ─────────────────────────────────────────
+  // PAYROLL MODULE
+  // ─────────────────────────────────────────
+  [ROUTES.PAYROLL]: {
+    displayTitle: "Payroll",
+    shortLabel: "Payroll",
+    subtitle: "Payroll operations and workforce management",
+    module: "payroll",
+    breadcrumb: [["Payroll", null]],
+    icon: "Wallet",
+    order: 0,
+  },
+  [ROUTES.PAYROLL_OVERVIEW]: {
+    displayTitle: "Overview",
+    shortLabel: "Overview",
+    subtitle: "Payroll status and key metrics",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Overview", null],
+    ],
+    icon: "LayoutDashboard",
+    order: 1,
+  },
+  [ROUTES.PAYROLL_PEOPLE]: {
+    displayTitle: "People",
+    shortLabel: "People",
+    subtitle: "Workforce directory",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["People", null],
+    ],
+    icon: "Users",
+    order: 2,
+  },
+  [ROUTES.PAYROLL_EMPLOYEES]: {
+    displayTitle: "Employees",
+    shortLabel: "Employees",
+    subtitle: "W-2 employee records",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["People", ROUTES.PAYROLL_PEOPLE],
+      ["Employees", null],
+    ],
+    icon: "UserCheck",
+    order: 3,
+  },
+  [ROUTES.PAYROLL_CONTRACTORS]: {
+    displayTitle: "Contractors",
+    shortLabel: "Contractors",
+    subtitle: "1099 contractor records",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["People", ROUTES.PAYROLL_PEOPLE],
+      ["Contractors", null],
+    ],
+    icon: "UserCog",
+    order: 4,
+  },
+  [ROUTES.PAYROLL_COMPENSATION]: {
+    displayTitle: "Compensation",
+    shortLabel: "Compensation",
+    subtitle: "Salary, wages, and compensation structures",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Compensation", null],
+    ],
+    icon: "DollarSign",
+    order: 5,
+  },
+  [ROUTES.PAYROLL_TIME_LABOR]: {
+    displayTitle: "Time & Labor",
+    shortLabel: "Time & Labor",
+    subtitle: "Hours tracked and labor allocation",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Time & Labor", null],
+    ],
+    icon: "Clock",
+    order: 6,
+  },
+  [ROUTES.PAYROLL_PAY_RUNS]: {
+    displayTitle: "Pay Runs",
+    shortLabel: "Pay Runs",
+    subtitle: "Payroll processing cycles",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Pay Runs", null],
+    ],
+    icon: "Play",
+    order: 7,
+  },
+  [ROUTES.PAYROLL_TAXES]: {
+    displayTitle: "Taxes & Withholdings",
+    shortLabel: "Taxes",
+    subtitle: "Tax obligations and withholding records",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Taxes & Withholdings", null],
+    ],
+    icon: "Receipt",
+    order: 8,
+  },
+  [ROUTES.PAYROLL_BENEFITS]: {
+    displayTitle: "Benefits & Deductions",
+    shortLabel: "Benefits",
+    subtitle: "Employee benefits and payroll deductions",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Benefits & Deductions", null],
+    ],
+    icon: "Heart",
+    order: 9,
+  },
+  [ROUTES.PAYROLL_ACCOUNTING]: {
+    displayTitle: "Payroll Accounting",
+    shortLabel: "Accounting",
+    subtitle: "Journal entries and GL integration",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Payroll Accounting", null],
+    ],
+    icon: "BookOpen",
+    order: 10,
+  },
+  [ROUTES.PAYROLL_COMPLIANCE]: {
+    displayTitle: "Compliance & Controls",
+    shortLabel: "Compliance",
+    subtitle: "Regulatory compliance and internal controls",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Compliance & Controls", null],
+    ],
+    icon: "ShieldCheck",
+    order: 11,
+  },
+  [ROUTES.PAYROLL_AUDIT_TRAIL]: {
+    displayTitle: "Audit Trail",
+    shortLabel: "Audit Trail",
+    subtitle: "Payroll change log and audit history",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Audit Trail", null],
+    ],
+    icon: "ScrollText",
+    order: 12,
+  },
+  [ROUTES.PAYROLL_SNAPSHOTS]: {
+    displayTitle: "Snapshots",
+    shortLabel: "Snapshots",
+    subtitle: "Point-in-time payroll state captures",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Snapshots", null],
+    ],
+    icon: "Camera",
+    order: 13,
+  },
+  [ROUTES.PAYROLL_REPORTS]: {
+    displayTitle: "Reports",
+    shortLabel: "Reports",
+    subtitle: "Payroll reports and exports",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Reports", null],
+    ],
+    icon: "BarChart3",
+    order: 14,
+  },
+  [ROUTES.PAYROLL_SETTINGS]: {
+    displayTitle: "Settings",
+    shortLabel: "Settings",
+    subtitle: "Payroll configuration and preferences",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Settings", null],
+    ],
+    icon: "Settings",
+    order: 15,
+  },
+
+  // ─────────────────────────────────────────
   // GOVCON MODULE
   // ─────────────────────────────────────────
   [ROUTES.GOVCON]: {
@@ -460,6 +656,13 @@ export const MODULES: Record<ModuleKey, ModuleInfo> = {
     description: "Executive financial oversight",
     landingRoute: ROUTES.CFO,
     icon: "Briefcase",
+  },
+  payroll: {
+    displayTitle: "Payroll",
+    shortLabel: "Payroll",
+    description: "Payroll operations and workforce management",
+    landingRoute: ROUTES.PAYROLL,
+    icon: "Wallet",
   },
   govcon: {
     displayTitle: "GovCon",

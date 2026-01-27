@@ -35,6 +35,24 @@ export const ROUTES = {
   CFO_FINANCIAL_REPORTS: "/financial-reports",
   CFO_CASH_FLOW: "/cash-flow",
 
+  // Payroll
+  PAYROLL: "/payroll-dashboard",
+  PAYROLL_OVERVIEW: "/payroll/overview",
+  PAYROLL_PEOPLE: "/payroll/people",
+  PAYROLL_EMPLOYEES: "/payroll/people/employees",
+  PAYROLL_CONTRACTORS: "/payroll/people/contractors",
+  PAYROLL_COMPENSATION: "/payroll/compensation",
+  PAYROLL_TIME_LABOR: "/payroll/time-labor",
+  PAYROLL_PAY_RUNS: "/payroll/pay-runs",
+  PAYROLL_TAXES: "/payroll/taxes",
+  PAYROLL_BENEFITS: "/payroll/benefits",
+  PAYROLL_ACCOUNTING: "/payroll/accounting",
+  PAYROLL_COMPLIANCE: "/payroll/compliance",
+  PAYROLL_AUDIT_TRAIL: "/payroll/audit-trail",
+  PAYROLL_SNAPSHOTS: "/payroll/snapshots",
+  PAYROLL_REPORTS: "/payroll/reports",
+  PAYROLL_SETTINGS: "/payroll/settings",
+
   // GovCon
   GOVCON: "/govcon",
   GOVCON_CONTRACTS: "/govcon/contracts",

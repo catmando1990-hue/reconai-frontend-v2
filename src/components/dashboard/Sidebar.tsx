@@ -15,10 +15,14 @@ import {
   HelpCircle,
   LayoutDashboard,
   Sparkles,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { useUserProfile } from "@/lib/user-profile-context";
-import { hasGovConEntitlement } from "@/lib/entitlements";
+import {
+  hasGovConEntitlement,
+  hasPayrollEntitlement,
+} from "@/lib/entitlements";
 import { MODULES, type ModuleKey } from "@/lib/dashboardNav";
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -26,6 +30,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Database,
   Brain: Sparkles,
   Briefcase,
+  Wallet,
   Building,
   Settings,
 };
@@ -39,6 +44,7 @@ const MODULE_ORDER: ModuleKey[] = [
   "core",
   "intelligence",
   "cfo",
+  "payroll",
   "govcon",
   "settings",
 ];
@@ -59,6 +65,7 @@ function getActiveModule(pathname: string): ModuleKey | null {
     pathname.startsWith("/financial-reports")
   )
     return "cfo";
+  if (pathname.startsWith("/payroll")) return "payroll";
   if (pathname.startsWith("/govcon")) return "govcon";
   if (pathname.startsWith("/settings")) return "settings";
   return null;
@@ -77,12 +84,18 @@ export function Sidebar() {
     [profile?.tiers, profile?.role],
   );
 
+  const showPayroll = useMemo(
+    () => hasPayrollEntitlement(profile?.tiers, profile?.role),
+    [profile?.tiers, profile?.role],
+  );
+
   const visibleModules = useMemo(() => {
     return MODULE_ORDER.filter((key) => {
       if (key === "govcon" && !showGovCon) return false;
+      if (key === "payroll" && !showPayroll) return false;
       return true;
     });
-  }, [showGovCon]);
+  }, [showGovCon, showPayroll]);
 
   const handleSignOut = async () => {
     await signOut();

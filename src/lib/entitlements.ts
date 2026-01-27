@@ -180,6 +180,37 @@ export function getUpgradePrompt(
  * Canonical safe default: deny until explicitly granted.
  * Admin/owner roles have full access to all features.
  */
+/**
+ * Check if user has Payroll entitlement.
+ * Canonical safe default: deny until explicitly granted.
+ * Admin/owner roles have full access to all features.
+ */
+export function hasPayrollEntitlement(
+  tiers: string[] | null | undefined,
+  role?: string | null,
+): boolean {
+  // Admin/owner bypass - full access to all features
+  if (role) {
+    const normalizedRole = role.toLowerCase();
+    if (
+      normalizedRole === "admin" ||
+      normalizedRole === "owner" ||
+      normalizedRole === "cfo"
+    ) {
+      return true;
+    }
+  }
+
+  if (!tiers || !Array.isArray(tiers)) return false;
+
+  const normalizedTiers = tiers.map((t) => t.toLowerCase());
+  return (
+    normalizedTiers.includes("payroll") ||
+    normalizedTiers.includes("pro") ||
+    normalizedTiers.includes("enterprise")
+  );
+}
+
 export function hasGovConEntitlement(
   tiers: string[] | null | undefined,
   role?: string | null,

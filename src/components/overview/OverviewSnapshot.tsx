@@ -86,7 +86,7 @@ export function OverviewSnapshot({ className }: { className?: string }) {
         if (cancelled) return;
         setSystem(sys);
         // API returns { items: [...] } — extract the array
-        const txArr = Array.isArray(txRes) ? txRes : txRes?.items ?? [];
+        const txArr = Array.isArray(txRes) ? txRes : (txRes?.items ?? []);
         setTxs(txArr);
       } catch {
         if (cancelled) return;

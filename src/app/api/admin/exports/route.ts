@@ -105,8 +105,31 @@ export async function GET(req: Request) {
     }
 
     const data = await res.json();
+
+    // Backend returns envelope: { ok, data, request_id }
+    // Unwrap and map field names to match frontend types
+    const backendData = data.data || data;
+    const exports = (backendData.exports || []).map((exp: Record<string, unknown>) => ({
+      export_id: exp.id,
+      organization_id: exp.org_id,
+      export_type: exp.file_type,
+      status: exp.status,
+      file_size_bytes: exp.size_bytes,
+      created_at: exp.created_at,
+      completed_at: exp.completed_at,
+      expires_at: exp.expires_at,
+      created_by_user_id: exp.user_id,
+      error_message: null,
+    }));
+
     return NextResponse.json(
-      { ...data, request_id: requestId },
+      {
+        exports,
+        total_count: backendData.total_count || 0,
+        page: backendData.page || parseInt(page),
+        page_size: backendData.page_size || parseInt(pageSize),
+        request_id: requestId,
+      },
       { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {

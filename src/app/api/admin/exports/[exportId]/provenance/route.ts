@@ -102,8 +102,21 @@ export async function GET(
     }
 
     const data = await res.json();
+
+    // Backend returns envelope: { ok, data, request_id }
+    // Unwrap to get the actual data
+    const backendData = data.data || data;
+
     return NextResponse.json(
-      { ...data, request_id: requestId },
+      {
+        export_id: backendData.export_id,
+        export_type: backendData.export_type,
+        status: backendData.status,
+        created_at: backendData.created_at,
+        evidence_links: backendData.evidence_links || [],
+        total_evidence_count: backendData.total_evidence_count || 0,
+        request_id: requestId,
+      },
       { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {

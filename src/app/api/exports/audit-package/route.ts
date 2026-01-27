@@ -98,8 +98,17 @@ export async function POST() {
     }
 
     const data = await res.json();
+
+    // Backend returns envelope: { ok, data, request_id }
+    // Unwrap to get the actual data
+    const backendData = data.data || data;
+
     return NextResponse.json(
-      { ...data, request_id: requestId },
+      {
+        export_id: backendData.export_id,
+        status: backendData.status,
+        request_id: requestId,
+      },
       { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {

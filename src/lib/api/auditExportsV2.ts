@@ -58,6 +58,14 @@ export async function generateAuditExportV2(
     json.govcon_mapping.standard
   );
 
+  // Pass through integrity metadata if present (Phase 11B)
+  const integrity =
+    json.integrity &&
+    typeof json.integrity === "object" &&
+    (json.integrity.hash_chain || json.integrity.signature)
+      ? json.integrity
+      : undefined;
+
   return {
     ok: true,
     result: {
@@ -65,6 +73,7 @@ export async function generateAuditExportV2(
       generatedAt: json.generated_at || new Date().toISOString(),
       sections: json.sections || [],
       hasGovconMapping,
+      ...(integrity ? { integrity } : {}),
     },
     request_id: requestId,
   };

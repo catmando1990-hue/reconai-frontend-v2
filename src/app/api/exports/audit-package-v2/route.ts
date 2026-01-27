@@ -171,6 +171,11 @@ export async function POST(request: NextRequest) {
     const govconMapping = backendData.govcon_mapping;
     const hasGovconMapping = govconMapping !== undefined && govconMapping !== null && govconMapping !== false;
 
+    // Pass through integrity metadata if present (Phase 11B)
+    // Silently omit if not present
+    const integrity = backendData.integrity;
+    const hasIntegrity = integrity !== undefined && integrity !== null && typeof integrity === "object";
+
     return NextResponse.json(
       {
         ok: true,
@@ -179,6 +184,7 @@ export async function POST(request: NextRequest) {
         sections: sections,
         download_url: backendData.download_url || null,
         ...(hasGovconMapping ? { govcon_mapping: govconMapping } : {}),
+        ...(hasIntegrity ? { integrity } : {}),
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

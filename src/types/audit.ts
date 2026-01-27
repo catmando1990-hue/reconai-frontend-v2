@@ -62,9 +62,35 @@ export interface AuditExportV2GenerateResponse {
   download_url?: string;
   /** GovCon/DCAA mapping metadata from manifest.json (Phase 10B) */
   govcon_mapping?: GovconMappingMetadata;
+  /** Export integrity metadata (Phase 11B) */
+  integrity?: ExportIntegrityMetadata;
   error?: string;
   request_id: string;
 }
+
+// =============================================================================
+// INTEGRITY METADATA (Phase 11B)
+// =============================================================================
+
+/**
+ * Export integrity metadata shape.
+ * Display-only, no verification logic.
+ */
+export interface ExportIntegrityMetadata {
+  hash_chain?: {
+    algorithm: string;
+    root: string;
+  };
+  signature?: {
+    algorithm: string;
+    key_id: string;
+    signed_at: string;
+  };
+}
+
+// =============================================================================
+// RESULT TYPES
+// =============================================================================
 
 /**
  * Metadata returned after successful export generation.
@@ -75,6 +101,8 @@ export interface AuditExportV2Result {
   sections: string[];
   /** Indicates GovCon/DCAA mapping is included (Phase 10B) */
   hasGovconMapping: boolean;
+  /** Export integrity metadata (Phase 11B) */
+  integrity?: ExportIntegrityMetadata;
 }
 
 /**

@@ -241,3 +241,127 @@ The badge inherits RBAC from the parent `AuditExportV2Panel`:
 - [ ] Missing/malformed data fails silently (no errors, no badge)
 - [ ] No new navigation or UI redesign
 - [ ] No icons implying approval (no checkmarks, shields, stars)
+
+---
+
+# Phase 11B — Export Signature Verification Helper
+
+## Overview
+
+Phase 11B adds a **read-only helper UI** that displays export signing metadata so admins can manually verify integrity offline. This does **NOT** verify signatures in-browser. It exposes metadata and instructions only.
+
+## Data Source
+
+- `manifest.json.integrity`
+- `signatures/signature.json`
+
+Returned as part of the Audit Export v2 response metadata. If absent, nothing renders.
+
+## What the Panel Displays
+
+When `integrity` metadata is present in the export response:
+
+- **Integrity status:** "Signed" (label badge)
+- **Algorithm:** From `signature.algorithm` (e.g., ed25519)
+- **Key ID:** Copyable value from `signature.key_id`
+- **Signed at (UTC):** From `signature.signed_at`
+- **Hash algorithm:** From `hash_chain.algorithm` (e.g., sha256) with "(hash chain)" suffix
+- **Chain root:** Copyable value from `hash_chain.root`
+
+### Offline Verification Instructions
+
+Displayed verbatim as inline text:
+
+> "This export includes a cryptographic signature. To verify integrity, recompute the SHA-256 hash chain over the exported files in order, then verify the Ed25519 signature using the included public key. ReconAI does not perform verification on your behalf."
+
+No code execution. No CLI helpers. No buttons.
+
+## What This Does NOT Do
+
+- **NOT** in-browser signature verification
+- **NOT** compliance certification or approval
+- **NOT** automated integrity checking
+- **NOT** a guarantee of data accuracy
+- ReconAI does not perform verification on your behalf
+
+## Panel Location
+
+Within the Audit Export v2 "Export Ready" state, below the success metadata block:
+- Generated timestamp
+- Included sections list
+- Export ID
+- GovCon/DCAA badge (when present)
+- **Integrity Metadata panel** (when present)
+
+## Styling
+
+- **Neutral**: Uses `border-border`, `bg-muted/30`, `text-muted-foreground`
+- **No success semantics**: No green, no checkmarks, no shields
+- **Informational only**: Info icon, not approval icon
+- **Copyable fields**: Chain root and Key ID have copy-to-clipboard buttons
+
+## RBAC
+
+Inherits from parent `AuditExportV2Panel`:
+- Visible only to `admin` or `org:admin` roles
+- Non-admin users see nothing (component renders `null`)
+
+## Error Handling
+
+- If `integrity` is **missing**: Panel does not render (silent)
+- If `integrity` is **malformed** or partial: Panel does not render (silent)
+- If clipboard copy fails: Silent failure
+- No errors logged, no user-facing error messages
+
+## Files Modified (Phase 11B)
+
+| File | Change |
+|------|--------|
+| `src/types/audit.ts` | Added `ExportIntegrityMetadata` type, `integrity?` to result and response |
+| `src/app/api/exports/audit-package-v2/route.ts` | Pass through `integrity` from backend |
+| `src/lib/api/auditExportsV2.ts` | Include `integrity` in result mapping |
+| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Added `IntegrityMetadataPanel` and `CopyableField` components |
+| `README_PHASE_9B.md` | Added Phase 11B documentation |
+
+## How to Verify
+
+### Test: Panel Appears When Integrity Present
+
+1. Generate an Audit Export v2 where backend returns `integrity` in response
+2. Observe the "Export Ready" state
+3. **Expected**: Integrity Metadata panel appears below the success block
+4. **Expected**: "Signed" badge visible
+5. **Expected**: Algorithm, Key ID, Signed at, Hash algorithm, Chain root displayed
+6. **Expected**: Offline verification instructions text block visible
+
+### Test: Copyable Fields
+
+1. In the integrity panel, click the copy icon next to "Chain root"
+2. **Expected**: Value copied to clipboard, icon briefly changes to checkmark
+3. Repeat for "Key ID"
+
+### Test: Panel Hidden When Integrity Absent
+
+1. Generate an Audit Export v2 where backend does NOT return `integrity`
+2. Observe the "Export Ready" state
+3. **Expected**: No Integrity Metadata panel visible
+4. **Expected**: No errors in console
+
+### Test: RBAC Enforcement
+
+1. Log in as non-admin user
+2. Navigate to `/govcon/evidence`
+3. **Expected**: Entire AuditExportV2Panel is hidden (including any potential integrity panel)
+
+## Verification Checklist (Phase 11B)
+
+- [ ] Panel renders only when `integrity` metadata exists and has `hash_chain` or `signature`
+- [ ] Admin-only visibility (inherited from parent)
+- [ ] Neutral, informational tone — no success/error semantics
+- [ ] No in-browser verification logic
+- [ ] No errors/logging on missing data
+- [ ] Copyable fields for chain root and key ID
+- [ ] Offline verification instructions match exact text
+- [ ] No UI redesign
+- [ ] No new navigation
+- [ ] No icons implying approval (no checkmarks, shields, stars in metadata)

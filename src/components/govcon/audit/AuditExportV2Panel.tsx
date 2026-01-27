@@ -14,6 +14,8 @@ import {
   Wallet,
   Building2,
   Info,
+  Copy,
+  Check,
 } from "lucide-react";
 import type {
   AuditExportV2State,
@@ -51,6 +53,112 @@ function sectionLabel(section: string): string {
     default:
       return section;
   }
+}
+
+// =============================================================================
+// COPYABLE FIELD
+// =============================================================================
+
+function CopyableField({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // Silent failure
+    });
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1">
+        <code className="font-mono text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded max-w-[200px] truncate">
+          {value}
+        </code>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+          title="Copy to clipboard"
+        >
+          {copied ? (
+            <Check className="h-3 w-3" />
+          ) : (
+            <Copy className="h-3 w-3" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// INTEGRITY METADATA PANEL (Phase 11B)
+// =============================================================================
+
+function IntegrityMetadataPanel({
+  integrity,
+}: {
+  integrity: NonNullable<AuditExportV2Result["integrity"]>;
+}) {
+  const { hash_chain, signature } = integrity;
+
+  return (
+    <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <Info className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium text-muted-foreground">
+          Integrity Metadata
+        </span>
+        <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          Signed
+        </span>
+      </div>
+
+      <div className="space-y-2">
+        {signature && (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Algorithm</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {signature.algorithm}
+              </span>
+            </div>
+            <CopyableField label="Key ID" value={signature.key_id} />
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Signed at (UTC)</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {formatTimestamp(signature.signed_at)}
+              </span>
+            </div>
+          </>
+        )}
+
+        {hash_chain && (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Hash algorithm</span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {hash_chain.algorithm} (hash chain)
+              </span>
+            </div>
+            <CopyableField label="Chain root" value={hash_chain.root} />
+          </>
+        )}
+      </div>
+
+      {/* Offline verification instructions */}
+      <div className="rounded border border-border bg-background/50 p-3 text-[10px] text-muted-foreground leading-relaxed">
+        This export includes a cryptographic signature. To verify integrity,
+        recompute the SHA-256 hash chain over the exported files in order, then
+        verify the Ed25519 signature using the included public key. ReconAI does
+        not perform verification on your behalf.
+      </div>
+    </div>
+  );
 }
 
 // =============================================================================
@@ -163,11 +271,20 @@ export function AuditExportV2Panel() {
         json.govcon_mapping.standard
       );
 
+      // Pass through integrity metadata if present (Phase 11B)
+      const integrity =
+        json.integrity &&
+        typeof json.integrity === "object" &&
+        (json.integrity.hash_chain || json.integrity.signature)
+          ? json.integrity
+          : undefined;
+
       setExportResult({
         exportId: json.export_id || "",
         generatedAt: json.generated_at || new Date().toISOString(),
         sections: json.sections || [],
         hasGovconMapping,
+        ...(integrity ? { integrity } : {}),
       });
       setExportState("ready");
     } catch (err) {
@@ -396,6 +513,12 @@ export function AuditExportV2Panel() {
               </div>
             </div>
           </div>
+
+          {/* Integrity Metadata Panel (Phase 11B) */}
+          {exportResult.integrity &&
+            (exportResult.integrity.hash_chain || exportResult.integrity.signature) && (
+            <IntegrityMetadataPanel integrity={exportResult.integrity} />
+          )}
 
           {/* Advisory copy */}
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200">

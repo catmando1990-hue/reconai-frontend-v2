@@ -9,13 +9,13 @@ const BACKEND_URL =
  * Assert that the current user has admin role.
  * Returns a NextResponse error if not admin, null otherwise.
  */
-async function assertAdmin() {
+async function assertAdmin(requestId: string) {
   const { userId, sessionClaims } = await auth();
 
   if (!userId) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Not authenticated" },
-      { status: 401 },
+      { error: "Unauthorized", message: "Not authenticated", request_id: requestId },
+      { status: 401, headers: { "x-request-id": requestId } },
     );
   }
 
@@ -36,8 +36,8 @@ async function assertAdmin() {
   }
 
   return NextResponse.json(
-    { error: "Forbidden", message: "Admin access required" },
-    { status: 403 },
+    { error: "Forbidden", message: "Admin access required", request_id: requestId },
+    { status: 403, headers: { "x-request-id": requestId } },
   );
 }
 
@@ -52,7 +52,9 @@ async function assertAdmin() {
  * - page_size: Items per page (default: 20)
  */
 export async function GET(req: Request) {
-  const forbidden = await assertAdmin();
+  const requestId = crypto.randomUUID();
+
+  const forbidden = await assertAdmin(requestId);
   if (forbidden) return forbidden;
 
   const { getToken } = await auth();
@@ -70,6 +72,7 @@ export async function GET(req: Request) {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "x-request-id": requestId,
         },
         cache: "no-store",
       },
@@ -81,21 +84,26 @@ export async function GET(req: Request) {
         {
           error: "Backend error",
           message: errorData.detail || `Status ${res.status}`,
+          request_id: requestId,
         },
-        { status: res.status },
+        { status: res.status, headers: { "x-request-id": requestId } },
       );
     }
 
     const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(
+      { ...data, request_id: requestId },
+      { status: 200, headers: { "x-request-id": requestId } },
+    );
   } catch (err) {
     console.error("Error fetching exports:", err);
     return NextResponse.json(
       {
         error: "Internal error",
         message: err instanceof Error ? err.message : "Unknown error",
+        request_id: requestId,
       },
-      { status: 500 },
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

@@ -30,7 +30,7 @@ interface LedgerResponse {
   request_id: string;
 }
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 15;
 
 function formatCurrency(amount: number, currency: string | null): string {
   return new Intl.NumberFormat("en-US", {

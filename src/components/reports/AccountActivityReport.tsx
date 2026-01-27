@@ -99,6 +99,7 @@ export function AccountActivityReport() {
     >();
 
     for (const tx of transactions) {
+      if (!tx.account_id) continue; // Skip transactions without account_id
       const key = tx.account_id;
       const existing = map.get(key) || {
         name: tx.account_name || tx.account_id.slice(-8),

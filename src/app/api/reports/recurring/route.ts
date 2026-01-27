@@ -27,9 +27,9 @@ export async function GET() {
 
     // Get all transactions for analysis
     const { data: transactions, error } = await supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select("id, amount, merchant_name, name, date, pending")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .eq("user_id", userId)
       .eq("pending", false)
       .order("date", { ascending: false });
 

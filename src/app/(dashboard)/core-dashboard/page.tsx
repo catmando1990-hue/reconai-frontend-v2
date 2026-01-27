@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
@@ -10,6 +11,8 @@ import PolicyBanner from "@/components/policy/PolicyBanner";
 import { TierGate } from "@/components/legal/TierGate";
 import { ROUTES } from "@/lib/routes";
 import { STATUS, EMPTY_STATE, CTA, PANEL_TITLE } from "@/lib/dashboardCopy";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
 import {
   Building2,
   ArrowLeftRight,
@@ -19,7 +22,19 @@ import {
   Settings,
   ChevronRight,
   BarChart3,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
+
+type WorkQueueItem = {
+  id: string;
+  date: string;
+  merchant?: string | null;
+  description?: string | null;
+  amount: number;
+  category?: string | null;
+  pending?: boolean;
+};
 
 const coreModules = [
   {
@@ -61,7 +76,50 @@ const coreModules = [
   },
 ];
 
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(Math.abs(amount));
+}
+
 export default function CoreOverviewPage() {
+  const { apiFetch } = useApi();
+  const { isLoaded } = useOrg();
+  const [workQueue, setWorkQueue] = useState<WorkQueueItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWorkQueue = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      type TransactionsResponse =
+        | WorkQueueItem[]
+        | { items: WorkQueueItem[]; count?: number; request_id?: string };
+      const data = await apiFetch<TransactionsResponse>("/api/transactions?limit=10");
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+      // Filter to items needing attention (uncategorized or pending)
+      const needsAttention = items.filter(
+        (tx) => !tx.category || tx.category === "Uncategorized" || tx.pending,
+      );
+      setWorkQueue(needsAttention.slice(0, 5));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    fetchWorkQueue();
+  }, [isLoaded, fetchWorkQueue]);
+
   return (
     <TierGate tier="core" title="Core" subtitle="Structured financial reality">
       <RouteShell
@@ -89,15 +147,73 @@ export default function CoreOverviewPage() {
                 </Link>
               }
             >
-              <EmptyState
-                icon={FileText}
-                title={EMPTY_STATE.transactions.title}
-                description={EMPTY_STATE.transactions.description}
-                action={{
-                  label: CTA.VIEW_DETAILS,
-                  href: ROUTES.CORE_TRANSACTIONS,
-                }}
-              />
+              {loading && (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+
+              {error && (
+                <div className="flex items-center gap-2 py-4 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  {error}
+                </div>
+              )}
+
+              {!loading && !error && workQueue.length === 0 && (
+                <EmptyState
+                  icon={FileText}
+                  title={EMPTY_STATE.transactions.title}
+                  description={EMPTY_STATE.transactions.description}
+                  action={{
+                    label: CTA.VIEW_DETAILS,
+                    href: ROUTES.CORE_TRANSACTIONS,
+                  }}
+                />
+              )}
+
+              {!loading && !error && workQueue.length > 0 && (
+                <div className="divide-y">
+                  {workQueue.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between py-3 px-1"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium truncate">
+                          {item.merchant || item.description || "Unknown"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.date}
+                          {item.pending && (
+                            <span className="ml-2 text-amber-500">Pending</span>
+                          )}
+                          {(!item.category || item.category === "Uncategorized") && (
+                            <span className="ml-2 text-amber-500">Needs categorization</span>
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        className={[
+                          "font-mono text-sm font-medium",
+                          item.amount < 0 ? "text-destructive" : "text-emerald-600",
+                        ].join(" ")}
+                      >
+                        {item.amount < 0 ? "-" : "+"}
+                        {formatCurrency(item.amount)}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-3">
+                    <Link
+                      href={ROUTES.CORE_TRANSACTIONS}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      View all transactions →
+                    </Link>
+                  </div>
+                </div>
+              )}
             </PrimaryPanel>
           </div>
 

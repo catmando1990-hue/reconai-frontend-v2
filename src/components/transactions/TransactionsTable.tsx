@@ -19,7 +19,7 @@ import {
 } from "@/components/dashboard/DashTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 15;
 
 type TransactionRow = {
   id: string | number;

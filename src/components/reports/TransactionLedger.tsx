@@ -5,16 +5,21 @@ import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 15;
 
 type Transaction = {
   id: string;
   date: string;
-  merchant_name: string | null;
-  name: string | null;
-  amount: number;
-  account_id: string;
+  // API returns these fields
+  merchant?: string | null;
+  description?: string | null;
+  account?: string | null;
+  // Legacy fields from direct Plaid data
+  merchant_name?: string | null;
+  name?: string | null;
+  account_id?: string | null;
   account_name?: string;
+  amount: number;
   category: string[] | string | null;
   pending: boolean;
   transaction_type?: string;
@@ -115,10 +120,10 @@ export function TransactionLedger() {
     ];
     const rows = transactions.map((tx) => [
       tx.date,
-      tx.merchant_name || tx.name || "",
+      tx.merchant || tx.merchant_name || tx.description || tx.name || "",
       tx.amount.toString(),
       tx.amount < 0 ? "Outflow" : "Inflow",
-      tx.account_name || tx.account_id || "",
+      tx.account_name || tx.account || tx.account_id || "",
       getCategory(tx.category),
       tx.pending ? "Pending" : "Posted",
       tx.payment_channel || "",
@@ -200,7 +205,7 @@ export function TransactionLedger() {
                     </td>
                     <td className="px-4 py-2.5">
                       <div className="max-w-[200px] truncate">
-                        {tx.merchant_name || tx.name || "—"}
+                        {tx.merchant || tx.merchant_name || tx.description || tx.name || "—"}
                       </div>
                     </td>
                     <td
@@ -214,7 +219,7 @@ export function TransactionLedger() {
                     </td>
                     <td className="px-4 py-2.5 text-muted-foreground">
                       <div className="max-w-[120px] truncate">
-                        {tx.account_name || (tx.account_id ? tx.account_id.slice(-8) : "—")}
+                        {tx.account_name || (tx.account ? tx.account.slice(-8) : tx.account_id ? tx.account_id.slice(-8) : "—")}
                       </div>
                     </td>
                     <td className="px-4 py-2.5 text-muted-foreground">

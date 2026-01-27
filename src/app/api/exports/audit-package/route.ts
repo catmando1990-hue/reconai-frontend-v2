@@ -58,8 +58,15 @@ export async function POST() {
   const forbidden = await assertAdmin(requestId);
   if (forbidden) return forbidden;
 
-  const { getToken } = await auth();
+  const { getToken, orgId, userId } = await auth();
   const token = await getToken();
+
+  // Get organization ID from Clerk org context or user metadata
+  let organizationId = orgId;
+  if (!organizationId) {
+    const user = await currentUser();
+    organizationId = (user?.publicMetadata as Record<string, unknown> | undefined)?.organization_id as string | undefined;
+  }
 
   try {
     const res = await fetch(`${BACKEND_URL}/internal/exports/audit-package`, {
@@ -69,7 +76,9 @@ export async function POST() {
         "Content-Type": "application/json",
         "x-request-id": requestId,
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify({
+        organization_id: organizationId || userId, // Fall back to userId if no org
+      }),
     });
 
     if (!res.ok) {

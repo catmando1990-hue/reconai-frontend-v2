@@ -1,86 +1,117 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw, AlertTriangle } from "lucide-react";
+import { Download, RefreshCw, AlertTriangle, FileText } from "lucide-react";
 
-type Transaction = {
+/**
+ * Exception signal from backend engine
+ */
+type ExceptionSignal = {
   id: string;
-  date: string;
-  merchant_name: string | null;
-  name: string | null;
-  amount: number;
-  category: string[] | string | null;
-  pending: boolean;
+  type: string;
+  title: string;
+  description?: string;
+  entity_id?: string;
+  evidence_ref?: string;
+  created_at: string;
+  confidence?: number;
 };
 
 /**
- * FIX: Backend response may be either:
- * - Legacy: Transaction[] (direct array)
- * - New: { items: Transaction[], request_id: string }
+ * P1 Backend Response Format
  */
-type TransactionsResponse =
-  | Transaction[]
-  | { items: Transaction[]; request_id: string };
-
-type Exception = {
-  id: string;
-  date: string;
-  merchant: string;
-  amount: number;
-  reason: string;
-  severity: "high" | "medium" | "low";
+type SignalsResponse = {
+  mode: "demo" | "live";
+  signals: ExceptionSignal[];
+  disclaimer?: string | null;
+  request_id: string;
 };
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(Math.abs(amount));
-}
+/**
+ * Known exception rule types from the backend engine
+ */
+const EXCEPTION_RULE_TYPES = [
+  "duplicate_transaction",
+  "missing_receipt",
+  "uncategorized_expense",
+  "policy_violation",
+  "threshold_exceeded",
+  "approval_required",
+  "reconciliation_mismatch",
+  "vendor_not_approved",
+];
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
+function formatDateTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
-function getCategory(cat: string[] | string | null): string {
-  if (!cat) return "";
-  if (Array.isArray(cat)) return cat[0] || "";
-  return cat;
-}
-
+/**
+ * ExceptionReport - Displays exception signals from backend engine
+ *
+ * Endpoint: GET /api/signals/p1?min_confidence=1.0
+ *
+ * Rules:
+ * - Fetches real exception signals from backend
+ * - Filters to known exception rule types
+ * - No auto-refresh or polling
+ * - Advisory only, no enforcement implied
+ */
 export function ExceptionReport() {
   const { apiFetch } = useApi();
   const { isLoaded } = useOrg();
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [exceptions, setExceptions] = useState<ExceptionSignal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [ran, setRan] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<TransactionsResponse>("/api/transactions");
+      const data = await apiFetch<SignalsResponse>(
+        "/api/signals/p1?min_confidence=1.0",
+      );
 
-      // FIX: Normalize response - handle both array and object formats
-      const items = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.items)
-          ? data.items
-          : [];
+      // Handle both array and object formats
+      let signals: ExceptionSignal[];
+      if (Array.isArray(data)) {
+        signals = data;
+      } else {
+        signals = data.signals ?? [];
+      }
 
-      setTransactions(items);
+      // Filter to known exception rule types only
+      const filtered = signals.filter((s) =>
+        EXCEPTION_RULE_TYPES.some(
+          (ruleType) =>
+            s.type?.toLowerCase().includes(ruleType) ||
+            s.title?.toLowerCase().includes(ruleType.replace(/_/g, " ")),
+        ),
+      );
+
+      // Sort by created_at descending (most recent first)
+      filtered.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+
+      setExceptions(filtered);
+      setRan(true);
     } catch (e) {
       // Surface request_id on errors
       const requestId = crypto.randomUUID();
       const msg = e instanceof Error ? e.message : "Failed to load";
       setError(`${msg} (request_id: ${requestId})`);
+      setRan(true);
     } finally {
       setLoading(false);
     }
@@ -91,127 +122,15 @@ export function ExceptionReport() {
     fetchData();
   }, [isLoaded, fetchData]);
 
-  const exceptions = useMemo(() => {
-    const result: Exception[] = [];
-
-    // Calculate statistics for anomaly detection
-    const amounts = transactions.map((tx) => Math.abs(tx.amount));
-    const mean =
-      amounts.length > 0
-        ? amounts.reduce((a, b) => a + b, 0) / amounts.length
-        : 0;
-    const stdDev =
-      amounts.length > 0
-        ? Math.sqrt(
-            amounts.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
-              amounts.length,
-          )
-        : 0;
-
-    const highThreshold = mean + 3 * stdDev;
-    const mediumThreshold = mean + 2 * stdDev;
-
-    // Track merchant frequencies for duplicate detection
-    const merchantDateMap = new Map<string, Transaction[]>();
-
-    for (const tx of transactions) {
-      const merchant = tx.merchant_name || tx.name || "Unknown";
-      const key = `${merchant}-${tx.date}`;
-      const existing = merchantDateMap.get(key) || [];
-      existing.push(tx);
-      merchantDateMap.set(key, existing);
-    }
-
-    for (const tx of transactions) {
-      const merchant = tx.merchant_name || tx.name || "Unknown";
-      const absAmount = Math.abs(tx.amount);
-      const category = getCategory(tx.category);
-
-      // 1. Large one-off transactions (high severity)
-      if (absAmount >= highThreshold && absAmount > 1000) {
-        result.push({
-          id: tx.id,
-          date: tx.date,
-          merchant,
-          amount: tx.amount,
-          reason: "Unusually large transaction (>3σ from mean)",
-          severity: "high",
-        });
-        continue;
-      }
-
-      // 2. Medium-large transactions
-      if (absAmount >= mediumThreshold && absAmount > 500) {
-        result.push({
-          id: tx.id,
-          date: tx.date,
-          merchant,
-          amount: tx.amount,
-          reason: "Large transaction (>2σ from mean)",
-          severity: "medium",
-        });
-        continue;
-      }
-
-      // 3. Uncategorized items
-      if (!category) {
-        result.push({
-          id: tx.id,
-          date: tx.date,
-          merchant,
-          amount: tx.amount,
-          reason: "Uncategorized transaction",
-          severity: "low",
-        });
-        continue;
-      }
-
-      // 4. Potential duplicates (same merchant, same date, same amount)
-      const key = `${merchant}-${tx.date}`;
-      const sameDay = merchantDateMap.get(key) || [];
-      const duplicates = sameDay.filter(
-        (t) => t.id !== tx.id && Math.abs(t.amount - tx.amount) < 0.01,
-      );
-      if (duplicates.length > 0) {
-        // Only flag once per duplicate group
-        const minId = Math.min(
-          tx.id as unknown as number,
-          ...duplicates.map((d) => d.id as unknown as number),
-        );
-        if ((tx.id as unknown as number) === minId) {
-          result.push({
-            id: tx.id,
-            date: tx.date,
-            merchant,
-            amount: tx.amount,
-            reason: `Potential duplicate (${duplicates.length + 1} matching transactions)`,
-            severity: "medium",
-          });
-        }
-      }
-    }
-
-    // Sort by severity then date
-    const severityOrder = { high: 0, medium: 1, low: 2 };
-    result.sort((a, b) => {
-      const sevDiff = severityOrder[a.severity] - severityOrder[b.severity];
-      if (sevDiff !== 0) return sevDiff;
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-
-    return result;
-  }, [transactions]);
-
   const handleExportCSV = () => {
     if (exceptions.length === 0) return;
 
-    const headers = ["Date", "Merchant", "Amount", "Reason", "Severity"];
+    const headers = ["Title", "Description", "Evidence Reference", "Created At"];
     const rows = exceptions.map((ex) => [
-      ex.date,
-      `"${ex.merchant}"`,
-      ex.amount.toFixed(2),
-      `"${ex.reason}"`,
-      ex.severity,
+      `"${ex.title || ex.type}"`,
+      `"${ex.description || ""}"`,
+      `"${ex.evidence_ref || ex.entity_id || ""}"`,
+      ex.created_at,
     ]);
 
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
@@ -224,25 +143,27 @@ export function ExceptionReport() {
     URL.revokeObjectURL(url);
   };
 
-  const severityCounts = useMemo(() => {
-    return {
-      high: exceptions.filter((e) => e.severity === "high").length,
-      medium: exceptions.filter((e) => e.severity === "medium").length,
-      low: exceptions.filter((e) => e.severity === "low").length,
-    };
-  }, [exceptions]);
-
   return (
     <div className="rounded-xl border bg-card">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
           <h3 className="font-semibold">Exception Report</h3>
           <p className="text-xs text-muted-foreground">
-            Transactions that violate normal patterns • Flags for review, not
-            fraud alerts
+            Rule-based exceptions from backend engine
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void fetchData()}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
           <button
             type="button"
             onClick={handleExportCSV}
@@ -267,34 +188,28 @@ export function ExceptionReport() {
         </div>
       )}
 
-      {!loading && !error && exceptions.length === 0 && (
-        <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-          No exceptions detected. All transactions appear normal.
+      {!loading && !error && ran && exceptions.length === 0 && (
+        <div className="px-4 py-12 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
+            <FileText className="h-6 w-6 text-emerald-600" />
+          </div>
+          <p className="text-sm font-medium text-foreground">
+            No exceptions detected.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            This means all evaluated rules passed.
+          </p>
         </div>
       )}
 
       {!loading && !error && exceptions.length > 0 && (
         <>
           {/* Summary */}
-          <div className="flex gap-4 border-b bg-muted/20 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-destructive/20 text-xs text-destructive">
-                {severityCounts.high}
-              </span>
-              <span className="text-xs text-muted-foreground">High</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-xs text-amber-600">
-                {severityCounts.medium}
-              </span>
-              <span className="text-xs text-muted-foreground">Medium</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
-                {severityCounts.low}
-              </span>
-              <span className="text-xs text-muted-foreground">Low</span>
-            </div>
+          <div className="border-b bg-muted/20 px-4 py-3">
+            <span className="text-sm text-muted-foreground">
+              {exceptions.length} exception{exceptions.length !== 1 ? "s" : ""}{" "}
+              found
+            </span>
           </div>
 
           {/* Exception List */}
@@ -304,33 +219,28 @@ export function ExceptionReport() {
                 key={ex.id}
                 className="flex items-start gap-3 px-4 py-3 hover:bg-muted/20"
               >
-                <div
-                  className={[
-                    "mt-0.5 rounded-full p-1",
-                    ex.severity === "high"
-                      ? "bg-destructive/20 text-destructive"
-                      : ex.severity === "medium"
-                        ? "bg-amber-500/20 text-amber-600"
-                        : "bg-muted text-muted-foreground",
-                  ].join(" ")}
-                >
+                <div className="mt-0.5 rounded-full bg-amber-500/20 p-1 text-amber-600">
                   <AlertTriangle className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="font-medium truncate">{ex.merchant}</div>
-                    <div
-                      className={[
-                        "font-mono text-sm whitespace-nowrap",
-                        ex.amount < 0 ? "text-destructive" : "text-emerald-600",
-                      ].join(" ")}
-                    >
-                      {ex.amount < 0 ? "-" : "+"}
-                      {formatCurrency(ex.amount)}
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {formatDate(ex.date)} • {ex.reason}
+                  {/* Title */}
+                  <div className="font-medium">{ex.title || ex.type}</div>
+
+                  {/* Description */}
+                  {ex.description && (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {ex.description}
+                    </p>
+                  )}
+
+                  {/* Evidence Reference & Timestamp */}
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                    {(ex.evidence_ref || ex.entity_id) && (
+                      <span className="font-mono">
+                        Ref: {ex.evidence_ref || ex.entity_id}
+                      </span>
+                    )}
+                    <span>{formatDateTime(ex.created_at)}</span>
                   </div>
                 </div>
               </div>
@@ -339,11 +249,11 @@ export function ExceptionReport() {
         </>
       )}
 
-      {/* Disclaimer */}
+      {/* Disclaimer - MANDATORY */}
       <div className="border-t bg-muted/20 px-4 py-2">
         <p className="text-[10px] text-muted-foreground">
-          Exceptions are statistical flags for manual review. They do not
-          constitute fraud alerts or financial advice.
+          Exceptions are advisory and rule-based. They do not imply enforcement
+          or action.
         </p>
       </div>
     </div>

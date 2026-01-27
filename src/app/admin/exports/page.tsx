@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { AdminExportsTable } from "@/components/admin/AdminExportsTable";
 import { ExportProvenanceDrawer } from "@/components/admin/ExportProvenanceDrawer";
+import { AuditExportButton } from "@/components/admin/AuditExportButton";
 import type { ExportRecord, ExportsListResponse } from "@/types/admin-exports";
 import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 
@@ -104,6 +105,9 @@ export default function AdminExportsPage() {
             admin only.
           </p>
         </div>
+
+        {/* Audit Package Export - Phase 7 Governance */}
+        <AuditExportButton />
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

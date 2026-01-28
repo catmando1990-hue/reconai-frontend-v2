@@ -60,7 +60,7 @@ export function SecondaryPanel({
         tabIndex={collapsible ? 0 : undefined}
         aria-expanded={collapsible ? !isCollapsed : undefined}
       >
-        <h3 className="text-[length:var(--dash-body-size)] font-medium text-foreground">
+        <h3 className="text-(length:--dash-body-size) font-medium text-foreground">
           {title}
         </h3>
         {collapsible && (

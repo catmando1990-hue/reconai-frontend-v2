@@ -205,12 +205,12 @@ export default function TransactionLedgerPage() {
                       {formatDate(tx.date)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="max-w-[150px] truncate block">
+                      <span className="max-w-37.5 truncate block">
                         {tx.merchant_name || "—"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="max-w-[200px] truncate block">
+                      <span className="max-w-50 truncate block">
                         {tx.name}
                       </span>
                     </td>

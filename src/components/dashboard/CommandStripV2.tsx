@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Command, Activity, Sparkles, Bell } from "lucide-react";
 import {
@@ -8,6 +8,7 @@ import {
   CommandItem,
 } from "@/components/dashboard/CommandPalette";
 import { DEFAULT_COMMANDS } from "@/lib/commandRegistry";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function sectionLabel(pathname: string): string {
   if (pathname.startsWith("/core")) return "Core";
@@ -108,6 +109,7 @@ export function CommandStripV2() {
             <Activity className="h-4 w-4" />
             Health
           </button>
+          <ThemeToggle />
         </div>
       </div>
 

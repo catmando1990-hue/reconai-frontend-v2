@@ -16,7 +16,11 @@ interface SyncResponse {
   error?: string;
 }
 
-export function ManualSyncSection() {
+interface ManualSyncSectionProps {
+  itemId?: string | null;
+}
+
+export function ManualSyncSection({ itemId }: ManualSyncSectionProps) {
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -28,9 +32,19 @@ export function ManualSyncSection() {
     setErrorMessage(null);
     setLastRequestId(null);
 
+    if (!itemId) {
+      setErrorMessage("No bank account connected. Please link a bank account first.");
+      setSyncState("error");
+      return;
+    }
+
     try {
       const data = await auditedFetch<SyncResponse>("/api/plaid/sync", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ item_id: itemId }),
       });
 
       // Capture request_id for audit evidence

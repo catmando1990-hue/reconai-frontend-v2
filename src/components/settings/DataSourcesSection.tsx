@@ -165,7 +165,7 @@ export function DataSourcesSection({ plaid }: DataSourcesSectionProps) {
             needsReconnect={plaid?.status === "login_required"}
             itemId={plaid?.itemId}
           />
-          <ManualSyncSection />
+          <ManualSyncSection itemId={plaid?.itemId} />
         </div>
       </div>
     </SecondaryPanel>

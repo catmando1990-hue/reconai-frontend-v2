@@ -30,26 +30,26 @@ function PayrollBenefitsBody() {
           <SecondaryPanel title="Benefits Summary">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Active Plans
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Enrolled Employees
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Monthly Cost
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>

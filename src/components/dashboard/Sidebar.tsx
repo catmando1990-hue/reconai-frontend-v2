@@ -104,24 +104,26 @@ export function Sidebar() {
 
   return (
     <aside className="relative flex h-full overflow-hidden">
-      <div className="relative w-56 shrink-0 flex flex-col h-full bg-background border-r border-border">
+      <div className="relative w-56 shrink-0 flex flex-col h-full bg-white dark:bg-[#18181b] border-r border-[#e5e7eb] dark:border-[#27272a]">
         <div className="flex flex-col h-full">
-          <div className="h-14 flex items-center px-4 border-b border-border">
+          {/* Logo */}
+          <div className="h-14 flex items-center px-4 border-b border-[#e5e7eb] dark:border-[#27272a]">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center transition-colors group-hover:border-primary/40">
-                <Brain className="h-4 w-4 text-primary" />
+              <div className="h-8 w-8 rounded-lg bg-[#4f46e5]/10 dark:bg-[#6366f1]/10 border border-[#4f46e5]/20 dark:border-[#6366f1]/20 flex items-center justify-center transition-colors group-hover:border-[#4f46e5]/40 dark:group-hover:border-[#6366f1]/40">
+                <Brain className="h-4 w-4 text-[#4f46e5] dark:text-[#6366f1]" />
               </div>
               <div className="flex flex-col">
-                <span className="font-semibold text-sm text-foreground tracking-tight">
+                <span className="font-semibold text-sm text-[#111827] dark:text-[#f9fafb] tracking-tight">
                   ReconAI
                 </span>
-                <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                <span className="text-[9px] uppercase tracking-widest text-[#6b7280] dark:text-[#a1a1aa]">
                   Control Plane
                 </span>
               </div>
             </Link>
           </div>
 
+          {/* Navigation */}
           <nav
             className="flex-1 overflow-y-auto py-3 px-2"
             aria-label="Primary navigation"
@@ -140,26 +142,26 @@ export function Sidebar() {
                     aria-current={isActive ? "page" : undefined}
                     className={[
                       "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f46e5] dark:focus-visible:ring-[#6366f1] focus-visible:ring-offset-1",
                       isActive
-                        ? "bg-primary/10 text-foreground border-l-2 border-primary -ml-0.5 pl-[calc(0.75rem-2px)]"
-                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-l-2 border-transparent -ml-0.5 pl-[calc(0.75rem-2px)]",
+                        ? "bg-[#4f46e5]/10 dark:bg-[#6366f1]/10 text-[#111827] dark:text-[#f9fafb] border-l-2 border-[#4f46e5] dark:border-[#6366f1] -ml-0.5 pl-2.5"
+                        : "text-[#6b7280] dark:text-[#a1a1aa] hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] hover:text-[#111827] dark:hover:text-[#f9fafb] border-l-2 border-transparent -ml-0.5 pl-2.5",
                     ].join(" ")}
                   >
                     <div
                       className={[
                         "flex h-7 w-7 items-center justify-center rounded-md transition-colors",
                         isActive
-                          ? "bg-primary/15"
-                          : "bg-muted/50 group-hover:bg-accent",
+                          ? "bg-[#4f46e5]/15 dark:bg-[#6366f1]/15"
+                          : "bg-[#f3f4f6] dark:bg-[#27272a] group-hover:bg-[#e5e7eb] dark:group-hover:bg-[#3f3f46]",
                       ].join(" ")}
                     >
                       <Icon
                         className={[
                           "h-4 w-4 transition-colors",
                           isActive
-                            ? "text-primary"
-                            : "text-muted-foreground group-hover:text-foreground",
+                            ? "text-[#4f46e5] dark:text-[#6366f1]"
+                            : "text-[#6b7280] dark:text-[#a1a1aa] group-hover:text-[#111827] dark:group-hover:text-[#f9fafb]",
                         ].join(" ")}
                       />
                     </div>
@@ -170,18 +172,19 @@ export function Sidebar() {
             </div>
           </nav>
 
-          <div className="border-t border-border p-3 space-y-2">
+          {/* Footer */}
+          <div className="border-t border-[#e5e7eb] dark:border-[#27272a] p-3 space-y-2">
             <div className="flex items-center justify-center gap-2">
               <Link
                 href="/"
-                className="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] text-[#6b7280] dark:text-[#a1a1aa] hover:bg-[#f3f4f6] dark:hover:bg-[#3f3f46] hover:text-[#111827] dark:hover:text-[#f9fafb] transition-colors"
                 title="Marketing Home"
               >
                 <Home className="h-4 w-4" />
               </Link>
               <Link
                 href="/support"
-                className="flex items-center justify-center h-8 w-8 rounded-md border border-border bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] text-[#6b7280] dark:text-[#a1a1aa] hover:bg-[#f3f4f6] dark:hover:bg-[#3f3f46] hover:text-[#111827] dark:hover:text-[#f9fafb] transition-colors"
                 title="Help & Support"
               >
                 <HelpCircle className="h-4 w-4" />
@@ -191,7 +194,7 @@ export function Sidebar() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground bg-muted border border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#6b7280] dark:text-[#a1a1aa] bg-[#f9fafb] dark:bg-[#27272a] border border-[#e5e7eb] dark:border-[#27272a] hover:bg-[#dc2626]/10 dark:hover:bg-[#ef4444]/10 hover:text-[#dc2626] dark:hover:text-[#ef4444] hover:border-[#dc2626]/30 dark:hover:border-[#ef4444]/30 transition-colors"
             >
               <LogOut className="h-4 w-4" />
               Sign out

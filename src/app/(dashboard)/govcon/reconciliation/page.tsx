@@ -308,11 +308,11 @@ export default function ReconciliationPage() {
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6">
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Reconciliation Runs</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   {runs.length} run{runs.length !== 1 ? "s" : ""} completed
                 </p>
               </div>
@@ -324,7 +324,7 @@ export default function ReconciliationPage() {
 
             {loading && (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#6b7280] dark:text-[#a1a1aa]" />
               </div>
             )}
 
@@ -360,7 +360,7 @@ export default function ReconciliationPage() {
                 {runs.map((run) => (
                   <div
                     key={run.id}
-                    className="rounded-lg border border-border/70 bg-muted/30 p-4"
+                    className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a]/70 bg-[#f9fafb] dark:bg-[#27272a]/30 p-4"
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
@@ -384,12 +384,12 @@ export default function ReconciliationPage() {
                             {run.status.toUpperCase()}
                           </StatusChip>
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                           FY {run.fiscal_year} • Started{" "}
                           {formatDate(run.started_at)}
                         </div>
                         {run.summary && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                             {run.summary}
                           </p>
                         )}
@@ -403,10 +403,10 @@ export default function ReconciliationPage() {
 
           {/* Variances Panel */}
           <div className="mt-6">
-            <div className="rounded-lg border border-border bg-card p-6">
+            <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">Variances</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Variance analysis and resolution tracking
                 </p>
               </div>
@@ -424,11 +424,11 @@ export default function ReconciliationPage() {
                   {variances.map((v) => (
                     <div
                       key={v.id}
-                      className="flex items-center justify-between p-3 rounded bg-muted/50"
+                      className="flex items-center justify-between p-3 rounded bg-[#f9fafb] dark:bg-[#27272a]/50"
                     >
                       <div>
                         <p className="text-sm font-medium">{v.variance_type}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                           {v.description}
                         </p>
                       </div>
@@ -456,7 +456,7 @@ export default function ReconciliationPage() {
           <SecondaryPanel title="Variance Summary">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Active Runs
                 </span>
                 <span className="text-base font-medium">
@@ -464,7 +464,7 @@ export default function ReconciliationPage() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Open Variances
                 </span>
                 <span className="text-base font-medium">
@@ -472,19 +472,19 @@ export default function ReconciliationPage() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Resolved</span>
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">Resolved</span>
                 <span className="text-base font-medium text-green-600">
                   {varianceSummary.resolved}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Escalated</span>
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">Escalated</span>
                 <span className="text-base font-medium text-amber-600">
                   {varianceSummary.escalated}
                 </span>
               </div>
               <div className="pt-2 border-t">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                   SF-1408 § cost-1 through cost-5 (Direct / Indirect Costs)
                 </p>
               </div>
@@ -496,13 +496,13 @@ export default function ReconciliationPage() {
               {ICS_SCHEDULES.map((schedule) => (
                 <div
                   key={schedule.schedule}
-                  className="flex items-center justify-between p-2 rounded bg-muted"
+                  className="flex items-center justify-between p-2 rounded bg-[#f9fafb] dark:bg-[#27272a]"
                 >
                   <div>
                     <span className="font-mono text-xs font-medium">
                       Schedule {schedule.schedule}
                     </span>
-                    <p className="text-xs text-muted-foreground truncate max-w-40">
+                    <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa] truncate max-w-40">
                       {schedule.name}
                     </p>
                   </div>
@@ -524,12 +524,12 @@ export default function ReconciliationPage() {
 
           <SecondaryPanel title="SF-1408 Preaward">
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-lg border border-border bg-muted flex items-center justify-center shrink-0">
-                <FileText className="h-5 w-5 text-muted-foreground" />
+              <div className="h-10 w-10 rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] flex items-center justify-center shrink-0">
+                <FileText className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa]" />
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium">SF-1408 Checklist</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                   Accounting system adequacy for government contracting
                 </p>
                 <Link
@@ -570,8 +570,8 @@ export default function ReconciliationPage() {
       {/* New Run Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-card shadow-xl">
-            <div className="flex items-center justify-between border-b border-border p-4">
+          <div className="mx-4 w-full max-w-md rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#e5e7eb] dark:border-[#27272a] p-4">
               <h2 className="text-base font-semibold">Start Reconciliation</h2>
               <Button variant="ghost" size="sm" onClick={handleCloseModal}>
                 <X className="h-4 w-4" />
@@ -585,7 +585,7 @@ export default function ReconciliationPage() {
                 <select
                   value={runType}
                   onChange={(e) => setRunType(e.target.value)}
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                 >
                   {RUN_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -603,7 +603,7 @@ export default function ReconciliationPage() {
                   type="number"
                   value={fiscalYear}
                   onChange={(e) => setFiscalYear(e.target.value)}
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   min="2000"
                   max="2100"
                 />
@@ -616,7 +616,7 @@ export default function ReconciliationPage() {
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   rows={2}
                   placeholder="Any notes for this run..."
                 />

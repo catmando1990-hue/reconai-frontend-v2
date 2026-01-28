@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { useApi } from "@/lib/useApi";
 
@@ -85,37 +83,37 @@ export default function CoreTransactionsPage() {
       title="Transactions"
       subtitle="All synced transactions from connected bank accounts"
       right={
-        <Button
-          variant="outline"
-          size="sm"
+        <button
+          type="button"
           onClick={fetchTransactions}
           disabled={isLoading}
+          className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] text-[#111827] dark:text-[#f9fafb] hover:bg-[#f9fafb] dark:hover:bg-[#27272a] disabled:opacity-50 transition-colors"
         >
           <RefreshCw
-            className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
           />
           Refresh
-        </Button>
+        </button>
       }
     >
-      <Card className="border-border bg-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center justify-between">
+      <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b]">
+        <div className="px-6 py-4 border-b border-[#e5e7eb] dark:border-[#27272a]">
+          <div className="text-sm font-medium text-[#111827] dark:text-[#f9fafb] flex items-center justify-between">
             <span>Transaction History</span>
-            <span className="text-muted-foreground font-normal">
+            <span className="text-[#6b7280] dark:text-[#a1a1aa] font-normal">
               {transactions.length} transactions
             </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </div>
+        </div>
+        <div className="p-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+              <RefreshCw className="h-6 w-6 animate-spin text-[#6b7280] dark:text-[#a1a1aa]" />
             </div>
           ) : error ? (
-            <div className="text-center py-8 text-destructive">{error}</div>
+            <div className="text-center py-8 text-[#dc2626] dark:text-[#ef4444]">{error}</div>
           ) : transactions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-[#6b7280] dark:text-[#a1a1aa]">
               No transactions found. Connect a bank account to sync
               transactions.
             </div>
@@ -123,7 +121,7 @@ export default function CoreTransactionsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left text-muted-foreground">
+                  <tr className="border-b border-[#e5e7eb] dark:border-[#27272a] text-left text-[#6b7280] dark:text-[#a1a1aa]">
                     <th className="pb-3 font-medium">Date</th>
                     <th className="pb-3 font-medium">Merchant</th>
                     <th className="pb-3 font-medium">Category</th>
@@ -135,38 +133,38 @@ export default function CoreTransactionsPage() {
                   {paginatedRows.map((tx) => (
                     <tr
                       key={tx.id}
-                      className="border-b border-border last:border-0"
+                      className="border-b border-[#e5e7eb] dark:border-[#27272a] last:border-0"
                     >
-                      <td className="py-3 text-muted-foreground">
+                      <td className="py-3 text-[#6b7280] dark:text-[#a1a1aa]">
                         {formatDate(tx.date)}
                       </td>
                       <td className="py-3">
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-[#111827] dark:text-[#f9fafb]">
                           {tx.merchant || tx.description || "Unknown"}
                         </div>
                         {tx.description &&
                           tx.merchant &&
                           tx.description !== tx.merchant && (
-                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            <div className="text-xs text-[#6b7280] dark:text-[#a1a1aa] truncate max-w-50">
                               {tx.description}
                             </div>
                           )}
                       </td>
-                      <td className="py-3 text-muted-foreground">
+                      <td className="py-3 text-[#6b7280] dark:text-[#a1a1aa]">
                         {tx.category || "—"}
                       </td>
                       <td
-                        className={`py-3 text-right font-medium font-mono ${tx.amount > 0 ? "text-destructive" : "text-emerald-600"}`}
+                        className={`py-3 text-right font-medium font-mono ${tx.amount > 0 ? "text-[#dc2626] dark:text-[#ef4444]" : "text-[#059669] dark:text-[#10b981]"}`}
                       >
                         {tx.amount > 0 ? "-" : "+"}{formatCurrency(Math.abs(tx.amount))}
                       </td>
                       <td className="py-3 text-center">
                         {tx.pending ? (
-                          <span className="inline-flex items-center rounded-full bg-yellow-500/10 px-2 py-0.5 text-xs font-medium text-yellow-500">
+                          <span className="inline-flex items-center rounded-full bg-[#eab308]/10 px-2 py-0.5 text-xs font-medium text-[#eab308]">
                             Pending
                           </span>
                         ) : (
-                          <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-500">
+                          <span className="inline-flex items-center rounded-full bg-[#059669]/10 dark:bg-[#10b981]/10 px-2 py-0.5 text-xs font-medium text-[#059669] dark:text-[#10b981]">
                             Posted
                           </span>
                         )}
@@ -178,8 +176,8 @@ export default function CoreTransactionsPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-border pt-4 mt-4">
-                  <span className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-between border-t border-[#e5e7eb] dark:border-[#27272a] pt-4 mt-4">
+                  <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                     Showing {page * PAGE_SIZE + 1}–
                     {Math.min((page + 1) * PAGE_SIZE, transactions.length)} of{" "}
                     {transactions.length}
@@ -188,27 +186,27 @@ export default function CoreTransactionsPage() {
                     <button
                       onClick={() => setPage((p) => Math.max(0, p - 1))}
                       disabled={page === 0}
-                      className="rounded p-1.5 hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="rounded p-1.5 hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-4 w-4 text-[#6b7280] dark:text-[#a1a1aa]" />
                     </button>
-                    <span className="px-2 text-sm text-muted-foreground">
+                    <span className="px-2 text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                       {page + 1} / {totalPages}
                     </span>
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                       disabled={page >= totalPages - 1}
-                      className="rounded p-1.5 hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="rounded p-1.5 hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 text-[#6b7280] dark:text-[#a1a1aa]" />
                     </button>
                   </div>
                 </div>
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </RouteShell>
   );
 }

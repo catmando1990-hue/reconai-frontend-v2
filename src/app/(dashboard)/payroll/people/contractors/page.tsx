@@ -27,20 +27,20 @@ function PayrollContractorsBody() {
           <SecondaryPanel title="Contractor Stats">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Active</span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">Active</span>
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Inactive</span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">Inactive</span>
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total</span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">Total</span>
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>

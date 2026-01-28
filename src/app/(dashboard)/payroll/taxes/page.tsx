@@ -30,26 +30,26 @@ function PayrollTaxesBody() {
           <SecondaryPanel title="Tax Summary">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Federal Liability
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   State Liability
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Local Liability
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>

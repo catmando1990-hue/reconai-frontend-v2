@@ -162,11 +162,11 @@ export default function ReportsPage() {
                 onClick={() => report.available && setActiveReport(report.id)}
                 disabled={!report.available}
                 className={[
-                  "w-full flex items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                  "w-full flex items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
                   activeReport === report.id
-                    ? "bg-primary/10 border border-primary/20"
+                    ? "bg-[#4f46e5]/10 dark:bg-[#6366f1]/10 border border-[#4f46e5]/20 dark:border-[#6366f1]/20"
                     : report.available
-                      ? "hover:bg-muted/50 border border-transparent"
+                      ? "hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] border border-transparent"
                       : "opacity-50 cursor-not-allowed border border-transparent",
                 ].join(" ")}
               >
@@ -174,8 +174,8 @@ export default function ReportsPage() {
                   className={[
                     "mt-0.5",
                     activeReport === report.id
-                      ? "text-primary"
-                      : "text-muted-foreground",
+                      ? "text-[#4f46e5] dark:text-[#6366f1]"
+                      : "text-[#6b7280] dark:text-[#a1a1aa]",
                   ].join(" ")}
                 >
                   {report.icon}
@@ -184,12 +184,14 @@ export default function ReportsPage() {
                   <div
                     className={[
                       "text-sm font-medium truncate",
-                      activeReport === report.id ? "text-primary" : "",
+                      activeReport === report.id
+                        ? "text-[#4f46e5] dark:text-[#6366f1]"
+                        : "text-[#111827] dark:text-[#f9fafb]",
                     ].join(" ")}
                   >
                     {report.label}
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">
+                  <div className="text-xs text-[#6b7280] dark:text-[#a1a1aa] truncate">
                     {report.description}
                   </div>
                 </div>

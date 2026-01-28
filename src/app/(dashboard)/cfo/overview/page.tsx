@@ -8,11 +8,16 @@ import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import PolicyBanner from "@/components/policy/PolicyBanner";
 import { OverviewSnapshot } from "@/components/overview/OverviewSnapshot";
-import { Button } from "@/components/ui/button";
 import { Download, Info, RefreshCw } from "lucide-react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { auditedFetch } from "@/lib/auditedFetch";
+
+/**
+ * CFO Overview Page
+ *
+ * Design: Self-contained dual-mode (light/dark) hex colors.
+ */
 
 type CfoMetrics = {
   total_revenue: number;
@@ -29,16 +34,6 @@ type CfoOverviewResponse = {
   reason_message: string | null;
   metrics: CfoMetrics | null;
 };
-
-/**
- * CFO Overview Page
- *
- * P0 FIX: Hierarchy and Lifecycle Enforcement
- * - CFO metrics are SUBORDINATE to CORE (advisory, not authoritative)
- * - Metrics styled smaller than CORE to reinforce hierarchy
- * - Missing data MUST show reason, not ambiguous dashes
- * - Lifecycle status visible inline with metrics
- */
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -62,18 +57,17 @@ function MetricWithReason({
   reasonCode: string | null;
   isPositive?: boolean;
 }) {
-  // If we have actual data, show it (subordinate styling - text-lg, not text-xl)
   if (value !== null && lifecycle === "success") {
     return (
       <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">{label}</span>
         <span
           className={`text-lg font-medium ${
             isPositive === true
-              ? "text-emerald-600"
+              ? "text-[#059669] dark:text-[#10b981]"
               : isPositive === false
-                ? "text-destructive"
-                : ""
+                ? "text-[#dc2626] dark:text-[#ef4444]"
+                : "text-[#111827] dark:text-[#f9fafb]"
           }`}
         >
           {value}
@@ -82,13 +76,12 @@ function MetricWithReason({
     );
   }
 
-  // No data - show WHY with explicit reason
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">{label}</span>
       <div className="flex items-center gap-1.5">
-        <Info className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground italic">
+        <Info className="h-3.5 w-3.5 text-[#6b7280] dark:text-[#a1a1aa]" />
+        <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
           {lifecycle === "pending"
             ? "Computing…"
             : lifecycle === "stale"
@@ -168,19 +161,19 @@ function CfoOverviewBody() {
       title="CFO Overview"
       subtitle="Executive surfaces across financial posture and risk"
       right={
-        <Button
-          variant="secondary"
-          size="sm"
+        <button
+          type="button"
           onClick={handleExport}
           disabled={exporting || !metrics}
+          className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium bg-[#f3f4f6] dark:bg-[#27272a] text-[#111827] dark:text-[#f9fafb] hover:bg-[#e5e7eb] dark:hover:bg-[#3f3f46] disabled:opacity-50 transition-colors"
         >
           {exporting ? (
-            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            <RefreshCw className="h-4 w-4 animate-spin" />
           ) : (
-            <Download className="mr-2 h-4 w-4" />
+            <Download className="h-4 w-4" />
           )}
           Export Report
-        </Button>
+        </button>
       }
     >
       <PolicyBanner
@@ -205,7 +198,7 @@ function CfoOverviewBody() {
           <SecondaryPanel title="Key Metrics">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
+                <RefreshCw className="h-5 w-5 animate-spin text-[#6b7280] dark:text-[#a1a1aa]" />
               </div>
             ) : (
               <div className="space-y-4">
@@ -234,18 +227,18 @@ function CfoOverviewBody() {
                 />
                 {/* Period context */}
                 {metrics?.period && (
-                  <div className="pt-2 border-t">
-                    <p className="text-xs text-muted-foreground">
+                  <div className="pt-2 border-t border-[#e5e7eb] dark:border-[#27272a]">
+                    <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                       Period: {metrics.period}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                       {metrics.transaction_count} transactions analyzed
                     </p>
                   </div>
                 )}
-                {/* Lifecycle context - always visible */}
-                <div className={metrics?.period ? "" : "pt-2 border-t"}>
-                  <p className="text-xs text-muted-foreground">
+                {/* Lifecycle context */}
+                <div className={metrics?.period ? "" : "pt-2 border-t border-[#e5e7eb] dark:border-[#27272a]"}>
+                  <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                     {lifecycle === "success"
                       ? "Metrics from connected financial sources"
                       : lifecycle === "pending"
@@ -260,7 +253,7 @@ function CfoOverviewBody() {
           </SecondaryPanel>
 
           <SecondaryPanel title="Report Purpose">
-            <div className="space-y-3 text-sm text-muted-foreground">
+            <div className="space-y-3 text-sm text-[#6b7280] dark:text-[#a1a1aa]">
               <p>
                 The CFO Overview aggregates financial data across all connected
                 sources to provide a unified executive view.
@@ -276,19 +269,19 @@ function CfoOverviewBody() {
             <div className="space-y-2 text-sm">
               <Link
                 href="/cfo/executive-summary"
-                className="block text-primary hover:underline"
+                className="block text-[#4f46e5] dark:text-[#6366f1] hover:underline"
               >
                 Executive summary
               </Link>
               <Link
                 href="/cfo/compliance"
-                className="block text-primary hover:underline"
+                className="block text-[#4f46e5] dark:text-[#6366f1] hover:underline"
               >
                 Compliance
               </Link>
               <Link
                 href="/core/reports"
-                className="block text-primary hover:underline"
+                className="block text-[#4f46e5] dark:text-[#6366f1] hover:underline"
               >
                 Financial reports
               </Link>

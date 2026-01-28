@@ -30,26 +30,26 @@ function PayrollSettingsBody() {
           <SecondaryPanel title="Configuration Status">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Pay Schedule
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   Not configured
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Tax Jurisdictions
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   Not configured
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   GL Integration
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   Not configured
                 </span>
               </div>

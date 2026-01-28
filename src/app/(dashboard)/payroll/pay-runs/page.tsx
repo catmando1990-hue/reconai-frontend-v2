@@ -27,26 +27,26 @@ function PayrollPayRunsBody() {
           <SecondaryPanel title="Pay Run Status">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Next Scheduled
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   Not scheduled
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Last Completed
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   None
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Pay Frequency
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   Not configured
                 </span>
               </div>

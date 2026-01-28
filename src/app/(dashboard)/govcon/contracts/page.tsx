@@ -272,11 +272,11 @@ export default function ContractsPage() {
       title="Contracts"
       subtitle="DCAA-compliant contract tracking with CLIN management"
     >
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Contract Management</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
               {contracts.length} contract{contracts.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -288,7 +288,7 @@ export default function ContractsPage() {
 
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#6b7280] dark:text-[#a1a1aa]" />
           </div>
         )}
 
@@ -323,7 +323,7 @@ export default function ContractsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left">
+                <tr className="border-b border-[#e5e7eb] dark:border-[#27272a] text-left">
                   <th className="pb-3 font-medium">Contract #</th>
                   <th className="pb-3 font-medium">Name</th>
                   <th className="pb-3 font-medium">Agency</th>
@@ -337,16 +337,16 @@ export default function ContractsPage() {
                 {contracts.map((contract) => (
                   <tr
                     key={contract.id}
-                    className="border-b border-border/50 last:border-0"
+                    className="border-b border-[#e5e7eb] dark:border-[#27272a]/50 last:border-0"
                   >
                     <td className="py-3 font-mono text-xs">
                       {contract.contract_number}
                     </td>
                     <td className="py-3">{contract.contract_name}</td>
-                    <td className="py-3 text-muted-foreground">
+                    <td className="py-3 text-[#6b7280] dark:text-[#a1a1aa]">
                       {contract.agency || "—"}
                     </td>
-                    <td className="py-3 text-muted-foreground text-xs">
+                    <td className="py-3 text-[#6b7280] dark:text-[#a1a1aa] text-xs">
                       {contract.contract_type?.split(" - ")[0] || "—"}
                     </td>
                     <td className="py-3 text-right tabular-nums">
@@ -362,7 +362,7 @@ export default function ContractsPage() {
                         <button
                           type="button"
                           onClick={() => handleEdit(contract)}
-                          className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                          className="p-1.5 rounded hover:bg-[#f9fafb] dark:bg-[#27272a]/50 text-[#6b7280] dark:text-[#a1a1aa] hover:text-[#111827] dark:text-[#f9fafb] transition-colors"
                           title="Edit contract"
                         >
                           <Pencil className="h-4 w-4" />
@@ -370,7 +370,7 @@ export default function ContractsPage() {
                         <button
                           type="button"
                           onClick={() => setDeleteId(contract.id)}
-                          className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          className="p-1.5 rounded hover:bg-destructive/10 text-[#6b7280] dark:text-[#a1a1aa] hover:text-destructive transition-colors"
                           title="Delete contract"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -384,7 +384,7 @@ export default function ContractsPage() {
           </div>
         )}
 
-        <div className="mt-4 pt-4 border-t border-border">
+        <div className="mt-4 pt-4 border-t border-[#e5e7eb] dark:border-[#27272a]">
           <div className="flex gap-2">
             <Link
               href={ROUTES.GOVCON_AUDIT}
@@ -392,7 +392,7 @@ export default function ContractsPage() {
             >
               View audit trail
             </Link>
-            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">•</span>
             <Link
               href={ROUTES.GOVCON}
               className="text-xs text-primary hover:underline"
@@ -406,8 +406,8 @@ export default function ContractsPage() {
       {/* Add/Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-lg rounded-lg border border-border bg-card shadow-xl">
-            <div className="flex items-center justify-between border-b border-border p-4">
+          <div className="mx-4 w-full max-w-lg rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#e5e7eb] dark:border-[#27272a] p-4">
               <h2 className="text-base font-semibold">
                 {editingId ? "Edit Contract" : "Add Contract"}
               </h2>
@@ -430,7 +430,7 @@ export default function ContractsPage() {
                         contract_number: e.target.value,
                       }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                     placeholder="e.g., GS-35F-0001A"
                   />
                 </div>
@@ -443,7 +443,7 @@ export default function ContractsPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, status: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   >
                     {CONTRACT_STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -467,7 +467,7 @@ export default function ContractsPage() {
                       contract_name: e.target.value,
                     }))
                   }
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   placeholder="e.g., IT Support Services"
                 />
               </div>
@@ -483,7 +483,7 @@ export default function ContractsPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, agency: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                     placeholder="e.g., GSA, DoD, HHS"
                   />
                 </div>
@@ -499,7 +499,7 @@ export default function ContractsPage() {
                         contract_type: e.target.value,
                       }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select type...</option>
                     {CONTRACT_TYPES.map((t) => (
@@ -522,7 +522,7 @@ export default function ContractsPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, start_date: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
@@ -535,7 +535,7 @@ export default function ContractsPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, end_date: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
@@ -551,7 +551,7 @@ export default function ContractsPage() {
                         total_value: e.target.value,
                       }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                     placeholder="0"
                     min="0"
                     step="0.01"
@@ -593,9 +593,9 @@ export default function ContractsPage() {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-lg border border-border bg-card p-6 shadow-xl">
+          <div className="mx-4 w-full max-w-sm rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6 shadow-xl">
             <h3 className="font-semibold mb-2">Delete Contract?</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa] mb-4">
               This action cannot be undone. The contract and all associated data
               will be permanently removed.
             </p>

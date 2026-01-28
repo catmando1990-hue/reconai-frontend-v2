@@ -364,12 +364,12 @@ export default function TimekeepingPage() {
         context="govcon"
       />
 
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6">
         {/* Header with week navigation */}
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Weekly Timesheet</h2>
-            <p className="text-sm text-muted-foreground">{weekRangeLabel}</p>
+            <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">{weekRangeLabel}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={goToPreviousWeek}>
@@ -390,7 +390,7 @@ export default function TimekeepingPage() {
 
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#6b7280] dark:text-[#a1a1aa]" />
           </div>
         )}
 
@@ -427,7 +427,7 @@ export default function TimekeepingPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border">
+                  <tr className="border-b border-[#e5e7eb] dark:border-[#27272a]">
                     <th className="pb-3 text-left font-medium w-24">Day</th>
                     <th className="pb-3 text-left font-medium">Entries</th>
                     <th className="pb-3 text-right font-medium w-20">Hours</th>
@@ -445,9 +445,9 @@ export default function TimekeepingPage() {
                       <tr
                         key={dateStr}
                         className={[
-                          "border-b border-border/50",
+                          "border-b border-[#e5e7eb] dark:border-[#27272a]/50",
                           isToday ? "bg-primary/5" : "",
-                          isWeekend ? "bg-muted/30" : "",
+                          isWeekend ? "bg-[#f9fafb] dark:bg-[#27272a]/30" : "",
                         ].join(" ")}
                       >
                         <td className="py-3">
@@ -456,7 +456,7 @@ export default function TimekeepingPage() {
                               weekday: "short",
                             })}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                             {day.toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -465,7 +465,7 @@ export default function TimekeepingPage() {
                         </td>
                         <td className="py-3">
                           {dayEntries.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                               No entries
                             </span>
                           ) : (
@@ -478,12 +478,12 @@ export default function TimekeepingPage() {
                                   <span className="font-mono">
                                     {entry.hours}h
                                   </span>
-                                  <span className="text-muted-foreground">
+                                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">
                                     {entry.govcon_contracts?.contract_number ||
                                       "Unknown"}
                                   </span>
                                   {entry.description && (
-                                    <span className="truncate max-w-50 text-muted-foreground">
+                                    <span className="truncate max-w-50 text-[#6b7280] dark:text-[#a1a1aa]">
                                       - {entry.description}
                                     </span>
                                   )}
@@ -500,7 +500,7 @@ export default function TimekeepingPage() {
                                     <button
                                       type="button"
                                       onClick={() => setDeleteId(entry.id)}
-                                      className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                      className="p-0.5 rounded hover:bg-destructive/10 text-[#6b7280] dark:text-[#a1a1aa] hover:text-destructive transition-colors"
                                       title="Delete entry"
                                     >
                                       <Trash2 className="h-3 w-3" />
@@ -520,7 +520,7 @@ export default function TimekeepingPage() {
                           <button
                             type="button"
                             onClick={() => handleAddEntry(day)}
-                            className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                            className="p-1.5 rounded hover:bg-[#f9fafb] dark:bg-[#27272a]/50 text-[#6b7280] dark:text-[#a1a1aa] hover:text-[#111827] dark:text-[#f9fafb] transition-colors"
                             title="Add entry for this day"
                           >
                             <Plus className="h-4 w-4" />
@@ -531,9 +531,9 @@ export default function TimekeepingPage() {
                   })}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t-2 border-border">
+                  <tr className="border-t-2 border-[#e5e7eb] dark:border-[#27272a]">
                     <td className="py-3 font-semibold">Total</td>
-                    <td className="py-3 text-sm text-muted-foreground">
+                    <td className="py-3 text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                       {entries.length} entries
                     </td>
                     <td className="py-3 text-right tabular-nums font-semibold">
@@ -547,7 +547,7 @@ export default function TimekeepingPage() {
           </>
         )}
 
-        <div className="mt-4 pt-4 border-t border-border">
+        <div className="mt-4 pt-4 border-t border-[#e5e7eb] dark:border-[#27272a]">
           <div className="flex gap-2">
             <Link
               href={ROUTES.GOVCON_CONTRACTS}
@@ -555,7 +555,7 @@ export default function TimekeepingPage() {
             >
               Manage contracts
             </Link>
-            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">•</span>
             <Link
               href={ROUTES.GOVCON_AUDIT}
               className="text-xs text-primary hover:underline"
@@ -569,8 +569,8 @@ export default function TimekeepingPage() {
       {/* Add Entry Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-card shadow-xl">
-            <div className="flex items-center justify-between border-b border-border p-4">
+          <div className="mx-4 w-full max-w-md rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#e5e7eb] dark:border-[#27272a] p-4">
               <h2 className="text-base font-semibold">Add Time Entry</h2>
               <Button variant="ghost" size="sm" onClick={handleCloseModal}>
                 <X className="h-4 w-4" />
@@ -586,7 +586,7 @@ export default function TimekeepingPage() {
                   onChange={(e) =>
                     setFormData((f) => ({ ...f, contract_id: e.target.value }))
                   }
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                 >
                   <option value="">Select contract...</option>
                   {contracts.map((c) => (
@@ -608,7 +608,7 @@ export default function TimekeepingPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, entry_date: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
@@ -621,7 +621,7 @@ export default function TimekeepingPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, hours: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                     placeholder="8"
                     min="0.25"
                     max="24"
@@ -641,7 +641,7 @@ export default function TimekeepingPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, task_code: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                     placeholder="e.g., CLIN 0001"
                   />
                 </div>
@@ -657,7 +657,7 @@ export default function TimekeepingPage() {
                         labor_category: e.target.value,
                       }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select...</option>
                     {LABOR_CATEGORIES.map((cat) => (
@@ -678,7 +678,7 @@ export default function TimekeepingPage() {
                   onChange={(e) =>
                     setFormData((f) => ({ ...f, description: e.target.value }))
                   }
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   rows={2}
                   placeholder="Work performed..."
                 />
@@ -716,9 +716,9 @@ export default function TimekeepingPage() {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-lg border border-border bg-card p-6 shadow-xl">
+          <div className="mx-4 w-full max-w-sm rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6 shadow-xl">
             <h3 className="font-semibold mb-2">Delete Time Entry?</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa] mb-4">
               This action cannot be undone.
             </p>
             {/* P2 FIX: Show delete error with retry ability */}

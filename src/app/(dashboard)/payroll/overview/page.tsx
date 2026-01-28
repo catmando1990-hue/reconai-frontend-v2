@@ -31,22 +31,22 @@ function PayrollOverviewBody() {
           <SecondaryPanel title="Key Figures">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Headcount</span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">Headcount</span>
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Monthly Payroll
                 </span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">YTD Total</span>
-                <span className="text-sm text-muted-foreground italic">
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">YTD Total</span>
+                <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa] italic">
                   No data
                 </span>
               </div>

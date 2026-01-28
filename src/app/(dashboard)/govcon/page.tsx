@@ -130,7 +130,7 @@ function LifecycleStatusBanner({
   }
 
   // No evidence state - CRITICAL for DCAA compliance
-  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a]
   if (
     lifecycle === "no_evidence" ||
     (lifecycle === "success" && !hasEvidence)
@@ -139,15 +139,15 @@ function LifecycleStatusBanner({
       <div
         data-testid="govcon-lifecycle-banner"
         data-lifecycle="no_evidence"
-        className="rounded-lg border border-border bg-muted p-4"
+        className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4"
       >
         <div className="flex items-start gap-3">
-          <FileWarning className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+          <FileWarning className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa] shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
               Evidence required for documentation
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
               {reasonMessage || "Attach supporting documentation to proceed."}
             </p>
             <Link
@@ -163,22 +163,22 @@ function LifecycleStatusBanner({
   }
 
   // Pending state - show loading indicator
-  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a]
   if (lifecycle === "pending") {
     return (
       <div
         data-testid="govcon-lifecycle-banner"
         data-lifecycle="pending"
-        className="rounded-lg border border-border bg-muted p-4"
+        className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4"
       >
         <div className="flex items-start gap-3">
-          <Loader2 className="h-5 w-5 text-muted-foreground animate-spin shrink-0 mt-0.5" />
+          <Loader2 className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa] animate-spin shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
               Loading documentation status…
             </p>
             {reasonMessage && (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                 {reasonMessage}
               </p>
             )}
@@ -189,21 +189,21 @@ function LifecycleStatusBanner({
   }
 
   // Stale state - show warning with reason
-  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a]
   if (lifecycle === "stale") {
     return (
       <div
         data-testid="govcon-lifecycle-banner"
         data-lifecycle="stale"
-        className="rounded-lg border border-border bg-muted p-4"
+        className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4"
       >
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+          <AlertTriangle className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa] shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
               Documentation may be outdated
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
               {reasonMessage || `Reason: ${reasonCode || "unknown"}`}
             </p>
             {onRetry && (
@@ -224,20 +224,20 @@ function LifecycleStatusBanner({
   }
 
   // Failed state - show error with reason (REQUIRED)
-  // BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted
+  // BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a]
   return (
     <div
       data-testid="govcon-lifecycle-banner"
       data-lifecycle="failed"
-      className="rounded-lg border border-border bg-muted p-4"
+      className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4"
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+        <AlertCircle className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa] shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="text-sm font-medium text-foreground">
+          <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
             Documentation unavailable
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
             {reasonMessage || `Error: ${reasonCode || "unknown"}`}
           </p>
           {onRetry && (
@@ -319,18 +319,18 @@ function DcaaReadinessItem({
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         {/* HIERARCHY: text-sm (smaller than Intelligence) */}
-        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">{label}</span>
         <StatusChip variant={getDcaaStatusVariant(lifecycle, hasEvidence)}>
           {getDcaaStatusLabel(lifecycle, reasonCode, hasEvidence)}
         </StatusChip>
       </div>
       {/* SF-1408 control reference */}
       {mapping && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+        <div className="flex items-center gap-2 text-xs text-[#6b7280] dark:text-[#a1a1aa]/70">
           <span>SF-1408 {mapping.controls}</span>
-          <span className="text-muted-foreground/40">•</span>
+          <span className="text-[#6b7280] dark:text-[#a1a1aa]/40">•</span>
           {/* HIERARCHY: text-base font-medium for metric values */}
-          <span className="text-base font-medium text-foreground">
+          <span className="text-base font-medium text-[#111827] dark:text-[#f9fafb]">
             {hasEvidence ? evidenceCount : 0}
           </span>
           <span>evidence files</span>
@@ -391,12 +391,12 @@ export default function GovConDashboardPage() {
       />
 
       {/* ADVISORY DISCLAIMER - Required for UI clarity */}
-      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
-      <div className="rounded-lg border border-border bg-muted p-3">
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] */}
+      <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-3">
         <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Advisory only.</span>{" "}
+          <Info className="h-4 w-4 text-[#6b7280] dark:text-[#a1a1aa] shrink-0 mt-0.5" />
+          <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
+            <span className="font-medium text-[#111827] dark:text-[#f9fafb]">Advisory only.</span>{" "}
             This workspace assists with documentation collection and
             organization. It does not certify DCAA compliance or replace
             professional accounting review. See{" "}
@@ -412,13 +412,13 @@ export default function GovConDashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-white dark:bg-[#18181b] (no bg-background) */}
         <div className="lg:col-span-8">
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6">
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Documentation Queue</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Items requiring attention
                 </p>
               </div>
@@ -431,7 +431,7 @@ export default function GovConDashboardPage() {
             </div>
             {/* P0 FIX: Lifecycle-based rendering */}
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                 Loading documentation status…
               </p>
             ) : lifecycle && lifecycle !== "success" ? (
@@ -458,9 +458,9 @@ export default function GovConDashboardPage() {
                 className="space-y-4"
                 data-testid="govcon-compliance-content"
               >
-                {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
+                {/* BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] */}
+                <div className="flex items-center gap-2 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] px-2 py-0.5 text-[#111827] dark:text-[#f9fafb]">
                     <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                     Documented
                   </span>
@@ -470,7 +470,7 @@ export default function GovConDashboardPage() {
                       ? new Date(data.snapshot.as_of).toLocaleString()
                       : "recently"}
                   </span>
-                  <span className="text-muted-foreground/60">•</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]/60">•</span>
                   <span>{evidenceCount} evidence files</span>
                 </div>
 
@@ -536,7 +536,7 @@ export default function GovConDashboardPage() {
               {/* Show lifecycle context */}
               {lifecycle && lifecycle !== "success" && (
                 <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                     Status:{" "}
                     <span className="capitalize font-medium">{lifecycle}</span>
                     {reasonCode && ` (${reasonCode.replace(/_/g, " ")})`}
@@ -546,7 +546,7 @@ export default function GovConDashboardPage() {
               {/* BACKGROUND NORMALIZATION: No decorative colors */}
               {lifecycle === "success" && !hasEvidence && (
                 <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                     Evidence required for documentation
                   </p>
                 </div>
@@ -572,15 +572,15 @@ export default function GovConDashboardPage() {
                   <Link
                     key={module.href}
                     href={module.href}
-                    className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm text-[#6b7280] dark:text-[#a1a1aa] transition hover:bg-[#f9fafb] dark:bg-[#27272a] hover:text-[#111827] dark:text-[#f9fafb]"
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     <div className="flex-1">
                       {/* HIERARCHY: font-medium, not font-semibold */}
-                      <span className="font-medium text-foreground">
+                      <span className="font-medium text-[#111827] dark:text-[#f9fafb]">
                         {module.title}
                       </span>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                         {module.description}
                       </p>
                     </div>

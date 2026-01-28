@@ -213,36 +213,36 @@ export default function SettingsPage() {
       )}
 
       {/* Checkout status message - full width */}
-      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] */}
       {checkoutStatus === "success" && (
-        <div className="rounded-lg border border-border bg-muted p-4 mb-6">
-          <p className="text-sm font-medium text-foreground">
+        <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4 mb-6">
+          <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
             Payment successful! Your plan is being updated.
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1a1aa]">
             It may take a moment for your new features to activate.
           </p>
         </div>
       )}
       {checkoutStatus === "cancelled" && (
-        <div className="rounded-lg border border-border bg-muted p-4 mb-6">
-          <p className="text-sm text-muted-foreground">
+        <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4 mb-6">
+          <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
             Checkout was cancelled. No changes were made to your plan.
           </p>
         </div>
       )}
 
       {/* PART 3: Policy acknowledgement banner (if not acknowledged) */}
-      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] */}
       {settingsSuccess && !hasPolicyAcknowledged && (
-        <div className="rounded-lg border border-border bg-muted p-4 mb-6">
+        <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4 mb-6">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+            <Info className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa] shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
                 Policy acknowledgement required
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                 Please acknowledge the terms of service and data policy to
                 enable account management features.
               </p>
@@ -263,8 +263,8 @@ export default function SettingsPage() {
       {settingsLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
-            <p className="text-sm text-muted-foreground">Loading settings…</p>
+            <RefreshCw className="h-8 w-8 animate-spin text-[#6b7280] dark:text-[#a1a1aa] mx-auto mb-4" />
+            <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">Loading settings…</p>
           </div>
         </div>
       ) : settingsSuccess ? (
@@ -297,50 +297,50 @@ export default function SettingsPage() {
             <DataSourcesSection plaid={plaid} />
 
             {/* Intelligence Settings */}
-            <SecondaryPanel title="Intelligence" className="bg-card">
+            <SecondaryPanel title="Intelligence" className="bg-white dark:bg-[#18181b]">
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Status</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Status</span>
                   <StatusChip variant="ok">Enabled</StatusChip>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Mode</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Mode</span>
                   <span className="font-medium">Advisory-only</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Manual Run</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Manual Run</span>
                   <span className="font-medium">Required</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Threshold</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Threshold</span>
                   <span className="font-medium">≥ 0.85</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Last Run</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Last Run</span>
                   <span className="font-medium">{intel?.lastRun ?? "—"}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Cache</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Cache</span>
                   <span className="font-medium">{intel?.cache ?? "—"}</span>
                 </div>
               </div>
             </SecondaryPanel>
 
             {/* Audit Log Status */}
-            <SecondaryPanel title="Audit Log" className="bg-card">
+            <SecondaryPanel title="Audit Log" className="bg-white dark:bg-[#18181b]">
               <div className="text-sm">
                 {auditAvailable === null && (
-                  <span className="text-muted-foreground">Loading…</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Loading…</span>
                 )}
                 {auditAvailable === true && (
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Status</span>
+                    <span className="text-[#6b7280] dark:text-[#a1a1aa]">Status</span>
                     <StatusChip variant="ok">Available</StatusChip>
                   </div>
                 )}
                 {auditAvailable === false && (
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Status</span>
+                    <span className="text-[#6b7280] dark:text-[#a1a1aa]">Status</span>
                     <StatusChip variant="warn">Unavailable</StatusChip>
                   </div>
                 )}
@@ -348,26 +348,26 @@ export default function SettingsPage() {
             </SecondaryPanel>
 
             {/* System Info */}
-            <SecondaryPanel title="System" className="bg-card">
+            <SecondaryPanel title="System" className="bg-white dark:bg-[#18181b]">
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Frontend</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Frontend</span>
                   <span className="font-medium">
                     {process.env.NEXT_PUBLIC_APP_VERSION ?? "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Backend</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Backend</span>
                   <span className="font-medium">—</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Build</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Build</span>
                   <span className="font-medium">
                     {process.env.NEXT_PUBLIC_BUILD_ID ?? "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">API Health</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">API Health</span>
                   {auditAvailable === null ? (
                     <StatusChip variant="muted">Checking…</StatusChip>
                   ) : auditAvailable ? (
@@ -384,10 +384,10 @@ export default function SettingsPage() {
             <div className="mt-4 pt-4">
               <SecondaryPanel
                 title="Danger Zone"
-                className="bg-card border-2 border-dashed border-border"
+                className="bg-white dark:bg-[#18181b] border-2 border-dashed border-[#e5e7eb] dark:border-[#27272a]"
               >
                 <div className="space-y-4">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                     These actions require confirmation and cannot be easily
                     undone.
                   </p>
@@ -421,7 +421,7 @@ export default function SettingsPage() {
                     </Button>
                   </div>
                   {!hasPolicyAcknowledged && (
-                    <p className="text-xs text-muted-foreground italic">
+                    <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa] italic">
                       Acknowledge the policy above to enable these actions.
                     </p>
                   )}
@@ -441,7 +441,7 @@ export default function SettingsPage() {
         /* Failed/non-success state - show minimal UI */
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
               Settings could not be loaded. Please try again.
             </p>
             <Button

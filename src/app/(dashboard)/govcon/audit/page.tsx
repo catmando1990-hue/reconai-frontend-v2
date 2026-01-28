@@ -145,18 +145,18 @@ export default function AuditPage() {
             />
             Refresh
           </Button>
-          <ExportForDCAAButton className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors text-sm" />
+          <ExportForDCAAButton className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#e5e7eb] dark:border-[#27272a] hover:bg-accent transition-colors text-sm" />
           <ExportForDCAAPDFButton className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm" />
         </div>
       }
     >
       {/* ADVISORY DISCLAIMER */}
-      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
-      <div className="rounded-lg border border-border bg-muted p-3">
+      {/* BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] */}
+      <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-3">
         <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Advisory only.</span>{" "}
+          <Info className="h-4 w-4 text-[#6b7280] dark:text-[#a1a1aa] shrink-0 mt-0.5" />
+          <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
+            <span className="font-medium text-[#111827] dark:text-[#f9fafb]">Advisory only.</span>{" "}
             This audit trail documents system events for reference purposes. It
             does not certify DCAA compliance or replace professional audit
             review.
@@ -165,13 +165,13 @@ export default function AuditPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* BACKGROUND NORMALIZATION: GovCon uses bg-card (no bg-background) */}
+        {/* BACKGROUND NORMALIZATION: GovCon uses bg-white dark:bg-[#18181b] (no bg-background) */}
         <div className="lg:col-span-8">
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6">
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Audit Timeline</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   Chronological record of system events
                 </p>
               </div>
@@ -184,20 +184,20 @@ export default function AuditPage() {
             </div>
             {/* P0 FIX: Lifecycle-based rendering */}
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                 Loading audit trail…
               </p>
             ) : lifecycle === "failed" ? (
               /* Failed state - show error with reason */
-              /* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */
-              <div className="rounded-lg border border-border bg-muted p-4">
+              /* BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] */
+              <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa] shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
                       Audit trail unavailable
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                       {reasonMessage || `Error: ${reasonCode || "unknown"}`}
                     </p>
                     <Button
@@ -215,9 +215,9 @@ export default function AuditPage() {
             ) : isSuccess && auditEntries !== null && auditEntries > 0 ? (
               /* SUCCESS: Render audit entries */
               <div className="space-y-4" data-testid="audit-timeline-content">
-                {/* BACKGROUND NORMALIZATION: No decorative colors - use border-border bg-muted */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-foreground">
+                {/* BACKGROUND NORMALIZATION: No decorative colors - use border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] */}
+                <div className="flex items-center gap-2 text-xs text-[#6b7280] dark:text-[#a1a1aa]">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] dark:border-[#27272a] bg-[#f9fafb] dark:bg-[#27272a] px-2 py-0.5 text-[#111827] dark:text-[#f9fafb]">
                     <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                     Recorded
                   </span>
@@ -227,14 +227,14 @@ export default function AuditPage() {
                       ? new Date(data.snapshot.as_of).toLocaleString()
                       : "recently"}
                   </span>
-                  <span className="text-muted-foreground/60">•</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]/60">•</span>
                   <span>{evidenceCount} evidence files</span>
                 </div>
 
                 {/* TODO: Render actual audit entries when available */}
                 {/* HIERARCHY: text-base font-medium for metrics */}
-                <p className="text-sm text-muted-foreground">
-                  <span className="text-base font-medium text-foreground">
+                <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
+                  <span className="text-base font-medium text-[#111827] dark:text-[#f9fafb]">
                     {auditEntries}
                   </span>{" "}
                   audit entries documented.
@@ -256,25 +256,25 @@ export default function AuditPage() {
           <SecondaryPanel title="Documentation Status">
             <div className="space-y-4">
               {/* P0 FIX: Show explicit status based on lifecycle */}
-              {/* BACKGROUND NORMALIZATION: No decorative colors - use bg-muted */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                <div className="h-10 w-10 rounded-lg flex items-center justify-center border border-border bg-card">
+              {/* BACKGROUND NORMALIZATION: No decorative colors - use bg-[#f9fafb] dark:bg-[#27272a] */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-[#f9fafb] dark:bg-[#27272a]">
+                <div className="h-10 w-10 rounded-lg flex items-center justify-center border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b]">
                   <IntegrityIcon
-                    className={`h-5 w-5 text-muted-foreground ${integrityStatus.icon === Loader2 ? "animate-spin" : ""}`}
+                    className={`h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa] ${integrityStatus.icon === Loader2 ? "animate-spin" : ""}`}
                   />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
                     {integrityStatus.label}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                     {integrityStatus.description}
                   </p>
                 </div>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Entries</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">Total Entries</span>
                   {/* P0 FIX: Show explicit reason for missing data */}
                   {/* HIERARCHY: text-base font-medium for values */}
                   {auditEntries !== null ? (
@@ -282,19 +282,19 @@ export default function AuditPage() {
                       {auditEntries}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground italic text-xs">
+                    <span className="text-[#6b7280] dark:text-[#a1a1aa] italic text-xs">
                       {lifecycle === "pending" ? "Loading" : "No data"}
                     </span>
                   )}
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">With Evidence</span>
+                  <span className="text-[#6b7280] dark:text-[#a1a1aa]">With Evidence</span>
                   {isSuccess ? (
                     <span className="text-base font-medium">
                       {evidenceCount}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground italic text-xs">
+                    <span className="text-[#6b7280] dark:text-[#a1a1aa] italic text-xs">
                       {lifecycle === "pending" ? "Loading" : "No data"}
                     </span>
                   )}
@@ -302,14 +302,14 @@ export default function AuditPage() {
               </div>
               {/* SF-1408 reference */}
               <div className="pt-2 border-t">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                   SF-1408 § rep-1 through rep-3 (Reporting & Audit Trail)
                 </p>
               </div>
               {/* Show lifecycle context when non-success */}
               {lifecycle && lifecycle !== "success" && (
                 <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                     Status:{" "}
                     <span className="capitalize font-medium">{lifecycle}</span>
                     {reasonCode && ` (${reasonCode.replace(/_/g, " ")})`}
@@ -323,14 +323,14 @@ export default function AuditPage() {
             <nav className="space-y-2">
               <Link
                 href={ROUTES.GOVCON_EVIDENCE}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
+                className="flex items-center gap-2 text-sm text-[#6b7280] dark:text-[#a1a1aa] hover:text-[#111827] dark:text-[#f9fafb] transition"
               >
                 <Eye className="h-4 w-4" />
                 Evidence Viewer
               </Link>
               <Link
                 href="/govcon/audit/verify"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
+                className="flex items-center gap-2 text-sm text-[#6b7280] dark:text-[#a1a1aa] hover:text-[#111827] dark:text-[#f9fafb] transition"
               >
                 <Hash className="h-4 w-4" />
                 View Hash Chain
@@ -339,7 +339,7 @@ export default function AuditPage() {
           </SecondaryPanel>
 
           <SecondaryPanel title="Retention Policy" collapsible>
-            <div className="text-sm text-muted-foreground space-y-2">
+            <div className="text-sm text-[#6b7280] dark:text-[#a1a1aa] space-y-2">
               <p>Audit records retained for 6 years per FAR requirements.</p>
               <p>Evidence files stored with cryptographic hashing.</p>
               <p>Export available in JSON and PDF formats.</p>

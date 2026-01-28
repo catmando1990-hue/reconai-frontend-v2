@@ -84,7 +84,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeProvider>
-      <div className="relative min-h-dvh bg-muted text-foreground overflow-x-hidden">
+      <div className="relative min-h-dvh bg-[#fafafa] dark:bg-[#0a0a0b] text-[#111827] dark:text-[#f9fafb] overflow-x-hidden">
         <div className="relative flex min-h-dvh w-full">
           {/* Desktop sidebar - conditionally hidden in focus mode */}
           {!focusMode && (
@@ -94,26 +94,26 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           )}
 
           {/* Mobile top bar */}
-          <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-border/50 bg-muted/80 backdrop-blur-xl">
+          <div className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-[#e5e7eb]/50 dark:border-[#27272a]/50 bg-[#fafafa]/80 dark:bg-[#0a0a0b]/80 backdrop-blur-xl">
             <div className="flex h-14 items-center justify-between px-4">
               <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 backdrop-blur transition-all hover:bg-accent hover:border-border"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#e5e7eb]/50 dark:border-[#27272a]/50 bg-white/50 dark:bg-[#18181b]/50 backdrop-blur transition-all hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] hover:border-[#e5e7eb] dark:hover:border-[#27272a]"
                 aria-label="Open menu"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa]" />
               </button>
 
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                  <Brain className="h-4 w-4 text-primary" />
+                <div className="h-8 w-8 rounded-lg bg-[#4f46e5]/10 dark:bg-[#6366f1]/10 border border-[#4f46e5]/20 dark:border-[#6366f1]/20 flex items-center justify-center">
+                  <Brain className="h-4 w-4 text-[#4f46e5] dark:text-[#6366f1]" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <span className="text-[10px] uppercase tracking-wider text-[#6b7280] dark:text-[#a1a1aa]">
                     ReconAI
                   </span>
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-sm font-medium text-[#111827] dark:text-[#f9fafb]">
                     {title}
                   </span>
                 </div>
@@ -121,7 +121,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
               <Link
                 href="/"
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 backdrop-blur px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-all"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-[#e5e7eb]/50 dark:border-[#27272a]/50 bg-white/50 dark:bg-[#18181b]/50 backdrop-blur px-3 text-xs font-medium text-[#6b7280] dark:text-[#a1a1aa] hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] hover:text-[#111827] dark:hover:text-[#f9fafb] hover:border-[#e5e7eb] dark:hover:border-[#27272a] transition-all"
               >
                 Home
               </Link>
@@ -133,25 +133,25 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="md:hidden fixed inset-0 z-50">
               <button
                 aria-label="Close menu"
-                className="absolute inset-0 bg-muted/60 backdrop-blur-sm"
+                className="absolute inset-0 bg-[#fafafa]/60 dark:bg-[#0a0a0b]/60 backdrop-blur-sm"
                 onClick={() => setOpen(false)}
                 type="button"
               />
-              <div className="absolute left-0 top-0 h-full w-[85vw] max-w-85 bg-muted/95 backdrop-blur-xl border-r border-border/50 shadow-2xl">
-                <div className="flex items-center justify-between px-4 h-14 border-b border-border/50">
+              <div className="absolute left-0 top-0 h-full w-[85vw] max-w-85 bg-[#fafafa]/95 dark:bg-[#0a0a0b]/95 backdrop-blur-xl border-r border-[#e5e7eb]/50 dark:border-[#27272a]/50 shadow-2xl">
+                <div className="flex items-center justify-between px-4 h-14 border-b border-[#e5e7eb]/50 dark:border-[#27272a]/50">
                   <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
-                      <Brain className="h-3.5 w-3.5 text-primary" />
+                    <div className="h-7 w-7 rounded-lg bg-[#4f46e5]/10 dark:bg-[#6366f1]/10 border border-[#4f46e5]/20 dark:border-[#6366f1]/20 flex items-center justify-center">
+                      <Brain className="h-3.5 w-3.5 text-[#4f46e5] dark:text-[#6366f1]" />
                     </div>
-                    <span className="text-sm font-semibold">Menu</span>
+                    <span className="text-sm font-semibold text-[#111827] dark:text-[#f9fafb]">Menu</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/50 bg-card/50 hover:bg-accent hover:border-border transition-all"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5e7eb]/50 dark:border-[#27272a]/50 bg-white/50 dark:bg-[#18181b]/50 hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] hover:border-[#e5e7eb] dark:hover:border-[#27272a] transition-all"
                     aria-label="Close menu"
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-5 w-5 text-[#6b7280] dark:text-[#a1a1aa]" />
                   </button>
                 </div>
 
@@ -175,10 +175,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             {/* Canvas */}
             <div
               className={[
-                "relative flex-1 bg-background",
+                "relative flex-1 bg-white dark:bg-[#18181b]",
                 focusMode
                   ? "md:rounded-none md:border-l-0"
-                  : "md:rounded-l-3xl md:border-l md:border-border/60",
+                  : "md:rounded-l-3xl md:border-l md:border-[#e5e7eb]/60 dark:md:border-[#27272a]/60",
               ].join(" ")}
             >
               {/* Focus mode toggle - desktop only */}
@@ -186,7 +186,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   onClick={() => setFocusMode(!focusMode)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border/50 bg-card/80 backdrop-blur text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border transition-all"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb]/50 dark:border-[#27272a]/50 bg-white/80 dark:bg-[#18181b]/80 backdrop-blur text-[#6b7280] dark:text-[#a1a1aa] hover:bg-[#f3f4f6] dark:hover:bg-[#27272a] hover:text-[#111827] dark:hover:text-[#f9fafb] hover:border-[#e5e7eb] dark:hover:border-[#27272a] transition-all"
                   title={focusMode ? "Exit focus mode" : "Enter focus mode"}
                   aria-label={
                     focusMode ? "Exit focus mode" : "Enter focus mode"

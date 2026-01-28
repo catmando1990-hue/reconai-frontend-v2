@@ -288,11 +288,11 @@ export default function IndirectsPage() {
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Indirect Cost Pools</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                   {pools.length} pool{pools.length !== 1 ? "s" : ""} configured
                 </p>
               </div>
@@ -304,7 +304,7 @@ export default function IndirectsPage() {
 
             {loading && (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#6b7280] dark:text-[#a1a1aa]" />
               </div>
             )}
 
@@ -340,7 +340,7 @@ export default function IndirectsPage() {
                 {pools.map((pool) => (
                   <div
                     key={pool.id}
-                    className="rounded-lg border border-border/70 bg-muted/30 p-4"
+                    className="rounded-lg border border-[#e5e7eb] dark:border-[#27272a]/70 bg-[#f9fafb] dark:bg-[#27272a]/30 p-4"
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
@@ -354,7 +354,7 @@ export default function IndirectsPage() {
                               .toUpperCase()}
                           </StatusChip>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4 text-sm text-[#6b7280] dark:text-[#a1a1aa]">
                           <span>{pool.pool_type}</span>
                           {pool.base_type && (
                             <>
@@ -372,11 +372,11 @@ export default function IndirectsPage() {
                           )}
                         </div>
                         {pool.far_reference && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                             {pool.far_reference}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                           FY {pool.fiscal_year}
                         </p>
                       </div>
@@ -384,7 +384,7 @@ export default function IndirectsPage() {
                         <button
                           type="button"
                           onClick={() => handleEdit(pool)}
-                          className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                          className="p-1.5 rounded hover:bg-[#f9fafb] dark:bg-[#27272a]/50 text-[#6b7280] dark:text-[#a1a1aa] hover:text-[#111827] dark:text-[#f9fafb] transition-colors"
                           title="Edit pool"
                         >
                           <Pencil className="h-4 w-4" />
@@ -392,7 +392,7 @@ export default function IndirectsPage() {
                         <button
                           type="button"
                           onClick={() => setDeleteId(pool.id)}
-                          className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          className="p-1.5 rounded hover:bg-destructive/10 text-[#6b7280] dark:text-[#a1a1aa] hover:text-destructive transition-colors"
                           title="Delete pool"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -404,7 +404,7 @@ export default function IndirectsPage() {
               </div>
             )}
 
-            <div className="mt-4 pt-4 border-t border-border">
+            <div className="mt-4 pt-4 border-t border-[#e5e7eb] dark:border-[#27272a]">
               <div className="flex gap-2">
                 <Link
                   href={ROUTES.GOVCON_CONTRACTS}
@@ -412,7 +412,7 @@ export default function IndirectsPage() {
                 >
                   Manage contracts
                 </Link>
-                <span className="text-xs text-muted-foreground">•</span>
+                <span className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">•</span>
                 <Link
                   href={ROUTES.GOVCON_AUDIT}
                   className="text-xs text-primary hover:underline"
@@ -428,21 +428,21 @@ export default function IndirectsPage() {
         <div className="space-y-4 lg:col-span-4">
           <SecondaryPanel title="FAR Reference" collapsible>
             <div className="space-y-2 text-sm">
-              <div className="p-2 rounded bg-muted">
+              <div className="p-2 rounded bg-[#f9fafb] dark:bg-[#27272a]">
                 <p className="font-medium">FAR 31.205-6</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                   Compensation (subject to reasonableness)
                 </p>
               </div>
-              <div className="p-2 rounded bg-muted">
+              <div className="p-2 rounded bg-[#f9fafb] dark:bg-[#27272a]">
                 <p className="font-medium">FAR 31.205-14</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                   Entertainment (generally unallowable)
                 </p>
               </div>
-              <div className="p-2 rounded bg-muted">
+              <div className="p-2 rounded bg-[#f9fafb] dark:bg-[#27272a]">
                 <p className="font-medium">FAR 31.205-36</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#6b7280] dark:text-[#a1a1aa]">
                   Rental costs (allowable if reasonable)
                 </p>
               </div>
@@ -477,8 +477,8 @@ export default function IndirectsPage() {
       {/* Add/Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-lg rounded-lg border border-border bg-card shadow-xl">
-            <div className="flex items-center justify-between border-b border-border p-4">
+          <div className="mx-4 w-full max-w-lg rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#e5e7eb] dark:border-[#27272a] p-4">
               <h2 className="text-base font-semibold">
                 {editingId ? "Edit Indirect Pool" : "Add Indirect Pool"}
               </h2>
@@ -498,7 +498,7 @@ export default function IndirectsPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, pool_name: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                     placeholder="e.g., Engineering Overhead"
                   />
                 </div>
@@ -511,7 +511,7 @@ export default function IndirectsPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, pool_type: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select type...</option>
                     {POOL_TYPES.map((t) => (
@@ -533,7 +533,7 @@ export default function IndirectsPage() {
                     onChange={(e) =>
                       setFormData((f) => ({ ...f, base_type: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select base...</option>
                     {BASE_TYPES.map((t) => (
@@ -556,7 +556,7 @@ export default function IndirectsPage() {
                         rate_percentage: e.target.value,
                       }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                     placeholder="e.g., 45.5"
                     min="0"
                     max="1000"
@@ -578,7 +578,7 @@ export default function IndirectsPage() {
                         far_reference: e.target.value,
                       }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select reference...</option>
                     {FAR_REFERENCES.map((r) => (
@@ -600,7 +600,7 @@ export default function IndirectsPage() {
                         allowability_status: e.target.value,
                       }))
                     }
-                    className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   >
                     {ALLOWABILITY_STATUSES.map((s) => (
                       <option key={s.value} value={s.value}>
@@ -621,7 +621,7 @@ export default function IndirectsPage() {
                   onChange={(e) =>
                     setFormData((f) => ({ ...f, fiscal_year: e.target.value }))
                   }
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   min="2000"
                   max="2100"
                 />
@@ -636,7 +636,7 @@ export default function IndirectsPage() {
                   onChange={(e) =>
                     setFormData((f) => ({ ...f, description: e.target.value }))
                   }
-                  className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded border border-[#e5e7eb] dark:border-[#27272a] bg-background px-3 py-2 text-sm"
                   rows={2}
                   placeholder="Optional notes..."
                 />
@@ -676,9 +676,9 @@ export default function IndirectsPage() {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-lg border border-border bg-card p-6 shadow-xl">
+          <div className="mx-4 w-full max-w-sm rounded-lg border border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#18181b] p-6 shadow-xl">
             <h3 className="font-semibold mb-2">Delete Indirect Pool?</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-[#6b7280] dark:text-[#a1a1aa] mb-4">
               This action cannot be undone. All rate history will be removed.
             </p>
             {/* P2 FIX: Show delete error with retry ability */}

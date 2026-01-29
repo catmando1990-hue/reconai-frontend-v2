@@ -133,8 +133,12 @@ export function CashFlowReport() {
     URL.revokeObjectURL(url);
   };
 
+  // FIX: Defensive check with optional chaining
   const hasData =
     data &&
+    data.operating &&
+    data.investing &&
+    data.financing &&
     (data.operating.inflows > 0 ||
       data.operating.outflows > 0 ||
       data.investing.net !== 0 ||
@@ -278,7 +282,7 @@ export function CashFlowReport() {
           </div>
 
           {/* Operating Activities Breakdown */}
-          {data.operating.items.length > 0 && (
+          {data.operating.items && data.operating.items.length > 0 && (
             <div className="rounded-xl border p-4">
               <h4 className="text-sm font-semibold mb-3">
                 Operating Activities

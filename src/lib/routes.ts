@@ -26,12 +26,13 @@ export const ROUTES = {
   CORE_ACCOUNTS: "/core/accounts",
   CORE_STATEMENTS: "/core/statements",
   CORE_REPORTS: "/core/reports",
+  CORE_CONNECT: "/core/connect",  // Core bank connections
   CORE_REPORTS_CASH_FLOW: "/core/reports/cash-flow",
   CORE_REPORTS_CATEGORY_SPEND: "/core/reports/category-spend",
   CORE_REPORTS_ACCOUNT_ACTIVITY: "/core/reports/account-activity",
   CORE_REPORTS_LEDGER: "/core/reports/ledger",
 
-  // Banking Actions
+  // Banking Actions (legacy - redirect to CORE_CONNECT)
   CONNECT_BANK: "/connect-bank",
   UPLOAD: "/upload",
   DOCUMENTS: "/documents",
@@ -136,6 +137,7 @@ export function getCanonicalRoute(path: string): string {
     "/transactions": ROUTES.CORE_TRANSACTIONS,
     "/customers": ROUTES.INVOICING_CUSTOMERS,
     "/vendors": ROUTES.INVOICING_VENDORS,
+    "/connect-bank": ROUTES.CORE_CONNECT,  // Redirect legacy to new
   };
   return legacyMappings[path] || path;
 }

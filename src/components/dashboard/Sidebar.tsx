@@ -73,6 +73,7 @@ const MODULES: Module[] = [
       { id: "accounts", label: "Accounts", href: ROUTES.CORE_ACCOUNTS },
       { id: "reports", label: "Reports", href: ROUTES.CORE_REPORTS },
       { id: "statements", label: "Statements", href: ROUTES.CORE_STATEMENTS },
+      { id: "connect", label: "Bank Connections", href: ROUTES.CORE_CONNECT },
     ],
   },
   {

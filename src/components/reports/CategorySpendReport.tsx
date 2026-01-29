@@ -91,7 +91,8 @@ export function CategorySpendReport() {
   }, [isLoaded, fetchData]);
 
   const handleExportCSV = () => {
-    if (!data || data.categories.length === 0) return;
+    // FIX: Defensive check
+    if (!data || !data.categories || data.categories.length === 0) return;
 
     const headers = [
       "Category",
@@ -116,7 +117,8 @@ export function CategorySpendReport() {
     URL.revokeObjectURL(url);
   };
 
-  const hasData = data && data.categories.length > 0;
+  // FIX: Defensive check with optional chaining
+  const hasData = data && data.categories && data.categories.length > 0;
 
   return (
     <div className="rounded-xl border bg-card">

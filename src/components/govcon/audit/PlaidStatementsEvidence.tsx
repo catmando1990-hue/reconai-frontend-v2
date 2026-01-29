@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useOrg } from "@/lib/org-context";
 import { useFinancialEvidence } from "@/lib/financial-evidence-context";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   FileText,
   Download,
@@ -109,6 +110,14 @@ export function PlaidStatementsEvidence() {
     });
   }, [evidenceContext, listStatus, statements, fetchedAt]);
 
+  // Hook must be called before early returns
+  const handleCopyHash = useCallback((hash: string) => {
+    navigator.clipboard.writeText(hash).then(() => {
+      setCopiedHash(hash);
+      setTimeout(() => setCopiedHash(null), 2000);
+    });
+  }, []);
+
   // Don't render until auth is loaded
   if (!userLoaded || !orgLoaded) return null;
 
@@ -129,9 +138,10 @@ export function PlaidStatementsEvidence() {
     setDownloadStates({});
 
     try {
-      const res = await fetch("/api/plaid/statements/list", {
+      const res = await auditedFetch<Response>("/api/plaid/statements/list", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
+        rawResponse: true,
       });
 
       const requestId = res.headers.get("x-request-id");
@@ -141,9 +151,7 @@ export function PlaidStatementsEvidence() {
 
       if (!data.ok || !res.ok) {
         setListStatus("error");
-        setListError(
-          data.error || `Failed to load statements (${res.status})`,
-        );
+        setListError(data.error || `Failed to load statements (${res.status})`);
         return;
       }
 
@@ -167,8 +175,9 @@ export function PlaidStatementsEvidence() {
     }));
 
     try {
-      const res = await fetch(
+      const res = await auditedFetch<Response>(
         `/api/plaid/statements/download?statement_id=${encodeURIComponent(statementId)}`,
+        { rawResponse: true },
       );
 
       const requestId = res.headers.get("x-request-id");
@@ -228,13 +237,6 @@ export function PlaidStatementsEvidence() {
       }));
     }
   };
-
-  const handleCopyHash = useCallback((hash: string) => {
-    navigator.clipboard.writeText(hash).then(() => {
-      setCopiedHash(hash);
-      setTimeout(() => setCopiedHash(null), 2000);
-    });
-  }, []);
 
   // ==========================================================================
   // RENDER

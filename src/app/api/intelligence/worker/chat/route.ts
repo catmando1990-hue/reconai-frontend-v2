@@ -34,7 +34,11 @@ export async function POST(req: Request) {
     const body = (await req.json()) as ChatRequest;
     const { message, context } = body;
 
-    if (!message || typeof message !== "string" || message.trim().length === 0) {
+    if (
+      !message ||
+      typeof message !== "string" ||
+      message.trim().length === 0
+    ) {
       return NextResponse.json(
         { ok: false, error: "Message is required", request_id: requestId },
         { status: 400, headers: { "x-request-id": requestId } },
@@ -106,7 +110,11 @@ function generateAssistantResponse(message: string, context?: string): string {
   }
 
   // Help or getting started
-  if (lowerMessage.includes("help") || lowerMessage.includes("start") || lowerMessage.includes("how")) {
+  if (
+    lowerMessage.includes("help") ||
+    lowerMessage.includes("start") ||
+    lowerMessage.includes("how")
+  ) {
     return "I'm your AI finance assistant. Here's how I can help:\n\n• **Task Queue**: Review and approve AI-generated recommendations\n• **Categorization**: Organize transactions into proper categories\n• **Reconciliation**: Match and verify transactions\n• **Reports**: Generate financial reports and exports\n• **Alerts**: Get notified about unusual patterns\n\nWhat would you like to work on?";
   }
 

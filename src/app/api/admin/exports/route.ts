@@ -14,7 +14,11 @@ async function assertAdmin(requestId: string) {
 
   if (!userId) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Not authenticated", request_id: requestId },
+      {
+        error: "Unauthorized",
+        message: "Not authenticated",
+        request_id: requestId,
+      },
       { status: 401, headers: { "x-request-id": requestId } },
     );
   }
@@ -36,7 +40,11 @@ async function assertAdmin(requestId: string) {
   }
 
   return NextResponse.json(
-    { error: "Forbidden", message: "Admin access required", request_id: requestId },
+    {
+      error: "Forbidden",
+      message: "Admin access required",
+      request_id: requestId,
+    },
     { status: 403, headers: { "x-request-id": requestId } },
   );
 }
@@ -109,18 +117,20 @@ export async function GET(req: Request) {
     // Backend returns envelope: { ok, data, request_id }
     // Unwrap and map field names to match frontend types
     const backendData = data.data || data;
-    const exports = (backendData.exports || []).map((exp: Record<string, unknown>) => ({
-      export_id: exp.id,
-      organization_id: exp.org_id,
-      export_type: exp.file_type,
-      status: exp.status,
-      file_size_bytes: exp.size_bytes,
-      created_at: exp.created_at,
-      completed_at: exp.completed_at,
-      expires_at: exp.expires_at,
-      created_by_user_id: exp.user_id,
-      error_message: null,
-    }));
+    const exports = (backendData.exports || []).map(
+      (exp: Record<string, unknown>) => ({
+        export_id: exp.id,
+        organization_id: exp.org_id,
+        export_type: exp.file_type,
+        status: exp.status,
+        file_size_bytes: exp.size_bytes,
+        created_at: exp.created_at,
+        completed_at: exp.completed_at,
+        expires_at: exp.expires_at,
+        created_by_user_id: exp.user_id,
+        error_message: null,
+      }),
+    );
 
     return NextResponse.json(
       {

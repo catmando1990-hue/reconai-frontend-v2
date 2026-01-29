@@ -17,6 +17,7 @@ import type {
   AuditExportV2GenerateResponse,
   AuditExportV2Result,
 } from "@/types/audit";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 // =============================================================================
 // GENERATE EXPORT
@@ -32,7 +33,7 @@ import type {
 export async function generateAuditExportV2(
   sections: AuditExportV2Sections,
 ): Promise<{ ok: true; result: AuditExportV2Result; request_id: string }> {
-  const res = await fetch("/api/exports/audit-package-v2", {
+  const res = await auditedFetch<Response>("/api/exports/audit-package-v2", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -40,13 +41,16 @@ export async function generateAuditExportV2(
       include_assets: sections.includeAssets,
       include_liabilities: sections.includeLiabilities,
     }),
+    rawResponse: true,
   });
 
   const requestId = res.headers.get("x-request-id") || "";
   const json: AuditExportV2GenerateResponse = await res.json();
 
   if (!json.ok || !res.ok) {
-    const error = new Error(json.error || `Failed to generate export (${res.status})`);
+    const error = new Error(
+      json.error || `Failed to generate export (${res.status})`,
+    );
     (error as Error & { request_id: string }).request_id = requestId;
     throw error;
   }
@@ -94,8 +98,9 @@ export async function generateAuditExportV2(
 export async function downloadAuditExportV2(
   exportId: string,
 ): Promise<{ ok: true; filename: string; request_id: string }> {
-  const res = await fetch(
+  const res = await auditedFetch<Response>(
     `/api/exports/audit-package-v2/download?export_id=${encodeURIComponent(exportId)}`,
+    { rawResponse: true },
   );
 
   const requestId = res.headers.get("x-request-id") || "";

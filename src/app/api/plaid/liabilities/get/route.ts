@@ -127,7 +127,9 @@ function normalizeCreditCards(cards: Array<Record<string, unknown>>) {
       institution_name: card.institution_name || "Unknown",
       account_name: card.name || card.official_name || "Credit Card",
       account_mask: card.mask || "****",
-      reported_balance: Number(card.last_statement_balance ?? card.balance ?? 0),
+      reported_balance: Number(
+        card.last_statement_balance ?? card.balance ?? 0,
+      ),
       minimum_payment: card.minimum_payment_amount ?? null,
       apr: aprs?.[0]?.apr_percentage ?? null,
       as_of: card.last_statement_issue_date || card.as_of || null,
@@ -141,7 +143,9 @@ function normalizeStudentLoans(loans: Array<Record<string, unknown>>) {
     institution_name: loan.institution_name || loan.servicer_name || "Unknown",
     account_name: loan.name || loan.official_name || "Student Loan",
     account_mask: loan.mask || "****",
-    reported_balance: Number(loan.outstanding_interest_amount ?? 0) + Number(loan.current_balance ?? loan.balance ?? 0),
+    reported_balance:
+      Number(loan.outstanding_interest_amount ?? 0) +
+      Number(loan.current_balance ?? loan.balance ?? 0),
     interest_rate: loan.interest_rate_percentage ?? null,
     origination_date: loan.origination_date || null,
     as_of: loan.last_payment_date || loan.as_of || null,
@@ -151,24 +155,32 @@ function normalizeStudentLoans(loans: Array<Record<string, unknown>>) {
 function normalizeMortgages(mortgages: Array<Record<string, unknown>>) {
   return mortgages.map((mortgage) => {
     const interestRate = mortgage.interest_rate;
-    const propertyAddress = mortgage.property_address as Record<string, unknown> | undefined;
+    const propertyAddress = mortgage.property_address as
+      | Record<string, unknown>
+      | undefined;
 
     let rateValue: number | null = null;
     if (typeof interestRate === "number") {
       rateValue = interestRate;
     } else if (typeof interestRate === "object" && interestRate !== null) {
       const rateObj = interestRate as Record<string, unknown>;
-      rateValue = typeof rateObj.percentage === "number" ? rateObj.percentage : null;
+      rateValue =
+        typeof rateObj.percentage === "number" ? rateObj.percentage : null;
     }
 
     return {
       account_id: mortgage.account_id,
-      institution_name: mortgage.institution_name || mortgage.servicer_name || "Unknown",
+      institution_name:
+        mortgage.institution_name || mortgage.servicer_name || "Unknown",
       account_name: mortgage.name || mortgage.official_name || "Mortgage",
       account_mask: mortgage.mask || "****",
-      reported_balance: Number(mortgage.current_balance ?? mortgage.balance ?? 0),
+      reported_balance: Number(
+        mortgage.current_balance ?? mortgage.balance ?? 0,
+      ),
       interest_rate: rateValue,
-      property_address: propertyAddress ? String(propertyAddress.street || "") || null : null,
+      property_address: propertyAddress
+        ? String(propertyAddress.street || "") || null
+        : null,
       as_of: mortgage.last_payment_date || mortgage.as_of || null,
     };
   });
@@ -179,7 +191,9 @@ function normalizeOtherLoans(liabilities: Record<string, unknown>) {
   const other: Array<Record<string, unknown>> = [];
 
   // Check for generic 'accounts' or other loan types
-  const accounts = (liabilities.accounts || []) as Array<Record<string, unknown>>;
+  const accounts = (liabilities.accounts || []) as Array<
+    Record<string, unknown>
+  >;
   for (const acct of accounts) {
     const type = String(acct.type || "").toLowerCase();
     if (!["credit", "student", "mortgage"].includes(type)) {

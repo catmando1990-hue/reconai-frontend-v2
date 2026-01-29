@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
 // =============================================================================
 // TYPES
@@ -96,7 +102,8 @@ const initialState: FinancialEvidenceState = {
 // CONTEXT
 // =============================================================================
 
-const FinancialEvidenceContext = createContext<FinancialEvidenceContextValue | null>(null);
+const FinancialEvidenceContext =
+  createContext<FinancialEvidenceContextValue | null>(null);
 
 /**
  * FinancialEvidenceProvider - Collects loaded data from Phase 8 panels
@@ -107,7 +114,11 @@ const FinancialEvidenceContext = createContext<FinancialEvidenceContextValue | n
  * - No automation
  * - Panels report their loaded state for comparison
  */
-export function FinancialEvidenceProvider({ children }: { children: ReactNode }) {
+export function FinancialEvidenceProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [state, setState] = useState<FinancialEvidenceState>(initialState);
 
   const updateStatements = useCallback((data: Partial<StatementsData>) => {
@@ -117,12 +128,15 @@ export function FinancialEvidenceProvider({ children }: { children: ReactNode })
     }));
   }, []);
 
-  const updateAssetSnapshots = useCallback((data: Partial<AssetSnapshotData>) => {
-    setState((prev) => ({
-      ...prev,
-      assetSnapshots: { ...prev.assetSnapshots, ...data },
-    }));
-  }, []);
+  const updateAssetSnapshots = useCallback(
+    (data: Partial<AssetSnapshotData>) => {
+      setState((prev) => ({
+        ...prev,
+        assetSnapshots: { ...prev.assetSnapshots, ...data },
+      }));
+    },
+    [],
+  );
 
   const updateLiabilities = useCallback((data: Partial<LiabilitiesData>) => {
     setState((prev) => ({

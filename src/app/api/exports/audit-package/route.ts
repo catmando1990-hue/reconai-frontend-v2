@@ -14,7 +14,11 @@ async function assertAdmin(requestId: string) {
 
   if (!userId) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Not authenticated", request_id: requestId },
+      {
+        error: "Unauthorized",
+        message: "Not authenticated",
+        request_id: requestId,
+      },
       { status: 401, headers: { "x-request-id": requestId } },
     );
   }
@@ -36,7 +40,11 @@ async function assertAdmin(requestId: string) {
   }
 
   return NextResponse.json(
-    { error: "Forbidden", message: "Admin access required", request_id: requestId },
+    {
+      error: "Forbidden",
+      message: "Admin access required",
+      request_id: requestId,
+    },
     { status: 403, headers: { "x-request-id": requestId } },
   );
 }
@@ -65,7 +73,9 @@ export async function POST() {
   let organizationId = orgId;
   if (!organizationId) {
     const user = await currentUser();
-    organizationId = (user?.publicMetadata as Record<string, unknown> | undefined)?.organization_id as string | undefined;
+    organizationId = (
+      user?.publicMetadata as Record<string, unknown> | undefined
+    )?.organization_id as string | undefined;
   }
 
   try {
@@ -88,7 +98,8 @@ export async function POST() {
           {
             export_id: `stub-${requestId.slice(0, 8)}`,
             status: "pending",
-            message: "Audit package export queued. Backend integration pending.",
+            message:
+              "Audit package export queued. Backend integration pending.",
             request_id: requestId,
           },
           { status: 200, headers: { "x-request-id": requestId } },

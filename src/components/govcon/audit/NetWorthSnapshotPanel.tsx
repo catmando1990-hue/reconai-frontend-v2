@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useOrg } from "@/lib/org-context";
 import { useFinancialEvidence } from "@/lib/financial-evidence-context";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   Wallet,
   RefreshCw,
@@ -126,12 +127,19 @@ export function NetWorthSnapshotPanel() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Create state
-  const [createState, setCreateState] = useState<ActionState>({ status: "idle" });
+  const [createState, setCreateState] = useState<ActionState>({
+    status: "idle",
+  });
   const [showCreateConfirm, setShowCreateConfirm] = useState(false);
-  const [lastCreated, setLastCreated] = useState<{ id: string; at: string } | null>(null);
+  const [lastCreated, setLastCreated] = useState<{
+    id: string;
+    at: string;
+  } | null>(null);
 
   // Delete state
-  const [deleteState, setDeleteState] = useState<Record<string, ActionState>>({});
+  const [deleteState, setDeleteState] = useState<Record<string, ActionState>>(
+    {},
+  );
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // ==========================================================================
@@ -162,6 +170,11 @@ export function NetWorthSnapshotPanel() {
     });
   }, [evidenceContext, listStatus, snapshots, fetchedAt]);
 
+  // Hook must be called before early returns
+  const toggleExpand = useCallback((reportId: string) => {
+    setExpandedId((prev) => (prev === reportId ? null : reportId));
+  }, []);
+
   // Don't render until auth is loaded
   if (!userLoaded || !orgLoaded) return null;
 
@@ -183,10 +196,11 @@ export function NetWorthSnapshotPanel() {
     setLastCreated(null);
 
     try {
-      const res = await fetch("/api/plaid/assets/report/get", {
+      const res = await auditedFetch<Response>("/api/plaid/assets/report/get", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
+        rawResponse: true,
       });
 
       const requestId = res.headers.get("x-request-id");
@@ -217,10 +231,14 @@ export function NetWorthSnapshotPanel() {
     setShowCreateConfirm(false);
 
     try {
-      const res = await fetch("/api/plaid/assets/report/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await auditedFetch<Response>(
+        "/api/plaid/assets/report/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          rawResponse: true,
+        },
+      );
 
       const requestId = res.headers.get("x-request-id");
       const data: CreateResponse = await res.json();
@@ -259,11 +277,15 @@ export function NetWorthSnapshotPanel() {
     setConfirmDeleteId(null);
 
     try {
-      const res = await fetch("/api/plaid/assets/report/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ report_id: reportId }),
-      });
+      const res = await auditedFetch<Response>(
+        "/api/plaid/assets/report/remove",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ report_id: reportId }),
+          rawResponse: true,
+        },
+      );
 
       const requestId = res.headers.get("x-request-id");
       const data: RemoveResponse = await res.json();
@@ -298,10 +320,6 @@ export function NetWorthSnapshotPanel() {
       }));
     }
   };
-
-  const toggleExpand = useCallback((reportId: string) => {
-    setExpandedId((prev) => (prev === reportId ? null : reportId));
-  }, []);
 
   // ==========================================================================
   // RENDER
@@ -423,7 +441,9 @@ export function NetWorthSnapshotPanel() {
           <div className="flex items-start gap-2">
             <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
             <div className="text-sm">
-              <p className="font-medium text-destructive">{createState.error}</p>
+              <p className="font-medium text-destructive">
+                {createState.error}
+              </p>
               {createState.requestId && (
                 <p className="mt-1 font-mono text-xs text-muted-foreground">
                   request_id: {createState.requestId}
@@ -454,7 +474,8 @@ export function NetWorthSnapshotPanel() {
       {/* Empty State */}
       {listStatus === "success" && snapshots.length === 0 && (
         <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-          No asset snapshots available. Click "Generate Snapshot" to create one.
+          No asset snapshots available. Click &quot;Generate Snapshot&quot; to
+          create one.
         </div>
       )}
 
@@ -463,7 +484,9 @@ export function NetWorthSnapshotPanel() {
         <div className="space-y-3">
           {snapshots.map((snapshot) => {
             const isExpanded = expandedId === snapshot.report_id;
-            const dlState = deleteState[snapshot.report_id] || { status: "idle" };
+            const dlState = deleteState[snapshot.report_id] || {
+              status: "idle",
+            };
             const isConfirmingDelete = confirmDeleteId === snapshot.report_id;
 
             return (
@@ -494,12 +517,17 @@ export function NetWorthSnapshotPanel() {
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        <span>As of {formatTimestamp(snapshot.generated_at)}</span>
+                        <span>
+                          As of {formatTimestamp(snapshot.generated_at)}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex items-center gap-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <span className="font-mono text-xs text-muted-foreground">
                       {snapshot.report_id.slice(0, 12)}...
                     </span>
@@ -520,10 +548,14 @@ export function NetWorthSnapshotPanel() {
                       </button>
                     ) : (
                       <div className="flex items-center gap-1">
-                        <span className="text-xs text-destructive">Delete?</span>
+                        <span className="text-xs text-destructive">
+                          Delete?
+                        </span>
                         <button
                           type="button"
-                          onClick={() => void handleDeleteSnapshot(snapshot.report_id)}
+                          onClick={() =>
+                            void handleDeleteSnapshot(snapshot.report_id)
+                          }
                           className="rounded bg-destructive px-2 py-0.5 text-xs text-white hover:bg-destructive/80"
                         >
                           Yes
@@ -597,7 +629,8 @@ export function NetWorthSnapshotPanel() {
                         <tfoot className="bg-muted/30 font-medium">
                           <tr>
                             <td colSpan={3} className="p-3 text-right">
-                              Total as of {formatTimestamp(snapshot.generated_at)}:
+                              Total as of{" "}
+                              {formatTimestamp(snapshot.generated_at)}:
                             </td>
                             <td className="p-3 text-right">
                               {formatCurrency(snapshot.total_assets)}
@@ -624,8 +657,8 @@ export function NetWorthSnapshotPanel() {
       {/* Footer Advisory */}
       <div className="rounded-lg border p-3 text-[10px] text-muted-foreground">
         Admin only. Manual actions required. No automatic refresh. All balances
-        shown are historical snapshots "as of" generation time — not live data.
-        All operations logged with request_id for audit provenance.
+        shown are historical snapshots &quot;as of&quot; generation time — not
+        live data. All operations logged with request_id for audit provenance.
       </div>
     </div>
   );

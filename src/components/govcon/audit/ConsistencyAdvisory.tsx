@@ -41,7 +41,7 @@ function parseTimestamp(dateStr: string | null | undefined): number | null {
 function timestampsDifferSignificantly(
   ts1: number | null,
   ts2: number | null,
-  thresholdMs: number = 24 * 60 * 60 * 1000 // 24 hours default
+  thresholdMs: number = 24 * 60 * 60 * 1000, // 24 hours default
 ): boolean {
   if (ts1 === null || ts2 === null) return false;
   return Math.abs(ts1 - ts2) > thresholdMs;
@@ -53,7 +53,7 @@ function timestampsDifferSignificantly(
 function dateWithinPeriod(
   dateTs: number | null,
   periodStart: string | null,
-  periodEnd: string | null
+  periodEnd: string | null,
 ): boolean {
   if (dateTs === null) return true; // Can't determine, assume OK
   const startTs = parseTimestamp(periodStart);
@@ -98,22 +98,15 @@ export function ConsistencyAdvisory() {
   const role = publicMetadata?.role as string | undefined;
   const isAdmin = role === "admin" || role === "org:admin";
 
-  // Don't render until auth is loaded
-  if (!userLoaded || !orgLoaded) return null;
-
-  // RBAC: Hide completely if not admin
-  if (!isAdmin) return null;
-
-  // No context available - render nothing (component used outside provider)
-  if (!evidenceContext) return null;
-
-  const { state } = evidenceContext;
+  const state = evidenceContext?.state;
 
   // ==========================================================================
-  // CONSISTENCY CHECKS
+  // CONSISTENCY CHECKS (must be before early returns per React hooks rules)
   // ==========================================================================
 
   const advisories = useMemo(() => {
+    if (!state) return [];
+
     const warnings: Advisory[] = [];
 
     const { statements, assetSnapshots, liabilities, investments } = state;
@@ -173,7 +166,8 @@ export function ConsistencyAdvisory() {
       if (timestampsDifferSignificantly(minTs, maxTs, ONE_WEEK_MS)) {
         warnings.push({
           id: "timestamp-mismatch",
-          message: "These data sources may have been generated at different times.",
+          message:
+            "These data sources may have been generated at different times.",
           detail: "Consider reloading all data sources to ensure consistency.",
         });
       }
@@ -187,7 +181,7 @@ export function ConsistencyAdvisory() {
     const hasOtherData =
       (assetSnapshots.loaded && assetSnapshots.count > 0) ||
       (liabilities.loaded && liabilities.hasData) ||
-      (investments.holdingsLoaded);
+      investments.holdingsLoaded;
 
     if (!hasStatements && hasOtherData) {
       warnings.push({
@@ -202,7 +196,8 @@ export function ConsistencyAdvisory() {
       warnings.push({
         id: "missing-snapshots",
         message: "Additional financial data may be available.",
-        detail: "Asset snapshots, liabilities, or investment data could provide more context.",
+        detail:
+          "Asset snapshots, liabilities, or investment data could provide more context.",
       });
     }
 
@@ -244,7 +239,8 @@ export function ConsistencyAdvisory() {
                 id: `out-of-range-${period.start}-${period.end}`,
                 message:
                   "A statement period may not align with the selected asset snapshot timeframe.",
-                detail: "This could indicate data from different reporting periods.",
+                detail:
+                  "This could indicate data from different reporting periods.",
               });
               // Only show one out-of-range warning
               break;
@@ -256,6 +252,15 @@ export function ConsistencyAdvisory() {
 
     return warnings;
   }, [state]);
+
+  // Don't render until auth is loaded
+  if (!userLoaded || !orgLoaded) return null;
+
+  // RBAC: Hide completely if not admin
+  if (!isAdmin) return null;
+
+  // No context available - render nothing (component used outside provider)
+  if (!evidenceContext) return null;
 
   // ==========================================================================
   // RENDER

@@ -19,15 +19,13 @@ const cashFlowSections = [
   {
     name: "Cash Position",
     icon: TrendingUp,
-    description:
-      "Current cash balance across all connected accounts",
+    description: "Current cash balance across all connected accounts",
     status: "Awaiting data",
   },
   {
     name: "Inflows",
     icon: ArrowUpRight,
-    description:
-      "Revenue and other cash inflows over the selected period",
+    description: "Revenue and other cash inflows over the selected period",
     status: "Awaiting data",
   },
   {
@@ -48,17 +46,14 @@ const cashFlowSections = [
 
 function CashFlowBody() {
   return (
-    <RouteShell
-      title="Cash Flow"
-      subtitle="Cash position and projections"
-    >
+    <RouteShell title="Cash Flow" subtitle="Cash position and projections">
       {/* Advisory */}
       <div className="rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground flex items-start gap-2">
         <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
         <span>
-          Cash flow insights are advisory and explainable. Projections are
-          based on historical patterns and do not constitute financial advice.
-          No writes or auto-actions are performed.
+          Cash flow insights are advisory and explainable. Projections are based
+          on historical patterns and do not constitute financial advice. No
+          writes or auto-actions are performed.
         </span>
       </div>
 
@@ -181,7 +176,7 @@ function CashFlowBody() {
                 CFO overview
               </Link>
               <Link
-                href={ROUTES.CFO_FINANCIAL_REPORTS}
+                href={ROUTES.CFO_REPORTS}
                 className="block text-primary hover:underline"
               >
                 Financial reports

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useOrg } from "@/lib/org-context";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   FileArchive,
   RefreshCw,
@@ -63,12 +64,15 @@ function CopyableField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {
-      // Silent failure
-    });
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        // Silent failure
+      });
   };
 
   return (
@@ -129,7 +133,9 @@ function IntegrityMetadataPanel({
             </div>
             <CopyableField label="Key ID" value={signature.key_id} />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Signed at (UTC)</span>
+              <span className="text-xs text-muted-foreground">
+                Signed at (UTC)
+              </span>
               <span className="font-mono text-[10px] text-muted-foreground">
                 {formatTimestamp(signature.signed_at)}
               </span>
@@ -140,7 +146,9 @@ function IntegrityMetadataPanel({
         {hash_chain && (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Hash algorithm</span>
+              <span className="text-xs text-muted-foreground">
+                Hash algorithm
+              </span>
               <span className="font-mono text-[10px] text-muted-foreground">
                 {hash_chain.algorithm} (hash chain)
               </span>
@@ -185,7 +193,9 @@ export function AuditExportV2Panel() {
 
   // State
   const [exportState, setExportState] = useState<AuditExportV2State>("idle");
-  const [exportResult, setExportResult] = useState<AuditExportV2Result | null>(null);
+  const [exportResult, setExportResult] = useState<AuditExportV2Result | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
 
@@ -243,15 +253,19 @@ export function AuditExportV2Panel() {
     setExportResult(null);
 
     try {
-      const res = await fetch("/api/exports/audit-package-v2", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          include_statements: includeStatements,
-          include_assets: includeAssets,
-          include_liabilities: includeLiabilities,
-        }),
-      });
+      const res = await auditedFetch<Response>(
+        "/api/exports/audit-package-v2",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            include_statements: includeStatements,
+            include_assets: includeAssets,
+            include_liabilities: includeLiabilities,
+          }),
+          rawResponse: true,
+        },
+      );
 
       const reqId = res.headers.get("x-request-id");
       setRequestId(reqId);
@@ -305,8 +319,9 @@ export function AuditExportV2Panel() {
     setDownloading(true);
 
     try {
-      const res = await fetch(
+      const res = await auditedFetch<Response>(
         `/api/exports/audit-package-v2/download?export_id=${encodeURIComponent(exportResult.exportId)}`,
+        { rawResponse: true },
       );
 
       if (!res.ok) {
@@ -481,14 +496,17 @@ export function AuditExportV2Panel() {
                 {/* Generated timestamp */}
                 <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
                   <Clock className="h-3 w-3" />
-                  <span>Generated: {formatTimestamp(exportResult.generatedAt)}</span>
+                  <span>
+                    Generated: {formatTimestamp(exportResult.generatedAt)}
+                  </span>
                 </div>
 
                 {/* Included sections */}
                 <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
                   <FileArchive className="h-3 w-3" />
                   <span>
-                    Includes: {exportResult.sections.map(sectionLabel).join(", ")}
+                    Includes:{" "}
+                    {exportResult.sections.map(sectionLabel).join(", ")}
                   </span>
                 </div>
 
@@ -517,9 +535,10 @@ export function AuditExportV2Panel() {
 
           {/* Integrity Metadata Panel (Phase 11B) */}
           {exportResult.integrity &&
-            (exportResult.integrity.hash_chain || exportResult.integrity.signature) && (
-            <IntegrityMetadataPanel integrity={exportResult.integrity} />
-          )}
+            (exportResult.integrity.hash_chain ||
+              exportResult.integrity.signature) && (
+              <IntegrityMetadataPanel integrity={exportResult.integrity} />
+            )}
 
           {/* Advisory copy */}
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
@@ -601,8 +620,8 @@ export function AuditExportV2Panel() {
 
       {/* Footer Advisory */}
       <div className="rounded-lg border p-3 text-[10px] text-muted-foreground">
-        Admin only. Manual actions required. No automatic generation or download.
-        All operations logged with request_id for audit provenance.
+        Admin only. Manual actions required. No automatic generation or
+        download. All operations logged with request_id for audit provenance.
       </div>
     </div>
   );

@@ -95,7 +95,9 @@ export async function GET(request: NextRequest) {
     // Calculate SHA-256 hash of the PDF content
     const hashBuffer = await crypto.subtle.digest("SHA-256", pdfBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const sha256Hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    const sha256Hash = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
 
     // Get filename from backend or generate default
     const contentDisposition = res.headers.get("content-disposition");

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useOrg } from "@/lib/org-context";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   FileArchive,
   RefreshCw,
@@ -97,7 +98,8 @@ export function GovConPresetPanel() {
   const [requestId, setRequestId] = useState<string | null>(null);
 
   // Preset selection
-  const [selectedPreset, setSelectedPreset] = useState<GovConPreset>("sf1408_pre_award");
+  const [selectedPreset, setSelectedPreset] =
+    useState<GovConPreset>("sf1408_pre_award");
 
   // SF 1408 options
   const today = new Date();
@@ -106,7 +108,9 @@ export function GovConPresetPanel() {
 
   const [periodFrom, setPeriodFrom] = useState(formatDateInput(oneYearAgo));
   const [periodTo, setPeriodTo] = useState(formatDateInput(today));
-  const [assetSnapshot, setAssetSnapshot] = useState<"latest" | string>("latest");
+  const [assetSnapshot, setAssetSnapshot] = useState<"latest" | string>(
+    "latest",
+  );
 
   // Confirmation state
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -146,22 +150,26 @@ export function GovConPresetPanel() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/exports/audit-package-v2/presets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          preset: selectedPreset,
-          options: {
-            statement_period: {
-              from: periodFrom,
-              to: periodTo,
+      const res = await auditedFetch<Response>(
+        "/api/exports/audit-package-v2/presets",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            preset: selectedPreset,
+            options: {
+              statement_period: {
+                from: periodFrom,
+                to: periodTo,
+              },
+              ...(assetSnapshot !== "latest"
+                ? { asset_snapshot_id: assetSnapshot }
+                : {}),
             },
-            ...(assetSnapshot !== "latest"
-              ? { asset_snapshot_id: assetSnapshot }
-              : {}),
-          },
-        }),
-      });
+          }),
+          rawResponse: true,
+        },
+      );
 
       const reqId = res.headers.get("x-request-id");
       setRequestId(reqId);
@@ -215,8 +223,9 @@ export function GovConPresetPanel() {
     setDownloading(true);
 
     try {
-      const res = await fetch(
+      const res = await auditedFetch<Response>(
         `/api/exports/audit-package-v2/download?export_id=${encodeURIComponent(result.exportId)}`,
+        { rawResponse: true },
       );
 
       if (!res.ok) {
@@ -271,7 +280,9 @@ export function GovConPresetPanel() {
   // RENDER
   // ==========================================================================
 
-  const selectedPresetOption = PRESET_OPTIONS.find((p) => p.id === selectedPreset);
+  const selectedPresetOption = PRESET_OPTIONS.find(
+    (p) => p.id === selectedPreset,
+  );
 
   return (
     <div className="rounded-lg border border-border bg-card/50 p-6 space-y-5">
@@ -301,7 +312,9 @@ export function GovConPresetPanel() {
             <select
               id="preset-select"
               value={selectedPreset}
-              onChange={(e) => setSelectedPreset(e.target.value as GovConPreset)}
+              onChange={(e) =>
+                setSelectedPreset(e.target.value as GovConPreset)
+              }
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             >
               {PRESET_OPTIONS.map((preset) => (
@@ -326,7 +339,10 @@ export function GovConPresetPanel() {
               {/* Statement Period */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" htmlFor="period-from">
+                  <label
+                    className="text-xs text-muted-foreground"
+                    htmlFor="period-from"
+                  >
                     Statement period from
                   </label>
                   <input
@@ -338,7 +354,10 @@ export function GovConPresetPanel() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" htmlFor="period-to">
+                  <label
+                    className="text-xs text-muted-foreground"
+                    htmlFor="period-to"
+                  >
                     Statement period to
                   </label>
                   <input
@@ -353,7 +372,10 @@ export function GovConPresetPanel() {
 
               {/* Asset Snapshot */}
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" htmlFor="asset-snapshot">
+                <label
+                  className="text-xs text-muted-foreground"
+                  htmlFor="asset-snapshot"
+                >
                   Asset snapshot
                 </label>
                 <select
@@ -383,12 +405,13 @@ export function GovConPresetPanel() {
               Confirm Packet Generation
             </p>
             <p className="text-xs text-amber-700 dark:text-amber-300">
-              This will generate a <strong>{selectedPresetOption?.label}</strong> evidence
-              bundle for the period {periodFrom} to {periodTo}.
+              This will generate a{" "}
+              <strong>{selectedPresetOption?.label}</strong> evidence bundle for
+              the period {periodFrom} to {periodTo}.
               {assetSnapshot === "latest"
                 ? " Using latest available asset snapshot."
-                : ` Using asset snapshot: ${assetSnapshot}.`}
-              {" "}Liabilities auto-included.
+                : ` Using asset snapshot: ${assetSnapshot}.`}{" "}
+              Liabilities auto-included.
             </p>
             <div className="flex gap-2">
               <button
@@ -418,7 +441,8 @@ export function GovConPresetPanel() {
           <div>
             <div className="font-medium text-sm">Generating Packet...</div>
             <p className="text-xs text-muted-foreground">
-              Please wait while the {selectedPresetOption?.label} packet is being prepared.
+              Please wait while the {selectedPresetOption?.label} packet is
+              being prepared.
             </p>
           </div>
         </div>
@@ -438,7 +462,9 @@ export function GovConPresetPanel() {
                 {/* Preset name */}
                 <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
                   <FileArchive className="h-3 w-3" />
-                  <span>Preset: {selectedPresetOption?.label || result.preset}</span>
+                  <span>
+                    Preset: {selectedPresetOption?.label || result.preset}
+                  </span>
                 </div>
 
                 {/* Generated timestamp */}
@@ -559,8 +585,8 @@ export function GovConPresetPanel() {
 
       {/* Footer Advisory */}
       <div className="rounded-lg border p-3 text-[10px] text-muted-foreground">
-        Admin only. Manual actions required. No automatic generation or download.
-        All operations logged with request_id for audit provenance.
+        Admin only. Manual actions required. No automatic generation or
+        download. All operations logged with request_id for audit provenance.
       </div>
     </div>
   );

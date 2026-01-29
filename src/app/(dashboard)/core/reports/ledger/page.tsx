@@ -217,7 +217,11 @@ export default function TransactionLedgerPage() {
                     <td
                       className={`px-4 py-3 text-right font-mono whitespace-nowrap ${tx.amount > 0 ? "text-destructive" : "text-emerald-600"}`}
                     >
-                      {tx.amount > 0 ? "-" : "+"}{formatCurrency(Math.abs(tx.amount), tx.iso_currency_code)}
+                      {tx.amount > 0 ? "-" : "+"}
+                      {formatCurrency(
+                        Math.abs(tx.amount),
+                        tx.iso_currency_code,
+                      )}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {tx.account_name ? (

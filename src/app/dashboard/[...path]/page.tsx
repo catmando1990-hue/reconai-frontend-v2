@@ -30,7 +30,7 @@ function mapDashboardPath(path: string[]): string {
     if (rest[0] === "alerts") return "/intelligence/alerts";
     if (rest[0] === "ai-worker") return "/intelligence/ai-worker";
     if (rest[0] === "insights") return "/intelligence/insights";
-    if (rest[0] === "dashboard") return "/intelligence-dashboard";
+    if (rest[0] === "dashboard") return "/intelligence";
     return "/intelligence/insights";
   }
 

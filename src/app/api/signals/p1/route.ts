@@ -34,7 +34,9 @@ export async function GET(req: Request) {
     // Get transactions for exception analysis
     const { data: transactions, error } = await supabase
       .from("transactions")
-      .select("id, amount, merchant_name, name, date, category, account_id, pending")
+      .select(
+        "id, amount, merchant_name, name, date, category, account_id, pending",
+      )
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(500);
@@ -130,13 +132,16 @@ export async function GET(req: Request) {
     }
 
     // Filter by confidence threshold
-    const filteredSignals = signals.filter((s) => s.confidence >= minConfidence);
+    const filteredSignals = signals.filter(
+      (s) => s.confidence >= minConfidence,
+    );
 
     return NextResponse.json(
       {
         mode: "live",
         signals: filteredSignals,
-        disclaimer: "Exception signals are advisory and rule-based. They do not imply enforcement or automated action.",
+        disclaimer:
+          "Exception signals are advisory and rule-based. They do not imply enforcement or automated action.",
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

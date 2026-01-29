@@ -146,7 +146,7 @@ function LiveStateSection({ liveState }: LiveStateProps) {
         {/* Unpaid Bills - border only, no decorative background */}
         {hasUnpaidBills && (
           <Link
-            href="/core-dashboard"
+            href="/core"
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             <Receipt className="h-4 w-4 text-muted-foreground" />
@@ -316,7 +316,7 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                 </div>
                 <div className="mt-4 flex justify-end">
                   <Button asChild size="sm" variant="secondary">
-                    <Link href="/core-dashboard">
+                    <Link href="/core">
                       View All <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -400,7 +400,9 @@ function EvidenceSection({ evidence }: EvidenceProps) {
                       {new Date(tx.date).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className={`text-sm font-medium font-mono ${tx.amount > 0 ? "text-destructive" : "text-emerald-600"}`}>
+                  <div
+                    className={`text-sm font-medium font-mono ${tx.amount > 0 ? "text-destructive" : "text-emerald-600"}`}
+                  >
                     {tx.amount > 0 ? "-" : "+"}
                     {formatCurrency(Math.abs(tx.amount))}
                   </div>
@@ -469,7 +471,7 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
           className="h-auto py-4 justify-start border-border bg-muted hover:bg-background"
         >
           <Link
-            href="/intelligence-dashboard"
+            href="/intelligence"
             className="flex flex-col items-start gap-1"
           >
             <span className="font-medium text-foreground">Intelligence</span>
@@ -484,10 +486,7 @@ function NavigationSection({ hasEvidence }: NavigationProps) {
           variant="outline"
           className="h-auto py-4 justify-start border-border bg-muted hover:bg-background"
         >
-          <Link
-            href="/cfo-dashboard"
-            className="flex flex-col items-start gap-1"
-          >
+          <Link href="/cfo" className="flex flex-col items-start gap-1">
             <span className="font-medium text-foreground">CFO Overview</span>
             <span className="text-xs text-muted-foreground font-normal">
               High-level financial summary
@@ -675,7 +674,7 @@ export default function HomeDashboardPage() {
             description="Your state-of-business overview. Auto-populated from connected accounts."
           />
           <Button asChild size="sm">
-            <Link href="/core-dashboard">Open Core</Link>
+            <Link href="/core">Open Core</Link>
           </Button>
         </div>
       }

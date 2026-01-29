@@ -87,7 +87,10 @@ export async function POST() {
       {
         ok: true,
         report_id: backendData.asset_report_id || backendData.report_id,
-        generated_at: backendData.generated_at || backendData.created_at || new Date().toISOString(),
+        generated_at:
+          backendData.generated_at ||
+          backendData.created_at ||
+          new Date().toISOString(),
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

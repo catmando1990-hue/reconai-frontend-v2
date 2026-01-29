@@ -11,7 +11,11 @@ async function assertAdmin(requestId: string) {
 
   if (!userId) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Not authenticated", request_id: requestId },
+      {
+        error: "Unauthorized",
+        message: "Not authenticated",
+        request_id: requestId,
+      },
       { status: 401, headers: { "x-request-id": requestId } },
     );
   }
@@ -33,7 +37,11 @@ async function assertAdmin(requestId: string) {
   }
 
   return NextResponse.json(
-    { error: "Forbidden", message: "Admin access required", request_id: requestId },
+    {
+      error: "Forbidden",
+      message: "Admin access required",
+      request_id: requestId,
+    },
     { status: 403, headers: { "x-request-id": requestId } },
   );
 }
@@ -64,7 +72,9 @@ export async function POST(request: NextRequest) {
   let organizationId = orgId;
   if (!organizationId) {
     const user = await currentUser();
-    organizationId = (user?.publicMetadata as Record<string, unknown> | undefined)?.organization_id as string | undefined;
+    organizationId = (
+      user?.publicMetadata as Record<string, unknown> | undefined
+    )?.organization_id as string | undefined;
   }
 
   // Parse request body
@@ -131,12 +141,16 @@ export async function POST(request: NextRequest) {
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => "Unknown error");
-      console.error(`[GovCon Preset] Backend error (${res.status}):`, errorText);
+      console.error(
+        `[GovCon Preset] Backend error (${res.status}):`,
+        errorText,
+      );
 
       let errorMsg = `Failed to generate preset packet: ${res.status}`;
       try {
         const errData = JSON.parse(errorText);
-        errorMsg = errData.error || errData.detail || errData.message || errorMsg;
+        errorMsg =
+          errData.error || errData.detail || errData.message || errorMsg;
       } catch {
         // Keep default error message
       }
@@ -156,11 +170,17 @@ export async function POST(request: NextRequest) {
 
     // Pass through govcon_mapping if present
     const govconMapping = backendData.govcon_mapping;
-    const hasGovconMapping = govconMapping !== undefined && govconMapping !== null && govconMapping !== false;
+    const hasGovconMapping =
+      govconMapping !== undefined &&
+      govconMapping !== null &&
+      govconMapping !== false;
 
     // Pass through integrity metadata if present
     const integrity = backendData.integrity;
-    const hasIntegrity = integrity !== undefined && integrity !== null && typeof integrity === "object";
+    const hasIntegrity =
+      integrity !== undefined &&
+      integrity !== null &&
+      typeof integrity === "object";
 
     return NextResponse.json(
       {

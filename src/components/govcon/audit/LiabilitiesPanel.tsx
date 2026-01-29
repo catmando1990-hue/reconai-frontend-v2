@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useOrg } from "@/lib/org-context";
 import { useFinancialEvidence } from "@/lib/financial-evidence-context";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   CreditCard,
   GraduationCap,
@@ -103,13 +104,15 @@ export function LiabilitiesPanel() {
 
   // Data state
   const [data, setData] = useState<LiabilitiesData | null>(null);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
 
   // Expanded sections
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(["credit", "student", "mortgage", "other"])
+    new Set(["credit", "student", "mortgage", "other"]),
   );
 
   // ==========================================================================
@@ -130,12 +133,12 @@ export function LiabilitiesPanel() {
     if (!evidenceContext) return;
     if (status !== "success") return;
 
-    const hasData = data !== null && (
-      data.credit.length > 0 ||
-      data.student.length > 0 ||
-      data.mortgage.length > 0 ||
-      data.other.length > 0
-    );
+    const hasData =
+      data !== null &&
+      (data.credit.length > 0 ||
+        data.student.length > 0 ||
+        data.mortgage.length > 0 ||
+        data.other.length > 0);
 
     evidenceContext.updateLiabilities({
       loaded: true,
@@ -163,9 +166,10 @@ export function LiabilitiesPanel() {
     setData(null);
 
     try {
-      const res = await fetch("/api/plaid/liabilities/get", {
+      const res = await auditedFetch<Response>("/api/plaid/liabilities/get", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        rawResponse: true,
       });
 
       const reqId = res.headers.get("x-request-id");
@@ -208,7 +212,7 @@ export function LiabilitiesPanel() {
     title: string,
     key: string,
     icon: React.ReactNode,
-    items: LiabilityItem[]
+    items: LiabilityItem[],
   ) => {
     const isExpanded = expandedSections.has(key);
     const total = items.reduce((sum, item) => sum + item.reported_balance, 0);
@@ -238,7 +242,9 @@ export function LiabilitiesPanel() {
           </div>
           <div className="text-right">
             <div className="font-medium">{formatCurrency(total)}</div>
-            <div className="text-xs text-muted-foreground">Reported balance</div>
+            <div className="text-xs text-muted-foreground">
+              Reported balance
+            </div>
           </div>
         </button>
 
@@ -249,7 +255,9 @@ export function LiabilitiesPanel() {
                 <tr className="text-left">
                   <th className="p-3 font-medium">Institution</th>
                   <th className="p-3 font-medium">Account</th>
-                  <th className="p-3 font-medium text-right">Reported Balance</th>
+                  <th className="p-3 font-medium text-right">
+                    Reported Balance
+                  </th>
                   <th className="p-3 font-medium text-right">Interest Rate</th>
                   <th className="p-3 font-medium text-right">As Of</th>
                 </tr>
@@ -296,7 +304,7 @@ export function LiabilitiesPanel() {
   const totalLiabilities = data
     ? [...data.credit, ...data.student, ...data.mortgage, ...data.other].reduce(
         (sum, item) => sum + item.reported_balance,
-        0
+        0,
       )
     : 0;
 
@@ -384,16 +392,17 @@ export function LiabilitiesPanel() {
       )}
 
       {/* Empty State */}
-      {status === "success" && data &&
-       data.credit.length === 0 &&
-       data.student.length === 0 &&
-       data.mortgage.length === 0 &&
-       data.other.length === 0 && (
-        <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-          No liabilities found. Connect accounts with liability data to see them
-          here.
-        </div>
-      )}
+      {status === "success" &&
+        data &&
+        data.credit.length === 0 &&
+        data.student.length === 0 &&
+        data.mortgage.length === 0 &&
+        data.other.length === 0 && (
+          <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+            No liabilities found. Connect accounts with liability data to see
+            them here.
+          </div>
+        )}
 
       {/* Liability Sections */}
       {status === "success" && data && (
@@ -402,25 +411,25 @@ export function LiabilitiesPanel() {
             "Credit Cards",
             "credit",
             <CreditCard className="h-4 w-4 text-muted-foreground" />,
-            data.credit
+            data.credit,
           )}
           {renderSection(
             "Student Loans",
             "student",
             <GraduationCap className="h-4 w-4 text-muted-foreground" />,
-            data.student
+            data.student,
           )}
           {renderSection(
             "Mortgages",
             "mortgage",
             <Home className="h-4 w-4 text-muted-foreground" />,
-            data.mortgage
+            data.mortgage,
           )}
           {renderSection(
             "Other Loans",
             "other",
             <Wallet className="h-4 w-4 text-muted-foreground" />,
-            data.other
+            data.other,
           )}
         </div>
       )}
@@ -428,8 +437,8 @@ export function LiabilitiesPanel() {
       {/* Footer Advisory */}
       <div className="rounded-lg border p-3 text-[10px] text-muted-foreground">
         Admin only. Manual actions required. No automatic refresh. All balances
-        shown are reported "as of" fetch time — not live data. All operations
-        logged with request_id for audit provenance.
+        shown are reported &quot;as of&quot; fetch time — not live data. All
+        operations logged with request_id for audit provenance.
       </div>
     </div>
   );

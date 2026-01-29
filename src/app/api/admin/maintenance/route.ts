@@ -18,7 +18,11 @@ async function assertAdmin(requestId: string) {
 
   if (!userId) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Not authenticated", request_id: requestId },
+      {
+        error: "Unauthorized",
+        message: "Not authenticated",
+        request_id: requestId,
+      },
       { status: 401, headers: { "x-request-id": requestId } },
     );
   }
@@ -40,7 +44,11 @@ async function assertAdmin(requestId: string) {
   }
 
   return NextResponse.json(
-    { error: "Forbidden", message: "Admin access required", request_id: requestId },
+    {
+      error: "Forbidden",
+      message: "Admin access required",
+      request_id: requestId,
+    },
     { status: 403, headers: { "x-request-id": requestId } },
   );
 }
@@ -54,7 +62,11 @@ export async function GET() {
   const edgeConfigId = getEdgeConfigId();
   if (!edgeConfigId) {
     return NextResponse.json(
-      { error: "Edge Config not configured", maintenance: false, request_id: requestId },
+      {
+        error: "Edge Config not configured",
+        maintenance: false,
+        request_id: requestId,
+      },
       { status: 200, headers: { "x-request-id": requestId } },
     );
   }
@@ -70,7 +82,11 @@ export async function GET() {
   if (!res.ok) {
     const text = await res.text();
     return NextResponse.json(
-      { error: "Failed to fetch maintenance_mode", details: text, request_id: requestId },
+      {
+        error: "Failed to fetch maintenance_mode",
+        details: text,
+        request_id: requestId,
+      },
       { status: 500, headers: { "x-request-id": requestId } },
     );
   }
@@ -119,7 +135,11 @@ export async function POST(req: Request) {
   if (!res.ok) {
     const text = await res.text();
     return NextResponse.json(
-      { error: "Failed to update maintenance_mode", details: text, request_id: requestId },
+      {
+        error: "Failed to update maintenance_mode",
+        details: text,
+        request_id: requestId,
+      },
       { status: 500, headers: { "x-request-id": requestId } },
     );
   }

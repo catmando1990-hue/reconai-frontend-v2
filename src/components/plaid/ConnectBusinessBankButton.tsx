@@ -115,7 +115,7 @@ export function ConnectBusinessBankButton() {
 
   const handleOpen = useCallback(() => {
     // Store return path so OAuth callback redirects back to CFO
-    sessionStorage.setItem("plaid_return_to", "/cfo-dashboard");
+    sessionStorage.setItem("plaid_return_to", "/cfo");
   }, []);
 
   const config = useMemo(() => {

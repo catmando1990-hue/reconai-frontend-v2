@@ -2,41 +2,65 @@
  * Canonical Route Map
  * Single source of truth for all dashboard routes.
  * Use these constants instead of hardcoded strings.
+ *
+ * ROUTE STRUCTURE RULES:
+ * - Module roots use the module name: /core, /cfo, /intelligence, /payroll, /govcon
+ * - Sub-pages nest under modules: /core/transactions, /cfo/overview
+ * - No redundant suffixes like -dashboard
  */
 
 export const ROUTES = {
-  // Home
+  // ─────────────────────────────────────────
+  // HOME & GLOBAL
+  // ─────────────────────────────────────────
   HOME: "/home",
+  SETTINGS: "/settings",
+  ACCOUNT: "/account",
 
-  // Core
-  CORE: "/core-dashboard",
-  CORE_TRANSACTIONS: "/core/transactions",
-  CORE_REPORTS: "/core/reports",
+  // ─────────────────────────────────────────
+  // CORE MODULE
+  // ─────────────────────────────────────────
+  CORE: "/core",
   CORE_OVERVIEW: "/core/overview",
+  CORE_TRANSACTIONS: "/core/transactions",
+  CORE_ACCOUNTS: "/core/accounts",
+  CORE_STATEMENTS: "/core/statements",
+  CORE_REPORTS: "/core/reports",
+  CORE_REPORTS_CASH_FLOW: "/core/reports/cash-flow",
+  CORE_REPORTS_CATEGORY_SPEND: "/core/reports/category-spend",
+  CORE_REPORTS_ACCOUNT_ACTIVITY: "/core/reports/account-activity",
+  CORE_REPORTS_LEDGER: "/core/reports/ledger",
 
-  // Accounts & Banking
-  ACCOUNTS: "/accounts",
+  // Banking Actions
   CONNECT_BANK: "/connect-bank",
   UPLOAD: "/upload",
   DOCUMENTS: "/documents",
-  STATEMENTS: "/core/statements",
+  STATEMENTS: "/core/statements", // Alias for CORE_STATEMENTS
+  ACCOUNTS: "/core/accounts", // Alias for CORE_ACCOUNTS
 
-  // Intelligence
-  INTELLIGENCE: "/intelligence-dashboard",
+  // ─────────────────────────────────────────
+  // INTELLIGENCE MODULE
+  // ─────────────────────────────────────────
+  INTELLIGENCE: "/intelligence",
   INTELLIGENCE_INSIGHTS: "/intelligence/insights",
   INTELLIGENCE_ALERTS: "/intelligence/alerts",
   INTELLIGENCE_AI_WORKER: "/intelligence/ai-worker",
 
-  // CFO
-  CFO: "/cfo-dashboard",
+  // ─────────────────────────────────────────
+  // CFO MODULE
+  // ─────────────────────────────────────────
+  CFO: "/cfo",
   CFO_OVERVIEW: "/cfo/overview",
   CFO_EXECUTIVE_SUMMARY: "/cfo/executive-summary",
   CFO_COMPLIANCE: "/cfo/compliance",
-  CFO_FINANCIAL_REPORTS: "/financial-reports",
-  CFO_CASH_FLOW: "/cash-flow",
+  CFO_CASH_FLOW: "/cfo/cash-flow",
+  CFO_REPORTS: "/cfo/reports",
+  CFO_FINANCIAL_REPORTS: "/cfo/reports", // Alias for CFO_REPORTS
 
-  // Payroll
-  PAYROLL: "/payroll-dashboard",
+  // ─────────────────────────────────────────
+  // PAYROLL MODULE
+  // ─────────────────────────────────────────
+  PAYROLL: "/payroll",
   PAYROLL_OVERVIEW: "/payroll/overview",
   PAYROLL_PEOPLE: "/payroll/people",
   PAYROLL_EMPLOYEES: "/payroll/people/employees",
@@ -53,7 +77,9 @@ export const ROUTES = {
   PAYROLL_REPORTS: "/payroll/reports",
   PAYROLL_SETTINGS: "/payroll/settings",
 
-  // GovCon
+  // ─────────────────────────────────────────
+  // GOVCON MODULE
+  // ─────────────────────────────────────────
   GOVCON: "/govcon",
   GOVCON_CONTRACTS: "/govcon/contracts",
   GOVCON_TIMEKEEPING: "/govcon/timekeeping",
@@ -64,8 +90,34 @@ export const ROUTES = {
   GOVCON_EVIDENCE: "/govcon/evidence",
   GOVCON_SF1408: "/govcon/sf-1408",
 
-  // Settings
-  SETTINGS: "/settings",
+  // ─────────────────────────────────────────
+  // INVOICING MODULE
+  // ─────────────────────────────────────────
+  INVOICING: "/invoicing",
+  INVOICING_NEW: "/invoicing/new",
+  INVOICING_PREVIEW: "/invoicing/preview",
+  INVOICING_SETTINGS: "/invoicing/settings",
+  INVOICING_CUSTOMERS: "/invoicing/customers",
+  INVOICING_VENDORS: "/invoicing/vendors",
+
+  // ─────────────────────────────────────────
+  // ADMIN
+  // ─────────────────────────────────────────
+  ADMIN_EXPORTS: "/admin/exports",
+  ADMIN_SETTINGS: "/admin/settings",
+
+  // ─────────────────────────────────────────
+  // DEPRECATED - Redirect targets only
+  // These exist for backwards compatibility and should not be used in new code
+  // ─────────────────────────────────────────
+  /** @deprecated Use CORE instead */
+  _LEGACY_CORE_DASHBOARD: "/core-dashboard",
+  /** @deprecated Use CFO instead */
+  _LEGACY_CFO_DASHBOARD: "/cfo-dashboard",
+  /** @deprecated Use INTELLIGENCE instead */
+  _LEGACY_INTELLIGENCE_DASHBOARD: "/intelligence-dashboard",
+  /** @deprecated Use PAYROLL instead */
+  _LEGACY_PAYROLL_DASHBOARD: "/payroll-dashboard",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -76,4 +128,23 @@ export type Route = (typeof ROUTES)[RouteKey];
  */
 export function isValidRoute(path: string): path is Route {
   return Object.values(ROUTES).includes(path as Route);
+}
+
+/**
+ * Get the canonical route for a potentially legacy path
+ */
+export function getCanonicalRoute(path: string): string {
+  const legacyMappings: Record<string, string> = {
+    "/core-dashboard": ROUTES.CORE,
+    "/cfo-dashboard": ROUTES.CFO,
+    "/intelligence-dashboard": ROUTES.INTELLIGENCE,
+    "/payroll-dashboard": ROUTES.PAYROLL,
+    "/accounts": ROUTES.CORE_ACCOUNTS,
+    "/cash-flow": ROUTES.CFO_CASH_FLOW,
+    "/financial-reports": ROUTES.CFO_REPORTS,
+    "/transactions": ROUTES.CORE_TRANSACTIONS,
+    "/customers": ROUTES.INVOICING_CUSTOMERS,
+    "/vendors": ROUTES.INVOICING_VENDORS,
+  };
+  return legacyMappings[path] || path;
 }

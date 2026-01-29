@@ -14,7 +14,11 @@ async function assertAdmin(requestId: string) {
 
   if (!userId) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Not authenticated", request_id: requestId },
+      {
+        error: "Unauthorized",
+        message: "Not authenticated",
+        request_id: requestId,
+      },
       { status: 401, headers: { "x-request-id": requestId } },
     );
   }
@@ -36,7 +40,11 @@ async function assertAdmin(requestId: string) {
   }
 
   return NextResponse.json(
-    { error: "Forbidden", message: "Admin access required", request_id: requestId },
+    {
+      error: "Forbidden",
+      message: "Admin access required",
+      request_id: requestId,
+    },
     { status: 403, headers: { "x-request-id": requestId } },
   );
 }
@@ -60,7 +68,11 @@ export async function GET(
 
   if (!exportId) {
     return NextResponse.json(
-      { error: "Bad request", message: "Export ID is required", request_id: requestId },
+      {
+        error: "Bad request",
+        message: "Export ID is required",
+        request_id: requestId,
+      },
       { status: 400, headers: { "x-request-id": requestId } },
     );
   }
@@ -84,7 +96,11 @@ export async function GET(
 
     if (res.status === 404) {
       return NextResponse.json(
-        { error: "Not found", message: "Export not found", request_id: requestId },
+        {
+          error: "Not found",
+          message: "Export not found",
+          request_id: requestId,
+        },
         { status: 404, headers: { "x-request-id": requestId } },
       );
     }

@@ -7,41 +7,31 @@ import { PrimaryPanel } from "@/components/dashboard/PrimaryPanel";
 import { SecondaryPanel } from "@/components/dashboard/SecondaryPanel";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { ROUTES } from "@/lib/routes";
-import {
-  BarChart3,
-  FileText,
-  PieChart,
-  TrendingUp,
-  Info,
-} from "lucide-react";
+import { BarChart3, FileText, PieChart, TrendingUp, Info } from "lucide-react";
 
 const reportCategories = [
   {
     name: "Profit & Loss",
     icon: TrendingUp,
-    description:
-      "Revenue, expenses, and net income over a selected period",
+    description: "Revenue, expenses, and net income over a selected period",
     status: "Awaiting data",
   },
   {
     name: "Balance Sheet",
     icon: BarChart3,
-    description:
-      "Assets, liabilities, and equity at a point in time",
+    description: "Assets, liabilities, and equity at a point in time",
     status: "Awaiting data",
   },
   {
     name: "Cash Flow Statement",
     icon: PieChart,
-    description:
-      "Operating, investing, and financing cash flows",
+    description: "Operating, investing, and financing cash flows",
     status: "Awaiting data",
   },
   {
     name: "Trial Balance",
     icon: FileText,
-    description:
-      "Debit and credit totals for all ledger accounts",
+    description: "Debit and credit totals for all ledger accounts",
     status: "Awaiting data",
   },
 ];
@@ -82,9 +72,7 @@ function FinancialReportsBody() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-base font-medium">
-                          {report.name}
-                        </h3>
+                        <h3 className="text-base font-medium">{report.name}</h3>
                         <span className="text-xs text-muted-foreground italic">
                           {report.status}
                         </span>

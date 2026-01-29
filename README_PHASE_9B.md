@@ -13,6 +13,7 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
 ## Features
 
 ### Controls
+
 - **RBAC**: Admin / org:admin only (renders `null` for non-admins)
 - **Generate Button**: Manual "Generate Audit Export (v2)" action
 - **Section Toggles** (checkboxes):
@@ -23,12 +24,14 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
 - **Confirmation Step**: Required before generation
 
 ### States
+
 1. `idle` — Initial state, section toggles visible
 2. `building` — Export generation in progress
 3. `ready` — Export complete, download available
 4. `error` — Error state with message and request_id
 
 ### Success Display
+
 - Generated timestamp
 - Included sections list
 - Export ID
@@ -36,33 +39,36 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
 - Manual "Download Export" button (no auto-download)
 
 ### Error Display
+
 - Human-readable error message
 - `request_id` surfaced for audit provenance
 - "Try Again" button to reset
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Main UI component |
-| `src/app/api/exports/audit-package-v2/route.ts` | Generate endpoint |
+| File                                                     | Purpose           |
+| -------------------------------------------------------- | ----------------- |
+| `src/components/govcon/audit/AuditExportV2Panel.tsx`     | Main UI component |
+| `src/app/api/exports/audit-package-v2/route.ts`          | Generate endpoint |
 | `src/app/api/exports/audit-package-v2/download/route.ts` | Download endpoint |
-| `src/lib/api/auditExportsV2.ts` | Thin API wrapper |
-| `src/types/audit.ts` | TypeScript types |
+| `src/lib/api/auditExportsV2.ts`                          | Thin API wrapper  |
+| `src/types/audit.ts`                                     | TypeScript types  |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
+| File                                           | Change                     |
+| ---------------------------------------------- | -------------------------- |
 | `src/app/(dashboard)/govcon/evidence/page.tsx` | Added `AuditExportV2Panel` |
 
 ## Manual Test Steps
 
 ### Pre-requisites
+
 1. User must have `admin` or `org:admin` role in Clerk metadata
 2. Backend endpoint `POST /api/audit-exports/v2` must be available
 
 ### Test: RBAC Enforcement
+
 1. Log in as a non-admin user
 2. Navigate to `/govcon/evidence`
 3. **Expected**: AuditExportV2Panel is NOT visible (renders null)
@@ -71,6 +77,7 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
 6. **Expected**: AuditExportV2Panel IS visible
 
 ### Test: Generation Flow
+
 1. Log in as admin
 2. Navigate to `/govcon/evidence`
 3. Verify all section checkboxes are checked by default
@@ -86,6 +93,7 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
    - Advisory copy
 
 ### Test: Download Flow
+
 1. Complete generation test above
 2. Click "Download Export" button
 3. **Expected**: Browser file download dialog appears
@@ -93,6 +101,7 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
 5. **Expected**: No auto-download occurred
 
 ### Test: Error Handling
+
 1. Disconnect network or configure backend to return error
 2. Attempt generation
 3. **Expected**: Error state shows:
@@ -102,6 +111,7 @@ The `AuditExportV2Panel` component is placed in the **Evidence** page (`/govcon/
 5. **Expected**: Returns to idle state
 
 ### Test: Section Toggle Validation
+
 1. Uncheck all section checkboxes
 2. **Expected**: Generate button is disabled
 3. Check at least one section
@@ -176,6 +186,7 @@ With tooltip (hover over info icon):
 ## Badge Location
 
 The badge appears in the "Export Ready" success state, positioned inline with other metadata:
+
 - Generated timestamp
 - Included sections list
 - Export ID
@@ -190,6 +201,7 @@ The badge appears in the "Export Ready" success state, positioned inline with ot
 ## RBAC
 
 The badge inherits RBAC from the parent `AuditExportV2Panel`:
+
 - Visible only to `admin` or `org:admin` roles
 - Non-admin users see nothing (component renders `null`)
 
@@ -202,12 +214,12 @@ The badge inherits RBAC from the parent `AuditExportV2Panel`:
 
 ## Files Modified (Phase 10B)
 
-| File | Change |
-|------|--------|
-| `src/types/audit.ts` | Added `GovconMappingMetadata` type, `hasGovconMapping` to result |
-| `src/app/api/exports/audit-package-v2/route.ts` | Pass through `govcon_mapping` from backend |
-| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Added badge rendering logic |
-| `README_PHASE_9B.md` | Added Phase 10B documentation |
+| File                                                 | Change                                                           |
+| ---------------------------------------------------- | ---------------------------------------------------------------- |
+| `src/types/audit.ts`                                 | Added `GovconMappingMetadata` type, `hasGovconMapping` to result |
+| `src/app/api/exports/audit-package-v2/route.ts`      | Pass through `govcon_mapping` from backend                       |
+| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Added badge rendering logic                                      |
+| `README_PHASE_9B.md`                                 | Added Phase 10B documentation                                    |
 
 ## How to Verify
 
@@ -287,6 +299,7 @@ No code execution. No CLI helpers. No buttons.
 ## Panel Location
 
 Within the Audit Export v2 "Export Ready" state, below the success metadata block:
+
 - Generated timestamp
 - Included sections list
 - Export ID
@@ -303,6 +316,7 @@ Within the Audit Export v2 "Export Ready" state, below the success metadata bloc
 ## RBAC
 
 Inherits from parent `AuditExportV2Panel`:
+
 - Visible only to `admin` or `org:admin` roles
 - Non-admin users see nothing (component renders `null`)
 
@@ -315,13 +329,13 @@ Inherits from parent `AuditExportV2Panel`:
 
 ## Files Modified (Phase 11B)
 
-| File | Change |
-|------|--------|
-| `src/types/audit.ts` | Added `ExportIntegrityMetadata` type, `integrity?` to result and response |
-| `src/app/api/exports/audit-package-v2/route.ts` | Pass through `integrity` from backend |
-| `src/lib/api/auditExportsV2.ts` | Include `integrity` in result mapping |
-| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Added `IntegrityMetadataPanel` and `CopyableField` components |
-| `README_PHASE_9B.md` | Added Phase 11B documentation |
+| File                                                 | Change                                                                    |
+| ---------------------------------------------------- | ------------------------------------------------------------------------- |
+| `src/types/audit.ts`                                 | Added `ExportIntegrityMetadata` type, `integrity?` to result and response |
+| `src/app/api/exports/audit-package-v2/route.ts`      | Pass through `integrity` from backend                                     |
+| `src/lib/api/auditExportsV2.ts`                      | Include `integrity` in result mapping                                     |
+| `src/components/govcon/audit/AuditExportV2Panel.tsx` | Added `IntegrityMetadataPanel` and `CopyableField` components             |
+| `README_PHASE_9B.md`                                 | Added Phase 11B documentation                                             |
 
 ## How to Verify
 
@@ -417,10 +431,10 @@ When `integrity` metadata is present in the export response:
 
 ## Files Modified (Phase 13B)
 
-| File | Change |
-|------|--------|
+| File                                                 | Change                                                                              |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `src/components/govcon/audit/AuditExportV2Panel.tsx` | Renamed panel title to "External Verification (Offline)", updated instructions text |
-| `README_PHASE_9B.md` | Added Phase 13B documentation |
+| `README_PHASE_9B.md`                                 | Added Phase 13B documentation                                                       |
 
 ## Verification Checklist (Phase 13B)
 

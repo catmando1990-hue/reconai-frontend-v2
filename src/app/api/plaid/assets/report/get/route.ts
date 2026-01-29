@@ -105,13 +105,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Map to consistent shape
-    const normalizedReports = reports.map((report: Record<string, unknown>) => ({
-      report_id: report.asset_report_id || report.report_id || report.id,
-      generated_at: report.generated_at || report.created_at || report.date_generated,
-      // Calculate total assets from accounts if available
-      total_assets: calculateTotalAssets(report),
-      accounts: normalizeAccounts(report),
-    }));
+    const normalizedReports = reports.map(
+      (report: Record<string, unknown>) => ({
+        report_id: report.asset_report_id || report.report_id || report.id,
+        generated_at:
+          report.generated_at || report.created_at || report.date_generated,
+        // Calculate total assets from accounts if available
+        total_assets: calculateTotalAssets(report),
+        accounts: normalizeAccounts(report),
+      }),
+    );
 
     return NextResponse.json(
       {
@@ -142,15 +145,20 @@ export async function POST(request: NextRequest) {
  * Uses balance_as_of snapshot value, NOT live balance.
  */
 function calculateTotalAssets(report: Record<string, unknown>): number {
-  const items = (report.items || report.accounts || []) as Array<Record<string, unknown>>;
+  const items = (report.items || report.accounts || []) as Array<
+    Record<string, unknown>
+  >;
   let total = 0;
 
   for (const item of items) {
-    const accounts = (item.accounts || [item]) as Array<Record<string, unknown>>;
+    const accounts = (item.accounts || [item]) as Array<
+      Record<string, unknown>
+    >;
     for (const account of accounts) {
       const balances = account.balances as Record<string, unknown> | undefined;
       // Use historical snapshot balance, NOT current
-      const balance = balances?.available ?? balances?.current ?? account.balance ?? 0;
+      const balance =
+        balances?.available ?? balances?.current ?? account.balance ?? 0;
       total += Number(balance) || 0;
     }
   }
@@ -183,9 +191,15 @@ function normalizeAccounts(report: Record<string, unknown>): Array<{
 
   for (const item of items) {
     const institution = item.institution as Record<string, unknown> | undefined;
-    const institutionName = (item.institution_name || institution?.name || "Unknown") as string;
-    const institutionId = (item.institution_id || institution?.institution_id || "") as string;
-    const itemAccounts = (item.accounts || []) as Array<Record<string, unknown>>;
+    const institutionName = (item.institution_name ||
+      institution?.name ||
+      "Unknown") as string;
+    const institutionId = (item.institution_id ||
+      institution?.institution_id ||
+      "") as string;
+    const itemAccounts = (item.accounts || []) as Array<
+      Record<string, unknown>
+    >;
 
     for (const acct of itemAccounts) {
       const balances = acct.balances as Record<string, unknown> | undefined;
@@ -196,7 +210,9 @@ function normalizeAccounts(report: Record<string, unknown>): Array<{
         account_mask: (acct.mask || "****") as string,
         account_type: (acct.type || acct.subtype || "depository") as string,
         // Historical snapshot balance - NOT live
-        balance_as_of: Number(balances?.available ?? balances?.current ?? acct.balance ?? 0),
+        balance_as_of: Number(
+          balances?.available ?? balances?.current ?? acct.balance ?? 0,
+        ),
       });
     }
   }
@@ -212,7 +228,9 @@ function normalizeAccounts(report: Record<string, unknown>): Array<{
         account_name: (acct.name || acct.official_name || "Account") as string,
         account_mask: (acct.mask || "****") as string,
         account_type: (acct.type || acct.subtype || "depository") as string,
-        balance_as_of: Number(balances?.available ?? balances?.current ?? acct.balance ?? 0),
+        balance_as_of: Number(
+          balances?.available ?? balances?.current ?? acct.balance ?? 0,
+        ),
       });
     }
   }

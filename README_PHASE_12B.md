@@ -33,16 +33,19 @@ The `GovConPresetPanel` component is placed on the **Evidence** page (`/govcon/e
 Generates a pre-award evidence bundle aligned to SF 1408.
 
 **Options:**
+
 - **Statement period** (from / to dates): Date range for included bank statements
 - **Asset snapshot**: "Use latest available" or explicit snapshot ID
 - **Liabilities**: Auto-included (no toggle)
 
 **Helper text:**
+
 > "Generates a pre-award evidence bundle aligned to SF 1408. ReconAI does not certify compliance."
 
 ## Features
 
 ### Controls
+
 - **RBAC**: Admin / org:admin only (renders `null` for non-admins)
 - **Preset Selector**: Dropdown with available presets
 - **Preset-specific Options**: Conditional fields based on selected preset
@@ -50,12 +53,14 @@ Generates a pre-award evidence bundle aligned to SF 1408.
 - **Confirmation Step**: Required before generation
 
 ### States
+
 1. `idle` — Preset selection + options visible
 2. `building` — Packet generation in progress
 3. `ready` — Packet complete, download available
 4. `error` — Error state with message and request_id
 
 ### Success Display
+
 - Preset name
 - Generated timestamp
 - Included sections list
@@ -65,6 +70,7 @@ Generates a pre-award evidence bundle aligned to SF 1408.
 - Manual "Download Packet" button (no auto-download)
 
 ### Error Display
+
 - Human-readable error message
 - `request_id` surfaced for audit provenance
 - "Try Again" button to reset
@@ -76,6 +82,7 @@ POST /api/audit-exports/v2/presets
 ```
 
 **Request body:**
+
 ```json
 {
   "organization_id": "string",
@@ -91,6 +98,7 @@ POST /api/audit-exports/v2/presets
 ```
 
 **Response:**
+
 ```json
 {
   "ok": true,
@@ -107,19 +115,19 @@ POST /api/audit-exports/v2/presets
 
 ## Files Created (Phase 12B)
 
-| File | Purpose |
-|------|---------|
-| `src/components/govcon/audit/GovConPresetPanel.tsx` | Main UI component |
+| File                                                    | Purpose                          |
+| ------------------------------------------------------- | -------------------------------- |
+| `src/components/govcon/audit/GovConPresetPanel.tsx`     | Main UI component                |
 | `src/app/api/exports/audit-package-v2/presets/route.ts` | Preset generation proxy endpoint |
-| `src/lib/api/auditExportPresets.ts` | Thin API wrapper |
-| `README_PHASE_12B.md` | This documentation |
+| `src/lib/api/auditExportPresets.ts`                     | Thin API wrapper                 |
+| `README_PHASE_12B.md`                                   | This documentation               |
 
 ## Files Modified (Phase 12B)
 
-| File | Change |
-|------|--------|
-| `src/types/audit.ts` | Added `GovConPreset`, `GovConPresetOption`, `GovConPresetRequest`, `GovConPresetGenerateResponse`, `GovConPresetResult` types |
-| `src/app/(dashboard)/govcon/evidence/page.tsx` | Added `GovConPresetPanel` import and usage |
+| File                                           | Change                                                                                                                        |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `src/types/audit.ts`                           | Added `GovConPreset`, `GovConPresetOption`, `GovConPresetRequest`, `GovConPresetGenerateResponse`, `GovConPresetResult` types |
+| `src/app/(dashboard)/govcon/evidence/page.tsx` | Added `GovConPresetPanel` import and usage                                                                                    |
 
 ## RBAC
 
@@ -152,10 +160,12 @@ POST /api/audit-exports/v2/presets
 ## Manual Test Steps
 
 ### Pre-requisites
+
 1. User must have `admin` or `org:admin` role in Clerk metadata
 2. Backend endpoint `POST /api/audit-exports/v2/presets` must be available
 
 ### Test: RBAC Enforcement
+
 1. Log in as a non-admin user
 2. Navigate to `/govcon/evidence`
 3. **Expected**: GovConPresetPanel is NOT visible
@@ -163,6 +173,7 @@ POST /api/audit-exports/v2/presets
 5. **Expected**: GovConPresetPanel IS visible
 
 ### Test: SF 1408 Generation Flow
+
 1. Log in as admin
 2. Navigate to `/govcon/evidence`
 3. Verify preset dropdown shows "SF 1408 — Pre-Award"
@@ -176,12 +187,14 @@ POST /api/audit-exports/v2/presets
 11. **Expected**: State changes to "ready" with preset name, timestamp, sections, export ID
 
 ### Test: Download Flow
+
 1. Complete generation test above
 2. Click "Download Packet" button
 3. **Expected**: Browser file download dialog appears
 4. **Expected**: No auto-download occurred
 
 ### Test: Error Handling
+
 1. Disconnect network or configure backend to return error
 2. Attempt generation
 3. **Expected**: Error state shows human-readable message and request_id

@@ -153,7 +153,9 @@ export function AuditExportButton() {
         >
           {message}
           {exportId && status === "success" && (
-            <span className="ml-2 font-mono">ID: {exportId.slice(0, 8)}...</span>
+            <span className="ml-2 font-mono">
+              ID: {exportId.slice(0, 8)}...
+            </span>
           )}
         </div>
       )}

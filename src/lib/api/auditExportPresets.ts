@@ -18,6 +18,7 @@ import type {
   GovConPresetGenerateResponse,
   GovConPresetResult,
 } from "@/types/audit";
+import { auditedFetch } from "@/lib/auditedFetch";
 
 // =============================================================================
 // GENERATE PRESET PACKET
@@ -33,20 +34,26 @@ import type {
 export async function generatePresetPacket(
   request: GovConPresetRequest,
 ): Promise<{ ok: true; result: GovConPresetResult; request_id: string }> {
-  const res = await fetch("/api/exports/audit-package-v2/presets", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      preset: request.preset,
-      options: request.options,
-    }),
-  });
+  const res = await auditedFetch<Response>(
+    "/api/exports/audit-package-v2/presets",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        preset: request.preset,
+        options: request.options,
+      }),
+      rawResponse: true,
+    },
+  );
 
   const requestId = res.headers.get("x-request-id") || "";
   const json: GovConPresetGenerateResponse = await res.json();
 
   if (!json.ok || !res.ok) {
-    const error = new Error(json.error || `Failed to generate packet (${res.status})`);
+    const error = new Error(
+      json.error || `Failed to generate packet (${res.status})`,
+    );
     (error as Error & { request_id: string }).request_id = requestId;
     throw error;
   }
@@ -97,8 +104,9 @@ export async function generatePresetPacket(
 export async function downloadPresetPacket(
   exportId: string,
 ): Promise<{ ok: true; filename: string; request_id: string }> {
-  const res = await fetch(
+  const res = await auditedFetch<Response>(
     `/api/exports/audit-package-v2/download?export_id=${encodeURIComponent(exportId)}`,
+    { rawResponse: true },
   );
 
   const requestId = res.headers.get("x-request-id") || "";

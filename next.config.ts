@@ -33,6 +33,63 @@ const nextConfig: NextConfig = {
         destination: "/privacy",
         permanent: true,
       },
+      // Legacy -dashboard suffix routes
+      {
+        source: "/core-dashboard",
+        destination: "/core",
+        permanent: true,
+      },
+      {
+        source: "/cfo-dashboard",
+        destination: "/cfo",
+        permanent: true,
+      },
+      {
+        source: "/intelligence-dashboard",
+        destination: "/intelligence",
+        permanent: true,
+      },
+      {
+        source: "/payroll-dashboard",
+        destination: "/payroll",
+        permanent: true,
+      },
+      // Orphaned routes that should be nested
+      {
+        source: "/accounts",
+        destination: "/core/accounts",
+        permanent: true,
+      },
+      {
+        source: "/transactions",
+        destination: "/core/transactions",
+        permanent: true,
+      },
+      {
+        source: "/cash-flow",
+        destination: "/cfo/cash-flow",
+        permanent: true,
+      },
+      {
+        source: "/financial-reports",
+        destination: "/cfo/reports",
+        permanent: true,
+      },
+      {
+        source: "/compliance",
+        destination: "/cfo/compliance",
+        permanent: true,
+      },
+      {
+        source: "/customers",
+        destination: "/invoicing/customers",
+        permanent: true,
+      },
+      {
+        source: "/vendors",
+        destination: "/invoicing/vendors",
+        permanent: true,
+      },
       // 308 redirects for legacy /dashboard/* routes to canonical route-group paths
       {
         source: "/dashboard",

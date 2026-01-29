@@ -44,16 +44,19 @@ export async function POST() {
       );
     }
 
-    const res = await fetch(`${backendUrl}/api/plaid/investments/holdings/get`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-request-id": requestId,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const res = await fetch(
+      `${backendUrl}/api/plaid/investments/holdings/get`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(30000),
       },
-      body: JSON.stringify({}),
-      signal: AbortSignal.timeout(30000),
-    });
+    );
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => "Unknown error");
@@ -86,7 +89,9 @@ export async function POST() {
     const backendData = data.data || data;
 
     // Build securities lookup
-    const securities = (backendData.securities || []) as Array<Record<string, unknown>>;
+    const securities = (backendData.securities || []) as Array<
+      Record<string, unknown>
+    >;
     const securitiesMap = new Map<string, Record<string, unknown>>();
     for (const sec of securities) {
       if (sec.security_id) {
@@ -95,7 +100,9 @@ export async function POST() {
     }
 
     // Build accounts lookup
-    const accounts = (backendData.accounts || []) as Array<Record<string, unknown>>;
+    const accounts = (backendData.accounts || []) as Array<
+      Record<string, unknown>
+    >;
     const accountsMap = new Map<string, Record<string, unknown>>();
     for (const acct of accounts) {
       if (acct.account_id) {
@@ -104,26 +111,40 @@ export async function POST() {
     }
 
     // Normalize holdings with security and account info
-    const holdings = (backendData.holdings || []) as Array<Record<string, unknown>>;
+    const holdings = (backendData.holdings || []) as Array<
+      Record<string, unknown>
+    >;
     const normalizedHoldings = holdings.map((holding) => {
       const security = securitiesMap.get(holding.security_id as string) || {};
       const account = accountsMap.get(holding.account_id as string) || {};
 
       return {
-        holding_id: holding.holding_id || `${holding.account_id}-${holding.security_id}`,
+        holding_id:
+          holding.holding_id || `${holding.account_id}-${holding.security_id}`,
         account_id: holding.account_id,
         institution_name: account.institution_name || account.name || "Unknown",
-        account_name: account.name || account.official_name || "Investment Account",
+        account_name:
+          account.name || account.official_name || "Investment Account",
         account_mask: account.mask || "****",
         security_id: holding.security_id,
-        security_name: security.name || security.ticker_symbol || "Unknown Security",
+        security_name:
+          security.name || security.ticker_symbol || "Unknown Security",
         ticker_symbol: security.ticker_symbol || null,
         security_type: security.type || "unknown",
         quantity: Number(holding.quantity || 0),
-        price_as_of: Number(holding.institution_price || security.close_price || 0),
-        value_as_of: Number(holding.institution_value || Number(holding.quantity || 0) * Number(holding.institution_price || 0)),
+        price_as_of: Number(
+          holding.institution_price || security.close_price || 0,
+        ),
+        value_as_of: Number(
+          holding.institution_value ||
+            Number(holding.quantity || 0) *
+              Number(holding.institution_price || 0),
+        ),
         cost_basis: holding.cost_basis ?? null,
-        as_of: holding.institution_price_as_of || backendData.as_of || new Date().toISOString(),
+        as_of:
+          holding.institution_price_as_of ||
+          backendData.as_of ||
+          new Date().toISOString(),
       };
     });
 
@@ -136,8 +157,9 @@ export async function POST() {
       account_type: acct.type || acct.subtype || "investment",
       reported_balance: Number(
         (acct.balances as Record<string, unknown> | undefined)?.available ??
-        (acct.balances as Record<string, unknown> | undefined)?.current ??
-        acct.balance ?? 0
+          (acct.balances as Record<string, unknown> | undefined)?.current ??
+          acct.balance ??
+          0,
       ),
     }));
 
@@ -146,7 +168,10 @@ export async function POST() {
         ok: true,
         holdings: normalizedHoldings,
         accounts: normalizedAccounts,
-        total_value: normalizedHoldings.reduce((sum, h) => sum + h.value_as_of, 0),
+        total_value: normalizedHoldings.reduce(
+          (sum, h) => sum + h.value_as_of,
+          0,
+        ),
         fetched_at: new Date().toISOString(),
         request_id: requestId,
       },

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useOrg } from "@/lib/org-context";
 import { useFinancialEvidence } from "@/lib/financial-evidence-context";
+import { auditedFetch } from "@/lib/auditedFetch";
 import {
   TrendingUp,
   RefreshCw,
@@ -164,13 +165,19 @@ export function InvestmentsPanel() {
   const evidenceContext = useFinancialEvidence();
 
   // Active tab
-  const [activeTab, setActiveTab] = useState<"holdings" | "transactions">("holdings");
+  const [activeTab, setActiveTab] = useState<"holdings" | "transactions">(
+    "holdings",
+  );
 
   // Holdings state
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [holdingsTotal, setHoldingsTotal] = useState<number>(0);
-  const [holdingsFetchedAt, setHoldingsFetchedAt] = useState<string | null>(null);
-  const [holdingsState, setHoldingsState] = useState<ActionState>({ status: "idle" });
+  const [holdingsFetchedAt, setHoldingsFetchedAt] = useState<string | null>(
+    null,
+  );
+  const [holdingsState, setHoldingsState] = useState<ActionState>({
+    status: "idle",
+  });
 
   // Transactions state
   const [transactions, setTransactions] = useState<InvestmentTransaction[]>([]);
@@ -183,10 +190,14 @@ export function InvestmentsPanel() {
     return new Date().toISOString().split("T")[0];
   });
   const [txFetchedAt, setTxFetchedAt] = useState<string | null>(null);
-  const [transactionsState, setTransactionsState] = useState<ActionState>({ status: "idle" });
+  const [transactionsState, setTransactionsState] = useState<ActionState>({
+    status: "idle",
+  });
 
   // Refresh state
-  const [refreshState, setRefreshState] = useState<ActionState>({ status: "idle" });
+  const [refreshState, setRefreshState] = useState<ActionState>({
+    status: "idle",
+  });
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
 
   // ==========================================================================
@@ -207,7 +218,9 @@ export function InvestmentsPanel() {
     if (!evidenceContext) return;
 
     // Report loaded state when either holdings or transactions have been loaded
-    const loaded = holdingsState.status === "success" || transactionsState.status === "success";
+    const loaded =
+      holdingsState.status === "success" ||
+      transactionsState.status === "success";
 
     evidenceContext.updateInvestments({
       loaded,
@@ -217,7 +230,14 @@ export function InvestmentsPanel() {
       transactionsFetchedAt: txFetchedAt,
       refreshedAt: lastRefreshedAt,
     });
-  }, [evidenceContext, holdingsState.status, transactionsState.status, holdingsFetchedAt, txFetchedAt, lastRefreshedAt]);
+  }, [
+    evidenceContext,
+    holdingsState.status,
+    transactionsState.status,
+    holdingsFetchedAt,
+    txFetchedAt,
+    lastRefreshedAt,
+  ]);
 
   // Don't render until auth is loaded
   if (!userLoaded || !orgLoaded) return null;
@@ -236,10 +256,14 @@ export function InvestmentsPanel() {
     setHoldings([]);
 
     try {
-      const res = await fetch("/api/plaid/investments/holdings/get", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await auditedFetch<Response>(
+        "/api/plaid/investments/holdings/get",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          rawResponse: true,
+        },
+      );
 
       const reqId = res.headers.get("x-request-id");
       const json: HoldingsResponse = await res.json();
@@ -270,14 +294,18 @@ export function InvestmentsPanel() {
     setTransactions([]);
 
     try {
-      const res = await fetch("/api/plaid/investments/transactions/get", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          start_date: txStartDate,
-          end_date: txEndDate,
-        }),
-      });
+      const res = await auditedFetch<Response>(
+        "/api/plaid/investments/transactions/get",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            start_date: txStartDate,
+            end_date: txEndDate,
+          }),
+          rawResponse: true,
+        },
+      );
 
       const reqId = res.headers.get("x-request-id");
       const json: TransactionsResponse = await res.json();
@@ -293,7 +321,10 @@ export function InvestmentsPanel() {
 
       setTransactions(json.transactions || []);
       setTxFetchedAt(json.fetched_at);
-      setTransactionsState({ status: "success", requestId: reqId || undefined });
+      setTransactionsState({
+        status: "success",
+        requestId: reqId || undefined,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Network error";
       setTransactionsState({ status: "error", error: message });
@@ -306,10 +337,14 @@ export function InvestmentsPanel() {
     setRefreshState({ status: "loading" });
 
     try {
-      const res = await fetch("/api/plaid/investments/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await auditedFetch<Response>(
+        "/api/plaid/investments/refresh",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          rawResponse: true,
+        },
+      );
 
       const reqId = res.headers.get("x-request-id");
       const json: RefreshResponse = await res.json();
@@ -463,7 +498,9 @@ export function InvestmentsPanel() {
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-destructive">{holdingsState.error}</p>
+                  <p className="font-medium text-destructive">
+                    {holdingsState.error}
+                  </p>
                   {holdingsState.requestId && (
                     <p className="mt-1 font-mono text-xs text-muted-foreground">
                       request_id: {holdingsState.requestId}
@@ -491,7 +528,8 @@ export function InvestmentsPanel() {
           {/* Holdings Empty */}
           {holdingsState.status === "success" && holdings.length === 0 && (
             <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-              No investment holdings found. Connect investment accounts to see them here.
+              No investment holdings found. Connect investment accounts to see
+              them here.
             </div>
           )}
 
@@ -505,7 +543,9 @@ export function InvestmentsPanel() {
                     <th className="p-3 font-medium">Account</th>
                     <th className="p-3 font-medium">Security</th>
                     <th className="p-3 font-medium text-right">Quantity</th>
-                    <th className="p-3 font-medium text-right">Value (As Of)</th>
+                    <th className="p-3 font-medium text-right">
+                      Value (As Of)
+                    </th>
                     <th className="p-3 font-medium text-right">As Of</th>
                   </tr>
                 </thead>
@@ -607,7 +647,9 @@ export function InvestmentsPanel() {
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-destructive">{transactionsState.error}</p>
+                  <p className="font-medium text-destructive">
+                    {transactionsState.error}
+                  </p>
                   {transactionsState.requestId && (
                     <p className="mt-1 font-mono text-xs text-muted-foreground">
                       request_id: {transactionsState.requestId}
@@ -619,70 +661,72 @@ export function InvestmentsPanel() {
           )}
 
           {/* Transactions Empty */}
-          {transactionsState.status === "success" && transactions.length === 0 && (
-            <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-              No investment transactions found for the selected date range.
-            </div>
-          )}
+          {transactionsState.status === "success" &&
+            transactions.length === 0 && (
+              <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+                No investment transactions found for the selected date range.
+              </div>
+            )}
 
           {/* Transactions Table */}
-          {transactionsState.status === "success" && transactions.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/30">
-                  <tr className="text-left">
-                    <th className="p-3 font-medium">Date</th>
-                    <th className="p-3 font-medium">Account</th>
-                    <th className="p-3 font-medium">Security</th>
-                    <th className="p-3 font-medium">Type</th>
-                    <th className="p-3 font-medium text-right">Quantity</th>
-                    <th className="p-3 font-medium text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((tx) => (
-                    <tr key={tx.transaction_id} className="border-t">
-                      <td className="p-3 whitespace-nowrap">
-                        {formatDate(tx.date)}
-                      </td>
-                      <td className="p-3">
-                        <div>{tx.account_name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          ****{tx.account_mask}
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <div>{tx.security_name}</div>
-                        {tx.ticker_symbol && (
-                          <div className="text-xs text-muted-foreground font-mono">
-                            {tx.ticker_symbol}
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-3 capitalize text-muted-foreground">
-                        {tx.type}
-                        {tx.subtype && ` (${tx.subtype})`}
-                      </td>
-                      <td className="p-3 text-right font-mono">
-                        {formatQuantity(tx.quantity)}
-                      </td>
-                      <td className="p-3 text-right font-medium">
-                        {formatCurrency(tx.amount)}
-                      </td>
+          {transactionsState.status === "success" &&
+            transactions.length > 0 && (
+              <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/30">
+                    <tr className="text-left">
+                      <th className="p-3 font-medium">Date</th>
+                      <th className="p-3 font-medium">Account</th>
+                      <th className="p-3 font-medium">Security</th>
+                      <th className="p-3 font-medium">Type</th>
+                      <th className="p-3 font-medium text-right">Quantity</th>
+                      <th className="p-3 font-medium text-right">Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {transactions.map((tx) => (
+                      <tr key={tx.transaction_id} className="border-t">
+                        <td className="p-3 whitespace-nowrap">
+                          {formatDate(tx.date)}
+                        </td>
+                        <td className="p-3">
+                          <div>{tx.account_name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            ****{tx.account_mask}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div>{tx.security_name}</div>
+                          {tx.ticker_symbol && (
+                            <div className="text-xs text-muted-foreground font-mono">
+                              {tx.ticker_symbol}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3 capitalize text-muted-foreground">
+                          {tx.type}
+                          {tx.subtype && ` (${tx.subtype})`}
+                        </td>
+                        <td className="p-3 text-right font-mono">
+                          {formatQuantity(tx.quantity)}
+                        </td>
+                        <td className="p-3 text-right font-medium">
+                          {formatCurrency(tx.amount)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
         </div>
       )}
 
       {/* Footer Advisory */}
       <div className="rounded-lg border p-3 text-[10px] text-muted-foreground">
         Admin only. Manual actions required. No automatic refresh. All values
-        shown are "as of" fetch time — not live market data. All operations
-        logged with request_id for audit provenance.
+        shown are &quot;as of&quot; fetch time — not live market data. All
+        operations logged with request_id for audit provenance.
       </div>
     </div>
   );

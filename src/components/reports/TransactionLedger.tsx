@@ -205,7 +205,11 @@ export function TransactionLedger() {
                     </td>
                     <td className="px-4 py-2.5">
                       <div className="max-w-[200px] truncate">
-                        {tx.merchant || tx.merchant_name || tx.description || tx.name || "—"}
+                        {tx.merchant ||
+                          tx.merchant_name ||
+                          tx.description ||
+                          tx.name ||
+                          "—"}
                       </div>
                     </td>
                     <td
@@ -219,7 +223,12 @@ export function TransactionLedger() {
                     </td>
                     <td className="px-4 py-2.5 text-muted-foreground">
                       <div className="max-w-[120px] truncate">
-                        {tx.account_name || (tx.account ? tx.account.slice(-8) : tx.account_id ? tx.account_id.slice(-8) : "—")}
+                        {tx.account_name ||
+                          (tx.account
+                            ? tx.account.slice(-8)
+                            : tx.account_id
+                              ? tx.account_id.slice(-8)
+                              : "—")}
                       </div>
                     </td>
                     <td className="px-4 py-2.5 text-muted-foreground">

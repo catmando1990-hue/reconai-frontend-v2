@@ -158,7 +158,8 @@ export default function CoreTransactionsPage() {
                       <td
                         className={`py-3 text-right font-medium font-mono ${tx.amount > 0 ? "text-destructive" : "text-emerald-600"}`}
                       >
-                        {tx.amount > 0 ? "-" : "+"}{formatCurrency(Math.abs(tx.amount))}
+                        {tx.amount > 0 ? "-" : "+"}
+                        {formatCurrency(Math.abs(tx.amount))}
                       </td>
                       <td className="py-3 text-center">
                         {tx.pending ? (
@@ -196,7 +197,9 @@ export default function CoreTransactionsPage() {
                       {page + 1} / {totalPages}
                     </span>
                     <button
-                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                      onClick={() =>
+                        setPage((p) => Math.min(totalPages - 1, p + 1))
+                      }
                       disabled={page >= totalPages - 1}
                       className="rounded p-1.5 hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
                     >

@@ -35,11 +35,13 @@ export async function POST(request: NextRequest) {
 
     // Default date range: last 30 days
     const endDate = body.end_date || new Date().toISOString().split("T")[0];
-    const startDate = body.start_date || (() => {
-      const d = new Date();
-      d.setDate(d.getDate() - 30);
-      return d.toISOString().split("T")[0];
-    })();
+    const startDate =
+      body.start_date ||
+      (() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        return d.toISOString().split("T")[0];
+      })();
 
     const token = await getToken();
 
@@ -58,19 +60,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const res = await fetch(`${backendUrl}/api/plaid/investments/transactions/get`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-request-id": requestId,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const res = await fetch(
+      `${backendUrl}/api/plaid/investments/transactions/get`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-request-id": requestId,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          start_date: startDate,
+          end_date: endDate,
+        }),
+        signal: AbortSignal.timeout(30000),
       },
-      body: JSON.stringify({
-        start_date: startDate,
-        end_date: endDate,
-      }),
-      signal: AbortSignal.timeout(30000),
-    });
+    );
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => "Unknown error");
@@ -102,7 +107,9 @@ export async function POST(request: NextRequest) {
     const backendData = data.data || data;
 
     // Build securities lookup
-    const securities = (backendData.securities || []) as Array<Record<string, unknown>>;
+    const securities = (backendData.securities || []) as Array<
+      Record<string, unknown>
+    >;
     const securitiesMap = new Map<string, Record<string, unknown>>();
     for (const sec of securities) {
       if (sec.security_id) {
@@ -111,7 +118,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Build accounts lookup
-    const accounts = (backendData.accounts || []) as Array<Record<string, unknown>>;
+    const accounts = (backendData.accounts || []) as Array<
+      Record<string, unknown>
+    >;
     const accountsMap = new Map<string, Record<string, unknown>>();
     for (const acct of accounts) {
       if (acct.account_id) {
@@ -120,7 +129,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Normalize transactions
-    const transactions = (backendData.investment_transactions || backendData.transactions || []) as Array<Record<string, unknown>>;
+    const transactions = (backendData.investment_transactions ||
+      backendData.transactions ||
+      []) as Array<Record<string, unknown>>;
     const normalizedTransactions = transactions.map((tx) => {
       const security = securitiesMap.get(tx.security_id as string) || {};
       const account = accountsMap.get(tx.account_id as string) || {};
@@ -129,10 +140,12 @@ export async function POST(request: NextRequest) {
         transaction_id: tx.investment_transaction_id || tx.transaction_id,
         account_id: tx.account_id,
         institution_name: account.institution_name || "Unknown",
-        account_name: account.name || account.official_name || "Investment Account",
+        account_name:
+          account.name || account.official_name || "Investment Account",
         account_mask: account.mask || "****",
         security_id: tx.security_id,
-        security_name: security.name || security.ticker_symbol || tx.name || "Unknown",
+        security_name:
+          security.name || security.ticker_symbol || tx.name || "Unknown",
         ticker_symbol: security.ticker_symbol || null,
         date: tx.date,
         type: tx.type || tx.subtype || "unknown",
@@ -146,8 +159,10 @@ export async function POST(request: NextRequest) {
 
     // Sort by date descending
     normalizedTransactions.sort((a, b) => {
-      const dateA = a.date && typeof a.date === "string" ? new Date(a.date).getTime() : 0;
-      const dateB = b.date && typeof b.date === "string" ? new Date(b.date).getTime() : 0;
+      const dateA =
+        a.date && typeof a.date === "string" ? new Date(a.date).getTime() : 0;
+      const dateB =
+        b.date && typeof b.date === "string" ? new Date(b.date).getTime() : 0;
       return dateB - dateA;
     });
 

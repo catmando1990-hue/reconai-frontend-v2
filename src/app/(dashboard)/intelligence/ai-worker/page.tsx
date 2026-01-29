@@ -18,7 +18,15 @@ import {
 import { DisclaimerNotice } from "@/components/legal/DisclaimerNotice";
 import { severityFromConfidence } from "@/lib/scoring";
 import { TierGate } from "@/components/legal/TierGate";
-import { Bot, RefreshCw, Check, X, Loader2, Send, MessageSquare } from "lucide-react";
+import {
+  Bot,
+  RefreshCw,
+  Check,
+  X,
+  Loader2,
+  Send,
+  MessageSquare,
+} from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 
 type ChatMessage = {
@@ -86,7 +94,8 @@ export default function AiWorkerPage() {
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          content: "I encountered an error processing your message. Please try again.",
+          content:
+            "I encountered an error processing your message. Please try again.",
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -197,7 +206,9 @@ export default function AiWorkerPage() {
                               <Button
                                 size="sm"
                                 variant="default"
-                                onClick={() => void handleAction(t.id, "approve")}
+                                onClick={() =>
+                                  void handleAction(t.id, "approve")
+                                }
                                 disabled={actionLoading === t.id}
                                 className="gap-1.5"
                               >
@@ -211,7 +222,9 @@ export default function AiWorkerPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => void handleAction(t.id, "dismiss")}
+                                onClick={() =>
+                                  void handleAction(t.id, "dismiss")
+                                }
                                 disabled={actionLoading === t.id}
                                 className="gap-1.5"
                               >

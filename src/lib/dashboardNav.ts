@@ -46,9 +46,10 @@ export interface NavEntry {
 
 // ============================================
 // CANONICAL NAVIGATION MAP
+// Note: Not all routes need nav entries (e.g., legacy/alias routes)
 // ============================================
 
-export const NAV: Record<Route, NavEntry> = {
+export const NAV: Partial<Record<Route, NavEntry>> = {
   // ─────────────────────────────────────────
   // HOME
   // ─────────────────────────────────────────
@@ -704,8 +705,11 @@ export function getNavEntryByPathname(pathname: string): NavEntry | undefined {
  * Get all routes for a given module, sorted by order.
  */
 export function getModuleRoutes(module: ModuleKey): Route[] {
-  return (Object.entries(NAV) as [Route, NavEntry][])
-    .filter(([, entry]) => entry.module === module)
+  return (Object.entries(NAV) as [Route, NavEntry | undefined][])
+    .filter(
+      (pair): pair is [Route, NavEntry] =>
+        pair[1] !== undefined && pair[1].module === module,
+    )
     .sort((a, b) => a[1].order - b[1].order)
     .map(([route]) => route);
 }
@@ -746,9 +750,10 @@ export function getSiblingRoutes(route: Route): Route[] {
  * Get child routes (routes that have this route in their breadcrumb), sorted by order.
  */
 export function getChildRoutes(parentRoute: Route): Route[] {
-  return (Object.entries(NAV) as [Route, NavEntry][])
-    .filter(([route, entry]) => {
-      if (route === parentRoute) return false;
+  return (Object.entries(NAV) as [Route, NavEntry | undefined][])
+    .filter((pair): pair is [Route, NavEntry] => {
+      const [route, entry] = pair;
+      if (!entry || route === parentRoute) return false;
       return entry.breadcrumb.some(([, r]) => r === parentRoute);
     })
     .sort((a, b) => a[1].order - b[1].order)

@@ -27,7 +27,12 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { public_token, institution_id, institution_name, context: rawContext } = body as {
+    const {
+      public_token,
+      institution_id,
+      institution_name,
+      context: rawContext,
+    } = body as {
       public_token?: string;
       institution_id?: string;
       institution_name?: string;

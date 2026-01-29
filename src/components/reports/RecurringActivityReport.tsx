@@ -9,6 +9,7 @@ import {
   Repeat,
   ArrowUpCircle,
   ArrowDownCircle,
+  CalendarClock,
 } from "lucide-react";
 
 type RecurringItem = {
@@ -54,6 +55,21 @@ function frequencyLabel(freq: string): string {
     annual: "Annual",
   };
   return labels[freq] || freq;
+}
+
+function AwaitingDataState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+        <CalendarClock className="h-8 w-8 text-muted-foreground/50" />
+      </div>
+      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <p className="text-sm text-muted-foreground text-center max-w-md">
+        Recurring transactions will be detected here once enough transaction
+        history is available. Connect a bank account to start tracking patterns.
+      </p>
+    </div>
+  );
 }
 
 export function RecurringActivityReport() {
@@ -171,11 +187,7 @@ export function RecurringActivityReport() {
         </div>
       )}
 
-      {!loading && !error && recurring.length === 0 && (
-        <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-          No recurring transactions detected.
-        </div>
-      )}
+      {!loading && !error && recurring.length === 0 && <AwaitingDataState />}
 
       {!loading && !error && recurring.length > 0 && (
         <div className="divide-y">

@@ -1,25 +1,54 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+} from "lucide-react";
 
-type Transaction = {
-  id: string;
-  date: string;
+type CashFlowCategory = {
+  category: string;
   amount: number;
-  pending: boolean;
+  transaction_count: number;
 };
 
-/**
- * FIX: Backend response may be either:
- * - Legacy: Transaction[] (direct array)
- * - New: { items: Transaction[], request_id: string }
- */
-type TransactionsResponse =
-  | Transaction[]
-  | { items: Transaction[]; request_id: string };
+type CashFlowSection = {
+  inflows: number;
+  outflows: number;
+  net: number;
+  items: CashFlowCategory[];
+};
+
+type DailyTrend = {
+  date: string;
+  inflows: number;
+  outflows: number;
+  net: number;
+  cumulative: number;
+};
+
+type CashFlowData = {
+  period: string;
+  start_date: string;
+  end_date: string;
+  operating: CashFlowSection;
+  investing: CashFlowSection;
+  financing: CashFlowSection;
+  net_change: number;
+  opening_balance: number;
+  closing_balance: number;
+  daily_trend: DailyTrend[];
+};
+
+type CashFlowResponse = {
+  data: CashFlowData;
+  request_id: string;
+};
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -28,93 +57,67 @@ function formatCurrency(amount: number): string {
   }).format(Math.abs(amount));
 }
 
+function AwaitingDataState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+        <DollarSign className="h-8 w-8 text-muted-foreground/50" />
+      </div>
+      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <p className="text-sm text-muted-foreground text-center max-w-md">
+        Cash flow analysis will appear here once transaction data is available.
+        Connect a bank account to start tracking inflows and outflows.
+      </p>
+    </div>
+  );
+}
+
 export function CashFlowReport() {
   const { apiFetch } = useApi();
   const { isLoaded } = useOrg();
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [data, setData] = useState<CashFlowData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<"30" | "60" | "90" | "all">("30");
+  const [period, setPeriod] = useState<"30" | "60" | "90">("30");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<TransactionsResponse>("/api/transactions");
-
-      // FIX: Normalize response - handle both array and object formats
-      const items = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.items)
-          ? data.items
-          : [];
-
-      setTransactions(items);
+      const response = await apiFetch<CashFlowResponse>(
+        `/api/reports/cash-flow?period=${period}`
+      );
+      // Handle both response formats
+      const reportData = response?.data ?? (response as unknown as CashFlowData);
+      setData(reportData);
     } catch (e) {
-      // Surface request_id on errors
-      const requestId = crypto.randomUUID();
       const msg = e instanceof Error ? e.message : "Failed to load";
-      setError(`${msg} (request_id: ${requestId})`);
+      setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [apiFetch]);
+  }, [apiFetch, period]);
 
   useEffect(() => {
     if (!isLoaded) return;
     fetchData();
   }, [isLoaded, fetchData]);
 
-  const { filteredTx, inflows, outflows, netCash, periodLabel } =
-    useMemo(() => {
-      const now = new Date();
-      let cutoff: Date | null = null;
-      let periodLabel = "All Time";
-
-      if (period !== "all") {
-        const days = parseInt(period);
-        cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-        periodLabel = `Last ${days} Days`;
-      }
-
-      // Only cleared transactions (not pending) for direct method
-      const filteredTx = transactions.filter((tx) => {
-        if (tx.pending) return false;
-        if (cutoff) {
-          return new Date(tx.date) >= cutoff;
-        }
-        return true;
-      });
-
-      let inflows = 0;
-      let outflows = 0;
-
-      for (const tx of filteredTx) {
-        if (tx.amount > 0) {
-          inflows += tx.amount;
-        } else {
-          outflows += Math.abs(tx.amount);
-        }
-      }
-
-      return {
-        filteredTx,
-        inflows,
-        outflows,
-        netCash: inflows - outflows,
-        periodLabel,
-      };
-    }, [transactions, period]);
-
   const handleExportCSV = () => {
+    if (!data) return;
+
     const headers = ["Metric", "Amount"];
     const rows = [
-      ["Period", periodLabel],
-      ["Total Inflows", inflows.toFixed(2)],
-      ["Total Outflows", outflows.toFixed(2)],
-      ["Net Cash Movement", netCash.toFixed(2)],
-      ["Transaction Count", filteredTx.length.toString()],
+      ["Period", `${period} days`],
+      ["Operating Inflows", data.operating.inflows.toFixed(2)],
+      ["Operating Outflows", data.operating.outflows.toFixed(2)],
+      ["Operating Net", data.operating.net.toFixed(2)],
+      ["Investing Net", data.investing.net.toFixed(2)],
+      ["Financing Net", data.financing.net.toFixed(2)],
+      ["Net Change", data.net_change.toFixed(2)],
+      ["Opening Balance", data.opening_balance.toFixed(2)],
+      ["Closing Balance", data.closing_balance.toFixed(2)],
     ];
 
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
@@ -127,13 +130,20 @@ export function CashFlowReport() {
     URL.revokeObjectURL(url);
   };
 
+  const hasData =
+    data &&
+    (data.operating.inflows > 0 ||
+      data.operating.outflows > 0 ||
+      data.investing.net !== 0 ||
+      data.financing.net !== 0);
+
   return (
     <div className="rounded-xl border bg-card">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
           <h3 className="font-semibold">Cash Flow Statement</h3>
           <p className="text-xs text-muted-foreground">
-            Direct method • Cleared transactions only • No projections
+            Operating, investing, and financing activities
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -145,12 +155,23 @@ export function CashFlowReport() {
             <option value="30">Last 30 Days</option>
             <option value="60">Last 60 Days</option>
             <option value="90">Last 90 Days</option>
-            <option value="all">All Time</option>
           </select>
           <button
             type="button"
+            onClick={() => void fetchData()}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
+          <button
+            type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50"
+            disabled={!hasData}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50"
           >
             <Download className="h-3.5 w-3.5" />
             Export
@@ -165,28 +186,33 @@ export function CashFlowReport() {
       )}
 
       {error && (
-        <div className="px-4 py-8 text-center text-sm text-destructive">
-          {error}
+        <div className="px-4 py-8 text-center">
+          <p className="text-sm text-destructive mb-3">{error}</p>
+          <button
+            type="button"
+            onClick={() => void fetchData()}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </button>
         </div>
       )}
 
-      {!loading && !error && (
-        <div className="p-4 space-y-4">
-          {/* Period Label */}
-          <div className="text-sm text-muted-foreground">
-            {periodLabel} • {filteredTx.length} cleared transactions
-          </div>
+      {!loading && !error && !hasData && <AwaitingDataState />}
 
-          {/* Cash Flow Summary */}
+      {!loading && !error && hasData && data && (
+        <div className="p-4 space-y-4">
+          {/* Summary Cards */}
           <div className="grid gap-4 md:grid-cols-3">
             {/* Inflows */}
             <div className="rounded-xl border bg-emerald-500/5 p-4">
               <div className="flex items-center gap-2 text-emerald-600">
                 <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">Operating Inflows</span>
+                <span className="text-sm font-medium">Total Inflows</span>
               </div>
               <div className="mt-2 text-2xl font-bold text-emerald-600">
-                +{formatCurrency(inflows)}
+                +{formatCurrency(data.operating.inflows)}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
                 Money received
@@ -197,10 +223,10 @@ export function CashFlowReport() {
             <div className="rounded-xl border bg-destructive/5 p-4">
               <div className="flex items-center gap-2 text-destructive">
                 <TrendingDown className="h-4 w-4" />
-                <span className="text-sm font-medium">Operating Outflows</span>
+                <span className="text-sm font-medium">Total Outflows</span>
               </div>
               <div className="mt-2 text-2xl font-bold text-destructive">
-                -{formatCurrency(outflows)}
+                -{formatCurrency(data.operating.outflows)}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
                 Money spent
@@ -211,39 +237,80 @@ export function CashFlowReport() {
             <div
               className={[
                 "rounded-xl border p-4",
-                netCash >= 0 ? "bg-emerald-500/5" : "bg-destructive/5",
+                data.net_change >= 0 ? "bg-emerald-500/5" : "bg-destructive/5",
               ].join(" ")}
             >
               <div
                 className={[
                   "flex items-center gap-2",
-                  netCash >= 0 ? "text-emerald-600" : "text-destructive",
+                  data.net_change >= 0 ? "text-emerald-600" : "text-destructive",
                 ].join(" ")}
               >
-                {netCash >= 0 ? (
+                {data.net_change >= 0 ? (
                   <TrendingUp className="h-4 w-4" />
                 ) : (
                   <TrendingDown className="h-4 w-4" />
                 )}
-                <span className="text-sm font-medium">Net Cash Movement</span>
+                <span className="text-sm font-medium">Net Cash Change</span>
               </div>
               <div
                 className={[
                   "mt-2 text-2xl font-bold",
-                  netCash >= 0 ? "text-emerald-600" : "text-destructive",
+                  data.net_change >= 0 ? "text-emerald-600" : "text-destructive",
                 ].join(" ")}
               >
-                {netCash >= 0 ? "+" : "-"}
-                {formatCurrency(netCash)}
+                {data.net_change >= 0 ? "+" : "-"}
+                {formatCurrency(data.net_change)}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                {netCash >= 0 ? "Positive cash flow" : "Negative cash flow"}
+                {data.net_change >= 0 ? "Positive cash flow" : "Negative cash flow"}
               </div>
             </div>
           </div>
 
-          {/* Breakdown Bar */}
-          {(inflows > 0 || outflows > 0) && (
+          {/* Operating Activities Breakdown */}
+          {data.operating.items.length > 0 && (
+            <div className="rounded-xl border p-4">
+              <h4 className="text-sm font-semibold mb-3">Operating Activities</h4>
+              <div className="space-y-2">
+                {data.operating.items.map((item) => (
+                  <div
+                    key={item.category}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-muted-foreground">{item.category}</span>
+                    <span
+                      className={`font-mono ${
+                        item.amount >= 0 ? "text-emerald-600" : "text-destructive"
+                      }`}
+                    >
+                      {item.amount >= 0 ? "+" : "-"}
+                      {formatCurrency(item.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Balance Summary */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl border bg-muted/20 p-4">
+              <div className="text-xs text-muted-foreground">Opening Balance</div>
+              <div className="mt-1 text-lg font-semibold font-mono">
+                {formatCurrency(data.opening_balance)}
+              </div>
+            </div>
+            <div className="rounded-xl border bg-muted/20 p-4">
+              <div className="text-xs text-muted-foreground">Closing Balance</div>
+              <div className="mt-1 text-lg font-semibold font-mono">
+                {formatCurrency(data.closing_balance)}
+              </div>
+            </div>
+          </div>
+
+          {/* Inflow/Outflow Ratio Bar */}
+          {(data.operating.inflows > 0 || data.operating.outflows > 0) && (
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">
                 Inflow/Outflow Ratio
@@ -252,24 +319,42 @@ export function CashFlowReport() {
                 <div
                   className="bg-emerald-500"
                   style={{
-                    width: `${(inflows / (inflows + outflows)) * 100}%`,
+                    width: `${
+                      (data.operating.inflows /
+                        (data.operating.inflows + data.operating.outflows)) *
+                      100
+                    }%`,
                   }}
                 />
                 <div
                   className="bg-destructive"
                   style={{
-                    width: `${(outflows / (inflows + outflows)) * 100}%`,
+                    width: `${
+                      (data.operating.outflows /
+                        (data.operating.inflows + data.operating.outflows)) *
+                      100
+                    }%`,
                   }}
                 />
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
-                  Inflows: {((inflows / (inflows + outflows)) * 100).toFixed(1)}
+                  Inflows:{" "}
+                  {(
+                    (data.operating.inflows /
+                      (data.operating.inflows + data.operating.outflows)) *
+                    100
+                  ).toFixed(1)}
                   %
                 </span>
                 <span>
                   Outflows:{" "}
-                  {((outflows / (inflows + outflows)) * 100).toFixed(1)}%
+                  {(
+                    (data.operating.outflows /
+                      (data.operating.inflows + data.operating.outflows)) *
+                    100
+                  ).toFixed(1)}
+                  %
                 </span>
               </div>
             </div>
@@ -280,8 +365,7 @@ export function CashFlowReport() {
       {/* Disclaimer */}
       <div className="border-t bg-muted/20 px-4 py-2">
         <p className="text-[10px] text-muted-foreground">
-          Based only on cleared transactions. No accrual logic or projections.
-          Pending transactions excluded.
+          Based on cleared transactions. Pending transactions excluded.
         </p>
       </div>
     </div>

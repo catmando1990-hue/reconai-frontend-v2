@@ -1,37 +1,48 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
 import { Download, RefreshCw, Wallet } from "lucide-react";
 
-type Transaction = {
-  id: string;
+type DailyActivity = {
   date: string;
-  amount: number;
-  account_id: string;
-  account_name?: string;
-  pending: boolean;
-};
-
-/**
- * FIX: Backend response may be either:
- * - Legacy: Transaction[] (direct array)
- * - New: { items: Transaction[], request_id: string }
- */
-type TransactionsResponse =
-  | Transaction[]
-  | { items: Transaction[]; request_id: string };
-
-type AccountSummary = {
-  account_id: string;
-  account_name: string;
+  balance: number;
   inflows: number;
   outflows: number;
-  netChange: number;
-  transactionCount: number;
-  firstTxDate: string | null;
-  lastTxDate: string | null;
+};
+
+type AccountData = {
+  account_id: string;
+  account_name: string;
+  account_type: string;
+  institution_name: string;
+  current_balance: number;
+  total_inflows: number;
+  total_outflows: number;
+  net_change: number;
+  transaction_count: number;
+  daily_activity: DailyActivity[];
+};
+
+type AccountActivitySummary = {
+  total_balance: number;
+  total_inflows: number;
+  total_outflows: number;
+  net_change: number;
+  account_count: number;
+};
+
+type AccountActivityData = {
+  start_date: string;
+  end_date: string;
+  accounts: AccountData[];
+  summary: AccountActivitySummary;
+};
+
+type AccountActivityResponse = {
+  data: AccountActivityData;
+  request_id: string;
 };
 
 function formatCurrency(amount: number): string {
@@ -49,118 +60,76 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function AwaitingDataState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+        <Wallet className="h-8 w-8 text-muted-foreground/50" />
+      </div>
+      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <p className="text-sm text-muted-foreground text-center max-w-md">
+        Account activity summary will appear here once bank accounts are connected.
+        Connect a bank account to start tracking per-account transactions.
+      </p>
+    </div>
+  );
+}
+
 export function AccountActivityReport() {
   const { apiFetch } = useApi();
   const { isLoaded } = useOrg();
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [data, setData] = useState<AccountActivityData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<"30" | "60" | "90">("30");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<TransactionsResponse>("/api/transactions");
-
-      // FIX: Normalize response - handle both array and object formats
-      const items = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.items)
-          ? data.items
-          : [];
-
-      setTransactions(items);
+      const response = await apiFetch<AccountActivityResponse>(
+        `/api/reports/account-activity?days=${period}`
+      );
+      // Handle both response formats
+      const reportData =
+        response?.data ?? (response as unknown as AccountActivityData);
+      setData(reportData);
     } catch (e) {
-      // Surface request_id on errors
-      const requestId = crypto.randomUUID();
       const msg = e instanceof Error ? e.message : "Failed to load";
-      setError(`${msg} (request_id: ${requestId})`);
+      setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [apiFetch]);
+  }, [apiFetch, period]);
 
   useEffect(() => {
     if (!isLoaded) return;
     fetchData();
   }, [isLoaded, fetchData]);
 
-  const accountSummaries = useMemo(() => {
-    const map = new Map<
-      string,
-      {
-        name: string;
-        inflows: number;
-        outflows: number;
-        count: number;
-        dates: string[];
-      }
-    >();
-
-    for (const tx of transactions) {
-      if (!tx.account_id) continue; // Skip transactions without account_id
-      const key = tx.account_id;
-      const existing = map.get(key) || {
-        name: tx.account_name || tx.account_id.slice(-8),
-        inflows: 0,
-        outflows: 0,
-        count: 0,
-        dates: [],
-      };
-
-      if (tx.amount > 0) {
-        existing.inflows += tx.amount;
-      } else {
-        existing.outflows += Math.abs(tx.amount);
-      }
-      existing.count += 1;
-      existing.dates.push(tx.date);
-      map.set(key, existing);
-    }
-
-    const summaries: AccountSummary[] = Array.from(map.entries()).map(
-      ([account_id, data]) => {
-        const sortedDates = [...data.dates].sort();
-        return {
-          account_id,
-          account_name: data.name,
-          inflows: data.inflows,
-          outflows: data.outflows,
-          netChange: data.inflows - data.outflows,
-          transactionCount: data.count,
-          firstTxDate: sortedDates[0] || null,
-          lastTxDate: sortedDates[sortedDates.length - 1] || null,
-        };
-      },
-    );
-
-    // Sort by transaction count descending
-    summaries.sort((a, b) => b.transactionCount - a.transactionCount);
-
-    return summaries;
-  }, [transactions]);
-
   const handleExportCSV = () => {
-    if (accountSummaries.length === 0) return;
+    if (!data || data.accounts.length === 0) return;
 
     const headers = [
       "Account",
+      "Type",
+      "Institution",
+      "Current Balance",
       "Inflows",
       "Outflows",
       "Net Change",
       "Transaction Count",
-      "First Transaction",
-      "Last Transaction",
     ];
-    const rows = accountSummaries.map((acc) => [
+    const rows = data.accounts.map((acc) => [
       `"${acc.account_name}"`,
-      acc.inflows.toFixed(2),
-      acc.outflows.toFixed(2),
-      acc.netChange.toFixed(2),
-      acc.transactionCount.toString(),
-      acc.firstTxDate || "",
-      acc.lastTxDate || "",
+      acc.account_type,
+      `"${acc.institution_name}"`,
+      acc.current_balance.toFixed(2),
+      acc.total_inflows.toFixed(2),
+      acc.total_outflows.toFixed(2),
+      acc.net_change.toFixed(2),
+      acc.transaction_count.toString(),
     ]);
 
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
@@ -173,17 +142,7 @@ export function AccountActivityReport() {
     URL.revokeObjectURL(url);
   };
 
-  const totals = useMemo(() => {
-    return accountSummaries.reduce(
-      (acc, curr) => ({
-        inflows: acc.inflows + curr.inflows,
-        outflows: acc.outflows + curr.outflows,
-        netChange: acc.netChange + curr.netChange,
-        count: acc.count + curr.transactionCount,
-      }),
-      { inflows: 0, outflows: 0, netChange: 0, count: 0 },
-    );
-  }, [accountSummaries]);
+  const hasData = data && data.accounts.length > 0;
 
   return (
     <div className="rounded-xl border bg-card">
@@ -191,14 +150,34 @@ export function AccountActivityReport() {
         <div>
           <h3 className="font-semibold">Account Activity Report</h3>
           <p className="text-xs text-muted-foreground">
-            Per-account transaction summaries • Bank reconciliation
+            Per-account transaction summaries
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as typeof period)}
+            className="rounded-lg border bg-background px-2 py-1 text-xs"
+          >
+            <option value="30">Last 30 Days</option>
+            <option value="60">Last 60 Days</option>
+            <option value="90">Last 90 Days</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => void fetchData()}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
           <button
             type="button"
             onClick={handleExportCSV}
-            disabled={accountSummaries.length === 0}
+            disabled={!hasData}
             className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50"
           >
             <Download className="h-3.5 w-3.5" />
@@ -214,33 +193,35 @@ export function AccountActivityReport() {
       )}
 
       {error && (
-        <div className="px-4 py-8 text-center text-sm text-destructive">
-          {error}
+        <div className="px-4 py-8 text-center">
+          <p className="text-sm text-destructive mb-3">{error}</p>
+          <button
+            type="button"
+            onClick={() => void fetchData()}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </button>
         </div>
       )}
 
-      {!loading && !error && accountSummaries.length === 0 && (
-        <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-          No account activity found.
-        </div>
-      )}
+      {!loading && !error && !hasData && <AwaitingDataState />}
 
-      {!loading && !error && accountSummaries.length > 0 && (
+      {!loading && !error && hasData && data && (
         <>
           {/* Totals Summary */}
           <div className="grid grid-cols-4 gap-4 border-b bg-muted/20 px-4 py-3">
             <div>
               <div className="text-xs text-muted-foreground">Total Inflows</div>
               <div className="font-mono text-sm font-semibold text-emerald-600">
-                +{formatCurrency(totals.inflows)}
+                +{formatCurrency(data.summary.total_inflows)}
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">
-                Total Outflows
-              </div>
+              <div className="text-xs text-muted-foreground">Total Outflows</div>
               <div className="font-mono text-sm font-semibold text-destructive">
-                -{formatCurrency(totals.outflows)}
+                -{formatCurrency(data.summary.total_outflows)}
               </div>
             </div>
             <div>
@@ -248,24 +229,35 @@ export function AccountActivityReport() {
               <div
                 className={[
                   "font-mono text-sm font-semibold",
-                  totals.netChange >= 0
+                  data.summary.net_change >= 0
                     ? "text-emerald-600"
                     : "text-destructive",
                 ].join(" ")}
               >
-                {totals.netChange >= 0 ? "+" : "-"}
-                {formatCurrency(totals.netChange)}
+                {data.summary.net_change >= 0 ? "+" : "-"}
+                {formatCurrency(data.summary.net_change)}
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">Transactions</div>
-              <div className="text-sm font-semibold">{totals.count}</div>
+              <div className="text-xs text-muted-foreground">Total Balance</div>
+              <div className="text-sm font-semibold">
+                {formatCurrency(data.summary.total_balance)}
+              </div>
             </div>
           </div>
 
+          {/* Period Info */}
+          {data.start_date && data.end_date && (
+            <div className="px-4 py-2 bg-muted/10 text-xs text-muted-foreground">
+              {formatDate(data.start_date)} – {formatDate(data.end_date)} •{" "}
+              {data.summary.account_count} account
+              {data.summary.account_count !== 1 ? "s" : ""}
+            </div>
+          )}
+
           {/* Account List */}
           <div className="divide-y">
-            {accountSummaries.map((acc) => (
+            {data.accounts.map((acc) => (
               <div key={acc.account_id} className="px-4 py-4 hover:bg-muted/20">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-muted p-2">
@@ -279,53 +271,55 @@ export function AccountActivityReport() {
                       <div
                         className={[
                           "font-mono text-sm font-semibold",
-                          acc.netChange >= 0
+                          acc.net_change >= 0
                             ? "text-emerald-600"
                             : "text-destructive",
                         ].join(" ")}
                       >
-                        {acc.netChange >= 0 ? "+" : "-"}
-                        {formatCurrency(acc.netChange)}
+                        {acc.net_change >= 0 ? "+" : "-"}
+                        {formatCurrency(acc.net_change)}
                       </div>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {acc.institution_name} • {acc.account_type}
                     </div>
 
                     <div className="mt-2 grid grid-cols-4 gap-4 text-xs">
                       <div>
+                        <div className="text-muted-foreground">Balance</div>
+                        <div className="font-mono">
+                          {formatCurrency(acc.current_balance)}
+                        </div>
+                      </div>
+                      <div>
                         <div className="text-muted-foreground">Inflows</div>
                         <div className="font-mono text-emerald-600">
-                          +{formatCurrency(acc.inflows)}
+                          +{formatCurrency(acc.total_inflows)}
                         </div>
                       </div>
                       <div>
                         <div className="text-muted-foreground">Outflows</div>
                         <div className="font-mono text-destructive">
-                          -{formatCurrency(acc.outflows)}
+                          -{formatCurrency(acc.total_outflows)}
                         </div>
                       </div>
                       <div>
-                        <div className="text-muted-foreground">
-                          Transactions
-                        </div>
-                        <div>{acc.transactionCount}</div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Period</div>
-                        <div>
-                          {acc.firstTxDate && acc.lastTxDate
-                            ? `${formatDate(acc.firstTxDate)} – ${formatDate(acc.lastTxDate)}`
-                            : "—"}
-                        </div>
+                        <div className="text-muted-foreground">Transactions</div>
+                        <div>{acc.transaction_count}</div>
                       </div>
                     </div>
 
                     {/* Activity bar */}
-                    {(acc.inflows > 0 || acc.outflows > 0) && (
+                    {(acc.total_inflows > 0 || acc.total_outflows > 0) && (
                       <div className="mt-2 flex h-1.5 rounded-full overflow-hidden bg-muted">
                         <div
                           className="bg-emerald-500"
                           style={{
                             width: `${
-                              (acc.inflows / (acc.inflows + acc.outflows)) * 100
+                              (acc.total_inflows /
+                                (acc.total_inflows + acc.total_outflows)) *
+                              100
                             }%`,
                           }}
                         />
@@ -333,7 +327,8 @@ export function AccountActivityReport() {
                           className="bg-destructive"
                           style={{
                             width: `${
-                              (acc.outflows / (acc.inflows + acc.outflows)) *
+                              (acc.total_outflows /
+                                (acc.total_inflows + acc.total_outflows)) *
                               100
                             }%`,
                           }}
@@ -351,8 +346,8 @@ export function AccountActivityReport() {
       {/* Note */}
       <div className="border-t bg-muted/20 px-4 py-2">
         <p className="text-[10px] text-muted-foreground">
-          Opening/closing balances require Plaid Balance product. Currently
-          showing net changes from transaction history only.
+          Account balances and activity are updated periodically from connected
+          bank accounts.
         </p>
       </div>
     </div>

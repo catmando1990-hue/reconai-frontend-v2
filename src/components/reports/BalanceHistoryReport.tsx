@@ -9,6 +9,7 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  LineChart,
 } from "lucide-react";
 
 type BalancePoint = {
@@ -41,6 +42,21 @@ function formatDate(dateStr: string): string {
     month: "short",
     day: "numeric",
   });
+}
+
+function AwaitingDataState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+        <LineChart className="h-8 w-8 text-muted-foreground/50" />
+      </div>
+      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <p className="text-sm text-muted-foreground text-center max-w-md">
+        Balance history will appear here once bank accounts are connected and
+        transaction data is available.
+      </p>
+    </div>
+  );
 }
 
 export function BalanceHistoryReport() {
@@ -182,11 +198,7 @@ export function BalanceHistoryReport() {
         </div>
       )}
 
-      {!loading && !error && groupedByDate.length === 0 && (
-        <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-          No balance history available.
-        </div>
-      )}
+      {!loading && !error && groupedByDate.length === 0 && <AwaitingDataState />}
 
       {!loading && !error && groupedByDate.length > 0 && (
         <>

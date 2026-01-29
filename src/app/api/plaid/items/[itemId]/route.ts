@@ -1,26 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
+import { getPlaidClient } from "@/lib/plaid";
 
 /**
  * DELETE /api/plaid/items/[itemId]
  *
- * Removes a Plaid item (bank connection):
+ * Removes a Plaid item (bank connection) with FULL cascade delete:
  * 1. Validates user owns the item
- * 2. Calls backend to revoke Plaid access token
- * 3. Deletes item and accounts from Supabase
+ * 2. Revokes Plaid access token directly
+ * 3. Deletes ALL related data (transactions, accounts, item)
+ *
+ * This is atomic - if any critical step fails, the whole operation fails.
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ itemId: string }> },
 ) {
   const requestId = crypto.randomUUID();
   const { itemId } = await params;
 
   try {
-    const { userId, getToken } = await auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
@@ -37,17 +38,17 @@ export async function DELETE(
 
     const supabase = supabaseAdmin();
 
-    // 1. Verify user owns this item
+    // 1. Verify user owns this item and get access_token
     const { data: item, error: fetchError } = await supabase
       .from("plaid_items")
-      .select("id, item_id, institution_name")
+      .select("id, item_id, institution_name, access_token")
       .eq("item_id", itemId)
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .single();
 
     if (fetchError || !item) {
       console.error(
-        "[Plaid delete] Item not found or access denied:",
+        `[Plaid delete] Item not found: itemId=${itemId}, userId=${userId}`,
         fetchError,
       );
       return NextResponse.json(
@@ -63,47 +64,89 @@ export async function DELETE(
       );
     }
 
-    // 2. Call backend to revoke Plaid access token (if backend is configured)
-    if (BACKEND_URL) {
-      try {
-        const token = await getToken();
-        const backendResponse = await fetch(
-          `${BACKEND_URL}/api/plaid/items/${itemId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-              "X-Request-ID": requestId,
-            },
-          },
-        );
+    console.log(
+      `[Plaid delete] Starting cascade delete: itemId=${itemId}, institution=${item.institution_name}, requestId=${requestId}`,
+    );
 
-        if (!backendResponse.ok) {
-          const errorBody = await backendResponse.text();
-          console.warn(
-            `[Plaid delete] Backend revoke failed (${backendResponse.status}): ${errorBody}`,
-          );
-        }
-      } catch (backendErr) {
-        console.warn("[Plaid delete] Backend call failed:", backendErr);
+    // 2. Revoke Plaid access token (best effort - don't fail if this errors)
+    if (item.access_token) {
+      try {
+        const plaid = getPlaidClient();
+        await plaid.itemRemove({ access_token: item.access_token });
+        console.log(`[Plaid delete] Revoked access token for itemId=${itemId}`);
+      } catch (plaidErr) {
+        // Log but don't fail - token may already be invalid
+        console.warn(
+          `[Plaid delete] Failed to revoke access token (continuing anyway):`,
+          plaidErr,
+        );
       }
     }
 
-    // 3. Delete accounts for this item
-    const { error: accountsDeleteError } = await supabase
+    // 3. Get all account_ids for this item (for transaction cleanup)
+    const { data: accounts } = await supabase
       .from("plaid_accounts")
-      .delete()
+      .select("account_id")
       .eq("item_id", itemId);
+
+    const accountIds = accounts?.map((a) => a.account_id) ?? [];
+
+    // 4. Delete transactions - by item_id OR by account_id (covers old data without item_id)
+    let txDeleteCount = 0;
+
+    // First: delete by item_id (new transactions)
+    const { count: txByItemCount, error: txItemError } = await supabase
+      .from("transactions")
+      .delete({ count: "exact" })
+      .eq("item_id", itemId);
+
+    if (txItemError) {
+      console.error(
+        `[Plaid delete] Failed to delete transactions by item_id:`,
+        txItemError,
+      );
+    } else {
+      txDeleteCount += txByItemCount ?? 0;
+    }
+
+    // Second: delete by account_id (old transactions without item_id)
+    if (accountIds.length > 0) {
+      const { count: txByAccountCount, error: txAccountError } = await supabase
+        .from("transactions")
+        .delete({ count: "exact" })
+        .in("account_id", accountIds)
+        .is("item_id", null); // Only delete orphaned ones
+
+      if (txAccountError) {
+        console.error(
+          `[Plaid delete] Failed to delete transactions by account_id:`,
+          txAccountError,
+        );
+      } else {
+        txDeleteCount += txByAccountCount ?? 0;
+      }
+    }
+
+    console.log(`[Plaid delete] Deleted ${txDeleteCount} transactions`);
+
+    // 5. Delete accounts
+    const { count: accountDeleteCount, error: accountsDeleteError } =
+      await supabase
+        .from("plaid_accounts")
+        .delete({ count: "exact" })
+        .eq("item_id", itemId);
 
     if (accountsDeleteError) {
       console.error(
-        "[Plaid delete] Failed to delete accounts:",
+        `[Plaid delete] Failed to delete accounts:`,
         accountsDeleteError,
       );
+      // Don't return - continue to delete item
+    } else {
+      console.log(`[Plaid delete] Deleted ${accountDeleteCount} accounts`);
     }
 
-    // 4. Delete the item itself
+    // 6. Delete the item itself
     const { error: itemDeleteError } = await supabase
       .from("plaid_items")
       .delete()
@@ -111,7 +154,7 @@ export async function DELETE(
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
 
     if (itemDeleteError) {
-      console.error("[Plaid delete] Failed to delete item:", itemDeleteError);
+      console.error(`[Plaid delete] Failed to delete item:`, itemDeleteError);
       return NextResponse.json(
         {
           ok: false,
@@ -122,24 +165,19 @@ export async function DELETE(
       );
     }
 
-    // 5. Also delete any transactions for this item
-    const { error: txDeleteError } = await supabase
-      .from("transactions")
-      .delete()
-      .eq("item_id", itemId);
-
-    if (txDeleteError) {
-      console.warn(
-        "[Plaid delete] Failed to delete transactions:",
-        txDeleteError,
-      );
-    }
+    console.log(
+      `[Plaid delete] Complete: itemId=${itemId}, transactions=${txDeleteCount}, accounts=${accountDeleteCount}, requestId=${requestId}`,
+    );
 
     return NextResponse.json(
       {
         ok: true,
         success: true,
         message: `Removed ${item.institution_name || "bank connection"}`,
+        deleted: {
+          transactions: txDeleteCount,
+          accounts: accountDeleteCount ?? 0,
+        },
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

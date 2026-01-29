@@ -29,7 +29,7 @@ export async function GET() {
     const { data: plaidItems, error: itemsError } = await supabase
       .from("plaid_items")
       .select("id, item_id, institution_name, created_at, status")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (itemsError) {
       console.error("[DataIntegrity] Items error:", itemsError);
@@ -39,7 +39,7 @@ export async function GET() {
     const { data: accounts, error: accountsError } = await supabase
       .from("plaid_accounts")
       .select("id, account_id, name, item_id, created_at")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (accountsError) {
       console.error("[DataIntegrity] Accounts error:", accountsError);
@@ -49,7 +49,7 @@ export async function GET() {
     const { data: transactions, error: txError } = await supabase
       .from("transactions")
       .select("id, date, account_id, pending")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (txError) {
       console.error("[DataIntegrity] Transactions error:", txError);
@@ -59,7 +59,7 @@ export async function GET() {
     const { data: statements, error: stmtError } = await supabase
       .from("statements")
       .select("id, file_name, upload_date, statement_date")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (stmtError) {
       console.error("[DataIntegrity] Statements error:", stmtError);

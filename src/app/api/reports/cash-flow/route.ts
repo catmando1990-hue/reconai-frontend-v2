@@ -29,7 +29,7 @@ export async function GET() {
     const { data: transactions, error } = await supabase
       .from("transactions")
       .select("amount, pending, date")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .eq("user_id", userId)
       .eq("pending", false);
 
     if (error) {

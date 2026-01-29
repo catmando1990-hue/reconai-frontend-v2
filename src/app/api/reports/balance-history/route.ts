@@ -29,7 +29,7 @@ export async function GET() {
     const { data: accounts, error: accountsError } = await supabase
       .from("plaid_accounts")
       .select("id, name, current_balance, account_id")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (accountsError) {
       console.error("[BalanceHistory] Accounts error:", accountsError);
@@ -43,7 +43,7 @@ export async function GET() {
     const { data: transactions, error: txError } = await supabase
       .from("transactions")
       .select("amount, date, account_id, pending")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .eq("user_id", userId)
       .eq("pending", false)
       .order("date", { ascending: true });
 

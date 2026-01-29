@@ -29,7 +29,7 @@ export async function POST() {
     const { data: statements, error: stmtError } = await supabase
       .from("statements")
       .select("id, statement_date, file_name, account_id")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .eq("user_id", userId)
       .order("statement_date", { ascending: false });
 
     if (stmtError) {
@@ -106,7 +106,7 @@ export async function POST() {
     const { data: transactions, error: txError } = await supabase
       .from("transactions")
       .select("id, amount, date, merchant_name, name, account_id")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (txError) {
       console.error("[Reconciliation] Transactions error:", txError);
@@ -120,7 +120,7 @@ export async function POST() {
     const { data: accounts } = await supabase
       .from("plaid_accounts")
       .select("account_id, name")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     const accountLookup = new Map(
       (accounts || []).map((a) => [a.account_id, a.name]),

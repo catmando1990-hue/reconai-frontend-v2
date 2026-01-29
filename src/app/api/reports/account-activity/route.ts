@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .select(
         "account_id, name, official_name, type, subtype, mask, institution_name, balance_current, balance_available",
       )
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (accountsError) {
       console.error("[Account activity] Accounts error:", accountsError);
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     let txQuery = supabase
       .from("transactions")
       .select("account_id, amount, date, pending")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .eq("user_id", userId)
       .eq("pending", false);
 
     if (startDate) {

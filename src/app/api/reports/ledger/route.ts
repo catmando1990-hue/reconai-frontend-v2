@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     const { count, error: countError } = await supabase
       .from("transactions")
       .select("*", { count: "exact", head: true })
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+      .eq("user_id", userId);
 
     if (countError) {
       console.error("[Ledger] Count error:", countError);
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
         created_at
       `,
       )
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .eq("user_id", userId)
       .order("date", { ascending: false })
       .range(offset, offset + pageSize - 1);
 

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("transactions")
       .select("amount, category, personal_finance_category, date, pending")
-      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
+      .eq("user_id", userId)
       .eq("pending", false); // Only posted transactions
 
     if (startDate) {

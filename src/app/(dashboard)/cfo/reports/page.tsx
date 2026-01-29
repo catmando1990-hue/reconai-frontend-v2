@@ -46,6 +46,7 @@ interface ReportDef {
   available: boolean;
 }
 
+// FIX 1: Store component references instead of pre-rendered JSX
 const REPORTS: ReportDef[] = [
   {
     id: "ledger",
@@ -146,6 +147,17 @@ export default function ReportsPage() {
         return <DataIntegrityReport />;
     }
   };
+
+  // FIX 2: Defensive check on REPORTS array (belt and suspenders)
+  if (!REPORTS?.length) {
+    return (
+      <RouteShell title="Reports" subtitle="Loading...">
+        <div className="flex items-center justify-center py-12">
+          <span className="text-muted-foreground">Loading reports...</span>
+        </div>
+      </RouteShell>
+    );
+  }
 
   return (
     <RouteShell

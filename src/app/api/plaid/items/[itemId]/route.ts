@@ -124,7 +124,7 @@ export async function DELETE(
 
     // 5. Also delete any transactions for this item
     const { error: txDeleteError } = await supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .delete()
       .eq("item_id", itemId);
 

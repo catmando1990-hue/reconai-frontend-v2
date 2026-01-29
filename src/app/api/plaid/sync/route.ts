@@ -110,6 +110,7 @@ export async function POST(req: Request) {
         const addedRows = added.map((tx) => ({
           transaction_id: tx.transaction_id,
           user_id: userId,
+          item_id: item_id,
           account_id: tx.account_id,
           amount: tx.amount,
           date: tx.date,

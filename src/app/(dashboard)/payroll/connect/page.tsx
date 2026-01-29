@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Building2,
   CreditCard,
   Link2,
   Plus,

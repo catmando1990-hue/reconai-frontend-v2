@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { SidebarV2 } from "./SidebarV2";
 import { AdminCommandStrip } from "@/components/admin/AdminCommandStrip";
 import { Menu, X, Bell, Search } from "lucide-react";
@@ -14,7 +15,7 @@ interface ShellV2Props {
   module?: string;
 }
 
-export function ShellV2({ children, module }: ShellV2Props) {
+export function ShellV2({ children, module: _module }: ShellV2Props) {
   const pathname = usePathname();
   const { user } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -72,10 +73,12 @@ export function ShellV2({ children, module }: ShellV2Props) {
         </div>
 
         {user?.imageUrl ? (
-          <img
+          <Image
             src={user.imageUrl}
             alt=""
-            className="h-8 w-8 rounded-full object-cover"
+            width={32}
+            height={32}
+            className="rounded-full object-cover"
           />
         ) : (
           <div className="h-8 w-8 rounded-full bg-primary/10" />
@@ -146,10 +149,12 @@ export function ShellV2({ children, module }: ShellV2Props) {
               className="flex items-center gap-2 rounded-lg border border-border px-2 py-1 hover:bg-accent transition-colors"
             >
               {user?.imageUrl ? (
-                <img
+                <Image
                   src={user.imageUrl}
                   alt=""
-                  className="h-7 w-7 rounded-full object-cover"
+                  width={28}
+                  height={28}
+                  className="rounded-full object-cover"
                 />
               ) : (
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">

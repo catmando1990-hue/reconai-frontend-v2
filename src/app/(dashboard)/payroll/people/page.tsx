@@ -64,7 +64,10 @@ function PayrollPeopleBody() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<PersonStatus | "all">("all");
 
-  const people: PayrollPerson[] = data?.items ?? [];
+  const people = useMemo<PayrollPerson[]>(
+    () => data?.items ?? [],
+    [data?.items],
+  );
 
   const filteredPeople = useMemo(() => {
     return people.filter((person) => {

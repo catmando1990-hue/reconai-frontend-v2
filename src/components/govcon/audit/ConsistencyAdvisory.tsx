@@ -50,7 +50,7 @@ function timestampsDifferSignificantly(
 /**
  * Check if a date falls within a period.
  */
-function dateWithinPeriod(
+function _dateWithinPeriod(
   dateTs: number | null,
   periodStart: string | null,
   periodEnd: string | null,

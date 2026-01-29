@@ -79,7 +79,10 @@ function PayrollCompensationBody() {
   const { data: compData, isLoading, isError } = useCompensation();
   const { data: peopleData } = usePayrollPeople(100);
 
-  const compensations: Compensation[] = compData?.items ?? [];
+  const compensations = useMemo<Compensation[]>(
+    () => compData?.items ?? [],
+    [compData?.items],
+  );
   const peopleMap = useMemo(() => {
     const map = new Map<string, string>();
     const items: PayrollPerson[] = peopleData?.items ?? [];

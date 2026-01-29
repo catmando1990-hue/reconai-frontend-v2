@@ -62,7 +62,10 @@ function PayrollTaxesBody() {
   const { data: taxData, isLoading, isError } = useTaxWithholdings();
   const { data: peopleData } = usePayrollPeople(100);
 
-  const withholdings: TaxWithholding[] = taxData?.items ?? [];
+  const withholdings = useMemo<TaxWithholding[]>(
+    () => taxData?.items ?? [],
+    [taxData?.items],
+  );
   const peopleMap = useMemo(() => {
     const map = new Map<string, string>();
     const items: PayrollPerson[] = peopleData?.items ?? [];

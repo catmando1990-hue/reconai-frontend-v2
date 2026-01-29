@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
@@ -238,9 +239,11 @@ export function SidebarV2() {
       <div className="border-t border-border p-3">
         <div className="flex items-center gap-3">
           {user?.imageUrl ? (
-            <img
+            <Image
               src={user.imageUrl}
               alt={user.fullName || "User"}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (

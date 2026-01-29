@@ -76,7 +76,7 @@ export async function POST(req: Request) {
  * Generate contextual response based on user query.
  * In production, this would integrate with an LLM.
  */
-function generateAssistantResponse(message: string, context?: string): string {
+function generateAssistantResponse(message: string, _context?: string): string {
   const lowerMessage = message.toLowerCase();
 
   // Task-related queries

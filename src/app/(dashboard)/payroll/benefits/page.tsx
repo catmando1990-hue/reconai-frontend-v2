@@ -80,7 +80,10 @@ function PayrollBenefitsBody() {
   const { data: benefitsData, isLoading, isError } = useBenefitEnrollments();
   const { data: peopleData } = usePayrollPeople(100);
 
-  const enrollments: BenefitEnrollment[] = benefitsData?.items ?? [];
+  const enrollments = useMemo<BenefitEnrollment[]>(
+    () => benefitsData?.items ?? [],
+    [benefitsData?.items],
+  );
   const peopleMap = useMemo(() => {
     const map = new Map<string, string>();
     const items: PayrollPerson[] = peopleData?.items ?? [];

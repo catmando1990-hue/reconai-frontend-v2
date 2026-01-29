@@ -5,7 +5,7 @@ import React, { Suspense, createContext, useContext, useMemo } from "react";
 export type OrgContextValue = {
   org_id: string | null;
   org_name: string | null;
-  role: string | null; // effective role used for tier gating
+  role: string | null;
   isLoaded: boolean;
 };
 
@@ -18,48 +18,104 @@ const DEFAULT_ORG_CONTEXT: OrgContextValue = {
 
 const OrgContext = createContext<OrgContextValue>(DEFAULT_ORG_CONTEXT);
 
+/**
+ * FIX: Wrapped in try-catch with explicit validation
+ * The error "Cannot read properties of undefined (reading 'length')"
+ * occurs when React.lazy receives undefined from the import.
+ */
 const OrgProviderClerkLazy = React.lazy(async () => {
-  const { useAuth, useOrganization, useUser } = await import("@clerk/nextjs");
+  try {
+    // Step 1: Import Clerk hooks
+    const clerkModule = await import("@clerk/nextjs");
 
-  function OrgProviderClerk({ children }: { children: React.ReactNode }) {
-    const { isLoaded: authLoaded, orgId, orgRole } = useAuth();
-    const { isLoaded: orgLoaded, organization } = useOrganization();
-    const { isLoaded: userLoaded, user } = useUser();
+    // Step 2: Validate the import worked
+    if (!clerkModule || typeof clerkModule.useAuth !== "function") {
+      console.error(
+        "[OrgProvider] Clerk import failed or invalid:",
+        clerkModule,
+      );
+      // Return a fallback component that just passes through children
+      return {
+        default: function OrgProviderFallback({
+          children,
+        }: {
+          children: React.ReactNode;
+        }) {
+          return (
+            <OrgContext.Provider value={DEFAULT_ORG_CONTEXT}>
+              {children}
+            </OrgContext.Provider>
+          );
+        },
+      };
+    }
 
-    // Preferred: user-level role from publicMetadata (works even without org selected)
-    const userRole = user
-      ? ((user.publicMetadata as Record<string, unknown>)?.role as
-          | string
-          | undefined) ||
-        ((user.unsafeMetadata as Record<string, unknown>)?.role as
-          | string
-          | undefined) ||
-        null
-      : null;
+    const { useAuth, useOrganization, useUser } = clerkModule;
 
-    const effectiveRole = userRole ?? orgRole ?? null;
+    // Step 3: Define the component
+    function OrgProviderClerk({ children }: { children: React.ReactNode }) {
+      const { isLoaded: authLoaded, orgId, orgRole } = useAuth();
+      const { isLoaded: orgLoaded, organization } = useOrganization();
+      const { isLoaded: userLoaded, user } = useUser();
 
-    const value = useMemo<OrgContextValue>(
-      () => ({
-        org_id: orgId ?? null,
-        org_name: organization?.name ?? null,
-        role: effectiveRole,
-        isLoaded: authLoaded && orgLoaded && userLoaded,
-      }),
-      [
-        authLoaded,
-        orgLoaded,
-        userLoaded,
-        orgId,
-        effectiveRole,
-        organization?.name,
-      ],
-    );
+      const userRole = user
+        ? ((user.publicMetadata as Record<string, unknown>)?.role as
+            | string
+            | undefined) ||
+          ((user.unsafeMetadata as Record<string, unknown>)?.role as
+            | string
+            | undefined) ||
+          null
+        : null;
 
-    return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
+      const effectiveRole = userRole ?? orgRole ?? null;
+
+      const value = useMemo<OrgContextValue>(
+        () => ({
+          org_id: orgId ?? null,
+          org_name: organization?.name ?? null,
+          role: effectiveRole,
+          isLoaded: authLoaded && orgLoaded && userLoaded,
+        }),
+        [
+          authLoaded,
+          orgLoaded,
+          userLoaded,
+          orgId,
+          effectiveRole,
+          organization?.name,
+        ],
+      );
+
+      return (
+        <OrgContext.Provider value={value}>{children}</OrgContext.Provider>
+      );
+    }
+
+    // Step 4: Validate the component before returning
+    if (typeof OrgProviderClerk !== "function") {
+      console.error("[OrgProvider] Component creation failed");
+      throw new Error("OrgProviderClerk is not a function");
+    }
+
+    return { default: OrgProviderClerk };
+  } catch (error) {
+    console.error("[OrgProvider] React.lazy import error:", error);
+    // Return a fallback that doesn't crash
+    return {
+      default: function OrgProviderError({
+        children,
+      }: {
+        children: React.ReactNode;
+      }) {
+        return (
+          <OrgContext.Provider value={DEFAULT_ORG_CONTEXT}>
+            {children}
+          </OrgContext.Provider>
+        );
+      },
+    };
   }
-
-  return { default: OrgProviderClerk };
 });
 
 export function OrgProvider({ children }: { children: React.ReactNode }) {
@@ -73,7 +129,6 @@ export function OrgProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // While the Clerk hooks chunk loads, expose a stable "not loaded yet" state.
   return (
     <Suspense
       fallback={

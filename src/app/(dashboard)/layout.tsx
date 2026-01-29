@@ -2,6 +2,7 @@ import React from "react";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ClerkProviderWrapper } from "@/components/auth/ClerkProviderWrapper";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { getBackendUrl } from "@/lib/config";
 import { auditedFetch } from "@/lib/auditedFetch";
 
@@ -85,5 +86,9 @@ export default async function DashboardGroupLayout({
     redirect("/complete-profile?redirect_url=/home");
   }
 
-  return <ClerkProviderWrapper>{children}</ClerkProviderWrapper>;
+  return (
+    <ClerkProviderWrapper>
+      <DashboardShell>{children}</DashboardShell>
+    </ClerkProviderWrapper>
+  );
 }

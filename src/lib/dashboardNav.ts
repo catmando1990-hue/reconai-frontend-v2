@@ -363,6 +363,18 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     icon: "LayoutDashboard",
     order: 5,
   },
+  [ROUTES.CFO_CONNECT]: {
+    displayTitle: "Bank Connections",
+    shortLabel: "Connect",
+    subtitle: "Manage CFO tier bank connections",
+    module: "cfo",
+    breadcrumb: [
+      ["CFO", ROUTES.CFO],
+      ["Connect", null],
+    ],
+    icon: "Link2",
+    order: 6,
+  },
 
   // ─────────────────────────────────────────
   // PAYROLL MODULE
@@ -558,6 +570,18 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     icon: "Settings",
     order: 15,
   },
+  [ROUTES.PAYROLL_CONNECT]: {
+    displayTitle: "Bank Connections",
+    shortLabel: "Connect",
+    subtitle: "Manage payroll tier bank connections",
+    module: "payroll",
+    breadcrumb: [
+      ["Payroll", ROUTES.PAYROLL],
+      ["Connect", null],
+    ],
+    icon: "Link2",
+    order: 16,
+  },
 
   // ─────────────────────────────────────────
   // GOVCON MODULE
@@ -667,6 +691,18 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     ],
     icon: "ClipboardList",
     order: 8,
+  },
+  [ROUTES.GOVCON_CONNECT]: {
+    displayTitle: "Bank Connections",
+    shortLabel: "Connect",
+    subtitle: "DCAA-compliant bank account management",
+    module: "govcon",
+    breadcrumb: [
+      ["GovCon", ROUTES.GOVCON],
+      ["Connect", null],
+    ],
+    icon: "Link2",
+    order: 9,
   },
 
   // ─────────────────────────────────────────

@@ -1,22 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { SWRConfig } from "swr";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Global SWR configuration to prevent rapid retries on API errors
+// Global SWR configuration
 const swrConfig = {
-  // Don't automatically retry on error (prevents flooding API on 401)
   shouldRetryOnError: false,
-  // If retry is enabled elsewhere, wait 10 seconds between attempts
   errorRetryInterval: 10000,
-  // Only retry once if explicitly enabled
   errorRetryCount: 1,
-  // Dedupe requests within 2 seconds
   dedupingInterval: 2000,
-  // Don't revalidate on focus (reduces unnecessary requests)
   revalidateOnFocus: false,
 };
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  return <SWRConfig value={swrConfig}>{children}</SWRConfig>;
+  // Create QueryClient instance once per component lifecycle
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000, // 1 minute
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SWRConfig value={swrConfig}>{children}</SWRConfig>
+    </QueryClientProvider>
+  );
 }

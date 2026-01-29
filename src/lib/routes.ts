@@ -57,6 +57,7 @@ export const ROUTES = {
   CFO_CASH_FLOW: "/cfo/cash-flow",
   CFO_REPORTS: "/cfo/reports",
   CFO_FINANCIAL_REPORTS: "/cfo/reports", // Alias for CFO_REPORTS
+  CFO_CONNECT: "/cfo/connect",
 
   // ─────────────────────────────────────────
   // PAYROLL MODULE
@@ -77,6 +78,7 @@ export const ROUTES = {
   PAYROLL_SNAPSHOTS: "/payroll/snapshots",
   PAYROLL_REPORTS: "/payroll/reports",
   PAYROLL_SETTINGS: "/payroll/settings",
+  PAYROLL_CONNECT: "/payroll/connect",
 
   // ─────────────────────────────────────────
   // GOVCON MODULE
@@ -90,6 +92,7 @@ export const ROUTES = {
   GOVCON_AUDIT_VERIFY: "/govcon/audit/verify",
   GOVCON_EVIDENCE: "/govcon/evidence",
   GOVCON_SF1408: "/govcon/sf-1408",
+  GOVCON_CONNECT: "/govcon/connect",
 
   // ─────────────────────────────────────────
   // INVOICING MODULE

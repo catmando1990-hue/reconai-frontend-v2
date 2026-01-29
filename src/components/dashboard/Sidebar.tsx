@@ -23,7 +23,7 @@ import {
   hasGovConEntitlement,
   hasPayrollEntitlement,
 } from "@/lib/entitlements";
-import { MODULES, type ModuleKey } from "@/lib/dashboardNav";
+import { MODULES, NAV, getModuleRoutes, type ModuleKey } from "@/lib/dashboardNav";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Home: LayoutDashboard,
@@ -133,38 +133,71 @@ export function Sidebar() {
                 const isActive = activeModule === moduleKey;
                 const href = moduleInfo.landingRoute;
 
+                // Get sub-routes for this module (excluding the module root itself)
+                const subRoutes = getModuleRoutes(moduleKey).filter(
+                  (route) => route !== moduleInfo.landingRoute
+                );
+
                 return (
-                  <Link
-                    key={moduleKey}
-                    href={href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={[
-                      "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                      isActive
-                        ? "bg-primary/10 text-foreground border-l-2 border-primary -ml-0.5 pl-[calc(0.75rem-2px)]"
-                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-l-2 border-transparent -ml-0.5 pl-[calc(0.75rem-2px)]",
-                    ].join(" ")}
-                  >
-                    <div
+                  <div key={moduleKey}>
+                    <Link
+                      href={href}
+                      aria-current={isActive ? "page" : undefined}
                       className={[
-                        "flex h-7 w-7 items-center justify-center rounded-md transition-colors",
+                        "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                         isActive
-                          ? "bg-primary/15"
-                          : "bg-muted/50 group-hover:bg-accent",
+                          ? "bg-primary/10 text-foreground border-l-2 border-primary -ml-0.5 pl-[calc(0.75rem-2px)]"
+                          : "text-muted-foreground hover:bg-accent/50 hover:text-foreground border-l-2 border-transparent -ml-0.5 pl-[calc(0.75rem-2px)]",
                       ].join(" ")}
                     >
-                      <Icon
+                      <div
                         className={[
-                          "h-4 w-4 transition-colors",
+                          "flex h-7 w-7 items-center justify-center rounded-md transition-colors",
                           isActive
-                            ? "text-primary"
-                            : "text-muted-foreground group-hover:text-foreground",
+                            ? "bg-primary/15"
+                            : "bg-muted/50 group-hover:bg-accent",
                         ].join(" ")}
-                      />
-                    </div>
-                    <span className="truncate">{moduleInfo.shortLabel}</span>
-                  </Link>
+                      >
+                        <Icon
+                          className={[
+                            "h-4 w-4 transition-colors",
+                            isActive
+                              ? "text-primary"
+                              : "text-muted-foreground group-hover:text-foreground",
+                          ].join(" ")}
+                        />
+                      </div>
+                      <span className="truncate">{moduleInfo.shortLabel}</span>
+                    </Link>
+
+                    {/* Sub-routes - show when module is active */}
+                    {isActive && subRoutes.length > 0 && (
+                      <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-3">
+                        {subRoutes.map((subRoute) => {
+                          const navEntry = NAV[subRoute];
+                          if (!navEntry) return null;
+
+                          const isSubActive = pathname === subRoute || pathname.startsWith(subRoute + "/");
+
+                          return (
+                            <Link
+                              key={subRoute}
+                              href={subRoute}
+                              className={[
+                                "block rounded-md px-2 py-1.5 text-xs transition-colors",
+                                isSubActive
+                                  ? "bg-primary/10 text-foreground font-medium"
+                                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                              ].join(" ")}
+                            >
+                              {navEntry.shortLabel}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>

@@ -21,7 +21,12 @@ import {
   hasGovConEntitlement,
   hasPayrollEntitlement,
 } from "@/lib/entitlements";
-import { MODULES, type ModuleKey } from "@/lib/dashboardNav";
+import {
+  MODULES,
+  NAV,
+  getModuleRoutes,
+  type ModuleKey,
+} from "@/lib/dashboardNav";
 import { cn } from "@/lib/utils";
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -170,15 +175,50 @@ export function SidebarV2() {
             const badge =
               moduleKey === "intelligence" ? intelligenceBadge : undefined;
 
+            // Get sub-routes for this module (excluding the module root itself)
+            const subRoutes = getModuleRoutes(moduleKey).filter(
+              (route) => route !== moduleInfo.landingRoute,
+            );
+
             return (
-              <NavItem
-                key={moduleKey}
-                href={href}
-                icon={Icon}
-                label={moduleInfo.shortLabel}
-                isActive={isActive}
-                badge={badge}
-              />
+              <div key={moduleKey}>
+                <NavItem
+                  href={href}
+                  icon={Icon}
+                  label={moduleInfo.shortLabel}
+                  isActive={isActive}
+                  badge={badge}
+                />
+
+                {/* Sub-routes - show when module is active */}
+                {isActive && subRoutes.length > 0 && (
+                  <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-3">
+                    {subRoutes.map((subRoute) => {
+                      const navEntry = NAV[subRoute];
+                      if (!navEntry) return null;
+
+                      const isSubActive =
+                        pathname === subRoute ||
+                        pathname.startsWith(subRoute + "/");
+
+                      return (
+                        <Link
+                          key={subRoute}
+                          href={subRoute}
+                          className={cn(
+                            "block rounded-md px-2 py-1.5 text-xs transition-colors",
+                            isSubActive
+                              ? "bg-[#059669]/10 text-[#059669] font-medium"
+                              : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                          )}
+                        >
+                          {navEntry.shortLabel}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

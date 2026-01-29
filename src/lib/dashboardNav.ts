@@ -242,6 +242,18 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     icon: "Brain",
     order: 0,
   },
+  [ROUTES.INTELLIGENCE_OVERVIEW]: {
+    displayTitle: "Overview",
+    shortLabel: "Overview",
+    subtitle: "Intelligence module summary",
+    module: "intelligence",
+    breadcrumb: [
+      ["Intelligence", ROUTES.INTELLIGENCE],
+      ["Overview", null],
+    ],
+    icon: "LayoutDashboard",
+    order: 1,
+  },
   [ROUTES.INTELLIGENCE_INSIGHTS]: {
     displayTitle: "Insights",
     shortLabel: "Insights",
@@ -252,7 +264,7 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
       ["Insights", null],
     ],
     icon: "Sparkles",
-    order: 1,
+    order: 2,
   },
   [ROUTES.INTELLIGENCE_ALERTS]: {
     displayTitle: "Alerts",
@@ -264,7 +276,7 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
       ["Alerts", null],
     ],
     icon: "Bell",
-    order: 2,
+    order: 3,
   },
   [ROUTES.INTELLIGENCE_AI_WORKER]: {
     displayTitle: "AI Worker",
@@ -276,7 +288,7 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
       ["AI Worker", null],
     ],
     icon: "Bot",
-    order: 3,
+    order: 4,
   },
 
   // ─────────────────────────────────────────

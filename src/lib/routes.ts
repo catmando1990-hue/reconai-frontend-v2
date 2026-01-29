@@ -42,6 +42,7 @@ export const ROUTES = {
   // INTELLIGENCE MODULE
   // ─────────────────────────────────────────
   INTELLIGENCE: "/intelligence",
+  INTELLIGENCE_OVERVIEW: "/intelligence/overview",
   INTELLIGENCE_INSIGHTS: "/intelligence/insights",
   INTELLIGENCE_ALERTS: "/intelligence/alerts",
   INTELLIGENCE_AI_WORKER: "/intelligence/ai-worker",

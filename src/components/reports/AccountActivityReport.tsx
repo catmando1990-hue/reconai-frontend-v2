@@ -40,8 +40,23 @@ type AccountActivityData = {
   summary: AccountActivitySummary;
 };
 
-type AccountActivityResponse = {
-  data: AccountActivityData;
+// FIX: Match actual API response structure
+type ApiResponse = {
+  ok: boolean;
+  report: string;
+  data: AccountData[];  // API returns accounts array directly in data
+  summary: {
+    total_accounts: number;
+    total_current_balance: number;
+    total_inflows: number;
+    total_outflows: number;
+    net_change: number;
+  };
+  filters: {
+    start_date: string | null;
+    end_date: string | null;
+  };
+  generated_at: string;
   request_id: string;
 };
 
@@ -91,12 +106,29 @@ export function AccountActivityReport() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiFetch<AccountActivityResponse>(
+      const response = await apiFetch<ApiResponse>(
         `/api/reports/account-activity?days=${period}`,
       );
-      // Handle both response formats
-      const reportData =
-        response?.data ?? (response as unknown as AccountActivityData);
+
+      // FIX: Properly map API response to expected data structure
+      // API returns: { data: [...accounts], summary: {...} }
+      // Component expects: { accounts: [...], summary: {...} }
+      const accounts = response?.data ?? [];
+      const apiSummary = response?.summary;
+
+      const reportData: AccountActivityData = {
+        start_date: response?.filters?.start_date ?? "",
+        end_date: response?.filters?.end_date ?? "",
+        accounts: Array.isArray(accounts) ? accounts : [],
+        summary: {
+          total_balance: apiSummary?.total_current_balance ?? 0,
+          total_inflows: apiSummary?.total_inflows ?? 0,
+          total_outflows: apiSummary?.total_outflows ?? 0,
+          net_change: apiSummary?.net_change ?? 0,
+          account_count: apiSummary?.total_accounts ?? 0,
+        },
+      };
+
       setData(reportData);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load";
@@ -112,7 +144,7 @@ export function AccountActivityReport() {
   }, [isLoaded, fetchData]);
 
   const handleExportCSV = () => {
-    if (!data || data.accounts.length === 0) return;
+    if (!data || !data.accounts || data.accounts.length === 0) return;
 
     const headers = [
       "Account",
@@ -145,7 +177,8 @@ export function AccountActivityReport() {
     URL.revokeObjectURL(url);
   };
 
-  const hasData = data && data.accounts.length > 0;
+  // FIX: Defensive check with optional chaining
+  const hasData = data && data.accounts && data.accounts.length > 0;
 
   return (
     <div className="rounded-xl border bg-card">

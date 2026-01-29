@@ -49,60 +49,66 @@ export function ConnectedAccounts() {
   const [error, setError] = useState<string | null>(null);
   const [noItemsYet, setNoItemsYet] = useState(false);
   const [syncingItemId, setSyncingItemId] = useState<string | null>(null);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [syncResult, setSyncResult] = useState<{
     itemId: string;
     success: boolean;
     message: string;
   } | null>(null);
 
+  const fetchItems = async () => {
+    try {
+      const j = await auditedFetch<{
+        ok?: boolean;
+        items?: Item[];
+        status?: string;
+        code?: string;
+        message?: string;
+        request_id: string;
+      }>("/api/plaid/items");
+
+      if (j.status === "not_connected" || (j.items && j.items.length === 0)) {
+        setNoItemsYet(true);
+        setItems([]);
+      } else {
+        setItems(j.items || []);
+        setNoItemsYet(false);
+      }
+    } catch (e: unknown) {
+      if (e instanceof HttpError && e.status === 400) {
+        try {
+          const body = e.body as
+            | { code?: string; message?: string }
+            | undefined;
+          if (body?.code === "NO_PLAID_ITEM") {
+            setNoItemsYet(true);
+            setItems([]);
+            return;
+          }
+        } catch {
+          // Fall through
+        }
+      }
+
+      let message = "Failed to load";
+      if (e instanceof AuditProvenanceError) {
+        message = `Provenance error: ${e.message}`;
+      } else if (e instanceof HttpError) {
+        message = `HTTP ${e.status}: ${e.message}`;
+      } else if (e instanceof Error) {
+        message = e.message;
+      }
+      setError(message);
+      setItems([]);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
-    auditedFetch<{
-      ok?: boolean;
-      items?: Item[];
-      status?: string;
-      code?: string;
-      message?: string;
-      request_id: string;
-    }>("/api/plaid/items")
-      .then((j) => {
-        if (!mounted) return;
-        if (j.status === "not_connected" || (j.items && j.items.length === 0)) {
-          setNoItemsYet(true);
-          setItems([]);
-        } else {
-          setItems(j.items || []);
-        }
-      })
-      .catch((e: unknown) => {
-        if (!mounted) return;
-
-        if (e instanceof HttpError && e.status === 400) {
-          try {
-            const body = e.body as
-              | { code?: string; message?: string }
-              | undefined;
-            if (body?.code === "NO_PLAID_ITEM") {
-              setNoItemsYet(true);
-              setItems([]);
-              return;
-            }
-          } catch {
-            // Fall through
-          }
-        }
-
-        let message = "Failed to load";
-        if (e instanceof AuditProvenanceError) {
-          message = `Provenance error: ${e.message}`;
-        } else if (e instanceof HttpError) {
-          message = `HTTP ${e.status}: ${e.message}`;
-        } else if (e instanceof Error) {
-          message = e.message;
-        }
-        setError(message);
-        setItems([]);
-      });
+    fetchItems().then(() => {
+      if (!mounted) return;
+    });
     return () => {
       mounted = false;
     };
@@ -147,6 +153,41 @@ export function ConnectedAccounts() {
     }
   }
 
+  async function handleDelete(itemId: string) {
+    setDeletingItemId(itemId);
+    setConfirmDeleteId(null);
+
+    try {
+      await auditedFetch<{
+        ok: boolean;
+        success: boolean;
+        message: string;
+        request_id: string;
+      }>(`/api/plaid/items/${itemId}`, {
+        method: "DELETE",
+      });
+
+      // Remove from local state
+      setItems((prev) => prev?.filter((it) => it.item_id !== itemId) ?? []);
+
+      // Check if we now have no items
+      if (items && items.length === 1) {
+        setNoItemsYet(true);
+      }
+    } catch (err) {
+      let message = "Failed to disconnect";
+      if (err instanceof HttpError) {
+        const body = err.body as { error?: { message?: string } } | undefined;
+        message = body?.error?.message || `Disconnect failed (${err.status})`;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
+    } finally {
+      setDeletingItemId(null);
+    }
+  }
+
   return (
     <section className="rounded-2xl border bg-background p-6">
       <h2 className="text-lg font-semibold tracking-tight">
@@ -169,7 +210,9 @@ export function ConnectedAccounts() {
       )}
 
       {error && (
-        <p className="mt-4 text-sm text-muted-foreground">Error: {error}</p>
+        <p className="mt-4 text-sm text-red-600 dark:text-red-400">
+          Error: {error}
+        </p>
       )}
 
       {items !== null && items.length > 0 && (
@@ -204,16 +247,56 @@ export function ConnectedAccounts() {
                     {new Date(it.created_at).toLocaleString()}
                   </td>
                   <td className="whitespace-nowrap py-2 pr-4">
-                    <button
-                      onClick={() => handleSync(it.item_id)}
-                      disabled={syncingItemId === it.item_id}
-                      className="rounded bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                    >
-                      {syncingItemId === it.item_id ? "Syncing..." : "Sync Now"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleSync(it.item_id)}
+                        disabled={
+                          syncingItemId === it.item_id ||
+                          deletingItemId === it.item_id
+                        }
+                        className="rounded bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        {syncingItemId === it.item_id
+                          ? "Syncing..."
+                          : "Sync Now"}
+                      </button>
+
+                      {confirmDeleteId === it.item_id ? (
+                        <>
+                          <button
+                            onClick={() => handleDelete(it.item_id)}
+                            disabled={deletingItemId === it.item_id}
+                            className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                          >
+                            {deletingItemId === it.item_id
+                              ? "Removing..."
+                              : "Confirm"}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            disabled={deletingItemId === it.item_id}
+                            className="rounded border border-border px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(it.item_id)}
+                          disabled={
+                            syncingItemId === it.item_id ||
+                            deletingItemId === it.item_id
+                          }
+                          className="rounded border border-red-300 dark:border-red-800 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50"
+                        >
+                          Disconnect
+                        </button>
+                      )}
+                    </div>
+
                     {syncResult && syncResult.itemId === it.item_id && (
                       <span
-                        className={`ml-2 text-xs ${syncResult.success ? "text-green-600" : "text-red-600"}`}
+                        className={`block mt-1 text-xs ${syncResult.success ? "text-green-600" : "text-red-600"}`}
                       >
                         {syncResult.message}
                       </span>

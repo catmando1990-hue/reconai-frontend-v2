@@ -44,7 +44,7 @@ type AccountActivityData = {
 type ApiResponse = {
   ok: boolean;
   report: string;
-  data: AccountData[];  // API returns accounts array directly in data
+  data: AccountData[]; // API returns accounts array directly in data
   summary: {
     total_accounts: number;
     total_current_balance: number;

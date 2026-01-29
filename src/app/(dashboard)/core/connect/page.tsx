@@ -45,7 +45,8 @@ export default function CoreConnectPage() {
             <h3 className="font-medium mb-2">About Core Connections</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Bank accounts connected here are used for Core module features
-              including transaction tracking, reports, and account reconciliation.
+              including transaction tracking, reports, and account
+              reconciliation.
             </p>
 
             <h4 className="font-medium text-sm mb-1">Core Features</h4>
@@ -61,7 +62,8 @@ export default function CoreConnectPage() {
               <h4 className="font-medium text-sm mb-1">Data Isolation</h4>
               <p className="text-xs text-muted-foreground">
                 Connections made here are isolated to the Core module. CFO,
-                Payroll, and GovCon modules manage their own separate connections.
+                Payroll, and GovCon modules manage their own separate
+                connections.
               </p>
             </div>
           </div>

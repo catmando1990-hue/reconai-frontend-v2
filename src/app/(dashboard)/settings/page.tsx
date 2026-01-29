@@ -270,7 +270,7 @@ export default function SettingsPage() {
       ) : settingsSuccess ? (
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Left Column - Primary Settings */}
-          <div className="space-y-6 lg:col-span-8">
+          <div className="space-y-6 lg:col-span-7">
             {/* Billing & Upgrade */}
             <UpgradePanel currentTier={userTier} />
 
@@ -285,7 +285,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Right Column - Secondary Settings */}
-          <div className="space-y-4 lg:col-span-4">
+          <div className="space-y-4 lg:col-span-5">
             {/* Security & Access */}
             <SecuritySection
               isActive={!!profile}

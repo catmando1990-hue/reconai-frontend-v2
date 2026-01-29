@@ -163,7 +163,7 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Billing period toggle */}
-        <div className="flex items-center justify-center gap-2 rounded-lg border p-1">
+        <div className="flex items-center justify-center gap-2 rounded-lg border p-1 w-fit mx-auto">
           <button
             type="button"
             onClick={() => setBillingPeriod("monthly")}
@@ -196,8 +196,8 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
           </div>
         )}
 
-        {/* Tier cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        {/* Tier cards - FIX: Added pt-4 to container for badge space, aligned card heights */}
+        <div className="grid gap-4 md:grid-cols-3 pt-4">
           {UPGRADE_TIERS.map((tier) => {
             const isCurrentTier = tier.key === currentTier;
             const price =
@@ -208,7 +208,7 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
             return (
               <div
                 key={tier.key}
-                className={`relative rounded-xl border p-4 ${
+                className={`relative rounded-xl border p-4 flex flex-col ${
                   tier.recommended
                     ? "border-primary shadow-sm"
                     : "border-border"
@@ -230,7 +230,8 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
                   </div>
                 </div>
 
-                <ul className="mb-4 space-y-2 text-sm">
+                {/* FIX: flex-1 to push button to bottom, ensuring alignment */}
+                <ul className="mb-4 space-y-2 text-sm flex-1">
                   {tier.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -240,7 +241,7 @@ export function UpgradePanel({ currentTier = "free" }: UpgradePanelProps) {
                 </ul>
 
                 <Button
-                  className="w-full"
+                  className="w-full mt-auto"
                   variant={tier.recommended ? "default" : "outline"}
                   disabled={isCurrentTier || loading !== null}
                   onClick={() => handleUpgrade(tier.key)}

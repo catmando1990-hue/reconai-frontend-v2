@@ -39,7 +39,7 @@ interface Connection {
 }
 
 function CfoConnectBody() {
-  const { apiFetch, apiPost } = useApi();
+  const { apiFetch, auditedPost } = useApi();
   const [connectionType, setConnectionType] = useState<ConnectionType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ function CfoConnectBody() {
     setError(null);
 
     try {
-      await apiPost("/api/cfo/connections/manual", manualForm);
+      await auditedPost("/api/cfo/connections/manual", manualForm);
       mutate();
       setConnectionType(null);
       setManualForm({

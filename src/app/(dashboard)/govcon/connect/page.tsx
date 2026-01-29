@@ -56,7 +56,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof
 };
 
 function GovConConnectBody() {
-  const { apiFetch, apiPost } = useApi();
+  const { apiFetch, auditedPost } = useApi();
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +86,7 @@ function GovConConnectBody() {
     setError(null);
 
     try {
-      await apiPost("/api/govcon/connections", {
+      await auditedPost("/api/govcon/connections", {
         ...form,
         contract_id: form.contract_id || null,
       });

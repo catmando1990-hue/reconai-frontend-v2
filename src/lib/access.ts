@@ -2,12 +2,12 @@
 // Phase 36: Lightweight access helpers.
 // Enterprise-first: explicit gating, deterministic behavior.
 
-export type AccessTier = "core" | "intelligence" | "cfo" | "payroll";
+export type AccessTier = "core" | "intelligence" | "cfo" | "payroll" | "govcon";
 
 const ROLE_ACCESS: Record<string, AccessTier[]> = {
-  owner: ["core", "intelligence", "cfo", "payroll"],
-  admin: ["core", "intelligence", "cfo", "payroll"],
-  enterprise_admin: ["core", "intelligence", "cfo", "payroll"],
+  owner: ["core", "intelligence", "cfo", "payroll", "govcon"],
+  admin: ["core", "intelligence", "cfo", "payroll", "govcon"],
+  enterprise_admin: ["core", "intelligence", "cfo", "payroll", "govcon"],
   cfo: ["core", "cfo", "payroll"],
   analyst: ["core", "intelligence"],
   member: ["core"],

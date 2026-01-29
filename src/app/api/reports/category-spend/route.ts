@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Get all transactions for aggregation
     let query = supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select("amount, category, personal_finance_category, date, pending")
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .eq("pending", false); // Only posted transactions

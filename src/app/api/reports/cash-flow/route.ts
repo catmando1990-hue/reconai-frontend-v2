@@ -27,7 +27,7 @@ export async function GET() {
 
     // Get all non-pending transactions
     const { data: transactions, error } = await supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select("amount, pending, date")
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .eq("pending", false);

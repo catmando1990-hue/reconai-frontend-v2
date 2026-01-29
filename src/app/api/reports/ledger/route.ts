@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     // Get total count
     const { count, error: countError } = await supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select("*", { count: "exact", head: true })
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
 
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch transactions with account info
     const { data: transactions, error: txError } = await supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select(
         `
         id,

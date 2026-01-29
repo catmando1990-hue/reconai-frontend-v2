@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     // Get transactions for activity calculation
     let txQuery = supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select("account_id, amount, date, pending")
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .eq("pending", false);

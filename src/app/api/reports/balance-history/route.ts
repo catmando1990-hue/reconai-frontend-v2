@@ -41,7 +41,7 @@ export async function GET() {
 
     // Get all transactions to compute balance history
     const { data: transactions, error: txError } = await supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select("amount, date, account_id, pending")
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .eq("pending", false)

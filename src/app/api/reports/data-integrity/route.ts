@@ -47,7 +47,7 @@ export async function GET() {
 
     // Get transactions with date range
     const { data: transactions, error: txError } = await supabase
-      .from("plaid_transactions")
+      .from("transactions")
       .select("id, date, account_id, pending")
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
 

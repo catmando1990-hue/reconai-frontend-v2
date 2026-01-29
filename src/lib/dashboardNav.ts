@@ -25,6 +25,8 @@ export type ModuleKey =
   | "cfo"
   | "payroll"
   | "govcon"
+  | "invoicing"
+  | "admin"
   | "settings";
 
 export interface NavEntry {
@@ -111,11 +113,7 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     icon: "LayoutDashboard",
     order: 3,
   },
-
-  // ─────────────────────────────────────────
-  // ACCOUNTS & BANKING
-  // ─────────────────────────────────────────
-  [ROUTES.ACCOUNTS]: {
+  [ROUTES.CORE_ACCOUNTS]: {
     displayTitle: "Accounts",
     shortLabel: "Accounts",
     subtitle: "Connected bank accounts and balances",
@@ -127,6 +125,74 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     icon: "Building2",
     order: 4,
   },
+  [ROUTES.CORE_STATEMENTS]: {
+    displayTitle: "Bank Statements",
+    shortLabel: "Statements",
+    subtitle: "Upload and manage bank statements",
+    module: "core",
+    breadcrumb: [
+      ["Core", ROUTES.CORE],
+      ["Statements", null],
+    ],
+    icon: "FileText",
+    order: 5,
+  },
+  [ROUTES.CORE_REPORTS_CASH_FLOW]: {
+    displayTitle: "Cash Flow Report",
+    shortLabel: "Cash Flow",
+    subtitle: "Cash flow analysis and trends",
+    module: "core",
+    breadcrumb: [
+      ["Core", ROUTES.CORE],
+      ["Reports", ROUTES.CORE_REPORTS],
+      ["Cash Flow", null],
+    ],
+    icon: "TrendingUp",
+    order: 10,
+  },
+  [ROUTES.CORE_REPORTS_CATEGORY_SPEND]: {
+    displayTitle: "Category Spend Report",
+    shortLabel: "Category Spend",
+    subtitle: "Spending breakdown by category",
+    module: "core",
+    breadcrumb: [
+      ["Core", ROUTES.CORE],
+      ["Reports", ROUTES.CORE_REPORTS],
+      ["Category Spend", null],
+    ],
+    icon: "PieChart",
+    order: 11,
+  },
+  [ROUTES.CORE_REPORTS_ACCOUNT_ACTIVITY]: {
+    displayTitle: "Account Activity Report",
+    shortLabel: "Activity",
+    subtitle: "Detailed account activity log",
+    module: "core",
+    breadcrumb: [
+      ["Core", ROUTES.CORE],
+      ["Reports", ROUTES.CORE_REPORTS],
+      ["Account Activity", null],
+    ],
+    icon: "Activity",
+    order: 12,
+  },
+  [ROUTES.CORE_REPORTS_LEDGER]: {
+    displayTitle: "Ledger Report",
+    shortLabel: "Ledger",
+    subtitle: "General ledger transactions",
+    module: "core",
+    breadcrumb: [
+      ["Core", ROUTES.CORE],
+      ["Reports", ROUTES.CORE_REPORTS],
+      ["Ledger", null],
+    ],
+    icon: "BookOpen",
+    order: 13,
+  },
+
+  // ─────────────────────────────────────────
+  // BANKING ACTIONS
+  // ─────────────────────────────────────────
   [ROUTES.CONNECT_BANK]: {
     displayTitle: "Connect Bank",
     shortLabel: "Connect",
@@ -162,18 +228,6 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     ],
     icon: "FileText",
     order: 7,
-  },
-  [ROUTES.STATEMENTS]: {
-    displayTitle: "Bank Statements",
-    shortLabel: "Statements",
-    subtitle: "Upload and manage bank statements",
-    module: "core",
-    breadcrumb: [
-      ["Core", ROUTES.CORE],
-      ["Statements", null],
-    ],
-    icon: "FileText",
-    order: 8,
   },
 
   // ─────────────────────────────────────────
@@ -604,6 +658,107 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
   },
 
   // ─────────────────────────────────────────
+  // INVOICING MODULE
+  // ─────────────────────────────────────────
+  [ROUTES.INVOICING]: {
+    displayTitle: "Invoicing",
+    shortLabel: "Invoicing",
+    subtitle: "Invoice and billing management",
+    module: "invoicing",
+    breadcrumb: [["Invoicing", null]],
+    icon: "FileText",
+    order: 0,
+  },
+  [ROUTES.INVOICING_NEW]: {
+    displayTitle: "New Invoice",
+    shortLabel: "New",
+    subtitle: "Create a new invoice",
+    module: "invoicing",
+    breadcrumb: [
+      ["Invoicing", ROUTES.INVOICING],
+      ["New Invoice", null],
+    ],
+    icon: "Plus",
+    order: 1,
+  },
+  [ROUTES.INVOICING_PREVIEW]: {
+    displayTitle: "Invoice Preview",
+    shortLabel: "Preview",
+    subtitle: "Preview invoice before sending",
+    module: "invoicing",
+    breadcrumb: [
+      ["Invoicing", ROUTES.INVOICING],
+      ["Preview", null],
+    ],
+    icon: "Eye",
+    order: 2,
+  },
+  [ROUTES.INVOICING_CUSTOMERS]: {
+    displayTitle: "Customers",
+    shortLabel: "Customers",
+    subtitle: "Manage your customer relationships",
+    module: "invoicing",
+    breadcrumb: [
+      ["Invoicing", ROUTES.INVOICING],
+      ["Customers", null],
+    ],
+    icon: "Users",
+    order: 3,
+  },
+  [ROUTES.INVOICING_VENDORS]: {
+    displayTitle: "Vendors",
+    shortLabel: "Vendors",
+    subtitle: "Manage your vendor relationships",
+    module: "invoicing",
+    breadcrumb: [
+      ["Invoicing", ROUTES.INVOICING],
+      ["Vendors", null],
+    ],
+    icon: "Store",
+    order: 4,
+  },
+  [ROUTES.INVOICING_SETTINGS]: {
+    displayTitle: "Invoicing Settings",
+    shortLabel: "Settings",
+    subtitle: "Invoice configuration and preferences",
+    module: "invoicing",
+    breadcrumb: [
+      ["Invoicing", ROUTES.INVOICING],
+      ["Settings", null],
+    ],
+    icon: "Settings",
+    order: 5,
+  },
+
+  // ─────────────────────────────────────────
+  // ADMIN MODULE
+  // ─────────────────────────────────────────
+  [ROUTES.ADMIN_EXPORTS]: {
+    displayTitle: "Exports",
+    shortLabel: "Exports",
+    subtitle: "Data exports and audit packages",
+    module: "admin",
+    breadcrumb: [
+      ["Admin", null],
+      ["Exports", null],
+    ],
+    icon: "Download",
+    order: 0,
+  },
+  [ROUTES.ADMIN_SETTINGS]: {
+    displayTitle: "Admin Settings",
+    shortLabel: "Settings",
+    subtitle: "System administration settings",
+    module: "admin",
+    breadcrumb: [
+      ["Admin", null],
+      ["Settings", null],
+    ],
+    icon: "Settings",
+    order: 1,
+  },
+
+  // ─────────────────────────────────────────
   // SETTINGS
   // ─────────────────────────────────────────
   [ROUTES.SETTINGS]: {
@@ -671,6 +826,20 @@ export const MODULES: Record<ModuleKey, ModuleInfo> = {
     description: "DCAA-compliant contracting",
     landingRoute: ROUTES.GOVCON,
     icon: "Building",
+  },
+  invoicing: {
+    displayTitle: "Invoicing",
+    shortLabel: "Invoicing",
+    description: "Invoice and billing management",
+    landingRoute: ROUTES.INVOICING,
+    icon: "FileText",
+  },
+  admin: {
+    displayTitle: "Admin",
+    shortLabel: "Admin",
+    description: "System administration",
+    landingRoute: ROUTES.ADMIN_EXPORTS,
+    icon: "Shield",
   },
   settings: {
     displayTitle: "Settings",

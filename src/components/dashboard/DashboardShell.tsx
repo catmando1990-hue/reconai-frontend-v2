@@ -1,23 +1,12 @@
 "use client";
 
-import { useEffect, useState, useTransition, useMemo, useRef } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { AdminCommandStrip } from "@/components/admin/AdminCommandStrip";
 import { CommandStripV2 } from "@/components/dashboard/CommandStripV2";
 import { Menu, X, Brain, Maximize2, Minimize2 } from "lucide-react";
-
-/**
- * Routes that default to focus mode (sidebar collapsed)
- * These are immersive/perspective views that benefit from full-width content
- */
-const FOCUS_MODE_ROUTES = [
-  "/govcon/evidence",
-  "/govcon/sf-1408",
-  "/intelligence/insights",
-  "/cfo/executive-summary",
-];
 
 function getSectionTitle(pathname: string): string {
   if (pathname.startsWith("/core")) return "Core";
@@ -29,40 +18,14 @@ function getSectionTitle(pathname: string): string {
   return "ReconAI";
 }
 
-function shouldDefaultToFocusMode(pathname: string): boolean {
-  return FOCUS_MODE_ROUTES.some((route) => pathname.startsWith(route));
-}
-
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const title = getSectionTitle(pathname || "");
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
 
-  // Focus mode: sidebar fully collapsed for immersive views
-  // Compute whether current route should default to focus mode
-  const shouldFocus = useMemo(
-    () => shouldDefaultToFocusMode(pathname || ""),
-    [pathname],
-  );
-
-  // Initialize focus mode based on current route
-  const [focusMode, setFocusMode] = useState(() =>
-    shouldDefaultToFocusMode(pathname || ""),
-  );
-
-  // Track previous pathname to sync focus mode with route changes
-  const prevPathnameRef = useRef(pathname);
-
-  // Reset focus mode when route changes to/from focus-default routes
-  // This synchronizes component state with the router (external system)
-  useEffect(() => {
-    if (prevPathnameRef.current !== pathname) {
-      prevPathnameRef.current = pathname;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with router state
-      setFocusMode(shouldFocus);
-    }
-  }, [pathname, shouldFocus]);
+  // Focus mode: user-controlled sidebar collapse for immersive views
+  const [focusMode, setFocusMode] = useState(false);
 
   // Close drawer on pathname change
   useEffect(() => {

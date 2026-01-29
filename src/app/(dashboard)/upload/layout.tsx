@@ -2,9 +2,9 @@ import { ReactNode } from "react";
 import { ShellV2 } from "@/components/dashboard-v2";
 
 /**
- * Core Module Layout
- * Wraps all /core/* routes with V2 shell
+ * Upload Layout
+ * Uses Core module shell for file upload flow
  */
-export default function CoreLayout({ children }: { children: ReactNode }) {
+export default function UploadLayout({ children }: { children: ReactNode }) {
   return <ShellV2 module="core">{children}</ShellV2>;
 }

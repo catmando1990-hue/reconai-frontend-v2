@@ -105,19 +105,6 @@ export const ROUTES = {
   // ─────────────────────────────────────────
   ADMIN_EXPORTS: "/admin/exports",
   ADMIN_SETTINGS: "/admin/settings",
-
-  // ─────────────────────────────────────────
-  // DEPRECATED - Redirect targets only
-  // These exist for backwards compatibility and should not be used in new code
-  // ─────────────────────────────────────────
-  /** @deprecated Use CORE instead */
-  _LEGACY_CORE_DASHBOARD: "/core-dashboard",
-  /** @deprecated Use CFO instead */
-  _LEGACY_CFO_DASHBOARD: "/cfo-dashboard",
-  /** @deprecated Use INTELLIGENCE instead */
-  _LEGACY_INTELLIGENCE_DASHBOARD: "/intelligence-dashboard",
-  /** @deprecated Use PAYROLL instead */
-  _LEGACY_PAYROLL_DASHBOARD: "/payroll-dashboard",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

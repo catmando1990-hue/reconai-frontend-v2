@@ -1,13 +1,10 @@
 import { ReactNode } from "react";
-
-interface PayrollLayoutProps {
-  children: ReactNode;
-}
+import { ShellV2 } from "@/components/dashboard-v2";
 
 /**
  * Payroll Module Layout
- * Wraps all /payroll/* routes with shared context and navigation
+ * Wraps all /payroll/* routes with V2 shell
  */
-export default function PayrollLayout({ children }: PayrollLayoutProps) {
-  return <div className="flex flex-col h-full">{children}</div>;
+export default function PayrollLayout({ children }: { children: ReactNode }) {
+  return <ShellV2 module="payroll">{children}</ShellV2>;
 }

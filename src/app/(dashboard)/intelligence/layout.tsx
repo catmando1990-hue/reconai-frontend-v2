@@ -1,15 +1,14 @@
 import { ReactNode } from "react";
-
-interface IntelligenceLayoutProps {
-  children: ReactNode;
-}
+import { ShellV2 } from "@/components/dashboard-v2";
 
 /**
  * Intelligence Module Layout
- * Wraps all /intelligence/* routes with shared context and navigation
+ * Wraps all /intelligence/* routes with V2 shell
  */
 export default function IntelligenceLayout({
   children,
-}: IntelligenceLayoutProps) {
-  return <div className="flex flex-col h-full">{children}</div>;
+}: {
+  children: ReactNode;
+}) {
+  return <ShellV2 module="intelligence">{children}</ShellV2>;
 }

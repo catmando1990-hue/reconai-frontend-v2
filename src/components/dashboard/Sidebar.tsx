@@ -23,7 +23,12 @@ import {
   hasGovConEntitlement,
   hasPayrollEntitlement,
 } from "@/lib/entitlements";
-import { MODULES, NAV, getModuleRoutes, type ModuleKey } from "@/lib/dashboardNav";
+import {
+  MODULES,
+  NAV,
+  getModuleRoutes,
+  type ModuleKey,
+} from "@/lib/dashboardNav";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Home: LayoutDashboard,
@@ -135,7 +140,7 @@ export function Sidebar() {
 
                 // Get sub-routes for this module (excluding the module root itself)
                 const subRoutes = getModuleRoutes(moduleKey).filter(
-                  (route) => route !== moduleInfo.landingRoute
+                  (route) => route !== moduleInfo.landingRoute,
                 );
 
                 return (
@@ -178,7 +183,9 @@ export function Sidebar() {
                           const navEntry = NAV[subRoute];
                           if (!navEntry) return null;
 
-                          const isSubActive = pathname === subRoute || pathname.startsWith(subRoute + "/");
+                          const isSubActive =
+                            pathname === subRoute ||
+                            pathname.startsWith(subRoute + "/");
 
                           return (
                             <Link

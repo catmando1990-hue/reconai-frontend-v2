@@ -1,10 +1,9 @@
 import { ReactNode } from "react";
-import { ShellV2 } from "@/components/dashboard-v2";
 
 /**
  * Core Module Layout
- * Wraps all /core/* routes with V2 shell
+ * Shell is now handled at the (dashboard) level
  */
 export default function CoreLayout({ children }: { children: ReactNode }) {
-  return <ShellV2 module="core">{children}</ShellV2>;
+  return <>{children}</>;
 }

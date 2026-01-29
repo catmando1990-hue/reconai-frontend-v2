@@ -1,24 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useMemo } from "react";
-
-// Conditional Clerk import - only used when enabled
-let useAuth: () => { isLoaded: boolean; orgId?: string | null; orgRole?: string | null };
-let useOrganization: () => { isLoaded: boolean; organization?: { name?: string } | null };
-let useUser: () => { isLoaded: boolean; user?: { publicMetadata?: Record<string, unknown>; unsafeMetadata?: Record<string, unknown> } | null };
-
-// Dynamic import check - this runs at module load time
-const clerkEnabled = typeof window !== 'undefined'
-  ? Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
-  : Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-
-if (clerkEnabled) {
-  // Direct import when Clerk is enabled - no React.lazy() to avoid use() hook issues
-  const clerk = require("@clerk/nextjs");
-  useAuth = clerk.useAuth;
-  useOrganization = clerk.useOrganization;
-  useUser = clerk.useUser;
-}
+import React, { Suspense, createContext, useContext, useMemo } from "react";
 
 export type OrgContextValue = {
   org_id: string | null;
@@ -36,59 +18,53 @@ const DEFAULT_ORG_CONTEXT: OrgContextValue = {
 
 const OrgContext = createContext<OrgContextValue>(DEFAULT_ORG_CONTEXT);
 
-/**
- * Internal Clerk-enabled provider.
- * Uses direct hook calls instead of React.lazy() to avoid React 19 use() hook conflicts.
- */
-function OrgProviderClerk({ children }: { children: React.ReactNode }) {
-  const { isLoaded: authLoaded, orgId, orgRole } = useAuth();
-  const { isLoaded: orgLoaded, organization } = useOrganization();
-  const { isLoaded: userLoaded, user } = useUser();
+const OrgProviderClerkLazy = React.lazy(async () => {
+  const { useAuth, useOrganization, useUser } = await import("@clerk/nextjs");
 
-  // Preferred: user-level role from publicMetadata (works even without org selected)
-  const userRole = user
-    ? ((user.publicMetadata as Record<string, unknown>)?.role as
-        | string
-        | undefined) ||
-      ((user.unsafeMetadata as Record<string, unknown>)?.role as
-        | string
-        | undefined) ||
-      null
-    : null;
+  function OrgProviderClerk({ children }: { children: React.ReactNode }) {
+    const { isLoaded: authLoaded, orgId, orgRole } = useAuth();
+    const { isLoaded: orgLoaded, organization } = useOrganization();
+    const { isLoaded: userLoaded, user } = useUser();
 
-  const effectiveRole = userRole ?? orgRole ?? null;
+    // Preferred: user-level role from publicMetadata (works even without org selected)
+    const userRole = user
+      ? ((user.publicMetadata as Record<string, unknown>)?.role as
+          | string
+          | undefined) ||
+        ((user.unsafeMetadata as Record<string, unknown>)?.role as
+          | string
+          | undefined) ||
+        null
+      : null;
 
-  const value = useMemo<OrgContextValue>(
-    () => ({
-      org_id: orgId ?? null,
-      org_name: organization?.name ?? null,
-      role: effectiveRole,
-      isLoaded: authLoaded && orgLoaded && userLoaded,
-    }),
-    [
-      authLoaded,
-      orgLoaded,
-      userLoaded,
-      orgId,
-      effectiveRole,
-      organization?.name,
-    ],
-  );
+    const effectiveRole = userRole ?? orgRole ?? null;
 
-  return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
-}
+    const value = useMemo<OrgContextValue>(
+      () => ({
+        org_id: orgId ?? null,
+        org_name: organization?.name ?? null,
+        role: effectiveRole,
+        isLoaded: authLoaded && orgLoaded && userLoaded,
+      }),
+      [
+        authLoaded,
+        orgLoaded,
+        userLoaded,
+        orgId,
+        effectiveRole,
+        organization?.name,
+      ],
+    );
 
-/**
- * OrgProvider - Provides organization context throughout the app.
- *
- * FIX: Removed React.lazy() wrapper that was causing React Error #460
- * "Suspense Exception: This is not a real error!" in React 19.
- *
- * The issue: Clerk internally uses React 19's use() hook which throws
- * a special Suspense exception that must be rethrown. React.lazy()
- * creates an internal boundary that interferes with this mechanism.
- */
+    return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
+  }
+
+  return { default: OrgProviderClerk };
+});
+
 export function OrgProvider({ children }: { children: React.ReactNode }) {
+  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
   if (!clerkEnabled) {
     return (
       <OrgContext.Provider value={DEFAULT_ORG_CONTEXT}>
@@ -97,7 +73,20 @@ export function OrgProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <OrgProviderClerk>{children}</OrgProviderClerk>;
+  // While the Clerk hooks chunk loads, expose a stable "not loaded yet" state.
+  return (
+    <Suspense
+      fallback={
+        <OrgContext.Provider
+          value={{ ...DEFAULT_ORG_CONTEXT, isLoaded: false }}
+        >
+          {children}
+        </OrgContext.Provider>
+      }
+    >
+      <OrgProviderClerkLazy>{children}</OrgProviderClerkLazy>
+    </Suspense>
+  );
 }
 
 export function useOrg() {

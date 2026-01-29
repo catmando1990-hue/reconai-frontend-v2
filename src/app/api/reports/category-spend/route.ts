@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     // Get all transactions for aggregation
     let query = supabase
       .from("transactions")
-      .select("amount, category, personal_finance_category, date, pending")
+      .select("amount, category, date, pending")
       .eq("user_id", userId)
       .eq("pending", false); // Only posted transactions
 
@@ -64,10 +64,7 @@ export async function GET(request: NextRequest) {
       // Only count outflows (positive amounts in Plaid = money out)
       if (tx.amount <= 0) continue;
 
-      const category =
-        tx.category?.[0] ||
-        tx.personal_finance_category?.primary ||
-        "Uncategorized";
+      const category = tx.category?.[0] || "Uncategorized";
       const existing = categoryMap.get(category) || {
         total: 0,
         count: 0,

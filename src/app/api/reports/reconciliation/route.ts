@@ -27,7 +27,7 @@ export async function POST() {
 
     // Get uploaded statements
     const { data: statements, error: stmtError } = await supabase
-      .from("statements")
+      .from("bank_statements")
       .select("id, statement_date, file_name, account_id")
       .eq("user_id", userId)
       .order("statement_date", { ascending: false });

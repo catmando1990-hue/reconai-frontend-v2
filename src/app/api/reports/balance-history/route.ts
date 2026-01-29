@@ -28,7 +28,7 @@ export async function GET() {
     // Get all accounts for this user
     const { data: accounts, error: accountsError } = await supabase
       .from("plaid_accounts")
-      .select("id, name, current_balance, account_id")
+      .select("id, name, balance_current, account_id")
       .eq("user_id", userId);
 
     if (accountsError) {
@@ -59,7 +59,7 @@ export async function GET() {
     const accountLookup = new Map(
       (accounts || []).map((a) => [
         a.account_id,
-        { id: a.id, name: a.name, current_balance: a.current_balance || 0 },
+        { id: a.id, name: a.name, balance_current: a.balance_current || 0 },
       ]),
     );
 
@@ -73,7 +73,7 @@ export async function GET() {
 
     // For each account, work backwards from current balance
     for (const [accountId, account] of accountLookup) {
-      let runningBalance = account.current_balance;
+      let runningBalance = account.balance_current;
 
       // Process dates in reverse order (most recent first)
       const reverseDates = [...uniqueDates].reverse();
@@ -130,7 +130,7 @@ export async function GET() {
       ([id, acc]) => ({
         id,
         name: acc.name,
-        current_balance: acc.current_balance,
+        current_balance: acc.balance_current,
       }),
     );
 

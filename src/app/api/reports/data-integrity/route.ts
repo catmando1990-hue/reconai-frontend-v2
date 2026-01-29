@@ -57,7 +57,7 @@ export async function GET() {
 
     // Get uploaded statements
     const { data: statements, error: stmtError } = await supabase
-      .from("statements")
+      .from("bank_statements")
       .select("id, file_name, upload_date, statement_date")
       .eq("user_id", userId);
 

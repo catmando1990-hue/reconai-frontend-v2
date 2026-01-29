@@ -58,9 +58,7 @@ function formatTimestamp(ts: string): string {
 }
 
 function formatAction(action: string): string {
-  return action
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return action.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatActorId(actor: string): string {
@@ -93,12 +91,20 @@ function getActionStyle(action: string, entity: string): ActionStyle {
   }
 
   // Delete/remove events (red)
-  if (action.includes("removed") || action.includes("delete") || action.includes("revoked")) {
+  if (
+    action.includes("removed") ||
+    action.includes("delete") ||
+    action.includes("revoked")
+  ) {
     return { color: "text-red-400 bg-red-500/10", icon: AlertTriangle };
   }
 
   // Sync/create events (green success)
-  if (action.includes("sync") || action.includes("create") || action.includes("generated")) {
+  if (
+    action.includes("sync") ||
+    action.includes("create") ||
+    action.includes("generated")
+  ) {
     return { color: "text-green-400 bg-green-500/10", icon: CheckCircle };
   }
 
@@ -113,7 +119,11 @@ function getActionStyle(action: string, entity: string): ActionStyle {
   }
 
   // Security events
-  if (entity === "auth" || action.includes("login") || action.includes("token")) {
+  if (
+    entity === "auth" ||
+    action.includes("login") ||
+    action.includes("token")
+  ) {
     return { color: "text-orange-400 bg-orange-500/10", icon: Shield };
   }
 
@@ -134,7 +144,10 @@ const HIDE_PAYLOAD_ACTIONS = new Set([
 ]);
 
 // Actions where we show a SUMMARY instead of full payload
-const SUMMARY_ACTIONS: Record<string, (payload: Record<string, unknown>) => string | null> = {
+const SUMMARY_ACTIONS: Record<
+  string,
+  (payload: Record<string, unknown>) => string | null
+> = {
   transaction_override: (p) => {
     const from = p.old_category || p.from;
     const to = p.new_category || p.to;
@@ -174,17 +187,14 @@ function PayloadDisplay({ action, payload }: PayloadDisplayProps) {
   if (summaryFn) {
     const summary = summaryFn(payload);
     if (summary) {
-      return (
-        <p className="mt-1 text-xs text-muted-foreground">
-          {summary}
-        </p>
-      );
+      return <p className="mt-1 text-xs text-muted-foreground">{summary}</p>;
     }
   }
 
   // Filter out internal fields for display
   const displayPayload = Object.entries(payload).filter(
-    ([key]) => !["request_id", "version", "event_hash", "prev_hash"].includes(key)
+    ([key]) =>
+      !["request_id", "version", "event_hash", "prev_hash"].includes(key),
   );
 
   // If only internal fields, hide
@@ -232,7 +242,7 @@ export default function AuditPanel() {
 
   const { data, error, isLoading, mutate } = useSWR<AuditResponse>(
     authReady ? "/api/audit?limit=50" : null,
-    apiFetch
+    apiFetch,
   );
 
   if (isLoading) {
@@ -299,7 +309,9 @@ export default function AuditPanel() {
             className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
             title="Refresh audit log"
           >
-            <RefreshCw className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </button>
           <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">

@@ -49,8 +49,15 @@ const COST_POOL_LABELS: Record<string, string> = {
   fringe: "Fringe Benefits",
 };
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
-  pending_verification: { label: "Pending Verification", color: "text-amber-500", icon: Clock },
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; color: string; icon: typeof CheckCircle }
+> = {
+  pending_verification: {
+    label: "Pending Verification",
+    color: "text-amber-500",
+    icon: Clock,
+  },
   verified: { label: "Verified", color: "text-green-500", icon: CheckCircle },
   rejected: { label: "Rejected", color: "text-red-500", icon: AlertCircle },
 };
@@ -77,7 +84,7 @@ function GovConConnectBody() {
   // Fetch existing connections
   const { data, mutate } = useSWR<{ connections: Connection[] }>(
     "/api/govcon/connections",
-    apiFetch
+    apiFetch,
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,7 +132,9 @@ function GovConConnectBody() {
             {data?.connections && data.connections.length > 0 ? (
               <div className="divide-y divide-border">
                 {data.connections.map((conn) => {
-                  const statusConfig = STATUS_CONFIG[conn.status] || STATUS_CONFIG.pending_verification;
+                  const statusConfig =
+                    STATUS_CONFIG[conn.status] ||
+                    STATUS_CONFIG.pending_verification;
                   const StatusIcon = statusConfig.icon;
 
                   return (
@@ -140,7 +149,8 @@ function GovConConnectBody() {
                         <div>
                           <p className="font-medium">{conn.institution_name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {conn.account_name} • {COST_POOL_LABELS[conn.cost_pool] || conn.cost_pool}
+                            {conn.account_name} •{" "}
+                            {COST_POOL_LABELS[conn.cost_pool] || conn.cost_pool}
                           </p>
                           {conn.contract_id && (
                             <p className="text-xs text-muted-foreground">
@@ -150,7 +160,9 @@ function GovConConnectBody() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`flex items-center gap-1 text-sm ${statusConfig.color}`}>
+                        <span
+                          className={`flex items-center gap-1 text-sm ${statusConfig.color}`}
+                        >
                           <StatusIcon className="w-4 h-4" />
                           {statusConfig.label}
                         </span>
@@ -177,8 +189,9 @@ function GovConConnectBody() {
                   <Shield className="w-8 h-8 text-muted-foreground" />
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  GovCon accounts require manual entry and verification for DCAA compliance.
-                  All connections start in &quot;Pending Verification&quot; status.
+                  GovCon accounts require manual entry and verification for DCAA
+                  compliance. All connections start in &quot;Pending
+                  Verification&quot; status.
                 </p>
                 <Button onClick={() => setShowForm(true)}>
                   <Plus className="w-4 h-4 mr-2" />
@@ -189,7 +202,9 @@ function GovConConnectBody() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Institution Details */}
                 <div>
-                  <h4 className="font-medium text-sm mb-3">Institution Details</h4>
+                  <h4 className="font-medium text-sm mb-3">
+                    Institution Details
+                  </h4>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="institution">Institution Name</Label>
@@ -242,7 +257,10 @@ function GovConConnectBody() {
                         maxLength={4}
                         value={form.account_number_last4}
                         onChange={(e) =>
-                          setForm({ ...form, account_number_last4: e.target.value })
+                          setForm({
+                            ...form,
+                            account_number_last4: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -266,15 +284,21 @@ function GovConConnectBody() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="direct">Direct Costs</SelectItem>
-                          <SelectItem value="indirect">Indirect Costs</SelectItem>
+                          <SelectItem value="indirect">
+                            Indirect Costs
+                          </SelectItem>
                           <SelectItem value="overhead">Overhead</SelectItem>
                           <SelectItem value="g_and_a">G&A</SelectItem>
-                          <SelectItem value="fringe">Fringe Benefits</SelectItem>
+                          <SelectItem value="fringe">
+                            Fringe Benefits
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="contract_id">Contract ID (optional)</Label>
+                      <Label htmlFor="contract_id">
+                        Contract ID (optional)
+                      </Label>
                       <Input
                         id="contract_id"
                         placeholder="e.g., FA8650-21-C-1234"
@@ -289,16 +313,23 @@ function GovConConnectBody() {
 
                 {/* Authorization */}
                 <div>
-                  <h4 className="font-medium text-sm mb-3">Authorization (DCAA Required)</h4>
+                  <h4 className="font-medium text-sm mb-3">
+                    Authorization (DCAA Required)
+                  </h4>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="authorization_date">Authorization Date</Label>
+                      <Label htmlFor="authorization_date">
+                        Authorization Date
+                      </Label>
                       <Input
                         id="authorization_date"
                         type="date"
                         value={form.authorization_date}
                         onChange={(e) =>
-                          setForm({ ...form, authorization_date: e.target.value })
+                          setForm({
+                            ...form,
+                            authorization_date: e.target.value,
+                          })
                         }
                         required
                       />
@@ -318,9 +349,7 @@ function GovConConnectBody() {
                   </div>
                 </div>
 
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
+                {error && <p className="text-sm text-destructive">{error}</p>}
 
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isSubmitting}>
@@ -355,26 +384,34 @@ function GovConConnectBody() {
               <div className="flex items-start gap-2">
                 <Shield className="w-4 h-4 mt-0.5 text-primary shrink-0" />
                 <p>
-                  All accounts require authorization documentation and start
-                  in &quot;Pending Verification&quot; status.
+                  All accounts require authorization documentation and start in
+                  &quot;Pending Verification&quot; status.
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <FileText className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                <p>
-                  Upload supporting documentation to expedite verification.
-                </p>
+                <p>Upload supporting documentation to expedite verification.</p>
               </div>
             </div>
           </SecondaryPanel>
 
           <SecondaryPanel title="Cost Pools">
             <ul className="text-sm text-muted-foreground space-y-2">
-              <li><strong>Direct</strong> - Costs charged directly to contracts</li>
-              <li><strong>Indirect</strong> - Shared costs allocated to contracts</li>
-              <li><strong>Overhead</strong> - Manufacturing/production overhead</li>
-              <li><strong>G&A</strong> - General & Administrative expenses</li>
-              <li><strong>Fringe</strong> - Employee benefits and fringe costs</li>
+              <li>
+                <strong>Direct</strong> - Costs charged directly to contracts
+              </li>
+              <li>
+                <strong>Indirect</strong> - Shared costs allocated to contracts
+              </li>
+              <li>
+                <strong>Overhead</strong> - Manufacturing/production overhead
+              </li>
+              <li>
+                <strong>G&A</strong> - General & Administrative expenses
+              </li>
+              <li>
+                <strong>Fringe</strong> - Employee benefits and fringe costs
+              </li>
             </ul>
           </SecondaryPanel>
         </div>
@@ -385,7 +422,11 @@ function GovConConnectBody() {
 
 export default function GovConConnectPage() {
   return (
-    <TierGate tier="govcon" title="GovCon Connections" subtitle="Upgrade to access GovCon features">
+    <TierGate
+      tier="govcon"
+      title="GovCon Connections"
+      subtitle="Upgrade to access GovCon features"
+    >
       <GovConConnectBody />
     </TierGate>
   );

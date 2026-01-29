@@ -63,7 +63,9 @@ function AwaitingDataState() {
       <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
         <DollarSign className="h-8 w-8 text-muted-foreground/50" />
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <h3 className="text-lg font-medium text-foreground mb-2">
+        Awaiting Data
+      </h3>
       <p className="text-sm text-muted-foreground text-center max-w-md">
         Cash flow analysis will appear here once transaction data is available.
         Connect a bank account to start tracking inflows and outflows.
@@ -86,10 +88,11 @@ export function CashFlowReport() {
     setError(null);
     try {
       const response = await apiFetch<CashFlowResponse>(
-        `/api/reports/cash-flow?period=${period}`
+        `/api/reports/cash-flow?period=${period}`,
       );
       // Handle both response formats
-      const reportData = response?.data ?? (response as unknown as CashFlowData);
+      const reportData =
+        response?.data ?? (response as unknown as CashFlowData);
       setData(reportData);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load";
@@ -243,7 +246,9 @@ export function CashFlowReport() {
               <div
                 className={[
                   "flex items-center gap-2",
-                  data.net_change >= 0 ? "text-emerald-600" : "text-destructive",
+                  data.net_change >= 0
+                    ? "text-emerald-600"
+                    : "text-destructive",
                 ].join(" ")}
               >
                 {data.net_change >= 0 ? (
@@ -256,14 +261,18 @@ export function CashFlowReport() {
               <div
                 className={[
                   "mt-2 text-2xl font-bold",
-                  data.net_change >= 0 ? "text-emerald-600" : "text-destructive",
+                  data.net_change >= 0
+                    ? "text-emerald-600"
+                    : "text-destructive",
                 ].join(" ")}
               >
                 {data.net_change >= 0 ? "+" : "-"}
                 {formatCurrency(data.net_change)}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                {data.net_change >= 0 ? "Positive cash flow" : "Negative cash flow"}
+                {data.net_change >= 0
+                  ? "Positive cash flow"
+                  : "Negative cash flow"}
               </div>
             </div>
           </div>
@@ -271,17 +280,23 @@ export function CashFlowReport() {
           {/* Operating Activities Breakdown */}
           {data.operating.items.length > 0 && (
             <div className="rounded-xl border p-4">
-              <h4 className="text-sm font-semibold mb-3">Operating Activities</h4>
+              <h4 className="text-sm font-semibold mb-3">
+                Operating Activities
+              </h4>
               <div className="space-y-2">
                 {data.operating.items.map((item) => (
                   <div
                     key={item.category}
                     className="flex items-center justify-between text-sm"
                   >
-                    <span className="text-muted-foreground">{item.category}</span>
+                    <span className="text-muted-foreground">
+                      {item.category}
+                    </span>
                     <span
                       className={`font-mono ${
-                        item.amount >= 0 ? "text-emerald-600" : "text-destructive"
+                        item.amount >= 0
+                          ? "text-emerald-600"
+                          : "text-destructive"
                       }`}
                     >
                       {item.amount >= 0 ? "+" : "-"}
@@ -296,13 +311,17 @@ export function CashFlowReport() {
           {/* Balance Summary */}
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground">Opening Balance</div>
+              <div className="text-xs text-muted-foreground">
+                Opening Balance
+              </div>
               <div className="mt-1 text-lg font-semibold font-mono">
                 {formatCurrency(data.opening_balance)}
               </div>
             </div>
             <div className="rounded-xl border bg-muted/20 p-4">
-              <div className="text-xs text-muted-foreground">Closing Balance</div>
+              <div className="text-xs text-muted-foreground">
+                Closing Balance
+              </div>
               <div className="mt-1 text-lg font-semibold font-mono">
                 {formatCurrency(data.closing_balance)}
               </div>

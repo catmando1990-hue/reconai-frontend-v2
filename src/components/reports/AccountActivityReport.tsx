@@ -66,10 +66,13 @@ function AwaitingDataState() {
       <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
         <Wallet className="h-8 w-8 text-muted-foreground/50" />
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <h3 className="text-lg font-medium text-foreground mb-2">
+        Awaiting Data
+      </h3>
       <p className="text-sm text-muted-foreground text-center max-w-md">
-        Account activity summary will appear here once bank accounts are connected.
-        Connect a bank account to start tracking per-account transactions.
+        Account activity summary will appear here once bank accounts are
+        connected. Connect a bank account to start tracking per-account
+        transactions.
       </p>
     </div>
   );
@@ -89,7 +92,7 @@ export function AccountActivityReport() {
     setError(null);
     try {
       const response = await apiFetch<AccountActivityResponse>(
-        `/api/reports/account-activity?days=${period}`
+        `/api/reports/account-activity?days=${period}`,
       );
       // Handle both response formats
       const reportData =
@@ -219,7 +222,9 @@ export function AccountActivityReport() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">Total Outflows</div>
+              <div className="text-xs text-muted-foreground">
+                Total Outflows
+              </div>
               <div className="font-mono text-sm font-semibold text-destructive">
                 -{formatCurrency(data.summary.total_outflows)}
               </div>
@@ -305,7 +310,9 @@ export function AccountActivityReport() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-muted-foreground">Transactions</div>
+                        <div className="text-muted-foreground">
+                          Transactions
+                        </div>
                         <div>{acc.transaction_count}</div>
                       </div>
                     </div>

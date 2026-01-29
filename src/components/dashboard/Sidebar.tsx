@@ -65,7 +65,11 @@ const MODULES: Module[] = [
     href: ROUTES.CORE,
     children: [
       { id: "overview", label: "Overview", href: ROUTES.CORE_OVERVIEW },
-      { id: "transactions", label: "Transactions", href: ROUTES.CORE_TRANSACTIONS },
+      {
+        id: "transactions",
+        label: "Transactions",
+        href: ROUTES.CORE_TRANSACTIONS,
+      },
       { id: "accounts", label: "Accounts", href: ROUTES.CORE_ACCOUNTS },
       { id: "reports", label: "Reports", href: ROUTES.CORE_REPORTS },
       { id: "statements", label: "Statements", href: ROUTES.CORE_STATEMENTS },
@@ -81,7 +85,11 @@ const MODULES: Module[] = [
       { id: "overview", label: "Overview", href: ROUTES.INTELLIGENCE_OVERVIEW },
       { id: "insights", label: "Insights", href: ROUTES.INTELLIGENCE_INSIGHTS },
       { id: "alerts", label: "Alerts", href: ROUTES.INTELLIGENCE_ALERTS },
-      { id: "ai-worker", label: "AI Worker", href: ROUTES.INTELLIGENCE_AI_WORKER },
+      {
+        id: "ai-worker",
+        label: "AI Worker",
+        href: ROUTES.INTELLIGENCE_AI_WORKER,
+      },
     ],
   },
   {
@@ -92,7 +100,11 @@ const MODULES: Module[] = [
     href: ROUTES.CFO,
     children: [
       { id: "overview", label: "Overview", href: ROUTES.CFO_OVERVIEW },
-      { id: "executive-summary", label: "Executive Summary", href: ROUTES.CFO_EXECUTIVE_SUMMARY },
+      {
+        id: "executive-summary",
+        label: "Executive Summary",
+        href: ROUTES.CFO_EXECUTIVE_SUMMARY,
+      },
       { id: "cash-flow", label: "Cash Flow", href: ROUTES.CFO_CASH_FLOW },
       { id: "compliance", label: "Compliance", href: ROUTES.CFO_COMPLIANCE },
       { id: "reports", label: "Reports", href: ROUTES.CFO_REPORTS },
@@ -108,12 +120,24 @@ const MODULES: Module[] = [
     children: [
       { id: "overview", label: "Overview", href: ROUTES.PAYROLL_OVERVIEW },
       { id: "people", label: "People", href: ROUTES.PAYROLL_PEOPLE },
-      { id: "compensation", label: "Compensation", href: ROUTES.PAYROLL_COMPENSATION },
-      { id: "time-labor", label: "Time & Labor", href: ROUTES.PAYROLL_TIME_LABOR },
+      {
+        id: "compensation",
+        label: "Compensation",
+        href: ROUTES.PAYROLL_COMPENSATION,
+      },
+      {
+        id: "time-labor",
+        label: "Time & Labor",
+        href: ROUTES.PAYROLL_TIME_LABOR,
+      },
       { id: "pay-runs", label: "Pay Runs", href: ROUTES.PAYROLL_PAY_RUNS },
       { id: "taxes", label: "Taxes", href: ROUTES.PAYROLL_TAXES },
       { id: "benefits", label: "Benefits", href: ROUTES.PAYROLL_BENEFITS },
-      { id: "connect", label: "Bank Connections", href: ROUTES.PAYROLL_CONNECT },
+      {
+        id: "connect",
+        label: "Bank Connections",
+        href: ROUTES.PAYROLL_CONNECT,
+      },
     ],
   },
   {
@@ -124,9 +148,21 @@ const MODULES: Module[] = [
     href: ROUTES.GOVCON,
     children: [
       { id: "contracts", label: "Contracts", href: ROUTES.GOVCON_CONTRACTS },
-      { id: "timekeeping", label: "Timekeeping", href: ROUTES.GOVCON_TIMEKEEPING },
-      { id: "indirects", label: "Indirect Costs", href: ROUTES.GOVCON_INDIRECTS },
-      { id: "reconciliation", label: "Reconciliation", href: ROUTES.GOVCON_RECONCILIATION },
+      {
+        id: "timekeeping",
+        label: "Timekeeping",
+        href: ROUTES.GOVCON_TIMEKEEPING,
+      },
+      {
+        id: "indirects",
+        label: "Indirect Costs",
+        href: ROUTES.GOVCON_INDIRECTS,
+      },
+      {
+        id: "reconciliation",
+        label: "Reconciliation",
+        href: ROUTES.GOVCON_RECONCILIATION,
+      },
       { id: "audit", label: "Audit Trail", href: ROUTES.GOVCON_AUDIT },
       { id: "sf-1408", label: "SF-1408", href: ROUTES.GOVCON_SF1408 },
       { id: "connect", label: "Bank Connections", href: ROUTES.GOVCON_CONNECT },
@@ -148,9 +184,20 @@ const MODULES: Module[] = [
 
 function getActiveModule(pathname: string): string | null {
   if (pathname.startsWith("/home")) return "home";
-  if (pathname.startsWith("/core") || pathname.startsWith("/accounts") || pathname.startsWith("/connect-bank") || pathname.startsWith("/upload")) return "core";
+  if (
+    pathname.startsWith("/core") ||
+    pathname.startsWith("/accounts") ||
+    pathname.startsWith("/connect-bank") ||
+    pathname.startsWith("/upload")
+  )
+    return "core";
   if (pathname.startsWith("/intelligence")) return "intelligence";
-  if (pathname.startsWith("/cfo") || pathname.startsWith("/cash-flow") || pathname.startsWith("/financial-reports")) return "cfo";
+  if (
+    pathname.startsWith("/cfo") ||
+    pathname.startsWith("/cash-flow") ||
+    pathname.startsWith("/financial-reports")
+  )
+    return "cfo";
   if (pathname.startsWith("/payroll")) return "payroll";
   if (pathname.startsWith("/govcon")) return "govcon";
   if (pathname.startsWith("/settings")) return "settings";
@@ -168,7 +215,12 @@ interface IconButtonProps {
   onClick: () => void;
 }
 
-function IconButton({ module, isActive, isSelected, onClick }: IconButtonProps) {
+function IconButton({
+  module,
+  isActive,
+  isSelected,
+  onClick,
+}: IconButtonProps) {
   const Icon = module.icon;
 
   return (
@@ -181,8 +233,8 @@ function IconButton({ module, isActive, isSelected, onClick }: IconButtonProps) 
         isSelected
           ? "bg-primary/20 text-primary shadow-lg shadow-primary/10"
           : isActive
-          ? "bg-muted text-foreground"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            ? "bg-muted text-foreground"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
       <Icon className="w-5 h-5" />
@@ -222,7 +274,8 @@ function ExpandedPanel({ module, pathname, onClose }: ExpandedPanelProps) {
       {/* Sub-routes */}
       <nav className="flex-1 py-2 px-2 overflow-y-auto">
         {module.children.map((child) => {
-          const isActive = pathname === child.href || pathname.startsWith(child.href + "/");
+          const isActive =
+            pathname === child.href || pathname.startsWith(child.href + "/");
 
           return (
             <Link
@@ -233,7 +286,7 @@ function ExpandedPanel({ module, pathname, onClose }: ExpandedPanelProps) {
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isActive
                   ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               {child.label}
@@ -270,11 +323,11 @@ export function Sidebar() {
   // Entitlements
   const showGovCon = useMemo(
     () => hasGovConEntitlement(profile?.tiers, profile?.role),
-    [profile?.tiers, profile?.role]
+    [profile?.tiers, profile?.role],
   );
   const showPayroll = useMemo(
     () => hasPayrollEntitlement(profile?.tiers, profile?.role),
-    [profile?.tiers, profile?.role]
+    [profile?.tiers, profile?.role],
   );
 
   // Filter modules based on entitlements
@@ -295,25 +348,28 @@ export function Sidebar() {
   }, [selectedModule]);
 
   // Handle module click
-  const handleModuleClick = useCallback((moduleId: string) => {
-    const mod = MODULES.find((m) => m.id === moduleId);
+  const handleModuleClick = useCallback(
+    (moduleId: string) => {
+      const mod = MODULES.find((m) => m.id === moduleId);
 
-    if (!mod) return;
+      if (!mod) return;
 
-    // If module has no children, navigate directly
-    if (mod.children.length === 0) {
-      setSelectedModule(null);
-      // Navigation handled by Link wrapper
-      return;
-    }
+      // If module has no children, navigate directly
+      if (mod.children.length === 0) {
+        setSelectedModule(null);
+        // Navigation handled by Link wrapper
+        return;
+      }
 
-    // Toggle panel
-    if (selectedModule === moduleId) {
-      setSelectedModule(null);
-    } else {
-      setSelectedModule(moduleId);
-    }
-  }, [selectedModule]);
+      // Toggle panel
+      if (selectedModule === moduleId) {
+        setSelectedModule(null);
+      } else {
+        setSelectedModule(moduleId);
+      }
+    },
+    [selectedModule],
+  );
 
   // Handle sign out
   const handleSignOut = async () => {

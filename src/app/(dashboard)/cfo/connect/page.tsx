@@ -40,7 +40,9 @@ interface Connection {
 
 function CfoConnectBody() {
   const { apiFetch, auditedPost } = useApi();
-  const [connectionType, setConnectionType] = useState<ConnectionType | null>(null);
+  const [connectionType, setConnectionType] = useState<ConnectionType | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +57,7 @@ function CfoConnectBody() {
   // Fetch existing connections
   const { data, mutate } = useSWR<{ connections: Connection[] }>(
     "/api/cfo/connections",
-    apiFetch
+    apiFetch,
   );
 
   const handleManualSubmit = async (e: React.FormEvent) => {
@@ -106,8 +108,11 @@ function CfoConnectBody() {
                       <div>
                         <p className="font-medium">{conn.institution_name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {conn.account_name || conn.account_type || "Account"} •{" "}
-                          {conn.connection_type === "plaid" ? "Plaid" : "Manual"}
+                          {conn.account_name || conn.account_type || "Account"}{" "}
+                          •{" "}
+                          {conn.connection_type === "plaid"
+                            ? "Plaid"
+                            : "Manual"}
                         </p>
                       </div>
                     </div>
@@ -176,10 +181,7 @@ function CfoConnectBody() {
                 <p className="mb-4 text-muted-foreground">
                   Plaid integration coming soon. Use manual entry for now.
                 </p>
-                <Button
-                  variant="ghost"
-                  onClick={() => setConnectionType(null)}
-                >
+                <Button variant="ghost" onClick={() => setConnectionType(null)}>
                   Back
                 </Button>
               </div>
@@ -193,7 +195,10 @@ function CfoConnectBody() {
                       placeholder="e.g., Chase Bank"
                       value={manualForm.institution_name}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, institution_name: e.target.value })
+                        setManualForm({
+                          ...manualForm,
+                          institution_name: e.target.value,
+                        })
                       }
                       required
                     />
@@ -205,7 +210,10 @@ function CfoConnectBody() {
                       placeholder="e.g., Business Checking"
                       value={manualForm.account_name}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, account_name: e.target.value })
+                        setManualForm({
+                          ...manualForm,
+                          account_name: e.target.value,
+                        })
                       }
                       required
                     />
@@ -230,22 +238,25 @@ function CfoConnectBody() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="account_mask">Last 4 Digits (optional)</Label>
+                    <Label htmlFor="account_mask">
+                      Last 4 Digits (optional)
+                    </Label>
                     <Input
                       id="account_mask"
                       placeholder="1234"
                       maxLength={4}
                       value={manualForm.account_mask}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, account_mask: e.target.value })
+                        setManualForm({
+                          ...manualForm,
+                          account_mask: e.target.value,
+                        })
                       }
                     />
                   </div>
                 </div>
 
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
+                {error && <p className="text-sm text-destructive">{error}</p>}
 
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isSubmitting}>
@@ -275,8 +286,8 @@ function CfoConnectBody() {
             <h3 className="font-medium mb-2">About CFO Connections</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Bank accounts connected here are used exclusively for CFO-level
-              financial analysis and reporting. This data is isolated from
-              your Core tier accounts.
+              financial analysis and reporting. This data is isolated from your
+              Core tier accounts.
             </p>
             <h4 className="font-medium text-sm mb-1">Supported Features</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
@@ -294,7 +305,11 @@ function CfoConnectBody() {
 
 export default function CfoConnectPage() {
   return (
-    <TierGate tier="cfo" title="CFO Connections" subtitle="Upgrade to access CFO features">
+    <TierGate
+      tier="cfo"
+      title="CFO Connections"
+      subtitle="Upgrade to access CFO features"
+    >
       <CfoConnectBody />
     </TierGate>
   );

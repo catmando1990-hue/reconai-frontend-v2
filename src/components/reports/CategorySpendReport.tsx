@@ -46,7 +46,9 @@ function AwaitingDataState() {
       <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
         <PieChart className="h-8 w-8 text-muted-foreground/50" />
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <h3 className="text-lg font-medium text-foreground mb-2">
+        Awaiting Data
+      </h3>
       <p className="text-sm text-muted-foreground text-center max-w-md">
         Spending breakdown by category will appear here once transaction data is
         available. Connect a bank account to start tracking expenses.
@@ -69,7 +71,7 @@ export function CategorySpendReport() {
     setError(null);
     try {
       const response = await apiFetch<CategorySpendResponse>(
-        `/api/reports/category-spend?days=${period}`
+        `/api/reports/category-spend?days=${period}`,
       );
       // Handle both response formats
       const reportData =
@@ -193,7 +195,10 @@ export function CategorySpendReport() {
             <div className="flex items-center justify-between mt-1">
               <span className="text-xs text-muted-foreground">
                 {data.categories.length} categories •{" "}
-                {data.categories.reduce((sum, c) => sum + c.transaction_count, 0)}{" "}
+                {data.categories.reduce(
+                  (sum, c) => sum + c.transaction_count,
+                  0,
+                )}{" "}
                 transactions
               </span>
             </div>

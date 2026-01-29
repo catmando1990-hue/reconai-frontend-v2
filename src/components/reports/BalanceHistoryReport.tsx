@@ -50,7 +50,9 @@ function AwaitingDataState() {
       <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
         <LineChart className="h-8 w-8 text-muted-foreground/50" />
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-2">Awaiting Data</h3>
+      <h3 className="text-lg font-medium text-foreground mb-2">
+        Awaiting Data
+      </h3>
       <p className="text-sm text-muted-foreground text-center max-w-md">
         Balance history will appear here once bank accounts are connected and
         transaction data is available.
@@ -198,7 +200,9 @@ export function BalanceHistoryReport() {
         </div>
       )}
 
-      {!loading && !error && groupedByDate.length === 0 && <AwaitingDataState />}
+      {!loading && !error && groupedByDate.length === 0 && (
+        <AwaitingDataState />
+      )}
 
       {!loading && !error && groupedByDate.length > 0 && (
         <>

@@ -12,21 +12,27 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  */
 
 // Category mappings for cash flow classification
-const INVESTING_CATEGORIES = [
-  "Investment", "Securities", "Brokerage"
-];
+const INVESTING_CATEGORIES = ["Investment", "Securities", "Brokerage"];
 
-const FINANCING_CATEGORIES = [
-  "Loan", "Credit", "Mortgage", "Debt"
-];
+const FINANCING_CATEGORIES = ["Loan", "Credit", "Mortgage", "Debt"];
 
-function classifyTransaction(category: string[] | null): "operating" | "investing" | "financing" {
-  const cats = (category || []).map(c => c.toLowerCase());
+function classifyTransaction(
+  category: string[] | null,
+): "operating" | "investing" | "financing" {
+  const cats = (category || []).map((c) => c.toLowerCase());
 
-  if (cats.some(c => INVESTING_CATEGORIES.some(inv => c.includes(inv.toLowerCase())))) {
+  if (
+    cats.some((c) =>
+      INVESTING_CATEGORIES.some((inv) => c.includes(inv.toLowerCase())),
+    )
+  ) {
     return "investing";
   }
-  if (cats.some(c => FINANCING_CATEGORIES.some(fin => c.includes(fin.toLowerCase())))) {
+  if (
+    cats.some((c) =>
+      FINANCING_CATEGORIES.some((fin) => c.includes(fin.toLowerCase())),
+    )
+  ) {
     return "financing";
   }
   return "operating";
@@ -44,7 +50,7 @@ export async function GET(request: Request) {
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized", request_id: requestId },
-        { status: 401, headers: { "x-request-id": requestId } }
+        { status: 401, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -75,7 +81,7 @@ export async function GET(request: Request) {
       console.error("[CashFlow] Supabase error:", error);
       return NextResponse.json(
         { error: "Failed to fetch transactions", request_id: requestId },
-        { status: 500, headers: { "x-request-id": requestId } }
+        { status: 500, headers: { "x-request-id": requestId } },
       );
     }
 
@@ -93,15 +99,22 @@ export async function GET(request: Request) {
     for (const tx of transactions || []) {
       const classification = classifyTransaction(tx.category);
       const section = sections[classification];
-      const itemName = tx.merchant_name || tx.name || (tx.category?.[0]) || "Other";
+      const itemName =
+        tx.merchant_name || tx.name || tx.category?.[0] || "Other";
 
       // Plaid: negative = credit/inflow, positive = debit/outflow
       if (tx.amount < 0) {
         section.inflows += Math.abs(tx.amount);
-        section.items.set(itemName, (section.items.get(itemName) || 0) + Math.abs(tx.amount));
+        section.items.set(
+          itemName,
+          (section.items.get(itemName) || 0) + Math.abs(tx.amount),
+        );
       } else {
         section.outflows += tx.amount;
-        section.items.set(itemName, (section.items.get(itemName) || 0) - tx.amount);
+        section.items.set(
+          itemName,
+          (section.items.get(itemName) || 0) - tx.amount,
+        );
       }
 
       // Track daily totals
@@ -145,8 +158,14 @@ export async function GET(request: Request) {
       }));
 
     // Calculate totals
-    const totalInflows = sections.operating.inflows + sections.investing.inflows + sections.financing.inflows;
-    const totalOutflows = sections.operating.outflows + sections.investing.outflows + sections.financing.outflows;
+    const totalInflows =
+      sections.operating.inflows +
+      sections.investing.inflows +
+      sections.financing.inflows;
+    const totalOutflows =
+      sections.operating.outflows +
+      sections.investing.outflows +
+      sections.financing.outflows;
     const netChange = totalInflows - totalOutflows;
 
     // Format period string
@@ -174,13 +193,13 @@ export async function GET(request: Request) {
         daily_trend,
         request_id: requestId,
       },
-      { status: 200, headers: { "x-request-id": requestId } }
+      { status: 200, headers: { "x-request-id": requestId } },
     );
   } catch (err) {
     console.error("[CashFlow] Error:", err);
     return NextResponse.json(
       { error: "Internal server error", request_id: requestId },
-      { status: 500, headers: { "x-request-id": requestId } }
+      { status: 500, headers: { "x-request-id": requestId } },
     );
   }
 }

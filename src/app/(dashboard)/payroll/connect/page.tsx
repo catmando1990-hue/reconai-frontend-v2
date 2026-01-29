@@ -49,7 +49,9 @@ const PURPOSE_LABELS: Record<string, string> = {
 
 function PayrollConnectBody() {
   const { apiFetch, auditedPost } = useApi();
-  const [connectionType, setConnectionType] = useState<ConnectionType | null>(null);
+  const [connectionType, setConnectionType] = useState<ConnectionType | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +67,7 @@ function PayrollConnectBody() {
   // Fetch existing connections
   const { data, mutate } = useSWR<{ connections: Connection[] }>(
     "/api/payroll/connections",
-    apiFetch
+    apiFetch,
   );
 
   const handleManualSubmit = async (e: React.FormEvent) => {
@@ -118,7 +120,8 @@ function PayrollConnectBody() {
                         <p className="font-medium">{conn.institution_name}</p>
                         <p className="text-sm text-muted-foreground">
                           {conn.account_name || conn.account_type || "Account"}
-                          {conn.purpose && ` • ${PURPOSE_LABELS[conn.purpose] || conn.purpose}`}
+                          {conn.purpose &&
+                            ` • ${PURPOSE_LABELS[conn.purpose] || conn.purpose}`}
                         </p>
                       </div>
                     </div>
@@ -187,10 +190,7 @@ function PayrollConnectBody() {
                 <p className="mb-4 text-muted-foreground">
                   Plaid integration coming soon. Use manual entry for now.
                 </p>
-                <Button
-                  variant="ghost"
-                  onClick={() => setConnectionType(null)}
-                >
+                <Button variant="ghost" onClick={() => setConnectionType(null)}>
                   Back
                 </Button>
               </div>
@@ -204,7 +204,10 @@ function PayrollConnectBody() {
                       placeholder="e.g., Chase Bank"
                       value={manualForm.institution_name}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, institution_name: e.target.value })
+                        setManualForm({
+                          ...manualForm,
+                          institution_name: e.target.value,
+                        })
                       }
                       required
                     />
@@ -216,7 +219,10 @@ function PayrollConnectBody() {
                       placeholder="e.g., Payroll Account"
                       value={manualForm.account_name}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, account_name: e.target.value })
+                        setManualForm({
+                          ...manualForm,
+                          account_name: e.target.value,
+                        })
                       }
                       required
                     />
@@ -251,30 +257,37 @@ function PayrollConnectBody() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="payroll_funding">Payroll Funding</SelectItem>
-                        <SelectItem value="tax_payments">Tax Payments</SelectItem>
+                        <SelectItem value="payroll_funding">
+                          Payroll Funding
+                        </SelectItem>
+                        <SelectItem value="tax_payments">
+                          Tax Payments
+                        </SelectItem>
                         <SelectItem value="benefits">Benefits</SelectItem>
                         <SelectItem value="general">General</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="account_mask">Last 4 Digits (optional)</Label>
+                    <Label htmlFor="account_mask">
+                      Last 4 Digits (optional)
+                    </Label>
                     <Input
                       id="account_mask"
                       placeholder="1234"
                       maxLength={4}
                       value={manualForm.account_mask}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, account_mask: e.target.value })
+                        setManualForm({
+                          ...manualForm,
+                          account_mask: e.target.value,
+                        })
                       }
                     />
                   </div>
                 </div>
 
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
+                {error && <p className="text-sm text-destructive">{error}</p>}
 
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isSubmitting}>
@@ -309,10 +322,18 @@ function PayrollConnectBody() {
             </p>
             <h4 className="font-medium text-sm mb-1">Account Purposes</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• <strong>Payroll Funding</strong> - Main payroll disbursement</li>
-              <li>• <strong>Tax Payments</strong> - Withholding deposits</li>
-              <li>• <strong>Benefits</strong> - Benefits administration</li>
-              <li>• <strong>General</strong> - Other payroll-related</li>
+              <li>
+                • <strong>Payroll Funding</strong> - Main payroll disbursement
+              </li>
+              <li>
+                • <strong>Tax Payments</strong> - Withholding deposits
+              </li>
+              <li>
+                • <strong>Benefits</strong> - Benefits administration
+              </li>
+              <li>
+                • <strong>General</strong> - Other payroll-related
+              </li>
             </ul>
           </div>
         </div>
@@ -323,7 +344,11 @@ function PayrollConnectBody() {
 
 export default function PayrollConnectPage() {
   return (
-    <TierGate tier="payroll" title="Payroll Connections" subtitle="Upgrade to access Payroll features">
+    <TierGate
+      tier="payroll"
+      title="Payroll Connections"
+      subtitle="Upgrade to access Payroll features"
+    >
       <PayrollConnectBody />
     </TierGate>
   );

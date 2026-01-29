@@ -130,9 +130,12 @@ export function useGovConSnapshot(): UseGovConSnapshotState {
     setError(null);
 
     try {
-      const res = await apiFetch<GovConSnapshotResponse>("/govcon/snapshot", {
-        method: "GET",
-      });
+      const res = await apiFetch<GovConSnapshotResponse>(
+        "/api/govcon/snapshot",
+        {
+          method: "GET",
+        },
+      );
 
       // FAIL-CLOSED: Validate response structure, version, lifecycle, and evidence
       if (res && isValidGovConResponse(res)) {

@@ -23,6 +23,20 @@ export async function GET() {
 
     const supabase = supabaseAdmin();
 
+    // Debug: log query parameters
+    console.log(`[Plaid accounts] Query: userId=${userId}, orgId=${orgId}, requestId=${requestId}`);
+
+    // Debug: Check if user has any plaid_items first
+    const { data: items, error: itemsError } = await supabase
+      .from("plaid_items")
+      .select("item_id, institution_name, status")
+      .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`);
+
+    console.log(`[Plaid accounts] Items check: count=${items?.length ?? 0}, error=${itemsError?.message ?? 'none'}`);
+    if (items && items.length > 0) {
+      console.log(`[Plaid accounts] Items found:`, items.map(i => ({ item_id: i.item_id, institution: i.institution_name, status: i.status })));
+    }
+
     // Query plaid_accounts joined with user's items
     // First get user's item_ids, then get accounts for those items
     const { data: accounts, error } = await supabase
@@ -49,6 +63,9 @@ export async function GET() {
       )
       .or(`user_id.eq.${userId},clerk_user_id.eq.${userId}`)
       .order("created_at", { ascending: false });
+
+    // Debug: log query results
+    console.log(`[Plaid accounts] Result: count=${accounts?.length ?? 0}, error=${error?.message ?? 'none'}, requestId=${requestId}`);
 
     if (error) {
       console.error("[Plaid accounts] Supabase error:", error);

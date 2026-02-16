@@ -124,7 +124,7 @@ export function TopDriversPanel({
       aria-label={title}
       className={cn(
         "rounded-2xl border border-border bg-card",
-        "p-6 flex flex-col h-full min-h-[360px]",
+        "p-6 flex flex-col h-full min-h-90",
         className,
       )}
     >
@@ -184,7 +184,7 @@ export function TopDriversPanel({
               <p className="text-sm font-medium text-foreground mb-1">
                 No Data Yet
               </p>
-              <p className="text-xs text-muted-foreground max-w-[200px]">
+              <p className="text-xs text-muted-foreground max-w-50">
                 Connect accounts to see your top spend categories
               </p>
             </div>

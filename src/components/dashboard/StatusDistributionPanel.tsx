@@ -102,7 +102,7 @@ export function StatusDistributionPanel({
       aria-label={title}
       className={cn(
         "rounded-2xl border border-border bg-card",
-        "p-6 flex flex-col h-full min-h-[360px]",
+        "p-6 flex flex-col h-full min-h-90",
         className,
       )}
     >
@@ -154,7 +154,7 @@ export function StatusDistributionPanel({
               <p className="text-sm font-medium text-foreground mb-1">
                 No Data Yet
               </p>
-              <p className="text-xs text-muted-foreground max-w-[200px]">
+              <p className="text-xs text-muted-foreground max-w-50">
                 Transaction status distribution will appear here
               </p>
             </div>
@@ -200,11 +200,11 @@ export function StatusDistributionPanel({
             </div>
 
             {/* Legend */}
-            <div className="flex flex-col gap-2 min-w-[120px]">
+            <div className="flex flex-col gap-2 min-w-30">
               {chartData.map((entry, index) => (
                 <div key={entry.name} className="flex items-center gap-2">
                   <div
-                    className="w-3 h-3 rounded-sm flex-shrink-0"
+                    className="w-3 h-3 rounded-sm shrink-0"
                     style={{
                       backgroundColor:
                         entry.color ||

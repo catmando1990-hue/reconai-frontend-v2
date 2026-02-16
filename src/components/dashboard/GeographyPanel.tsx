@@ -81,7 +81,7 @@ export function GeographyPanel({
       aria-label={title}
       className={cn(
         "rounded-2xl border border-border bg-card",
-        "p-6 flex flex-col h-full min-h-[360px]",
+        "p-6 flex flex-col h-full min-h-90",
         className,
       )}
     >
@@ -154,7 +154,7 @@ export function GeographyPanel({
               return (
                 <div key={item.code} className="flex items-center gap-3 group">
                   {/* Region code */}
-                  <div className="w-8 flex-shrink-0">
+                  <div className="w-8 shrink-0">
                     <span className="text-xs font-medium text-muted-foreground uppercase">
                       {item.code}
                     </span>
@@ -177,7 +177,7 @@ export function GeographyPanel({
                   </div>
 
                   {/* Value */}
-                  <div className="w-20 flex-shrink-0 text-right">
+                  <div className="w-20 shrink-0 text-right">
                     <span className="text-sm font-medium text-foreground tabular-nums">
                       {formatValue(item.value)}
                     </span>

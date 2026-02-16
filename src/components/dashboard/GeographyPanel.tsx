@@ -135,13 +135,13 @@ export function GeographyPanel({
         ) : !hasData ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <MapPin className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <MapPin className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
               <p className="text-sm font-medium text-foreground mb-1">
-                No Geographic Data
+                Geographic distribution not enabled
               </p>
-              <p className="text-xs text-muted-foreground max-w-[200px]">
-                Regional distribution will appear once transactions are
-                processed
+              <p className="text-xs text-muted-foreground max-w-55">
+                Enable location enrichment in ingestion settings to populate
+                this panel with regional data.
               </p>
             </div>
           </div>

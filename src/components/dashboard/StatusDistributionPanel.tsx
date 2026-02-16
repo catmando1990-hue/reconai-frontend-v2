@@ -47,7 +47,7 @@ function formatPercent(value: number, total: number): string {
   return `${Math.round((value / total) * 100)}%`;
 }
 
-// Custom tooltip component
+// Custom tooltip component - Stripe-like styling
 function CustomTooltip({
   active,
   payload,
@@ -62,10 +62,15 @@ function CustomTooltip({
   const data = payload[0].payload;
 
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
-      <p className="text-sm font-medium text-foreground">{data.name}</p>
-      <p className="text-sm text-muted-foreground">
-        {data.value.toLocaleString()} ({formatPercent(data.value, total)})
+    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm text-muted-foreground">{data.name}</span>
+        <span className="text-sm font-medium text-foreground tabular-nums">
+          {formatPercent(data.value, total)}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground mt-1">
+        {data.value.toLocaleString()} items
       </p>
     </div>
   );
@@ -120,8 +125,8 @@ export function StatusDistributionPanel({
         )}
       </div>
 
-      {/* Chart Container */}
-      <div className="flex-1 min-h-0 flex items-center">
+      {/* Chart Container - explicit min-height prevents ResponsiveContainer -1 warnings */}
+      <div className="flex-1 min-h-70 flex items-center">
         {loading ? (
           <div className="w-full flex items-center justify-center">
             <div className="w-40 h-40 rounded-full border-8 border-muted animate-pulse" />
@@ -156,8 +161,8 @@ export function StatusDistributionPanel({
           </div>
         ) : (
           <div className="w-full flex items-center gap-4">
-            {/* Donut Chart */}
-            <div className="flex-1 min-w-0 h-[200px]">
+            {/* Donut Chart with Center Label */}
+            <div className="flex-1 min-w-0 h-50 relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -183,6 +188,15 @@ export function StatusDistributionPanel({
                   <Tooltip content={<CustomTooltip total={total} />} />
                 </PieChart>
               </ResponsiveContainer>
+              {/* Center Label */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center">
+                  <p className="text-2xl font-semibold text-foreground tabular-nums">
+                    {total.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                </div>
+              </div>
             </div>
 
             {/* Legend */}

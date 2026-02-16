@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Cell,
   Tooltip,
+  CartesianGrid,
 } from "recharts";
 import { TrendingUp, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,16 +51,23 @@ const CHART_COLORS = [
 ];
 
 function formatValue(value: number): string {
-  if (Math.abs(value) >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
+  const absValue = Math.abs(value);
+  if (absValue >= 1000000) {
+    return `$${(absValue / 1000000).toFixed(1)}M`;
   }
-  if (Math.abs(value) >= 1000) {
-    return `$${(value / 1000).toFixed(1)}K`;
+  if (absValue >= 1000) {
+    return `$${(absValue / 1000).toFixed(1)}K`;
   }
-  return `$${value.toFixed(0)}`;
+  return `$${absValue.toFixed(0)}`;
 }
 
-// Custom tooltip component
+// Truncate long labels for Y-axis display (20 char max)
+function truncateLabel(label: string): string {
+  if (label.length <= 20) return label;
+  return label.slice(0, 19) + "…";
+}
+
+// Custom tooltip component - Stripe-like styling
 function CustomTooltip({
   active,
   payload,
@@ -72,12 +80,20 @@ function CustomTooltip({
   const data = payload[0].payload;
 
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
-      <p className="text-sm font-medium text-foreground">{data.name}</p>
-      <p className="text-sm text-muted-foreground">
-        {formatValue(data.value)}
-        {data.count !== undefined && ` (${data.count} txns)`}
-      </p>
+    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm text-muted-foreground truncate max-w-45">
+          {data.name}
+        </span>
+        <span className="text-sm font-medium text-foreground tabular-nums">
+          {formatValue(data.value)}
+        </span>
+      </div>
+      {data.count !== undefined && (
+        <p className="text-xs text-muted-foreground mt-1">
+          {data.count} transactions
+        </p>
+      )}
     </div>
   );
 }
@@ -91,13 +107,14 @@ export function TopDriversPanel({
   onRefresh,
   className,
 }: TopDriversPanelProps) {
-  // Process data for chart
+  // Process data for chart - normalize to absolute values
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
-    // Sort by value descending and take top 5
+    // Sort by absolute value descending and take top 8
     return [...data]
-      .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
-      .slice(0, 5);
+      .map((item) => ({ ...item, value: Math.abs(item.value) }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
   }, [data]);
 
   const hasData = chartData.length > 0;
@@ -130,8 +147,8 @@ export function TopDriversPanel({
         )}
       </div>
 
-      {/* Chart Container */}
-      <div className="flex-1 min-h-0">
+      {/* Chart Container - explicit min-height prevents ResponsiveContainer -1 warnings */}
+      <div className="flex-1 min-h-70">
         {loading ? (
           <div className="h-full flex flex-col justify-center gap-3">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -177,15 +194,22 @@ export function TopDriversPanel({
             <BarChart
               data={chartData}
               layout="vertical"
-              margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
+              margin={{ top: 0, right: 20, left: 20, bottom: 0 }}
             >
+              <CartesianGrid
+                horizontal={true}
+                vertical={false}
+                stroke="var(--border)"
+                strokeOpacity={0.5}
+              />
               <XAxis type="number" hide />
               <YAxis
                 type="category"
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                width={80}
+                width={160}
+                tickFormatter={truncateLabel}
                 tick={{
                   fill: "var(--muted-foreground)",
                   fontSize: 12,
@@ -195,7 +219,7 @@ export function TopDriversPanel({
                 content={<CustomTooltip />}
                 cursor={{ fill: "var(--muted)", opacity: 0.3 }}
               />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={28}>
                 {chartData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}

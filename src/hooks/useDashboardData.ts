@@ -197,21 +197,35 @@ export function useDashboardData(): DashboardDataState {
         "/api/reports/cash-flow?period=30",
       );
 
+      // Dev logging for API verification
+      if (process.env.NODE_ENV === "development") {
+        console.log("[Dashboard] Cash Flow Response:", response);
+      }
+
       if (response?.operating?.items && response.operating.items.length > 0) {
         // Use operating section items as top drivers
-        setDriversData(
-          response.operating.items
-            .filter((item) => Math.abs(item.amount) > 0)
-            .map((item) => ({
-              name: item.category || "Uncategorized",
-              value: Math.abs(item.amount),
-            })),
-        );
+        const drivers = response.operating.items
+          .filter((item) => Math.abs(item.amount) > 0)
+          .map((item) => ({
+            name: item.category || "Uncategorized",
+            value: Math.abs(item.amount),
+          }));
+
+        if (drivers.length > 0) {
+          setDriversData(drivers);
+        } else {
+          setDriversData(null);
+          setDriversError("No spend data for selected period");
+        }
+      } else if (response) {
+        // Response exists but no operating items
+        setDriversData(null);
+        setDriversError("Cash flow data unavailable for selected period");
       } else {
         setDriversData(null);
       }
     } catch {
-      setDriversError("Failed to load data");
+      setDriversError("Failed to load cash flow data. Tap to retry.");
       setDriversData(null);
     } finally {
       setDriversLoading(false);
@@ -228,6 +242,11 @@ export function useDashboardData(): DashboardDataState {
       const response = await apiFetch<DashboardMetricsResponse>(
         "/api/dashboard/metrics",
       );
+
+      // Dev logging for API verification
+      if (process.env.NODE_ENV === "development") {
+        console.log("[Dashboard] Metrics Response:", response);
+      }
 
       if (response?.available && response.counts) {
         // Create status distribution from counts
@@ -290,22 +309,15 @@ export function useDashboardData(): DashboardDataState {
     }
   }, [apiFetch]);
 
-  // Generate sample geo data (since we don't have a geo API)
-  // In production, this would come from transaction location data
+  // Geographic data - currently disabled (no geo API exists)
+  // Component shows intentional "not enabled" state when data is null
   const fetchGeo = useCallback(async () => {
-    try {
-      setGeoLoading(true);
-      setGeoError(null);
-
-      // For now, set geo data to null - will show empty state
-      // In production, would fetch from /api/transactions/by-state or similar
-      setGeoData(null);
-    } catch {
-      setGeoError("Failed to load data");
-      setGeoData(null);
-    } finally {
-      setGeoLoading(false);
-    }
+    setGeoLoading(true);
+    setGeoError(null);
+    // No geo API exists - set null to show disabled state in component
+    // In production, would fetch from /api/transactions/by-state or similar
+    setGeoData(null);
+    setGeoLoading(false);
   }, []);
 
   // Fetch intelligence insights
@@ -371,12 +383,12 @@ export function useDashboardData(): DashboardDataState {
     void refreshAll();
   }, [authReady, org_id, refreshAll]);
 
-  // Computed state
+  // Computed state - true if ANY data source is still loading
   const isLoading =
-    kpiLoading &&
-    driversLoading &&
-    statusLoading &&
-    geoLoading &&
+    kpiLoading ||
+    driversLoading ||
+    statusLoading ||
+    geoLoading ||
     operationalLoading;
 
   const hasAnyData =

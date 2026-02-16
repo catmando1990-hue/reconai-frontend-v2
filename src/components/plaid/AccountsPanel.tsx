@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { auditedFetch, HttpError } from "@/lib/auditedFetch";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
+import { HttpError } from "@/lib/auditedFetch";
 import { Trash2 } from "lucide-react";
 
 type Account = {
@@ -31,38 +33,55 @@ function fmtMoney(v: number | null, ccy: string | null) {
   }
 }
 
-async function fetchAccounts() {
-  const j = await auditedFetch<{
-    accounts: Account[];
-    request_id: string;
-  }>("/api/plaid/accounts");
-  return j.accounts || [];
-}
-
-async function removeItem(itemId: string) {
-  const j = await auditedFetch<{
-    ok: boolean;
-    success?: boolean;
-    message?: string;
-    request_id: string;
-  }>(`/api/plaid/items/${encodeURIComponent(itemId)}`, {
-    method: "DELETE",
-  });
-  if (!j.ok && !j.success) {
-    throw new Error(j.message || "Failed to remove bank connection");
-  }
-  return j;
-}
-
 export function AccountsPanel() {
+  const { auditedFetch } = useApi();
+  const { org_id, isLoaded: orgLoaded } = useOrg();
+
   const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [noItemsYet, setNoItemsYet] = useState(false);
   const [removingItemId, setRemovingItemId] = useState<string | null>(null);
 
+  // Org readiness gate - fail-closed
+  const orgReady = orgLoaded && !!org_id;
+
+  // Fetch accounts using org-scoped API
+  const fetchAccountsData = useCallback(async () => {
+    if (!orgReady) return [];
+
+    const j = await auditedFetch<{
+      accounts: Account[];
+      request_id: string;
+    }>("/api/plaid/accounts");
+    return j.accounts || [];
+  }, [auditedFetch, orgReady]);
+
+  // Remove item using org-scoped API
+  const removeItem = useCallback(
+    async (itemId: string) => {
+      if (!orgReady) return;
+
+      const j = await auditedFetch<{
+        ok: boolean;
+        success?: boolean;
+        message?: string;
+        request_id: string;
+      }>(`/api/plaid/items/${encodeURIComponent(itemId)}`, {
+        method: "DELETE",
+      });
+      if (!j.ok && !j.success) {
+        throw new Error(j.message || "Failed to remove bank connection");
+      }
+      return j;
+    },
+    [auditedFetch, orgReady],
+  );
+
   useEffect(() => {
     let mounted = true;
-    fetchAccounts()
+    if (!orgReady) return;
+
+    fetchAccountsData()
       .then((a) => {
         if (!mounted) return;
         setAccounts(a);
@@ -92,7 +111,7 @@ export function AccountsPanel() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [fetchAccountsData, orgReady]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, { itemId: string; accounts: Account[] }>();
@@ -110,6 +129,8 @@ export function AccountsPanel() {
 
   const handleRemoveClick = useCallback(
     async (itemId: string, institutionName: string) => {
+      if (!orgReady) return;
+
       const confirmed = window.confirm(
         `Are you sure you want to remove ${institutionName}?\n\nThis will disconnect all accounts from this bank. This action cannot be undone.`,
       );
@@ -121,7 +142,7 @@ export function AccountsPanel() {
       try {
         await removeItem(itemId);
         // Refresh accounts list
-        const refreshed = await fetchAccounts();
+        const refreshed = await fetchAccountsData();
         setAccounts(refreshed);
       } catch (e: unknown) {
         setError(
@@ -131,8 +152,27 @@ export function AccountsPanel() {
         setRemovingItemId(null);
       }
     },
-    [],
+    [fetchAccountsData, orgReady, removeItem],
   );
+
+  // Org readiness gate UI
+  if (orgLoaded && !org_id) {
+    return (
+      <section className="rounded-2xl border bg-background p-6">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Linked accounts
+        </h2>
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950">
+          <p className="font-medium text-amber-800 dark:text-amber-200">
+            Organization required
+          </p>
+          <p className="mt-1 text-amber-700 dark:text-amber-300">
+            Select an organization to view linked bank accounts.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-2xl border bg-background p-6">
@@ -149,29 +189,31 @@ export function AccountsPanel() {
 
         <button
           type="button"
+          disabled={!orgReady}
           onClick={() => {
+            if (!orgReady) return;
             setAccounts(null);
             setError(null);
-            fetchAccounts()
+            fetchAccountsData()
               .then((a) => setAccounts(a))
               .catch((e: unknown) => {
                 setError(e instanceof Error ? e.message : "Failed to refresh");
                 setAccounts([]);
               });
           }}
-          className="rounded-xl border bg-card/40 px-3 py-2 text-xs"
+          className="rounded-xl border bg-card/40 px-3 py-2 text-xs disabled:opacity-50"
         >
           Refresh
         </button>
       </div>
 
-      {accounts === null && (
+      {(!orgLoaded || accounts === null) && (
         <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
       )}
 
       {error && <p className="mt-4 text-sm text-destructive">Error: {error}</p>}
 
-      {accounts !== null && accounts.length === 0 && !error && (
+      {orgReady && accounts !== null && accounts.length === 0 && !error && (
         <p className="mt-4 text-sm text-muted-foreground">
           {noItemsYet
             ? "No bank connected yet. Visit the Connect Bank page to link your bank."

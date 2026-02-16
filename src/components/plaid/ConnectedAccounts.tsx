@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  auditedFetch,
-  AuditProvenanceError,
-  HttpError,
-} from "@/lib/auditedFetch";
+import { useCallback, useEffect, useState } from "react";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
+import { AuditProvenanceError, HttpError } from "@/lib/auditedFetch";
 
 type ItemStatus = "active" | "login_required" | "error" | string;
 
@@ -45,6 +43,9 @@ function getStatusColorClass(status: ItemStatus): string {
 }
 
 export function ConnectedAccounts() {
+  const { auditedFetch } = useApi();
+  const { org_id, isLoaded: orgLoaded } = useOrg();
+
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [noItemsYet, setNoItemsYet] = useState(false);
@@ -57,7 +58,12 @@ export function ConnectedAccounts() {
     message: string;
   } | null>(null);
 
-  const fetchItems = async () => {
+  // Org readiness gate - fail-closed
+  const orgReady = orgLoaded && !!org_id;
+
+  const fetchItems = useCallback(async () => {
+    if (!orgReady) return;
+
     try {
       const j = await auditedFetch<{
         ok?: boolean;
@@ -102,19 +108,23 @@ export function ConnectedAccounts() {
       setError(message);
       setItems([]);
     }
-  };
+  }, [auditedFetch, orgReady]);
 
   useEffect(() => {
     let mounted = true;
-    fetchItems().then(() => {
-      if (!mounted) return;
-    });
+    if (orgReady) {
+      fetchItems().then(() => {
+        if (!mounted) return;
+      });
+    }
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [fetchItems, orgReady]);
 
   async function handleSync(itemId: string) {
+    if (!orgReady) return;
+
     setSyncingItemId(itemId);
     setSyncResult(null);
 
@@ -154,6 +164,8 @@ export function ConnectedAccounts() {
   }
 
   async function handleDelete(itemId: string) {
+    if (!orgReady) return;
+
     setDeletingItemId(itemId);
     setConfirmDeleteId(null);
 
@@ -188,6 +200,25 @@ export function ConnectedAccounts() {
     }
   }
 
+  // Org readiness gate UI
+  if (orgLoaded && !org_id) {
+    return (
+      <section className="rounded-2xl border bg-background p-6">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Connected accounts
+        </h2>
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950">
+          <p className="font-medium text-amber-800 dark:text-amber-200">
+            Organization required
+          </p>
+          <p className="mt-1 text-amber-700 dark:text-amber-300">
+            Select an organization to view connected bank accounts.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-2xl border bg-background p-6">
       <h2 className="text-lg font-semibold tracking-tight">
@@ -197,11 +228,11 @@ export function ConnectedAccounts() {
         These are the bank connections currently linked to your ReconAI account.
       </p>
 
-      {items === null && (
+      {(!orgLoaded || items === null) && (
         <p className="mt-4 text-sm text-muted-foreground">Loading...</p>
       )}
 
-      {items !== null && items.length === 0 && !error && (
+      {orgReady && items !== null && items.length === 0 && !error && (
         <p className="mt-4 text-sm text-muted-foreground">
           {noItemsYet
             ? "No bank connected yet. Use the button above to link your bank."

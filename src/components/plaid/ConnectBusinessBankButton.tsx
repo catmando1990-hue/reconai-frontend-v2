@@ -3,11 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PlaidLinkError, usePlaidLink } from "react-plaid-link";
-import {
-  auditedFetch,
-  AuditProvenanceError,
-  HttpError,
-} from "@/lib/auditedFetch";
+import { useApi } from "@/lib/useApi";
+import { useOrg } from "@/lib/org-context";
+import { AuditProvenanceError, HttpError } from "@/lib/auditedFetch";
 
 type LinkTokenResponse = {
   request_id: string;
@@ -31,6 +29,9 @@ type ExchangeResponse = {
  */
 export function ConnectBusinessBankButton() {
   const searchParams = useSearchParams();
+  const { auditedFetch } = useApi();
+  const { org_id, isLoaded: orgLoaded } = useOrg();
+
   const oauthStateId = searchParams.get("oauth_state_id");
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loadingToken, setLoadingToken] = useState(false);
@@ -42,7 +43,12 @@ export function ConnectBusinessBankButton() {
     kind: "idle",
   });
 
+  // Org readiness gate - fail-closed
+  const orgReady = orgLoaded && !!org_id;
+
   const fetchLinkToken = useCallback(async () => {
+    if (!orgReady) return;
+
     setLoadingToken(true);
     setStatus({ kind: "idle" });
     try {
@@ -69,14 +75,18 @@ export function ConnectBusinessBankButton() {
     } finally {
       setLoadingToken(false);
     }
-  }, []);
+  }, [auditedFetch, orgReady]);
 
   useEffect(() => {
-    fetchLinkToken();
-  }, [fetchLinkToken]);
+    if (orgReady) {
+      fetchLinkToken();
+    }
+  }, [fetchLinkToken, orgReady]);
 
   const onSuccess = useCallback(
     async (public_token: string) => {
+      if (!orgReady) return;
+
       setBusy(true);
       setStatus({ kind: "idle" });
       try {
@@ -110,7 +120,7 @@ export function ConnectBusinessBankButton() {
         setBusy(false);
       }
     },
-    [fetchLinkToken],
+    [auditedFetch, fetchLinkToken, orgReady],
   );
 
   const handleOpen = useCallback(() => {
@@ -156,7 +166,21 @@ export function ConnectBusinessBankButton() {
     }
   }, [oauthStateId, ready, linkToken, open]);
 
-  const disabled = !ready || loadingToken || busy || !linkToken;
+  const disabled = !ready || loadingToken || busy || !linkToken || !orgReady;
+
+  // Org readiness gate UI
+  if (orgLoaded && !org_id) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950">
+        <p className="font-medium text-amber-800 dark:text-amber-200">
+          Organization required
+        </p>
+        <p className="mt-1 text-amber-700 dark:text-amber-300">
+          Select an organization to connect business bank accounts.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -169,11 +193,13 @@ export function ConnectBusinessBankButton() {
         disabled={disabled}
         className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-medium shadow-sm hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loadingToken
-          ? "Preparing..."
-          : busy
-            ? "Connecting..."
-            : "Connect Business Bank"}
+        {!orgLoaded
+          ? "Loading..."
+          : loadingToken
+            ? "Preparing..."
+            : busy
+              ? "Connecting..."
+              : "Connect Business Bank"}
       </button>
 
       {!linkToken && !loadingToken && (

@@ -65,7 +65,9 @@ export function ManualSyncSection() {
 
   const handleSync = async () => {
     if (items.length === 0) {
-      setErrorMessage("No bank accounts connected. Please connect a bank first.");
+      setErrorMessage(
+        "No bank accounts connected. Please connect a bank first.",
+      );
       setSyncState("error");
       return;
     }
@@ -116,7 +118,7 @@ export function ManualSyncSection() {
       // At least partial success
       setLastSync(new Date().toISOString());
       setSyncDetails(
-        `${totalAdded} added, ${totalModified} modified, ${totalRemoved} removed`
+        `${totalAdded} added, ${totalModified} modified, ${totalRemoved} removed`,
       );
       setSyncState("success");
       if (errors.length > 0) {
@@ -139,13 +141,16 @@ export function ManualSyncSection() {
         {syncState === "syncing"
           ? "Syncing..."
           : items.length === 0
-          ? "No banks connected"
-          : `Sync ${items.length} account${items.length > 1 ? "s" : ""}`}
+            ? "No banks connected"
+            : `Sync ${items.length} account${items.length > 1 ? "s" : ""}`}
       </button>
 
       <div className="text-xs text-muted-foreground">
         {syncState === "idle" && !lastSync && items.length > 0 && (
-          <p>Ready to sync {items.length} connected account{items.length > 1 ? "s" : ""}.</p>
+          <p>
+            Ready to sync {items.length} connected account
+            {items.length > 1 ? "s" : ""}.
+          </p>
         )}
         {syncState === "idle" && items.length === 0 && (
           <p>No banks connected. Use &quot;Link Bank Account&quot; above.</p>
@@ -155,11 +160,11 @@ export function ManualSyncSection() {
         )}
         {syncState === "success" && (
           <>
-            <p>
-              Sync completed: {syncDetails}
-            </p>
+            <p>Sync completed: {syncDetails}</p>
             {errorMessage && (
-              <p className="text-amber-600 dark:text-amber-400 mt-1">{errorMessage}</p>
+              <p className="text-amber-600 dark:text-amber-400 mt-1">
+                {errorMessage}
+              </p>
             )}
             <AuditEvidence requestId={lastRequestId} variant="success" />
           </>

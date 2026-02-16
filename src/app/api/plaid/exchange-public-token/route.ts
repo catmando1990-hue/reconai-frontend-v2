@@ -171,16 +171,38 @@ export async function POST(req: Request) {
         .eq("item_id", itemId);
 
       // Fetch and update accounts
-      const accountsMap = await fetchAndStoreAccounts(
-        plaid,
-        supabase,
-        accessToken,
-        itemId,
-        userId,
-        institutionId,
-        institutionNameResolved,
-        context,
-      );
+      let accountsMap: Map<string, AccountBase>;
+      try {
+        accountsMap = await fetchAndStoreAccounts(
+          plaid,
+          supabase,
+          accessToken,
+          itemId,
+          userId,
+          institutionId,
+          institutionNameResolved,
+          context,
+        );
+      } catch (e: unknown) {
+        const msg =
+          e instanceof Error ? e.message : "Failed to fetch/store accounts";
+        return NextResponse.json(
+          { error: msg, code: "ACCOUNTS_STORE_FAILED", request_id: requestId },
+          { status: 500, headers: { "x-request-id": requestId } },
+        );
+      }
+
+      if (!accountsMap || accountsMap.size === 0) {
+        return NextResponse.json(
+          {
+            error:
+              "Bank connected but zero accounts were stored. Check Supabase tables and Plaid account permissions.",
+            code: "ACCOUNTS_EMPTY",
+            request_id: requestId,
+          },
+          { status: 500, headers: { "x-request-id": requestId } },
+        );
+      }
 
       // Sync transactions
       await syncTransactions(
@@ -205,30 +227,69 @@ export async function POST(req: Request) {
     }
 
     // Insert new item
-    await supabase.from("plaid_items").insert({
-      user_id: userId,
-      clerk_user_id: userId,
-      item_id: itemId,
-      access_token: accessToken,
-      institution_id: institutionId,
-      institution_name: institutionNameResolved,
-      context,
-      status: "active",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
+    const { error: insertItemError } = await supabase
+      .from("plaid_items")
+      .insert({
+        user_id: userId,
+        clerk_user_id: userId,
+        item_id: itemId,
+        access_token: accessToken,
+        institution_id: institutionId,
+        institution_name: institutionNameResolved,
+        context,
+        status: "active",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+    if (insertItemError) {
+      console.error(
+        "[Plaid exchange] Failed to insert plaid_items:",
+        insertItemError,
+      );
+      return NextResponse.json(
+        {
+          error: insertItemError.message,
+          code: "SUPABASE_ERROR",
+          request_id: requestId,
+        },
+        { status: 500, headers: { "x-request-id": requestId } },
+      );
+    }
 
     // Fetch and store accounts with proper classification
-    const accountsMap = await fetchAndStoreAccounts(
-      plaid,
-      supabase,
-      accessToken,
-      itemId,
-      userId,
-      institutionId,
-      institutionNameResolved,
-      context,
-    );
+    let accountsMap: Map<string, AccountBase>;
+    try {
+      accountsMap = await fetchAndStoreAccounts(
+        plaid,
+        supabase,
+        accessToken,
+        itemId,
+        userId,
+        institutionId,
+        institutionNameResolved,
+        context,
+      );
+    } catch (e: unknown) {
+      const msg =
+        e instanceof Error ? e.message : "Failed to fetch/store accounts";
+      return NextResponse.json(
+        { error: msg, code: "ACCOUNTS_STORE_FAILED", request_id: requestId },
+        { status: 500, headers: { "x-request-id": requestId } },
+      );
+    }
+
+    if (!accountsMap || accountsMap.size === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Bank connected but zero accounts were stored. Check Supabase tables and Plaid account permissions.",
+          code: "ACCOUNTS_EMPTY",
+          request_id: requestId,
+        },
+        { status: 500, headers: { "x-request-id": requestId } },
+      );
+    }
 
     // Sync transactions with normalized amounts
     await syncTransactions(
@@ -324,15 +385,21 @@ async function fetchAndStoreAccounts(
         .single();
 
       if (existing) {
-        await supabase
+        const { error: updErr } = await supabase
           .from("plaid_accounts")
           .update(accountData)
           .eq("account_id", acct.account_id);
+        if (updErr) {
+          throw new Error(`SUPABASE_ACCOUNTS_UPDATE_FAILED: ${updErr.message}`);
+        }
       } else {
-        await supabase.from("plaid_accounts").insert({
+        const { error: insErr } = await supabase.from("plaid_accounts").insert({
           ...accountData,
           created_at: new Date().toISOString(),
         });
+        if (insErr) {
+          throw new Error(`SUPABASE_ACCOUNTS_INSERT_FAILED: ${insErr.message}`);
+        }
       }
     }
 
@@ -340,7 +407,8 @@ async function fetchAndStoreAccounts(
       `[Plaid exchange] Stored ${accountsMap.size} accounts for item=${itemId}`,
     );
   } catch (err) {
-    console.error("[Plaid exchange] Failed to fetch accounts:", err);
+    console.error("[Plaid exchange] Failed to fetch/store accounts:", err);
+    throw err instanceof Error ? err : new Error("PLAID_ACCOUNTS_FETCH_FAILED");
   }
 
   return accountsMap;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getBackendUrl } from "@/lib/config";
 
 /**
  * GET /api/plaid/accounts
@@ -12,7 +13,7 @@ export async function GET() {
   const requestId = crypto.randomUUID();
 
   try {
-    const { userId } = await auth();
+    const { userId, orgId, getToken } = await auth();
     if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized", request_id: requestId },
@@ -61,8 +62,100 @@ export async function GET() {
       );
     }
 
-    // Empty state is valid — user hasn't connected or synced yet
+    // Empty state: try backend as fallback (source may be backend DB, not Supabase)
     if (!accounts || accounts.length === 0) {
+      // Attempt backend fetch before declaring not_connected
+      try {
+        const token = await getToken();
+        let backendUrl: string;
+        try {
+          backendUrl = getBackendUrl();
+        } catch {
+          backendUrl = "";
+        }
+
+        if (backendUrl) {
+          const res = await fetch(`${backendUrl}/api/plaid/accounts`, {
+            method: "GET",
+            headers: {
+              "x-request-id": requestId,
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              ...(orgId ? { "x-organization-id": orgId } : {}),
+            },
+            signal: AbortSignal.timeout(30000),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const backendData = (data && (data.data || data)) || {};
+            const backendAccounts =
+              backendData.accounts || backendData.items || [];
+
+            if (Array.isArray(backendAccounts) && backendAccounts.length > 0) {
+              // Normalize backend accounts into the same response shape used by the UI
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const normalized = backendAccounts.map(
+                (acct: Record<string, any>) => ({
+                  id: acct.id ?? acct.account_id ?? crypto.randomUUID(),
+                  item_id: acct.item_id ?? acct.itemId ?? null,
+                  account_id: acct.account_id ?? acct.accountId ?? null,
+                  institution_id:
+                    acct.institution_id ?? acct.institutionId ?? null,
+                  institution_name:
+                    acct.institution_name ?? acct.institutionName ?? null,
+                  name: acct.name ?? null,
+                  official_name:
+                    acct.official_name ?? acct.officialName ?? null,
+                  type: acct.type ?? null,
+                  subtype: acct.subtype ?? null,
+                  mask: acct.mask ?? null,
+                  balance_current:
+                    acct.balance_current ??
+                    acct.current_balance ??
+                    acct.balances?.current ??
+                    null,
+                  balance_available:
+                    acct.balance_available ??
+                    acct.available_balance ??
+                    acct.balances?.available ??
+                    null,
+                  iso_currency_code:
+                    acct.iso_currency_code ??
+                    acct.currency ??
+                    acct.balances?.iso_currency_code ??
+                    "USD",
+                  last_synced_at:
+                    acct.last_synced_at ??
+                    acct.last_synced ??
+                    acct.updated_at ??
+                    null,
+                  created_at: acct.created_at ?? null,
+                  updated_at: acct.updated_at ?? null,
+                }),
+              );
+
+              return NextResponse.json(
+                {
+                  ok: true,
+                  accounts: normalized,
+                  status: "connected",
+                  request_id: requestId,
+                },
+                { status: 200, headers: { "x-request-id": requestId } },
+              );
+            }
+          } else {
+            const errorText = await res.text().catch(() => "");
+            console.warn(
+              `[Plaid accounts] Backend fallback returned ${res.status}:`,
+              errorText,
+            );
+          }
+        }
+      } catch (fallbackErr) {
+        console.warn("[Plaid accounts] Backend fallback failed:", fallbackErr);
+      }
+
       return NextResponse.json(
         {
           ok: true,
@@ -74,7 +167,6 @@ export async function GET() {
         { status: 200, headers: { "x-request-id": requestId } },
       );
     }
-
     // Map to expected response shape
     const mappedAccounts = accounts.map((acct) => ({
       id: acct.id,

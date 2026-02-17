@@ -26,13 +26,18 @@ export interface NewsResponse {
   articles: NewsArticle[];
   fetchedAt: string;
   message?: string;
+  request_id: string;
 }
 
 // Cache news for 15 minutes
 export const revalidate = 900;
 
-export async function GET(): Promise<NextResponse<NewsResponse>> {
+export async function GET(
+  request: Request,
+): Promise<NextResponse<NewsResponse>> {
   const { userId } = await auth();
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
+  const headers = { "x-request-id": requestId };
 
   if (!userId) {
     return NextResponse.json(
@@ -41,8 +46,9 @@ export async function GET(): Promise<NextResponse<NewsResponse>> {
         articles: [],
         fetchedAt: new Date().toISOString(),
         message: "Unauthorized",
+        request_id: requestId,
       },
-      { status: 401 },
+      { status: 401, headers },
     );
   }
 
@@ -50,13 +56,17 @@ export async function GET(): Promise<NextResponse<NewsResponse>> {
 
   // Intentional empty state if not configured
   if (!apiKey) {
-    return NextResponse.json({
-      lifecycle: "not_configured",
-      articles: [],
-      fetchedAt: new Date().toISOString(),
-      message:
-        "News feed not configured. Set NEWS_API_KEY environment variable.",
-    });
+    return NextResponse.json(
+      {
+        lifecycle: "not_configured",
+        articles: [],
+        fetchedAt: new Date().toISOString(),
+        message:
+          "News feed not configured. Set NEWS_API_KEY environment variable.",
+        request_id: requestId,
+      },
+      { headers },
+    );
   }
 
   try {
@@ -97,18 +107,26 @@ export async function GET(): Promise<NextResponse<NewsResponse>> {
       }),
     );
 
-    return NextResponse.json({
-      lifecycle: "success",
-      articles,
-      fetchedAt: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        lifecycle: "success",
+        articles,
+        fetchedAt: new Date().toISOString(),
+        request_id: requestId,
+      },
+      { headers },
+    );
   } catch (error) {
     console.error("[News API Error]", error);
-    return NextResponse.json({
-      lifecycle: "failed",
-      articles: [],
-      fetchedAt: new Date().toISOString(),
-      message: "Failed to fetch news. Please try again later.",
-    });
+    return NextResponse.json(
+      {
+        lifecycle: "failed",
+        articles: [],
+        fetchedAt: new Date().toISOString(),
+        message: "Failed to fetch news. Please try again later.",
+        request_id: requestId,
+      },
+      { headers },
+    );
   }
 }

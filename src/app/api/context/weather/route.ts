@@ -27,6 +27,7 @@ export interface WeatherResponse {
   lifecycle: "success" | "not_configured" | "failed";
   weather: WeatherData | null;
   message?: string;
+  request_id: string;
 }
 
 // Cache weather for 30 minutes
@@ -36,6 +37,8 @@ export async function GET(
   request: Request,
 ): Promise<NextResponse<WeatherResponse>> {
   const { userId } = await auth();
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
+  const headers = { "x-request-id": requestId };
 
   if (!userId) {
     return NextResponse.json(
@@ -43,8 +46,9 @@ export async function GET(
         lifecycle: "failed",
         weather: null,
         message: "Unauthorized",
+        request_id: requestId,
       },
-      { status: 401 },
+      { status: 401, headers },
     );
   }
 
@@ -52,12 +56,16 @@ export async function GET(
 
   // Intentional empty state if not configured
   if (!apiKey) {
-    return NextResponse.json({
-      lifecycle: "not_configured",
-      weather: null,
-      message:
-        "Weather not configured. Set WEATHER_API_KEY environment variable.",
-    });
+    return NextResponse.json(
+      {
+        lifecycle: "not_configured",
+        weather: null,
+        message:
+          "Weather not configured. Set WEATHER_API_KEY environment variable.",
+        request_id: requestId,
+      },
+      { headers },
+    );
   }
 
   // Get location from query params or use default
@@ -98,16 +106,24 @@ export async function GET(
       fetchedAt: new Date().toISOString(),
     };
 
-    return NextResponse.json({
-      lifecycle: "success",
-      weather,
-    });
+    return NextResponse.json(
+      {
+        lifecycle: "success",
+        weather,
+        request_id: requestId,
+      },
+      { headers },
+    );
   } catch (error) {
     console.error("[Weather API Error]", error);
-    return NextResponse.json({
-      lifecycle: "failed",
-      weather: null,
-      message: "Failed to fetch weather. Please try again later.",
-    });
+    return NextResponse.json(
+      {
+        lifecycle: "failed",
+        weather: null,
+        message: "Failed to fetch weather. Please try again later.",
+        request_id: requestId,
+      },
+      { headers },
+    );
   }
 }

@@ -79,11 +79,15 @@ const DEMO_CORE_SIGNALS: IntelligenceSignal[] = [
   },
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
   const { userId, orgId } = await auth();
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized", request_id: requestId },
+      { status: 401, headers: { "x-request-id": requestId } },
+    );
   }
 
   // In production, fetch from backend API with orgId
@@ -91,11 +95,15 @@ export async function GET() {
   // const response = await fetch(`${backendUrl}/api/intelligence/core?org_id=${orgId}`);
 
   // For now, return demo data with lifecycle
-  return NextResponse.json({
-    lifecycle: "success",
-    generated_at: new Date().toISOString(),
-    items: DEMO_CORE_SIGNALS,
-    _demo: true, // Explicit demo labeling
-    _org_id: orgId,
-  });
+  return NextResponse.json(
+    {
+      lifecycle: "success",
+      generated_at: new Date().toISOString(),
+      items: DEMO_CORE_SIGNALS,
+      request_id: requestId,
+      _demo: true, // Explicit demo labeling
+      _org_id: orgId,
+    },
+    { headers: { "x-request-id": requestId } },
+  );
 }

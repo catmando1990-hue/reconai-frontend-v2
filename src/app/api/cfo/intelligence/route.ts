@@ -72,18 +72,26 @@ const DEMO_CFO_SIGNALS: IntelligenceSignal[] = [
   },
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
   const { userId, orgId } = await auth();
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized", request_id: requestId },
+      { status: 401, headers: { "x-request-id": requestId } },
+    );
   }
 
-  return NextResponse.json({
-    lifecycle: "success",
-    generated_at: new Date().toISOString(),
-    items: DEMO_CFO_SIGNALS,
-    _demo: true,
-    _org_id: orgId,
-  });
+  return NextResponse.json(
+    {
+      lifecycle: "success",
+      generated_at: new Date().toISOString(),
+      items: DEMO_CFO_SIGNALS,
+      request_id: requestId,
+      _demo: true,
+      _org_id: orgId,
+    },
+    { headers: { "x-request-id": requestId } },
+  );
 }

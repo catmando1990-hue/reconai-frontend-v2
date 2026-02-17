@@ -92,19 +92,27 @@ const DEMO_GOVCON_SIGNALS: IntelligenceSignal[] = [
   },
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
   const { userId, orgId } = await auth();
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized", request_id: requestId },
+      { status: 401, headers: { "x-request-id": requestId } },
+    );
   }
 
-  return NextResponse.json({
-    lifecycle: "success",
-    generated_at: new Date().toISOString(),
-    items: DEMO_GOVCON_SIGNALS,
-    _demo: true,
-    _org_id: orgId,
-    _govcon_isolated: true, // Explicit isolation marker
-  });
+  return NextResponse.json(
+    {
+      lifecycle: "success",
+      generated_at: new Date().toISOString(),
+      items: DEMO_GOVCON_SIGNALS,
+      request_id: requestId,
+      _demo: true,
+      _org_id: orgId,
+      _govcon_isolated: true, // Explicit isolation marker
+    },
+    { headers: { "x-request-id": requestId } },
+  );
 }

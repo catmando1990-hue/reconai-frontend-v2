@@ -1,9 +1,6 @@
 // Barrel export for all hooks
-export { useAlerts } from "./useAlerts";
 export { useCfoSnapshot } from "./useCfoSnapshot";
 export { useChartReady } from "./useChartReady";
 export { useDashboardMetrics } from "./useDashboardMetrics";
 export { useFeatureFlags } from "./useFeatureFlags";
 export { useFirstRunFlag } from "./useFirstRunFlag";
-export { useInsightsSummary } from "./useInsightsSummary";
-export { useWorkerTasks } from "./useWorkerTasks";

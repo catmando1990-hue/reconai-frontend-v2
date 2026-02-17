@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   Brain,
   Database,
-  Sparkles,
   Briefcase,
   Wallet,
   Building,
@@ -74,22 +73,10 @@ const MODULES: Module[] = [
       { id: "reports", label: "Reports", href: ROUTES.CORE_REPORTS },
       { id: "statements", label: "Statements", href: ROUTES.CORE_STATEMENTS },
       { id: "connect", label: "Bank Connections", href: ROUTES.CORE_CONNECT },
-    ],
-  },
-  {
-    id: "intelligence",
-    label: "Intelligence",
-    shortLabel: "Intel",
-    icon: Sparkles,
-    href: ROUTES.INTELLIGENCE,
-    children: [
-      { id: "overview", label: "Overview", href: ROUTES.INTELLIGENCE_OVERVIEW },
-      { id: "insights", label: "Insights", href: ROUTES.INTELLIGENCE_INSIGHTS },
-      { id: "alerts", label: "Alerts", href: ROUTES.INTELLIGENCE_ALERTS },
       {
-        id: "ai-worker",
-        label: "AI Worker",
-        href: ROUTES.INTELLIGENCE_AI_WORKER,
+        id: "intelligence",
+        label: "Intelligence",
+        href: ROUTES.CORE_INTELLIGENCE,
       },
     ],
   },
@@ -110,6 +97,11 @@ const MODULES: Module[] = [
       { id: "compliance", label: "Compliance", href: ROUTES.CFO_COMPLIANCE },
       { id: "reports", label: "Reports", href: ROUTES.CFO_REPORTS },
       { id: "connect", label: "Bank Connections", href: ROUTES.CFO_CONNECT },
+      {
+        id: "intelligence",
+        label: "Intelligence",
+        href: ROUTES.CFO_INTELLIGENCE,
+      },
     ],
   },
   {
@@ -139,6 +131,11 @@ const MODULES: Module[] = [
         label: "Bank Connections",
         href: ROUTES.PAYROLL_CONNECT,
       },
+      {
+        id: "intelligence",
+        label: "Intelligence",
+        href: ROUTES.PAYROLL_INTELLIGENCE,
+      },
     ],
   },
   {
@@ -167,6 +164,11 @@ const MODULES: Module[] = [
       { id: "audit", label: "Audit Trail", href: ROUTES.GOVCON_AUDIT },
       { id: "sf-1408", label: "SF-1408", href: ROUTES.GOVCON_SF1408 },
       { id: "connect", label: "Bank Connections", href: ROUTES.GOVCON_CONNECT },
+      {
+        id: "intelligence",
+        label: "Intelligence",
+        href: ROUTES.GOVCON_INTELLIGENCE,
+      },
     ],
   },
   {
@@ -192,7 +194,6 @@ function getActiveModule(pathname: string): string | null {
     pathname.startsWith("/upload")
   )
     return "core";
-  if (pathname.startsWith("/intelligence")) return "intelligence";
   if (
     pathname.startsWith("/cfo") ||
     pathname.startsWith("/cash-flow") ||

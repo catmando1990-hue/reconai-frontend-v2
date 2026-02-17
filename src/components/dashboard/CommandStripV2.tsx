@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Command, Activity, Sparkles, Bell } from "lucide-react";
+import { Command, Activity, Sparkles } from "lucide-react";
 import {
   CommandPalette,
   CommandItem,
@@ -11,10 +11,24 @@ import { DEFAULT_COMMANDS } from "@/lib/commandRegistry";
 
 function sectionLabel(pathname: string): string {
   if (pathname.startsWith("/core")) return "Core";
-  if (pathname.startsWith("/intelligence")) return "Intelligence";
   if (pathname.startsWith("/cfo")) return "CFO";
+  if (pathname.startsWith("/payroll")) return "Payroll";
+  if (pathname.startsWith("/govcon")) return "GovCon";
   if (pathname.startsWith("/settings")) return "Settings";
+  if (pathname.startsWith("/home")) return "Home";
   return "Dashboard";
+}
+
+/**
+ * Get the context-aware intelligence route based on current pathname.
+ * Returns the domain-specific intelligence route for the current section.
+ */
+function getIntelligenceRoute(pathname: string): string | null {
+  if (pathname.startsWith("/core")) return "/core/intelligence";
+  if (pathname.startsWith("/cfo")) return "/cfo/intelligence";
+  if (pathname.startsWith("/payroll")) return "/payroll/intelligence";
+  if (pathname.startsWith("/govcon")) return "/govcon/intelligence";
+  return null; // No intelligence route for /home or /settings
 }
 
 export function CommandStripV2() {
@@ -61,6 +75,7 @@ export function CommandStripV2() {
   }, [router]);
 
   const label = sectionLabel(pathname);
+  const intelligenceRoute = getIntelligenceRoute(pathname);
 
   return (
     <div className="border-b border-border bg-background/70 backdrop-blur relative z-30">
@@ -84,22 +99,17 @@ export function CommandStripV2() {
         </button>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => router.push("/intelligence/insights")}
-            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-card/40 px-3 text-xs hover:bg-card/60 cursor-pointer"
-          >
-            <Sparkles className="h-4 w-4" />
-            Run Intelligence
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/intelligence/alerts")}
-            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-card/40 px-3 text-xs hover:bg-card/60 cursor-pointer"
-          >
-            <Bell className="h-4 w-4" />
-            Signals
-          </button>
+          {/* Context-aware Intelligence button - only shows when in a domain */}
+          {intelligenceRoute && (
+            <button
+              type="button"
+              onClick={() => router.push(intelligenceRoute)}
+              className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-card/40 px-3 text-xs hover:bg-card/60 cursor-pointer"
+            >
+              <Sparkles className="h-4 w-4" />
+              Intelligence
+            </button>
+          )}
           <button
             type="button"
             onClick={() => router.push("/settings")}

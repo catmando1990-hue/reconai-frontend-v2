@@ -47,7 +47,6 @@ function getIcon(iconName: string | undefined): LucideIcon {
 const MODULE_ORDER: ModuleKey[] = [
   "home",
   "core",
-  "intelligence",
   "cfo",
   "payroll",
   "govcon",
@@ -63,7 +62,6 @@ function getActiveModule(pathname: string): ModuleKey | null {
     pathname.startsWith("/documents")
   )
     return "core";
-  if (pathname.startsWith("/intelligence")) return "intelligence";
   if (pathname.startsWith("/cfo")) return "cfo";
   if (pathname.startsWith("/payroll")) return "payroll";
   if (pathname.startsWith("/govcon")) return "govcon";
@@ -141,8 +139,6 @@ export function SidebarV2() {
     router.push("/");
   };
 
-  const intelligenceBadge = 3;
-
   return (
     <aside className="flex h-full w-56 flex-col bg-card border-r border-border">
       {/* Logo */}
@@ -173,8 +169,7 @@ export function SidebarV2() {
             const Icon = getIcon(moduleInfo.icon);
             const isActive = activeModule === moduleKey;
             const href = moduleInfo.landingRoute;
-            const badge =
-              moduleKey === "intelligence" ? intelligenceBadge : undefined;
+            const badge = undefined;
 
             // Get sub-routes for this module (excluding the module root itself)
             const subRoutes = getModuleRoutes(moduleKey).filter(

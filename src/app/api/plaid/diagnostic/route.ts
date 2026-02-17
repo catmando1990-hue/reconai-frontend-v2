@@ -83,7 +83,8 @@ export async function GET() {
             ? "Items exist but user ID doesn't match"
             : userItems?.length === 0
               ? "No items in database"
-              : (userItems?.length ?? 0) > 0 && (userAccounts?.length ?? 0) === 0
+              : (userItems?.length ?? 0) > 0 &&
+                  (userAccounts?.length ?? 0) === 0
                 ? "Items exist but no accounts stored"
                 : "Items and accounts found for user",
         suggestion:

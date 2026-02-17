@@ -4,7 +4,7 @@
  * Use these constants instead of hardcoded strings.
  *
  * ROUTE STRUCTURE RULES:
- * - Module roots use the module name: /core, /cfo, /intelligence, /payroll, /govcon
+ * - Module roots use the module name: /core, /cfo, /payroll, /govcon
  * - Sub-pages nest under modules: /core/transactions, /cfo/overview
  * - No redundant suffixes like -dashboard
  */
@@ -40,13 +40,12 @@ export const ROUTES = {
   ACCOUNTS: "/core/accounts", // Alias for CORE_ACCOUNTS
 
   // ─────────────────────────────────────────
-  // INTELLIGENCE MODULE
+  // DOMAIN-SPECIFIC INTELLIGENCE (Option B: Separate per domain)
   // ─────────────────────────────────────────
-  INTELLIGENCE: "/intelligence",
-  INTELLIGENCE_OVERVIEW: "/intelligence/overview",
-  INTELLIGENCE_INSIGHTS: "/intelligence/insights",
-  INTELLIGENCE_ALERTS: "/intelligence/alerts",
-  INTELLIGENCE_AI_WORKER: "/intelligence/ai-worker",
+  CORE_INTELLIGENCE: "/core/intelligence",
+  CFO_INTELLIGENCE: "/cfo/intelligence",
+  PAYROLL_INTELLIGENCE: "/payroll/intelligence",
+  GOVCON_INTELLIGENCE: "/govcon/intelligence",
 
   // ─────────────────────────────────────────
   // CFO MODULE
@@ -130,7 +129,7 @@ export function getCanonicalRoute(path: string): string {
   const legacyMappings: Record<string, string> = {
     "/core-dashboard": ROUTES.CORE,
     "/cfo-dashboard": ROUTES.CFO,
-    "/intelligence-dashboard": ROUTES.INTELLIGENCE,
+    "/intelligence-dashboard": ROUTES.CORE_INTELLIGENCE,
     "/payroll-dashboard": ROUTES.PAYROLL,
     "/accounts": ROUTES.CORE_ACCOUNTS,
     "/cash-flow": ROUTES.CFO_CASH_FLOW,

@@ -113,11 +113,7 @@ export function InlineCategoryEditor({
 
   // Source indicator icon
   const SourceIcon =
-    categorySource === "ai"
-      ? Sparkles
-      : categorySource === "rule"
-        ? Bot
-        : null;
+    categorySource === "ai" ? Sparkles : categorySource === "rule" ? Bot : null;
 
   return (
     <div ref={dropdownRef} className={cn("relative inline-block", className)}>

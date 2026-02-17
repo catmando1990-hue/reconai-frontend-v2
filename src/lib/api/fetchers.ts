@@ -4,10 +4,7 @@
 
 import type { ApiFetchOptions } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/api/endpoints";
-import type {
-  CfoSnapshotResponse,
-  InsightsSummaryResponse,
-} from "@/lib/api/types";
+import type { CfoSnapshotResponse } from "@/lib/api/types";
 
 export type ApiFetcher = <T = unknown>(
   path: string,
@@ -17,24 +14,6 @@ export type ApiFetcher = <T = unknown>(
 function isBackendConfigured(baseUrl?: string) {
   // If no API base URL is configured, backend isn't wired yet.
   return !!baseUrl;
-}
-
-export async function fetchInsightsSummary(
-  apiFetch: ApiFetcher,
-  options: ApiFetchOptions = {},
-): Promise<InsightsSummaryResponse | null> {
-  // CANONICAL LAWS: Fail closed - return null instead of mock data
-  if (!isBackendConfigured(options.baseUrl)) return null;
-
-  try {
-    return await apiFetch<InsightsSummaryResponse>(API_ENDPOINTS.insights, {
-      ...options,
-      method: "GET",
-    });
-  } catch {
-    // CANONICAL LAWS: Fail closed - return null instead of mock data
-    return null;
-  }
 }
 
 export async function fetchCfoSnapshot(

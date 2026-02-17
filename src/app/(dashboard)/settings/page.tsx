@@ -65,7 +65,7 @@ interface PlaidData {
   isDuplicate?: boolean;
 }
 
-interface IntelData {
+interface _IntelData {
   lastRun?: string;
   cache?: string;
 }
@@ -89,7 +89,7 @@ export default function SettingsPage() {
   // Local state for component data
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [plaid, setPlaid] = useState<PlaidData | null>(null);
-  const [intel, setIntel] = useState<IntelData | null>(null);
+  const [_intel, _setIntel] = useState<_IntelData | null>(null);
   const [auditAvailable, setAuditAvailable] = useState<boolean | null>(null);
   const [checkoutStatus, setCheckoutStatus] = useState<
     "success" | "cancelled" | null
@@ -145,14 +145,8 @@ export default function SettingsPage() {
       } catch {
         // ignore
       }
-      try {
-        const data = await auditedFetch<IntelData & { request_id: string }>(
-          "/api/intelligence/status",
-        );
-        setIntel(data);
-      } catch {
-        // ignore
-      }
+      // Intelligence is now domain-specific - no global status endpoint
+      _setIntel(null);
       try {
         await auditedFetch<{ request_id: string }>("/api/audit?limit=1");
         setAuditAvailable(true);
@@ -300,8 +294,8 @@ export default function SettingsPage() {
             <SecondaryPanel title="Intelligence" className="bg-card">
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Status</span>
-                  <StatusChip variant="ok">Enabled</StatusChip>
+                  <span className="text-muted-foreground">Structure</span>
+                  <span className="font-medium">Domain-Specific</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Mode</span>
@@ -315,14 +309,10 @@ export default function SettingsPage() {
                   <span className="text-muted-foreground">Threshold</span>
                   <span className="font-medium">≥ 0.85</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Last Run</span>
-                  <span className="font-medium">{intel?.lastRun ?? "—"}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Cache</span>
-                  <span className="font-medium">{intel?.cache ?? "—"}</span>
-                </div>
+                <p className="text-xs text-muted-foreground pt-2">
+                  Intelligence is available per domain: Core, CFO, Payroll,
+                  GovCon.
+                </p>
               </div>
             </SecondaryPanel>
 

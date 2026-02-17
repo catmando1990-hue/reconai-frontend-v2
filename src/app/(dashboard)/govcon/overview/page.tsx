@@ -117,9 +117,15 @@ export default function GovConOverviewPage() {
                 <div key={area} className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">{area}</span>
                   <StatusChip
-                    variant={hasEvidence && lifecycle === "success" ? "muted" : "unknown"}
+                    variant={
+                      hasEvidence && lifecycle === "success"
+                        ? "muted"
+                        : "unknown"
+                    }
                   >
-                    {hasEvidence && lifecycle === "success" ? "Documented" : "Pending"}
+                    {hasEvidence && lifecycle === "success"
+                      ? "Documented"
+                      : "Pending"}
                   </StatusChip>
                 </div>
               ),

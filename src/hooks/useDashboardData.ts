@@ -43,12 +43,7 @@ interface CfoSnapshotResponse {
   } | null;
 }
 
-interface InsightsResponse {
-  lifecycle: "success" | "pending" | "failed" | "stale";
-  reason_code?: string;
-  reason_message?: string;
-  items: Insight[] | null;
-}
+// InsightsResponse removed - intelligence is now domain-specific
 
 interface CashFlowSection {
   inflows: number;
@@ -320,50 +315,15 @@ export function useDashboardData(): DashboardDataState {
     setGeoLoading(false);
   }, []);
 
-  // Fetch intelligence insights
+  // Intelligence insights removed - now domain-specific
+  // Intelligence is accessed per-domain at /core/intelligence, /cfo/intelligence, etc.
   const fetchInsights = useCallback(async () => {
-    try {
-      setInsightsLoading(true);
-      const response = await apiFetch<InsightsResponse>(
-        "/api/intelligence/insights",
-      );
-
-      setInsightsLifecycle(response?.lifecycle ?? null);
-      setInsightsReasonMessage(response?.reason_message ?? null);
-
-      if (response?.lifecycle === "success" && response.items) {
-        setInsightsData(response.items);
-
-        // Update AI confidence in KPIs based on insights
-        const highConfidenceItems = response.items.filter(
-          (i) => i.confidence >= 0.85,
-        );
-
-        if (response.items.length > 0) {
-          const avgConfidence =
-            response.items.reduce((sum, i) => sum + i.confidence, 0) /
-            response.items.length;
-
-          setKpiData((prev) =>
-            prev ? { ...prev, aiConfidence: avgConfidence } : null,
-          );
-
-          // Update signals count in operational KPIs
-          setOperationalData((prev) =>
-            prev ? { ...prev, signalsCount: highConfidenceItems.length } : null,
-          );
-        }
-      } else {
-        setInsightsData(null);
-      }
-    } catch {
-      setInsightsData(null);
-      setInsightsLifecycle("failed");
-      setInsightsReasonMessage("Failed to load insights");
-    } finally {
-      setInsightsLoading(false);
-    }
-  }, [apiFetch]);
+    // No global intelligence endpoint - set empty state
+    setInsightsLoading(false);
+    setInsightsData(null);
+    setInsightsLifecycle(null);
+    setInsightsReasonMessage(null);
+  }, []);
 
   // Refresh all data
   const refreshAll = useCallback(async () => {

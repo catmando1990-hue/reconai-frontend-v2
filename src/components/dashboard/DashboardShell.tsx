@@ -10,8 +10,8 @@ import { Menu, X, Brain, Maximize2, Minimize2 } from "lucide-react";
 
 function getSectionTitle(pathname: string): string {
   if (pathname.startsWith("/core")) return "Core";
-  if (pathname.startsWith("/intelligence")) return "Intelligence";
   if (pathname.startsWith("/cfo")) return "CFO Mode";
+  if (pathname.startsWith("/payroll")) return "Payroll";
   if (pathname.startsWith("/govcon")) return "GovCon";
   if (pathname.startsWith("/settings")) return "Settings";
   if (pathname.startsWith("/home")) return "Dashboard";

@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
 import { InlineCategoryEditor } from "@/components/transactions/InlineCategoryEditor";
 import type { CategorySource } from "@/lib/categories";
 
@@ -119,7 +125,7 @@ export function TransactionLedger() {
       setError(null);
 
       const response = await auditedPost<AutoCategorizeResponse>(
-        "/api/intelligence/auto-categorize",
+        "/api/core/intelligence/auto-categorize",
         {},
       );
 

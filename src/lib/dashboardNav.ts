@@ -21,7 +21,6 @@ import { ROUTES, type Route } from "./routes";
 export type ModuleKey =
   | "home"
   | "core"
-  | "intelligence"
   | "cfo"
   | "payroll"
   | "govcon"
@@ -231,64 +230,56 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
   },
 
   // ─────────────────────────────────────────
-  // INTELLIGENCE MODULE
+  // DOMAIN-SPECIFIC INTELLIGENCE (Option B: Separate per domain)
+  // These are registered under each domain's module
   // ─────────────────────────────────────────
-  [ROUTES.INTELLIGENCE]: {
+  [ROUTES.CORE_INTELLIGENCE]: {
     displayTitle: "Intelligence",
     shortLabel: "Intelligence",
-    subtitle: "AI-powered signals and workflow assistance",
-    module: "intelligence",
-    breadcrumb: [["Intelligence", null]],
-    icon: "Brain",
-    order: 0,
-  },
-  [ROUTES.INTELLIGENCE_OVERVIEW]: {
-    displayTitle: "Overview",
-    shortLabel: "Overview",
-    subtitle: "Intelligence module summary",
-    module: "intelligence",
+    subtitle: "AI-powered transaction analysis and anomaly detection",
+    module: "core",
     breadcrumb: [
-      ["Intelligence", ROUTES.INTELLIGENCE],
-      ["Overview", null],
-    ],
-    icon: "LayoutDashboard",
-    order: 1,
-  },
-  [ROUTES.INTELLIGENCE_INSIGHTS]: {
-    displayTitle: "Insights",
-    shortLabel: "Insights",
-    subtitle: "Decision-grade signals from transaction patterns",
-    module: "intelligence",
-    breadcrumb: [
-      ["Intelligence", ROUTES.INTELLIGENCE],
-      ["Insights", null],
+      ["Core", ROUTES.CORE],
+      ["Intelligence", null],
     ],
     icon: "Sparkles",
-    order: 2,
+    order: 10,
   },
-  [ROUTES.INTELLIGENCE_ALERTS]: {
-    displayTitle: "Alerts",
-    shortLabel: "Alerts",
-    subtitle: "Signals requiring review or documentation",
-    module: "intelligence",
+  [ROUTES.CFO_INTELLIGENCE]: {
+    displayTitle: "Intelligence",
+    shortLabel: "Intelligence",
+    subtitle: "Runway risk, forecast deviation, and cash flow signals",
+    module: "cfo",
     breadcrumb: [
-      ["Intelligence", ROUTES.INTELLIGENCE],
-      ["Alerts", null],
+      ["CFO", ROUTES.CFO],
+      ["Intelligence", null],
     ],
-    icon: "Bell",
-    order: 3,
+    icon: "Sparkles",
+    order: 10,
   },
-  [ROUTES.INTELLIGENCE_AI_WORKER]: {
-    displayTitle: "AI Worker",
-    shortLabel: "AI Worker",
-    subtitle: "Structured assistance for repeatable workflows",
-    module: "intelligence",
+  [ROUTES.PAYROLL_INTELLIGENCE]: {
+    displayTitle: "Intelligence",
+    shortLabel: "Intelligence",
+    subtitle: "Payroll variance and compliance risk signals",
+    module: "payroll",
     breadcrumb: [
-      ["Intelligence", ROUTES.INTELLIGENCE],
-      ["AI Worker", null],
+      ["Payroll", ROUTES.PAYROLL],
+      ["Intelligence", null],
     ],
-    icon: "Bot",
-    order: 4,
+    icon: "Sparkles",
+    order: 20,
+  },
+  [ROUTES.GOVCON_INTELLIGENCE]: {
+    displayTitle: "Intelligence",
+    shortLabel: "Intelligence",
+    subtitle: "DCAA readiness signals and audit trail integrity",
+    module: "govcon",
+    breadcrumb: [
+      ["GovCon", ROUTES.GOVCON],
+      ["Intelligence", null],
+    ],
+    icon: "Sparkles",
+    order: 10,
   },
 
   // ─────────────────────────────────────────
@@ -858,13 +849,6 @@ export const MODULES: Record<ModuleKey, ModuleInfo> = {
     description: "Structured financial reality",
     landingRoute: ROUTES.CORE,
     icon: "Database",
-  },
-  intelligence: {
-    displayTitle: "Intelligence",
-    shortLabel: "Intel",
-    description: "AI-powered signals and workflows",
-    landingRoute: ROUTES.INTELLIGENCE,
-    icon: "Brain",
   },
   cfo: {
     displayTitle: "CFO",

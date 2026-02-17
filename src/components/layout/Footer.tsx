@@ -32,7 +32,7 @@ export function Footer() {
     "/home",
     "/core",
     "/govcon",
-    "/intelligence",
+    "/payroll",
     "/cfo",
     "/settings",
     "/accounts",

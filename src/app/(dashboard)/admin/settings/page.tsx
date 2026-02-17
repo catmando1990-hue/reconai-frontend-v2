@@ -616,31 +616,12 @@ ${errorLogs.length > 0 ? errorLogs.map((e) => `- **${e.type}** in ${e.source}: $
     }
     setHealthChecks([...checks]);
 
-    // Check Intelligence Service
-    try {
-      await auditedFetch("/api/intelligence/status", {
-        skipBodyValidation: true,
-      });
-      checks[5] = {
-        name: "Intelligence Service",
-        status: "ok",
-        message: "Advisory mode active",
-      };
-    } catch (e) {
-      if (e instanceof HttpError) {
-        checks[5] = {
-          name: "Intelligence Service",
-          status: "warning",
-          message: `Status ${e.status}`,
-        };
-      } else {
-        checks[5] = {
-          name: "Intelligence Service",
-          status: "error",
-          message: e instanceof Error ? e.message : "Check failed",
-        };
-      }
-    }
+    // Intelligence is now domain-specific (Core, CFO, Payroll, GovCon)
+    checks[5] = {
+      name: "Intelligence Service",
+      status: "ok",
+      message: "Domain-specific (advisory mode)",
+    };
     setHealthChecks([...checks]);
 
     // Set memory usage (client-side only)

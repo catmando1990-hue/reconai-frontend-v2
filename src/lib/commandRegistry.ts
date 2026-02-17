@@ -5,8 +5,9 @@
 export type CommandGroup =
   | "Navigate"
   | "Core"
-  | "Intelligence"
   | "CFO"
+  | "Payroll"
+  | "GovCon"
   | "Settings";
 
 export type CommandDef = {
@@ -65,23 +66,41 @@ export const DEFAULT_COMMANDS: CommandDef[] = [
     verbs: ["go", "open"],
   },
 
-  // Intelligence
+  // Domain-Specific Intelligence (Option B)
   {
-    id: "go-intel-insights",
-    label: "Go to Intelligence → Insights",
-    group: "Intelligence",
-    hint: "Manual run",
-    keywords: ["intelligence", "advisory", "run"],
-    href: "/intelligence/insights",
-    verbs: ["go", "open", "run"],
+    id: "go-core-intelligence",
+    label: "Go to Core → Intelligence",
+    group: "Core",
+    hint: "AI Signals",
+    keywords: ["intelligence", "core", "signals", "anomalies"],
+    href: "/core/intelligence",
+    verbs: ["go", "open"],
   },
   {
-    id: "go-intel-alerts",
-    label: "Go to Intelligence → Alerts",
-    group: "Intelligence",
-    hint: "Signals",
-    keywords: ["signals", "alerts", "risk"],
-    href: "/intelligence/alerts",
+    id: "go-cfo-intelligence",
+    label: "Go to CFO → Intelligence",
+    group: "CFO",
+    hint: "AI Signals",
+    keywords: ["intelligence", "cfo", "signals", "runway", "forecast"],
+    href: "/cfo/intelligence",
+    verbs: ["go", "open"],
+  },
+  {
+    id: "go-payroll-intelligence",
+    label: "Go to Payroll → Intelligence",
+    group: "Payroll",
+    hint: "AI Signals",
+    keywords: ["intelligence", "payroll", "signals", "variance"],
+    href: "/payroll/intelligence",
+    verbs: ["go", "open"],
+  },
+  {
+    id: "go-govcon-intelligence",
+    label: "Go to GovCon → Intelligence",
+    group: "GovCon",
+    hint: "DCAA Signals",
+    keywords: ["intelligence", "govcon", "dcaa", "audit", "compliance"],
+    href: "/govcon/intelligence",
     verbs: ["go", "open"],
   },
 

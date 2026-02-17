@@ -3,7 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { RouteShell } from "@/components/dashboard/RouteShell";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { auditedFetch, HttpError } from "@/lib/auditedFetch";
 import { InlineCategoryEditor } from "@/components/transactions/InlineCategoryEditor";
@@ -50,11 +56,22 @@ function formatDate(dateStr: string): string {
   });
 }
 
+interface AutoCategorizeResponse {
+  ok: boolean;
+  categorized: number;
+  total_analyzed: number;
+  applied?: Array<{ merchant: string; category: string }>;
+  message?: string;
+  request_id: string;
+}
+
 export default function TransactionLedgerPage() {
   const [data, setData] = useState<LedgerResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [categorizing, setCategorizing] = useState(false);
+  const [categorizeResult, setCategorizeResult] = useState<string | null>(null);
 
   const fetchData = useCallback(async (pageNum: number) => {
     try {
@@ -81,6 +98,39 @@ export default function TransactionLedgerPage() {
   }, [page, fetchData]);
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
+
+  const handleAutoCategorize = async () => {
+    try {
+      setCategorizing(true);
+      setCategorizeResult(null);
+      setError(null);
+
+      const response = await auditedFetch<AutoCategorizeResponse>(
+        "/api/intelligence/auto-categorize",
+        { method: "POST", skipBodyValidation: true },
+      );
+
+      if (response.categorized > 0) {
+        setCategorizeResult(
+          `Categorized ${response.categorized} transactions using AI`,
+        );
+        // Refresh to show updated categories
+        await fetchData(page);
+      } else {
+        setCategorizeResult(
+          response.message || "No transactions needed categorization",
+        );
+      }
+    } catch (e) {
+      if (e instanceof HttpError) {
+        setError(`Auto-categorize failed (${e.status})`);
+      } else {
+        setError(e instanceof Error ? e.message : "Auto-categorize failed");
+      }
+    } finally {
+      setCategorizing(false);
+    }
+  };
 
   const handleExportCSV = () => {
     if (!data?.transactions.length) return;
@@ -125,6 +175,17 @@ export default function TransactionLedgerPage() {
       right={
         <div className="flex items-center gap-2">
           <Button
+            variant="default"
+            size="sm"
+            onClick={handleAutoCategorize}
+            disabled={categorizing || !data?.transactions.length}
+          >
+            <Sparkles
+              className={`mr-2 h-4 w-4 ${categorizing ? "animate-pulse" : ""}`}
+            />
+            {categorizing ? "Categorizing..." : "Auto-Categorize"}
+          </Button>
+          <Button
             variant="outline"
             size="sm"
             onClick={handleExportCSV}
@@ -159,6 +220,21 @@ export default function TransactionLedgerPage() {
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 mb-4">
           <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
+      {categorizeResult && (
+        <div className="rounded-lg border border-emerald-500/50 bg-emerald-500/10 p-4 mb-4 flex items-center justify-between">
+          <p className="text-sm text-emerald-600 flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            {categorizeResult}
+          </p>
+          <button
+            onClick={() => setCategorizeResult(null)}
+            className="text-emerald-600 hover:text-emerald-700 text-sm"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 

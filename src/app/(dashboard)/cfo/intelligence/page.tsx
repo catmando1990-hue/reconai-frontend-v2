@@ -134,9 +134,22 @@ function EvidenceModal({
               <h4 className="text-sm font-medium text-foreground mb-2">
                 Evidence
               </h4>
-              <pre className="bg-muted p-3 rounded-lg text-xs overflow-auto max-h-64">
-                {JSON.stringify(signal.evidence, null, 2)}
-              </pre>
+              <div className="bg-muted rounded-lg p-3 space-y-2">
+                {Object.entries(signal.evidence).map(([key, value]) => (
+                  <div key={key} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground capitalize">
+                      {key.replace(/_/g, " ")}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {Array.isArray(value)
+                        ? value.join(", ")
+                        : typeof value === "object"
+                          ? JSON.stringify(value)
+                          : String(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

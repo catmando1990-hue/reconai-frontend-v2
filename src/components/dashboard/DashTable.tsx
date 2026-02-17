@@ -85,10 +85,10 @@ export function DashTable<T>({
                   className={[
                     col.headerClassName ?? "",
                     col.align === "center"
-                      ? "!text-center"
+                      ? "text-center!"
                       : col.align === "right" ||
                           (idx === columns.length - 1 && !col.align)
-                        ? "!text-right"
+                        ? "text-right!"
                         : "",
                   ]
                     .join(" ")
@@ -127,10 +127,10 @@ export function DashTable<T>({
                   className={[
                     col.headerClassName ?? "",
                     col.align === "center"
-                      ? "!text-center"
+                      ? "text-center!"
                       : col.align === "right" ||
                           (idx === columns.length - 1 && !col.align)
-                        ? "!text-right"
+                        ? "text-right!"
                         : "",
                   ]
                     .join(" ")
@@ -164,10 +164,10 @@ export function DashTable<T>({
                 className={[
                   col.headerClassName ?? "",
                   col.align === "center"
-                    ? "!text-center"
+                    ? "text-center!"
                     : col.align === "right" ||
                         (idx === columns.length - 1 && !col.align)
-                      ? "!text-right"
+                      ? "text-right!"
                       : "",
                 ]
                   .join(" ")
@@ -212,10 +212,10 @@ export function DashTable<T>({
                     className={[
                       col.cellClassName ?? "",
                       col.align === "center"
-                        ? "!text-center"
+                        ? "text-center!"
                         : col.align === "right" ||
                             (idx === columns.length - 1 && !col.align)
-                          ? "!text-right"
+                          ? "text-right!"
                           : "",
                     ]
                       .join(" ")

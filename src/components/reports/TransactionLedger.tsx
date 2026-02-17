@@ -286,7 +286,7 @@ export function TransactionLedger() {
                       {formatDate(tx.date)}
                     </td>
                     <td className="px-4 py-2.5">
-                      <div className="max-w-[200px] truncate">
+                      <div className="max-w-50 truncate">
                         {tx.merchant ||
                           tx.merchant_name ||
                           tx.description ||
@@ -304,7 +304,7 @@ export function TransactionLedger() {
                       {formatCurrency(tx.amount)}
                     </td>
                     <td className="px-4 py-2.5 text-muted-foreground">
-                      <div className="max-w-[120px] truncate">
+                      <div className="max-w-30 truncate">
                         {tx.account_name ||
                           (tx.account
                             ? tx.account.slice(-8)

@@ -111,7 +111,7 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
       ["Overview", null],
     ],
     icon: "LayoutDashboard",
-    order: 3,
+    order: 1,
   },
   [ROUTES.CORE_ACCOUNTS]: {
     displayTitle: "Accounts",
@@ -361,7 +361,7 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
       ["Overview", null],
     ],
     icon: "LayoutDashboard",
-    order: 5,
+    order: 1,
   },
   [ROUTES.CFO_CONNECT]: {
     displayTitle: "Bank Connections",
@@ -594,6 +594,18 @@ export const NAV: Partial<Record<Route, NavEntry>> = {
     breadcrumb: [["GovCon", null]],
     icon: "Building",
     order: 0,
+  },
+  [ROUTES.GOVCON_OVERVIEW]: {
+    displayTitle: "Overview",
+    shortLabel: "Overview",
+    subtitle: "GovCon module summary",
+    module: "govcon",
+    breadcrumb: [
+      ["GovCon", ROUTES.GOVCON],
+      ["Overview", null],
+    ],
+    icon: "LayoutDashboard",
+    order: 1,
   },
   [ROUTES.GOVCON_CONTRACTS]: {
     displayTitle: "Contracts",

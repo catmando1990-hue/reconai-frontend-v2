@@ -85,6 +85,7 @@ export const ROUTES = {
   // GOVCON MODULE
   // ─────────────────────────────────────────
   GOVCON: "/govcon",
+  GOVCON_OVERVIEW: "/govcon/overview",
   GOVCON_CONTRACTS: "/govcon/contracts",
   GOVCON_TIMEKEEPING: "/govcon/timekeeping",
   GOVCON_INDIRECTS: "/govcon/indirects",

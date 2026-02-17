@@ -45,11 +45,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   return (
-    <div className="relative min-h-[100dvh] bg-muted text-foreground overflow-x-hidden">
-      <div className="relative flex min-h-[100dvh] w-full">
+    <div className="relative min-h-dvh bg-muted text-foreground overflow-x-hidden">
+      <div className="relative flex min-h-dvh w-full">
         {/* Desktop sidebar - conditionally hidden in focus mode */}
         {!focusMode && (
-          <div className="hidden md:block relative z-10 h-screen sticky top-0 shrink-0">
+          <div className="hidden md:block z-10 h-screen sticky top-0 shrink-0">
             <Sidebar />
           </div>
         )}
@@ -67,7 +67,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </button>
 
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
                 <Brain className="h-4 w-4 text-primary" />
               </div>
               <div className="flex flex-col">
@@ -98,10 +98,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               onClick={() => setOpen(false)}
               type="button"
             />
-            <div className="absolute left-0 top-0 h-full w-[85vw] max-w-[340px] bg-muted/95 backdrop-blur-xl border-r border-border/50 shadow-2xl">
+            <div className="absolute left-0 top-0 h-full w-[85vw] max-w-85 bg-muted/95 backdrop-blur-xl border-r border-border/50 shadow-2xl">
               <div className="flex items-center justify-between px-4 h-14 border-b border-border/50">
                 <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
+                  <div className="h-7 w-7 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
                     <Brain className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <span className="text-sm font-semibold">Menu</span>

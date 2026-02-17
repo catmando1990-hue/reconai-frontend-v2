@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useApi } from "@/lib/useApi";
 import { useOrg } from "@/lib/org-context";
-import { Download, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, RefreshCw, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { InlineCategoryEditor } from "@/components/transactions/InlineCategoryEditor";
+import type { CategorySource } from "@/lib/categories";
 
 const PAGE_SIZE = 15;
 
@@ -21,10 +23,20 @@ type Transaction = {
   account_name?: string;
   amount: number;
   category: string[] | string | null;
+  category_source?: CategorySource;
   pending: boolean;
   transaction_type?: string;
   payment_channel?: string;
 };
+
+interface AutoCategorizeResponse {
+  ok: boolean;
+  categorized: number;
+  total_analyzed: number;
+  applied?: Array<{ merchant: string; category: string }>;
+  message?: string;
+  request_id: string;
+}
 
 /**
  * FIX: Backend response may be either:
@@ -57,13 +69,15 @@ function getCategory(cat: string[] | string | null): string {
 }
 
 export function TransactionLedger() {
-  const { apiFetch } = useApi();
+  const { apiFetch, auditedPost } = useApi();
   const { isLoaded } = useOrg();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [categorizing, setCategorizing] = useState(false);
+  const [categorizeResult, setCategorizeResult] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -97,6 +111,50 @@ export function TransactionLedger() {
     if (!isLoaded) return;
     fetchData();
   }, [isLoaded, fetchData]);
+
+  const handleAutoCategorize = async () => {
+    try {
+      setCategorizing(true);
+      setCategorizeResult(null);
+      setError(null);
+
+      const response = await auditedPost<AutoCategorizeResponse>(
+        "/api/intelligence/auto-categorize",
+        {},
+      );
+
+      if (response.categorized > 0) {
+        setCategorizeResult(
+          `✨ Categorized ${response.categorized} transactions using AI`,
+        );
+        // Refresh to show updated categories
+        await fetchData();
+      } else {
+        setCategorizeResult(
+          response.message || "All transactions are already categorized",
+        );
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Auto-categorize failed";
+      setError(msg);
+    } finally {
+      setCategorizing(false);
+    }
+  };
+
+  const handleCategoryChange = (
+    txId: string,
+    newCategory: string,
+    newSource: CategorySource,
+  ) => {
+    setTransactions((prev) =>
+      prev.map((tx) =>
+        tx.id === txId
+          ? { ...tx, category: newCategory, category_source: newSource }
+          : tx,
+      ),
+    );
+  };
 
   const totalPages = Math.max(1, Math.ceil(transactions.length / PAGE_SIZE));
 
@@ -155,6 +213,17 @@ export function TransactionLedger() {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={handleAutoCategorize}
+            disabled={categorizing || transactions.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            <Sparkles
+              className={`h-3.5 w-3.5 ${categorizing ? "animate-pulse" : ""}`}
+            />
+            {categorizing ? "Categorizing..." : "Auto-Categorize"}
+          </button>
+          <button
+            type="button"
             onClick={handleExportCSV}
             disabled={transactions.length === 0}
             className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50"
@@ -174,6 +243,19 @@ export function TransactionLedger() {
       {error && (
         <div className="px-4 py-8 text-center text-sm text-destructive">
           {error}
+        </div>
+      )}
+
+      {categorizeResult && (
+        <div className="mx-4 mt-4 rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-4 py-3 flex items-center justify-between">
+          <p className="text-sm text-emerald-600">{categorizeResult}</p>
+          <button
+            type="button"
+            onClick={() => setCategorizeResult(null)}
+            className="text-emerald-600 hover:text-emerald-700 text-xs"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -231,10 +313,19 @@ export function TransactionLedger() {
                               : "—")}
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-muted-foreground">
-                      <div className="max-w-[150px] truncate">
-                        {getCategory(tx.category)}
-                      </div>
+                    <td className="px-4 py-2.5">
+                      <InlineCategoryEditor
+                        transactionId={tx.id}
+                        currentCategory={
+                          Array.isArray(tx.category)
+                            ? tx.category[0]
+                            : tx.category
+                        }
+                        categorySource={tx.category_source || "plaid"}
+                        onCategoryChange={(newCat, newSource) =>
+                          handleCategoryChange(tx.id, newCat, newSource)
+                        }
+                      />
                     </td>
                     <td className="px-4 py-2.5">
                       <span

@@ -70,12 +70,15 @@ export function useContextData(): ContextDataState {
       if (response?.lifecycle === "success") {
         setNews(response.articles);
         setNewsConfigured(true);
+        setNewsError(null);
       } else if (response?.lifecycle === "not_configured") {
+        // Intentional empty state - NOT an error
         setNews([]);
         setNewsConfigured(false);
-        setNewsError(response.message || "News not configured");
+        setNewsError(null);
       } else {
         setNews([]);
+        setNewsConfigured(true);
         setNewsError(response?.message || "Failed to fetch news");
       }
     } catch {
@@ -97,12 +100,15 @@ export function useContextData(): ContextDataState {
       if (response?.lifecycle === "success" && response.weather) {
         setWeather(response.weather);
         setWeatherConfigured(true);
+        setWeatherError(null);
       } else if (response?.lifecycle === "not_configured") {
+        // Intentional empty state - NOT an error
         setWeather(null);
         setWeatherConfigured(false);
-        setWeatherError(response.message || "Weather not configured");
+        setWeatherError(null);
       } else {
         setWeather(null);
+        setWeatherConfigured(true);
         setWeatherError(response?.message || "Failed to fetch weather");
       }
     } catch {

@@ -134,21 +134,101 @@ function EvidenceModal({
               <h4 className="text-sm font-medium text-foreground mb-2">
                 Evidence
               </h4>
-              <div className="bg-muted rounded-lg p-3 space-y-2">
-                {Object.entries(signal.evidence).map(([key, value]) => (
-                  <div key={key} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground capitalize">
-                      {key.replace(/_/g, " ")}
-                    </span>
-                    <span className="font-medium text-foreground">
-                      {Array.isArray(value)
-                        ? value.join(", ")
-                        : typeof value === "object"
-                          ? JSON.stringify(value)
-                          : String(value)}
-                    </span>
-                  </div>
-                ))}
+              <div className="bg-muted rounded-lg p-3 space-y-3">
+                {Object.entries(signal.evidence).map(([key, value]) => {
+                  // Handle arrays of objects
+                  if (
+                    Array.isArray(value) &&
+                    value.length > 0 &&
+                    typeof value[0] === "object"
+                  ) {
+                    return (
+                      <div key={key}>
+                        <span className="text-muted-foreground capitalize text-sm block mb-2">
+                          {key.replace(/_/g, " ")}
+                        </span>
+                        <div className="space-y-2">
+                          {value.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-background rounded p-2 text-xs space-y-1"
+                            >
+                              {Object.entries(
+                                item as Record<string, unknown>,
+                              ).map(([itemKey, itemValue]) => (
+                                <div
+                                  key={itemKey}
+                                  className="flex justify-between"
+                                >
+                                  <span className="text-muted-foreground capitalize">
+                                    {itemKey.replace(/_/g, " ")}
+                                  </span>
+                                  <span className="font-medium text-foreground">
+                                    {String(itemValue)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Handle simple arrays (strings, numbers)
+                  if (Array.isArray(value)) {
+                    return (
+                      <div key={key} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground capitalize">
+                          {key.replace(/_/g, " ")}
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {value.map(String).join(", ")}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  // Handle nested objects
+                  if (typeof value === "object" && value !== null) {
+                    return (
+                      <div key={key}>
+                        <span className="text-muted-foreground capitalize text-sm block mb-1">
+                          {key.replace(/_/g, " ")}
+                        </span>
+                        <div className="bg-background rounded p-2 text-xs space-y-1">
+                          {Object.entries(value as Record<string, unknown>).map(
+                            ([subKey, subValue]) => (
+                              <div
+                                key={subKey}
+                                className="flex justify-between"
+                              >
+                                <span className="text-muted-foreground capitalize">
+                                  {subKey.replace(/_/g, " ")}
+                                </span>
+                                <span className="font-medium text-foreground">
+                                  {String(subValue)}
+                                </span>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Handle primitives
+                  return (
+                    <div key={key} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground capitalize">
+                        {key.replace(/_/g, " ")}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {String(value)}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

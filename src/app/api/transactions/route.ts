@@ -39,6 +39,7 @@ export async function GET(req: Request) {
         name,
         merchant_name,
         category,
+        category_source,
         pending,
         payment_channel,
         transaction_type,
@@ -59,18 +60,52 @@ export async function GET(req: Request) {
       );
     }
 
+    // Get account names for all unique account_ids
+    const accountIds = [
+      ...new Set((transactions || []).map((t) => t.account_id).filter(Boolean)),
+    ];
+
+    let accountMap: Record<string, { name: string; subtype: string | null }> =
+      {};
+
+    if (accountIds.length > 0) {
+      const { data: accounts } = await supabase
+        .from("plaid_accounts")
+        .select("account_id, name, subtype")
+        .in("account_id", accountIds);
+
+      if (accounts) {
+        accountMap = Object.fromEntries(
+          accounts.map((a) => [
+            a.account_id,
+            { name: a.name, subtype: a.subtype },
+          ]),
+        );
+      }
+    }
+
     // Map to frontend expected format
-    const mapped = (transactions || []).map((tx) => ({
-      id: tx.id || tx.transaction_id,
-      date: tx.date,
-      merchant: tx.merchant_name || tx.name,
-      description: tx.name,
-      amount: tx.amount,
-      account: tx.account_id,
-      category: Array.isArray(tx.category) ? tx.category[0] : tx.category,
-      pending: tx.pending,
-      duplicate: false, // Would need separate duplicate detection
-    }));
+    const mapped = (transactions || []).map((tx) => {
+      const account = accountMap[tx.account_id];
+      // Use subtype (checking, savings) or name as display
+      const accountName = account?.subtype
+        ? account.subtype.charAt(0).toUpperCase() + account.subtype.slice(1)
+        : account?.name || null;
+
+      return {
+        id: tx.id || tx.transaction_id,
+        date: tx.date,
+        merchant: tx.merchant_name || tx.name,
+        description: tx.name,
+        amount: tx.amount,
+        account: tx.account_id,
+        account_name: accountName,
+        category: Array.isArray(tx.category) ? tx.category[0] : tx.category,
+        category_source: tx.category_source || "plaid",
+        pending: tx.pending,
+        duplicate: false,
+      };
+    });
 
     return NextResponse.json(
       { items: mapped, count: mapped.length, request_id: requestId },

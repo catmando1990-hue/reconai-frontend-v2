@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
         amount,
         iso_currency_code,
         category,
+        category_source,
         pending,
         account_id,
         created_at
@@ -107,13 +108,14 @@ export async function GET(req: NextRequest) {
     const mappedTransactions = (transactions || []).map((tx) => {
       const account = accountMap[tx.account_id] || null;
       return {
-        id: tx.id || tx.transaction_id,
+        id: tx.transaction_id || tx.id,
         date: tx.date,
         name: tx.name || "",
         merchant_name: tx.merchant_name,
         amount: tx.amount,
         iso_currency_code: tx.iso_currency_code || "USD",
         category: Array.isArray(tx.category) ? tx.category[0] : tx.category,
+        category_source: tx.category_source || "plaid",
         account_name: account?.name || null,
         account_mask: account?.mask || null,
         source: "plaid" as const,

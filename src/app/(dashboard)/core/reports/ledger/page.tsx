@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Download, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { auditedFetch, HttpError } from "@/lib/auditedFetch";
+import { InlineCategoryEditor } from "@/components/transactions/InlineCategoryEditor";
+import type { CategorySource } from "@/lib/categories";
 
 interface Transaction {
   id: string;
@@ -16,6 +18,7 @@ interface Transaction {
   account_name: string | null;
   account_mask: string | null;
   category: string | null;
+  category_source: CategorySource;
   source: "plaid" | "manual" | "upload";
   status: "posted" | "pending";
   iso_currency_code: string | null;
@@ -236,9 +239,30 @@ export default function TransactionLedgerPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs">
-                        {tx.category || "Uncategorized"}
-                      </span>
+                      <InlineCategoryEditor
+                        transactionId={tx.id}
+                        currentCategory={tx.category}
+                        categorySource={tx.category_source || "plaid"}
+                        onCategoryChange={(newCategory, newSource) => {
+                          // Optimistic update
+                          setData((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  transactions: prev.transactions.map((t) =>
+                                    t.id === tx.id
+                                      ? {
+                                          ...t,
+                                          category: newCategory,
+                                          category_source: newSource,
+                                        }
+                                      : t,
+                                  ),
+                                }
+                              : prev,
+                          );
+                        }}
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -315,6 +339,7 @@ export default function TransactionLedgerPage() {
             status
           </li>
           <li>• Negative amounts indicate money received (inflows)</li>
+          <li>• Click any category to change it — the system learns from your corrections</li>
         </ul>
       </div>
     </RouteShell>

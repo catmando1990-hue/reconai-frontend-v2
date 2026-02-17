@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import type { CategorySource } from "@/lib/categories";
 
 /**
  * PATCH /api/transactions/[id]/category
@@ -8,7 +9,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  * Updates the category of a specific transaction.
  * User-scoped: Only the owner can update their transactions.
  *
- * Request body: { category: string }
+ * Request body: { category: string, source?: CategorySource }
  *
  * SECURITY:
  * - Authenticated users only
@@ -41,7 +42,10 @@ export async function PATCH(req: Request, context: Params) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { category } = body as { category?: string };
+    const { category, source = "user" } = body as {
+      category?: string;
+      source?: CategorySource;
+    };
 
     if (!category || typeof category !== "string" || category.trim() === "") {
       return NextResponse.json(
@@ -55,7 +59,7 @@ export async function PATCH(req: Request, context: Params) {
     // Verify transaction exists and belongs to user
     const { data: existing, error: fetchError } = await supabase
       .from("transactions")
-      .select("id, transaction_id, user_id, category")
+      .select("id, transaction_id, user_id, category, category_source")
       .eq("transaction_id", transactionId)
       .single();
 
@@ -77,11 +81,12 @@ export async function PATCH(req: Request, context: Params) {
       );
     }
 
-    // Update category (stored as array in Plaid schema)
+    // Update category and source (category stored as array in Plaid schema)
     const { error: updateError } = await supabase
       .from("transactions")
       .update({
         category: [category.trim()],
+        category_source: source,
         updated_at: new Date().toISOString(),
       })
       .eq("transaction_id", transactionId);
@@ -102,7 +107,9 @@ export async function PATCH(req: Request, context: Params) {
         ok: true,
         transaction_id: transactionId,
         category: category.trim(),
+        category_source: source,
         previous_category: existing.category?.[0] || null,
+        previous_source: existing.category_source || "plaid",
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

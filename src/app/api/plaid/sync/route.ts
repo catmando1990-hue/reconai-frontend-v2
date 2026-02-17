@@ -43,6 +43,66 @@ function normalizeAmount(plaidAmount: number): number {
   return -plaidAmount;
 }
 
+interface CategoryRule {
+  merchant_pattern: string;
+  category: string;
+}
+
+/**
+ * Apply user's category rules to newly synced transactions.
+ * Skips transactions with category_source = 'user' (user overrides take precedence).
+ */
+async function applyCategoryRules(
+  supabase: ReturnType<typeof supabaseAdmin>,
+  userId: string,
+  transactionIds: string[],
+): Promise<number> {
+  if (transactionIds.length === 0) return 0;
+
+  // Fetch user's rules
+  const { data: rules } = await supabase
+    .from("category_rules")
+    .select("merchant_pattern, category")
+    .eq("user_id", userId);
+
+  if (!rules || rules.length === 0) return 0;
+
+  let appliedCount = 0;
+
+  // Get transactions that need rule application
+  const { data: transactions } = await supabase
+    .from("transactions")
+    .select("transaction_id, merchant_name, name, category_source")
+    .in("transaction_id", transactionIds);
+
+  if (!transactions) return 0;
+
+  for (const tx of transactions) {
+    // Skip if user has manually set category
+    if (tx.category_source === "user") continue;
+
+    const merchant = (tx.merchant_name || tx.name || "").toLowerCase();
+    const matchingRule = rules.find((r: CategoryRule) =>
+      merchant.includes(r.merchant_pattern.toLowerCase()),
+    );
+
+    if (matchingRule) {
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          category: [matchingRule.category],
+          category_source: "rule",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("transaction_id", tx.transaction_id);
+
+      if (!error) appliedCount++;
+    }
+  }
+
+  return appliedCount;
+}
+
 export async function POST(req: Request) {
   const requestId = crypto.randomUUID();
 
@@ -125,6 +185,7 @@ export async function POST(req: Request) {
     let addedCount = 0;
     let modifiedCount = 0;
     let removedCount = 0;
+    const addedTransactionIds: string[] = [];
 
     while (hasMore) {
       const syncResponse = await plaid.transactionsSync({
@@ -174,7 +235,10 @@ export async function POST(req: Request) {
           .from("transactions")
           .upsert(rows, { onConflict: "transaction_id" });
 
-        if (!error) addedCount += rows.length;
+        if (!error) {
+          addedCount += rows.length;
+          addedTransactionIds.push(...rows.map((r) => r.transaction_id));
+        }
       }
 
       // Process modified
@@ -231,8 +295,15 @@ export async function POST(req: Request) {
       .update({ sync_cursor: cursor, updated_at: new Date().toISOString() })
       .eq("item_id", item_id);
 
+    // Apply category rules to new transactions
+    const rulesApplied = await applyCategoryRules(
+      supabase,
+      userId,
+      addedTransactionIds,
+    );
+
     console.log(
-      `[Plaid sync] Complete: added=${addedCount}, modified=${modifiedCount}, removed=${removedCount}`,
+      `[Plaid sync] Complete: added=${addedCount}, modified=${modifiedCount}, removed=${removedCount}, rulesApplied=${rulesApplied}`,
     );
 
     return NextResponse.json(
@@ -241,6 +312,7 @@ export async function POST(req: Request) {
         added: addedCount,
         modified: modifiedCount,
         removed: removedCount,
+        rules_applied: rulesApplied,
         request_id: requestId,
       },
       { status: 200, headers: { "x-request-id": requestId } },

@@ -1,0 +1,309 @@
+/* ── InvoicingInvoices ── */
+
+.ii-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Header ── */
+.ii-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ii-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ii-title-icon {
+  color: #f59e0b;
+}
+
+.ii-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.ii-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Search ── */
+.ii-search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 340px;
+}
+
+.ii-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.ii-search-input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.ii-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.ii-search-input:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* ── Filter ── */
+.ii-filter-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ii-filter-icon {
+  position: absolute;
+  left: 10px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.ii-filter-select {
+  padding: 9px 14px 9px 30px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+  transition: border-color 0.15s ease;
+}
+
+.ii-filter-select:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* ── New Invoice Button ── */
+.ii-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.ii-new-btn:hover {
+  opacity: 0.92;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+}
+
+/* ── Table ── */
+.ii-table-wrapper {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.ii-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.ii-table thead {
+  background: #f9fafb;
+}
+
+.ii-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.ii-table th:hover {
+  color: #374151;
+}
+
+.ii-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ii-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.ii-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ii-table tbody tr:hover {
+  background: #fffbeb;
+}
+
+.ii-inv-number {
+  font-weight: 600;
+  color: #d97706;
+  white-space: nowrap;
+}
+
+.ii-customer {
+  font-weight: 500;
+}
+
+.ii-amount {
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.ii-date {
+  color: #6b7280;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.ii-empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px 16px !important;
+  font-size: 14px;
+}
+
+/* ── Status Badges ── */
+.ii-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.ii-status-draft {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.ii-status-sent {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.ii-status-paid {
+  background: #d1fae5;
+  color: #10b981;
+}
+
+.ii-status-overdue {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+/* ── Action Buttons ── */
+.ii-actions {
+  display: flex;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.ii-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ii-action-btn:hover {
+  border-color: #f59e0b;
+  color: #d97706;
+  background: #fffbeb;
+}
+
+.ii-action-label {
+  font-weight: 500;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ii-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ii-search-wrapper {
+    max-width: none;
+  }
+
+  .ii-filter-wrapper {
+    width: 100%;
+  }
+
+  .ii-filter-select {
+    width: 100%;
+  }
+
+  .ii-new-btn {
+    justify-content: center;
+  }
+
+  .ii-action-label {
+    display: none;
+  }
+}

@@ -1,0 +1,312 @@
+/* ── InvoicingOverview ── */
+
+.inv-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0;
+}
+
+/* Layout: main + sidebar */
+.inv-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+
+.inv-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* ── KPI Cards ── */
+.inv-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.inv-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: box-shadow 0.15s ease;
+}
+
+.inv-kpi-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.inv-kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.inv-kpi-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inv-kpi-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.inv-kpi-amount {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f59e0b;
+  line-height: 1.2;
+}
+
+.inv-kpi-detail {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* ── Recent Invoices Table ── */
+.inv-recent-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inv-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.inv-table-wrapper {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inv-table thead {
+  background: #f9fafb;
+}
+
+.inv-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.inv-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.inv-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.inv-table tbody tr:hover {
+  background: #fffbeb;
+}
+
+.inv-invoice-number {
+  font-weight: 600;
+  color: #d97706;
+}
+
+.inv-amount {
+  font-weight: 600;
+  color: #111827;
+}
+
+.inv-due-date {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ── Status Badges ── */
+.inv-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-transform: capitalize;
+}
+
+.inv-status-draft {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.inv-status-sent {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.inv-status-paid {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.inv-status-overdue {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ── Sidebar ── */
+.inv-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inv-sidebar-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.inv-sidebar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 14px 0;
+}
+
+/* ── Quick Links ── */
+.inv-quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inv-quick-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #d97706;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.inv-quick-link:hover {
+  background: #fef3c7;
+}
+
+/* ── Aging Bars ── */
+.inv-aging-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inv-aging-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inv-aging-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inv-aging-range {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.inv-aging-amount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.inv-aging-bar-bg {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.inv-aging-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  min-width: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .inv-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .inv-sidebar {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .inv-sidebar-card {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .inv-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .inv-sidebar {
+    flex-direction: column;
+  }
+
+  .inv-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .inv-table {
+    min-width: 520px;
+  }
+}

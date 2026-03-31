@@ -1,0 +1,277 @@
+.payroll-payruns {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.payruns-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+}
+@media (max-width: 1000px) {
+  .payruns-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payruns-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.payruns-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+.payruns-header .header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.payruns-header .header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.payruns-header .header-title svg {
+  color: #10b981;
+}
+.payruns-header .header-title h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+.payruns-header .header-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.payruns-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.payruns-new-btn:hover {
+  background: #059669;
+}
+
+/* Panel */
+.payruns-panel {
+  padding: 18px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Table */
+.payruns-table {
+  display: flex;
+  flex-direction: column;
+}
+.payruns-table-header,
+.payruns-table-row {
+  display: grid;
+  grid-template-columns: 0.9fr 1.5fr 1fr 0.7fr 0.9fr 0.9fr 0.9fr;
+  gap: 8px;
+  padding: 10px 12px;
+  align-items: center;
+}
+.payruns-table-header {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.payruns-table-row {
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.1s;
+}
+.payruns-table-row:last-child {
+  border-bottom: none;
+}
+.payruns-table-row:hover {
+  background: #f8fafc;
+}
+
+.payruns-table-row .run-id {
+  font-weight: 600;
+  color: #0f172a;
+}
+.payruns-table-row .run-period {
+  font-size: 12px;
+}
+.payruns-table-row .run-employees {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.payruns-table-row .run-employees svg {
+  color: #94a3b8;
+}
+.payruns-table-row .run-gross {
+  font-weight: 600;
+  color: #0f172a;
+}
+.payruns-table-row .run-net {
+  font-weight: 500;
+  color: #334155;
+}
+
+.run-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* Sidebar */
+.payruns-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.payruns-sidebar .sidebar-panel {
+  padding: 14px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+.payruns-sidebar .panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.payruns-sidebar .panel-header svg {
+  color: #10b981;
+}
+.payruns-sidebar .panel-header h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+}
+
+/* Next Pay Run Card */
+.next-payrun-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.next-payrun-id {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.next-payrun-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.next-label {
+  font-size: 11px;
+  color: #64748b;
+}
+.next-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+}
+.next-payrun-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #dbeafe;
+  color: #2563eb;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 4px;
+  align-self: flex-start;
+}
+
+/* Pay Schedule */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.schedule-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+.schedule-label {
+  font-size: 11px;
+  color: #64748b;
+}
+.schedule-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .payruns-table-header,
+  .payruns-table-row {
+    grid-template-columns: 0.9fr 1.2fr 0.9fr 0.9fr;
+  }
+  .payruns-table-header span:nth-child(4),
+  .payruns-table-row span:nth-child(4) {
+    display: none;
+  }
+  .payruns-table-header span:nth-child(6),
+  .payruns-table-row span:nth-child(6) {
+    display: none;
+  }
+  .payruns-table-header span:nth-child(2),
+  .payruns-table-row span:nth-child(2) {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .payruns-header {
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
+  }
+  .payruns-new-btn {
+    justify-content: center;
+  }
+}

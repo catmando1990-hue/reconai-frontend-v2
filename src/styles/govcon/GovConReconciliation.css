@@ -1,0 +1,462 @@
+/* ============================================
+   GovCon Reconciliation Page
+   Prefix: gcr-
+   Accent: Purple (#8b5cf6)
+   ============================================ */
+
+.govcon-reconciliation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- Header ---- */
+
+.gcr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gcr-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.gcr-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.gcr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.gcr-btn-primary {
+  background-color: #8b5cf6;
+  color: #fff;
+}
+
+.gcr-btn-primary:hover {
+  background-color: #7c3aed;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
+}
+
+.gcr-btn-outline {
+  background-color: #fff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.gcr-btn-outline:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* ---- KPI Grid ---- */
+
+.gcr-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.gcr-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 18px 20px;
+  border-top: 3px solid #8b5cf6;
+}
+
+.gcr-kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #ede9fe;
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.gcr-kpi-icon-warning {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.gcr-kpi-icon-success {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.gcr-kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gcr-kpi-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.gcr-kpi-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* ---- Main Grid (content + sidebar) ---- */
+
+.gcr-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+
+.gcr-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* ---- Card ---- */
+
+.gcr-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gcr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.gcr-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.gcr-variance-count {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ---- Table ---- */
+
+.gcr-table-wrapper {
+  overflow-x: auto;
+}
+
+.gcr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.gcr-table th {
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.gcr-table td {
+  padding: 12px 16px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.gcr-table-row:hover {
+  background-color: #faf5ff;
+}
+
+.gcr-date-cell {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gcr-number-cell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* ---- Type Badges ---- */
+
+.gcr-type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gcr-type-full-ics {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+
+.gcr-type-labor {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.gcr-type-indirect {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+/* ---- Status Badges ---- */
+
+.gcr-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gcr-status-open {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.gcr-status-resolved {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+/* ---- Open Variances ---- */
+
+.gcr-variances-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.gcr-variance-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  border-left: 4px solid transparent;
+  transition: background-color 0.15s;
+}
+
+.gcr-variance-item:last-child {
+  border-bottom: none;
+}
+
+.gcr-variance-item:hover {
+  background-color: #faf5ff;
+}
+
+.gcr-severity-high {
+  border-left-color: #ef4444;
+}
+
+.gcr-severity-medium {
+  border-left-color: #f59e0b;
+}
+
+.gcr-severity-low {
+  border-left-color: #3b82f6;
+}
+
+.gcr-variance-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.gcr-variance-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.gcr-severity-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.gcr-severity-label-high {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.gcr-severity-label-medium {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.gcr-severity-label-low {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.gcr-variance-detail {
+  font-size: 0.825rem;
+  color: #64748b;
+  margin: 0 0 10px 0;
+  line-height: 1.45;
+}
+
+.gcr-variance-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gcr-variance-contract {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.gcr-variance-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: #8b5cf6;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.15s;
+}
+
+.gcr-variance-action:hover {
+  background-color: #ede9fe;
+}
+
+/* ---- Sidebar — ICS Schedule Reference ---- */
+
+.gcr-sidebar .gcr-card {
+  position: sticky;
+  top: 20px;
+}
+
+.gcr-schedule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.gcr-schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.15s;
+}
+
+.gcr-schedule-item:last-child {
+  border-bottom: none;
+}
+
+.gcr-schedule-item:hover {
+  background-color: #faf5ff;
+}
+
+.gcr-schedule-check {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.gcr-check-documented {
+  color: #059669;
+}
+
+.gcr-check-pending {
+  color: #cbd5e1;
+}
+
+.gcr-schedule-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gcr-schedule-code {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.gcr-schedule-name {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 1024px) {
+  .gcr-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gcr-sidebar .gcr-card {
+    position: static;
+  }
+
+  .gcr-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

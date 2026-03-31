@@ -1,0 +1,296 @@
+/* GovCon Contracts Page */
+
+.gcc-govcon-contracts {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.gcc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gcc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gcc-header-icon {
+  color: #8b5cf6;
+}
+
+.gcc-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.gcc-new-contract-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.gcc-new-contract-btn:hover {
+  opacity: 0.92;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+}
+
+/* Search / Filter Bar */
+.gcc-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+
+.gcc-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.gcc-search-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.gcc-search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #334155;
+  background: transparent;
+}
+
+.gcc-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.gcc-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gcc-filter-icon {
+  color: #64748b;
+}
+
+.gcc-status-select {
+  appearance: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 28px 6px 10px;
+  font-size: 13px;
+  color: #334155;
+  background: #f8fafc;
+  cursor: pointer;
+  outline: none;
+}
+
+.gcc-status-select:focus {
+  border-color: #8b5cf6;
+}
+
+.gcc-select-chevron {
+  position: absolute;
+  right: 8px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* Table Card */
+.gcc-table-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gcc-table-wrapper {
+  overflow-x: auto;
+}
+
+.gcc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.gcc-table thead {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.gcc-table th {
+  padding: 11px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.gcc-table td {
+  padding: 12px 16px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.gcc-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.gcc-table tbody tr:hover {
+  background: #faf5ff;
+}
+
+.gcc-contract-number {
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  font-weight: 600;
+  color: #8b5cf6;
+  font-size: 12.5px;
+}
+
+.gcc-contract-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.gcc-value {
+  font-weight: 600;
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  font-size: 12.5px;
+}
+
+/* Type Badges */
+.gcc-type-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.gcc-type-ffp {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.gcc-type-tm {
+  color: #059669;
+  background: #ecfdf5;
+}
+
+.gcc-type-cpff {
+  color: #7c3aed;
+  background: #f5f3ff;
+}
+
+.gcc-type-idiq {
+  color: #d97706;
+  background: #fffbeb;
+}
+
+.gcc-type-cpaf {
+  color: #0d9488;
+  background: #f0fdfa;
+}
+
+/* Status Badges */
+.gcc-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.gcc-status-active {
+  color: #059669;
+  background: #ecfdf5;
+}
+
+.gcc-status-completed {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+/* View Details Button */
+.gcc-view-details-btn {
+  background: none;
+  border: none;
+  color: #8b5cf6;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 2px;
+  transition: text-decoration 0.15s ease;
+}
+
+.gcc-view-details-btn:hover {
+  text-decoration: underline;
+}
+
+/* Empty State */
+.gcc-empty-state {
+  text-align: center;
+  padding: 40px 16px !important;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gcc-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .gcc-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gcc-filter-group {
+    justify-content: flex-start;
+  }
+
+  .gcc-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .gcc-table {
+    min-width: 900px;
+  }
+}

@@ -1,0 +1,122 @@
+.govcon-page {
+  height: 100%;
+}
+
+/* Main Layout - Content + Chat */
+.govcon-layout {
+  display: flex;
+  gap: 25px;
+  height: 100%;
+}
+
+.govcon-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  flex: 1;
+  margin-right: 405px;
+}
+
+.govcon-chat {
+  position: fixed;
+  right: 25px;
+  top: 85px;
+  bottom: 25px;
+  width: 380px;
+  z-index: 100;
+}
+
+.govcon-chat:has(.ai-chat.collapsed) {
+  top: auto;
+  bottom: 25px;
+  width: auto;
+  height: auto;
+}
+
+/* GovCon Tab Navigation */
+.govcon-tab-nav {
+  display: flex;
+  gap: 5px;
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+}
+
+.govcon-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.govcon-tab:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.govcon-tab.active {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.govcon-tab.active:hover {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+/* GovCon Content */
+.govcon-tab-content {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .govcon-chat {
+    width: 340px;
+  }
+
+  .govcon-main {
+    margin-right: 365px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .govcon-main {
+    margin-right: 0;
+  }
+
+  .govcon-chat {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .govcon-tab-nav {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 6px;
+  }
+
+  .govcon-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .govcon-tab span {
+    display: none;
+  }
+
+  .govcon-tab.active span {
+    display: inline;
+  }
+}

@@ -1,0 +1,437 @@
+/* GovCon Indirect Costs — gci- prefix */
+
+.govcon-indirects {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.gci-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gci-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.gci-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* KPI Grid */
+.gci-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.gci-kpi-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gci-kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f3f0ff;
+  color: #8b5cf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gci-kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gci-kpi-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.gci-kpi-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.gci-kpi-change {
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.gci-change-up {
+  color: #ef4444;
+}
+
+.gci-change-down {
+  color: #10b981;
+}
+
+/* Main Grid */
+.gci-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Table Card */
+.gci-table-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gci-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #8b5cf6;
+}
+
+.gci-card-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* Table */
+.gci-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.gci-table thead th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.gci-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+
+.gci-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.gci-table tbody tr:hover {
+  background: #faf8ff;
+}
+
+.gci-table tbody td {
+  padding: 12px 16px;
+  color: #334155;
+}
+
+.gci-pool-name {
+  font-weight: 600;
+  color: #1e293b !important;
+}
+
+.gci-far-ref {
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 12px;
+  color: #8b5cf6 !important;
+}
+
+.gci-rate-current {
+  font-weight: 600;
+  color: #1e293b !important;
+}
+
+.gci-rate-prior {
+  color: #94a3b8 !important;
+}
+
+/* Variance */
+.gci-variance {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.gci-variance-positive {
+  color: #ef4444;
+}
+
+.gci-variance-negative {
+  color: #10b981;
+}
+
+/* Allowability Badges */
+.gci-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gci-badge-allowable {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.gci-badge-under-review {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.gci-badge-unallowable {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* Sidebar */
+.gci-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gci-sidebar-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Rate Comparison Bars */
+.gci-rate-bars {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gci-rate-bar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gci-rate-bar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.gci-rate-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gci-rate-bar-track {
+  flex: 1;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.gci-rate-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.gci-rate-bar-current {
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.gci-rate-bar-prior {
+  background: linear-gradient(90deg, #cbd5e1, #94a3b8);
+}
+
+.gci-rate-bar-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  min-width: 36px;
+  text-align: right;
+}
+
+.gci-rate-bar-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 1px;
+}
+
+.gci-legend-current,
+.gci-legend-prior {
+  font-size: 10px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gci-legend-current::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: #8b5cf6;
+}
+
+.gci-legend-prior::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: #94a3b8;
+}
+
+/* CAS Compliance */
+.gci-cas-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  padding: 0 16px 8px;
+}
+
+.gci-cas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gci-cas-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.gci-cas-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gci-cas-documented {
+  background: #10b981;
+}
+
+.gci-cas-pending {
+  background: #f59e0b;
+}
+
+.gci-cas-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.gci-cas-standard {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.gci-cas-title {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gci-cas-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.gci-cas-status-documented {
+  color: #10b981;
+}
+
+.gci-cas-status-pending {
+  color: #f59e0b;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .gci-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gci-sidebar {
+    flex-direction: row;
+  }
+
+  .gci-sidebar-card {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .gci-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gci-sidebar {
+    flex-direction: column;
+  }
+
+  .gci-table-card {
+    overflow-x: auto;
+  }
+}

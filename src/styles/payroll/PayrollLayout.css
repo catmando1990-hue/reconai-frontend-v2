@@ -1,0 +1,122 @@
+.payroll-page {
+  height: 100%;
+}
+
+/* Main Layout - Content + Chat */
+.payroll-layout {
+  display: flex;
+  gap: 25px;
+  height: 100%;
+}
+
+.payroll-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  flex: 1;
+  margin-right: 405px;
+}
+
+.payroll-chat {
+  position: fixed;
+  right: 25px;
+  top: 85px;
+  bottom: 25px;
+  width: 380px;
+  z-index: 100;
+}
+
+.payroll-chat:has(.ai-chat.collapsed) {
+  top: auto;
+  bottom: 25px;
+  width: auto;
+  height: auto;
+}
+
+/* Payroll Tab Navigation */
+.payroll-tab-nav {
+  display: flex;
+  gap: 5px;
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+}
+
+.payroll-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.payroll-tab:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.payroll-tab.active {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.payroll-tab.active:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* Payroll Content */
+.payroll-tab-content {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .payroll-chat {
+    width: 340px;
+  }
+
+  .payroll-main {
+    margin-right: 365px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .payroll-main {
+    margin-right: 0;
+  }
+
+  .payroll-chat {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .payroll-tab-nav {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 6px;
+  }
+
+  .payroll-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .payroll-tab span {
+    display: none;
+  }
+
+  .payroll-tab.active span {
+    display: inline;
+  }
+}

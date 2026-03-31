@@ -1,0 +1,332 @@
+.govcon-audit {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.gca-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gca-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.gca-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.gca-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition:
+    background-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.gca-btn-primary {
+  background-color: #8b5cf6;
+  color: #fff;
+}
+
+.gca-btn-primary:hover {
+  background-color: #7c3aed;
+}
+
+.gca-btn-outline {
+  background-color: #fff;
+  color: #8b5cf6;
+  border: 1px solid #8b5cf6;
+}
+
+.gca-btn-outline:hover {
+  background-color: #f5f3ff;
+}
+
+/* KPI Grid */
+.gca-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.gca-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.gca-kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background-color: #f5f3ff;
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.gca-kpi-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.gca-kpi-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.gca-kpi-label {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Main Grid */
+.gca-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+}
+
+.gca-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+/* Timeline */
+.gca-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.gca-timeline-entry {
+  position: relative;
+  padding-left: 32px;
+  padding-bottom: 24px;
+}
+
+.gca-timeline-entry:last-child {
+  padding-bottom: 0;
+}
+
+.gca-timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.gca-dot-purple {
+  background-color: #8b5cf6;
+  box-shadow: 0 0 0 3px #ede9fe;
+}
+
+.gca-dot-gray {
+  background-color: #94a3b8;
+  box-shadow: 0 0 0 3px #f1f5f9;
+}
+
+.gca-timeline-line {
+  position: absolute;
+  left: 4px;
+  top: 22px;
+  bottom: 0;
+  width: 2px;
+  background-color: #e2e8f0;
+}
+
+.gca-timeline-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.gca-timeline-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.gca-timeline-icon {
+  color: #8b5cf6;
+  display: flex;
+  align-items: center;
+}
+
+.gca-timeline-date {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.gca-timeline-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.gca-timeline-desc {
+  font-size: 0.8125rem;
+  color: #475569;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.gca-timeline-hash {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  background: #f8fafc;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Sidebar */
+.gca-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gca-sidebar-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.gca-sidebar-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 14px 0;
+}
+
+/* Evidence Status */
+.gca-evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gca-evidence-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+}
+
+.gca-evidence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gca-evidence-dot.gca-evidence-green {
+  background-color: #10b981;
+}
+
+.gca-evidence-dot.gca-evidence-amber {
+  background-color: #f59e0b;
+}
+
+.gca-evidence-label {
+  color: #334155;
+  flex: 1;
+}
+
+.gca-evidence-status {
+  font-weight: 500;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.gca-evidence-status.gca-evidence-green {
+  color: #10b981;
+}
+
+.gca-evidence-status.gca-evidence-amber {
+  color: #f59e0b;
+}
+
+/* Export History */
+.gca-export-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gca-export-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.gca-export-label {
+  color: #64748b;
+}
+
+.gca-export-value {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .gca-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gca-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gca-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .gca-sidebar-card {
+    flex: 1;
+    min-width: 250px;
+  }
+}

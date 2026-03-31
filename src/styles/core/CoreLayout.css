@@ -1,0 +1,122 @@
+.core-page {
+  height: 100%;
+}
+
+/* Main Layout - Content + Chat */
+.core-layout {
+  display: flex;
+  gap: 25px;
+  height: 100%;
+}
+
+.core-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  flex: 1;
+  margin-right: 405px;
+}
+
+.core-chat {
+  position: fixed;
+  right: 25px;
+  top: 85px;
+  bottom: 25px;
+  width: 380px;
+  z-index: 100;
+}
+
+.core-chat:has(.ai-chat.collapsed) {
+  top: auto;
+  bottom: 25px;
+  width: auto;
+  height: auto;
+}
+
+/* Core Tabs Navigation */
+.core-tabs {
+  display: flex;
+  gap: 5px;
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+}
+
+.core-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7f8c8d;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.core-tab:hover {
+  background: #f4f7fa;
+  color: #2c3e50;
+}
+
+.core-tab.active {
+  background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+  color: white;
+}
+
+.core-tab.active:hover {
+  background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+}
+
+/* Core Content Area */
+.core-content {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .core-chat {
+    width: 340px;
+  }
+
+  .core-main {
+    margin-right: 365px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .core-main {
+    margin-right: 0;
+  }
+
+  .core-chat {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .core-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 6px;
+  }
+
+  .core-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .core-tab span {
+    display: none;
+  }
+
+  .core-tab.active span {
+    display: inline;
+  }
+}

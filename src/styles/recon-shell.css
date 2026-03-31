@@ -1,0 +1,24 @@
+.recon-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.recon-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  background: #f4f7fa;
+}
+
+.recon-dashboard {
+  padding: 25px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .recon-dashboard {
+    padding: 15px;
+  }
+}

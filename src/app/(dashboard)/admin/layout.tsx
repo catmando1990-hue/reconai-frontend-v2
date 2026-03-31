@@ -1,12 +1,7 @@
-import { ReactNode } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { ShellV2 } from "@/components/dashboard-v2";
+import { ReactNode } from "react";
 
-/**
- * Admin Module Layout
- * Restricts access to admin users only, uses V2 shell
- */
 export default async function AdminLayout({
   children,
 }: {
@@ -14,7 +9,6 @@ export default async function AdminLayout({
 }) {
   const { sessionClaims } = await auth();
 
-  // Check for admin role in session claims
   const metadata = sessionClaims?.metadata as
     | { role?: string }
     | null
@@ -26,5 +20,5 @@ export default async function AdminLayout({
     redirect("/home");
   }
 
-  return <ShellV2 module="admin">{children}</ShellV2>;
+  return <>{children}</>;
 }

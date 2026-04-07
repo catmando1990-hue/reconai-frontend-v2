@@ -157,7 +157,7 @@ export default function DashboardHome() {
           </div>
           <div className="modules-grid">
             {modules.map((module) => (
-              <Link key={module.name} to={module.path} className={`module-item ${module.color}`}>
+              <Link key={module.name} href={module.path} className={`module-item ${module.color}`}>
                 <div className="module-icon">
                   <module.icon size={24} />
                 </div>
@@ -181,7 +181,7 @@ export default function DashboardHome() {
           </div>
           <div className="intelligence-links-grid">
             {intelligenceLinks.map((link) => (
-              <Link key={link.name} to={link.path} className="intelligence-link-btn">
+              <Link key={link.name} href={link.path} className="intelligence-link-btn">
                 <link.icon size={16} />
                 {link.name}
               </Link>

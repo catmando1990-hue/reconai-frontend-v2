@@ -129,7 +129,7 @@ export default function DashboardHome() {
           <div className="welcome-section">
         <div className="welcome-content">
           <h1>{getGreeting()}, John</h1>
-          <p>Welcome to ReconAI. Here's your workspace for today.</p>
+          <p>Welcome to ReconAI. Here&apos;s your workspace for today.</p>
         </div>
         <div className="refresh-control">
           <span className="last-refresh">

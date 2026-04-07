@@ -241,7 +241,7 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   font-size: 0.8125rem;
   font-weight: 500;
   color: #334155;
@@ -250,7 +250,7 @@
 
 .gct-td-row-total {
   text-align: center;
-  font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   font-weight: 700;
   color: #1e293b;
   background: #faf5ff;
@@ -272,14 +272,14 @@
 
 .gct-td-daily-total {
   text-align: center;
-  font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   font-weight: 700;
   color: #1e293b;
 }
 
 .gct-td-grand-total {
   text-align: center;
-  font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   font-weight: 800;
   color: #8b5cf6;
   background: #faf5ff;

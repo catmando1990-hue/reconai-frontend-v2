@@ -1,7 +1,5 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/payroll/PayrollBenefits.css";
 import {
   Calendar,
   CheckCircle,
@@ -12,65 +10,67 @@ import {
   Shield,
   UserCheck,
   Users,
-} from "lucide-react";
+} from 'lucide-react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/payroll/PayrollBenefits.css';
 
 const benefitsPlans = [
   {
-    name: "Medical PPO",
-    type: "Medical",
+    name: 'Medical PPO',
+    type: 'Medical',
     enrolled: 38,
-    monthlyCost: "$450/mo",
-    contribution: "80%",
+    monthlyCost: '$450/mo',
+    contribution: '80%',
   },
   {
-    name: "Dental",
-    type: "Dental",
+    name: 'Dental',
+    type: 'Dental',
     enrolled: 35,
-    monthlyCost: "$45/mo",
-    contribution: "100%",
+    monthlyCost: '$45/mo',
+    contribution: '100%',
   },
   {
-    name: "Vision",
-    type: "Vision",
+    name: 'Vision',
+    type: 'Vision',
     enrolled: 32,
-    monthlyCost: "$18/mo",
-    contribution: "100%",
+    monthlyCost: '$18/mo',
+    contribution: '100%',
   },
   {
-    name: "401(k)",
-    type: "Retirement",
+    name: '401(k)',
+    type: 'Retirement',
     enrolled: 41,
-    monthlyCost: "6% match",
-    contribution: "6% match",
+    monthlyCost: '6% match',
+    contribution: '6% match',
   },
   {
-    name: "FSA",
-    type: "Spending Account",
+    name: 'FSA',
+    type: 'Spending Account',
     enrolled: 22,
-    monthlyCost: "$2,850 limit",
-    contribution: "N/A",
+    monthlyCost: '$2,850 limit',
+    contribution: 'N/A',
   },
   {
-    name: "Life Insurance",
-    type: "Insurance",
+    name: 'Life Insurance',
+    type: 'Insurance',
     enrolled: 47,
-    monthlyCost: "$12/mo",
-    contribution: "100%",
+    monthlyCost: '$12/mo',
+    contribution: '100%',
   },
 ];
 
 const openEnrollment = [
-  { label: "Enrollment Window", value: "Nov 1 \u2013 Nov 30" },
-  { label: "Plan Year", value: "Jan 1 \u2013 Dec 31" },
-  { label: "Status", value: "Closed" },
-  { label: "Next Open Enrollment", value: "Nov 2026" },
+  { label: 'Enrollment Window', value: 'Nov 1 \u2013 Nov 30' },
+  { label: 'Plan Year', value: 'Jan 1 \u2013 Dec 31' },
+  { label: 'Status', value: 'Closed' },
+  { label: 'Next Open Enrollment', value: 'Nov 2026' },
 ];
 
 const benefitsSummary = [
-  { label: "Medical & Dental", value: "$198,600" },
-  { label: "Vision", value: "$6,912" },
-  { label: "Retirement (401k)", value: "$86,400" },
-  { label: "Life & Other", value: "$20,488" },
+  { label: 'Medical & Dental', value: '$198,600' },
+  { label: 'Vision', value: '$6,912' },
+  { label: 'Retirement (401k)', value: '$86,400' },
+  { label: 'Life & Other', value: '$20,488' },
 ];
 
 export default function PayrollBenefits() {
@@ -162,19 +162,12 @@ export default function PayrollBenefits() {
                   </span>
                   <span className="plan-cost">{plan.monthlyCost}</span>
                   <span className="plan-contribution">
-                    {plan.contribution === "N/A" ? (
-                      <span className="contribution-na">
-                        {plan.contribution}
-                      </span>
+                    {plan.contribution === 'N/A' ? (
+                      <span className="contribution-na">{plan.contribution}</span>
                     ) : (
                       <span className="contribution-badge">
-                        {plan.contribution === "100%" && (
-                          <CheckCircle size={12} />
-                        )}
-                        {plan.contribution !== "100%" &&
-                          plan.contribution !== "6% match" && (
-                            <Percent size={12} />
-                          )}
+                        {plan.contribution === '100%' && <CheckCircle size={12} />}
+                        {plan.contribution !== '100%' && plan.contribution !== '6% match' && <Percent size={12} />}
                         {plan.contribution}
                       </span>
                     )}

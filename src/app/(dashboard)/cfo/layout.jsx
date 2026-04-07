@@ -1,6 +1,6 @@
 "use client";
 
-import CFOChat from "@/components/CFOChat";
+import CFOChat from "@/components/recon/CFOChat";
 import "@/styles/cfo/CFOLayout.css";
 import {
   Brain,

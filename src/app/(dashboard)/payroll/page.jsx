@@ -1,7 +1,7 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/payroll/PayrollOverview.css";
+import Link from "next/link";
+
 import {
   AlertCircle,
   ArrowRight,
@@ -15,80 +15,48 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
-} from "lucide-react";
-import Link from "next/link";
+} from 'lucide-react';
+
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/payroll/PayrollOverview.css';
 
 const kpis = [
-  {
-    label: "Total Headcount",
-    value: "47",
-    change: "+3",
-    trend: "up",
-    icon: Users,
-  },
-  {
-    label: "Monthly Payroll",
-    value: "$385,200",
-    change: "+4.2%",
-    trend: "up",
-    icon: DollarSign,
-  },
-  {
-    label: "Avg. Hours/Week",
-    value: "38.5",
-    change: "-0.3",
-    trend: "down",
-    icon: Clock,
-  },
-  {
-    label: "Next Pay Run",
-    value: "Apr 15",
-    change: "16 days",
-    trend: "neutral",
-    icon: CreditCard,
-  },
+  { label: 'Total Headcount', value: '47', change: '+3', trend: 'up', icon: Users },
+  { label: 'Monthly Payroll', value: '$385,200', change: '+4.2%', trend: 'up', icon: DollarSign },
+  { label: 'Avg. Hours/Week', value: '38.5', change: '-0.3', trend: 'down', icon: Clock },
+  { label: 'Next Pay Run', value: 'Apr 15', change: '16 days', trend: 'neutral', icon: CreditCard },
 ];
 
 const recentPayRuns = [
   {
-    id: "PR-2026-06",
-    date: "Mar 15, 2026",
-    amount: "$385,200",
+    id: 'PR-2026-06',
+    date: 'Mar 15, 2026',
+    amount: '$385,200',
     employees: 47,
-    status: "completed",
+    status: 'completed',
   },
+  { id: 'PR-2026-05', date: 'Mar 1, 2026', amount: '$382,100', employees: 46, status: 'completed' },
   {
-    id: "PR-2026-05",
-    date: "Mar 1, 2026",
-    amount: "$382,100",
-    employees: 46,
-    status: "completed",
-  },
-  {
-    id: "PR-2026-04",
-    date: "Feb 15, 2026",
-    amount: "$378,500",
+    id: 'PR-2026-04',
+    date: 'Feb 15, 2026',
+    amount: '$378,500',
     employees: 45,
-    status: "completed",
+    status: 'completed',
   },
 ];
 
 const complianceItems = [
-  { label: "Tax Filings", status: "current", detail: "Q1 2026 filed" },
-  { label: "W-2 Distribution", status: "current", detail: "All issued" },
-  { label: "1099 Filing", status: "current", detail: "12 contractors" },
-  {
-    label: "State Registrations",
-    status: "attention",
-    detail: "1 pending renewal",
-  },
+  { label: 'Tax Filings', status: 'current', detail: 'Q1 2026 filed' },
+  { label: 'W-2 Distribution', status: 'current', detail: 'All issued' },
+  { label: '1099 Filing', status: 'current', detail: '12 contractors' },
+  { label: 'State Registrations', status: 'attention', detail: '1 pending renewal' },
 ];
 
 const quickLinks = [
-  { label: "Run Payroll", path: "/payroll/pay-runs", icon: CreditCard },
-  { label: "Add Employee", path: "/payroll/people", icon: Users },
-  { label: "View Reports", path: "/payroll/compliance", icon: FileText },
-  { label: "Tax Summary", path: "/payroll/taxes", icon: Receipt },
+  { label: 'Run Payroll', path: '/payroll/pay-runs', icon: CreditCard },
+  { label: 'Add Employee', path: '/payroll/people', icon: Users },
+  { label: 'View Reports', path: '/payroll/compliance', icon: FileText },
+  { label: 'Tax Summary', path: '/payroll/taxes', icon: Receipt },
 ];
 
 export default function PayrollOverview() {
@@ -114,8 +82,8 @@ export default function PayrollOverview() {
                   <span className="kpi-label">{kpi.label}</span>
                   <span className="kpi-value">{kpi.value}</span>
                   <span className={`kpi-change ${kpi.trend}`}>
-                    {kpi.trend === "up" && <TrendingUp size={12} />}
-                    {kpi.trend === "down" && <TrendingDown size={12} />}
+                    {kpi.trend === 'up' && <TrendingUp size={12} />}
+                    {kpi.trend === 'down' && <TrendingDown size={12} />}
                     {kpi.change}
                   </span>
                 </div>
@@ -150,7 +118,7 @@ export default function PayrollOverview() {
                 </div>
               ))}
             </div>
-            <Link href="/payroll/pay-runs" className="panel-view-all">
+            <Link to="/payroll/pay-runs" className="panel-view-all">
               View all pay runs <ArrowRight size={14} />
             </Link>
           </section>
@@ -163,12 +131,9 @@ export default function PayrollOverview() {
             </div>
             <div className="compliance-grid">
               {complianceItems.map((item) => (
-                <div
-                  key={item.label}
-                  className={`compliance-item ${item.status}`}
-                >
+                <div key={item.label} className={`compliance-item ${item.status}`}>
                   <div className="compliance-icon">
-                    {item.status === "current" ? (
+                    {item.status === 'current' ? (
                       <CheckCircle size={16} />
                     ) : (
                       <AlertCircle size={16} />
@@ -193,7 +158,7 @@ export default function PayrollOverview() {
             </div>
             <div className="quick-links">
               {quickLinks.map((link) => (
-                <Link key={link.label} href={link.path} className="quick-link">
+                <Link key={link.label} to={link.path} className="quick-link">
                   <link.icon size={14} />
                   <span>{link.label}</span>
                   <ArrowRight size={12} />

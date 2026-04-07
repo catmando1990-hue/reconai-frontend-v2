@@ -1,50 +1,58 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/govcon/GovConIntelligence.css";
-import { Brain, Clock, Eye, RefreshCw, Shield, Tag, Zap } from "lucide-react";
-import { useState } from "react";
+import {
+  Brain,
+  Clock,
+  Eye,
+  RefreshCw,
+  Shield,
+  Tag,
+  Zap
+} from 'lucide-react';
+import { useState } from 'react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/govcon/GovConIntelligence.css';
 
 const SIGNALS = [
   {
-    id: "sig-001",
-    title: "DCAA Readiness Gap Detected",
-    severity: "high",
+    id: 'sig-001',
+    title: 'DCAA Readiness Gap Detected',
+    severity: 'high',
     confidence: 0.91,
-    category: "DCAA Compliance",
+    category: 'DCAA Compliance',
     description:
-      "Supervisor timesheet approval workflow has not been documented for 2 active contracts. DCAA floor check requirements may not be met during next audit cycle.",
-    detectedAt: "2026-03-29T14:22:00Z",
+      'Supervisor timesheet approval workflow has not been documented for 2 active contracts. DCAA floor check requirements may not be met during next audit cycle.',
+    detectedAt: '2026-03-29T14:22:00Z',
   },
   {
-    id: "sig-002",
-    title: "Indirect Rate Drift",
-    severity: "medium",
+    id: 'sig-002',
+    title: 'Indirect Rate Drift',
+    severity: 'medium',
     confidence: 0.84,
-    category: "Cost Accounting",
+    category: 'Cost Accounting',
     description:
-      "Q1 actual overhead rate (46.1%) is trending 2.0% above the provisional rate (45.2%). Consider requesting a rate adjustment to avoid significant year-end variance.",
-    detectedAt: "2026-03-28T09:15:00Z",
+      'Q1 actual overhead rate (46.1%) is trending 2.0% above the provisional rate (45.2%). Consider requesting a rate adjustment to avoid significant year-end variance.',
+    detectedAt: '2026-03-28T09:15:00Z',
   },
   {
-    id: "sig-003",
-    title: "Unallowable Cost Flagged",
-    severity: "high",
+    id: 'sig-003',
+    title: 'Unallowable Cost Flagged',
+    severity: 'high',
     confidence: 0.95,
-    category: "FAR Compliance",
+    category: 'FAR Compliance',
     description:
-      "3 transactions totaling $2,840 have been preliminarily flagged as potentially unallowable under FAR 31.205. Manual review and reclassification recommended before ICS submission.",
-    detectedAt: "2026-03-30T08:00:00Z",
+      '3 transactions totaling $2,840 have been preliminarily flagged as potentially unallowable under FAR 31.205. Manual review and reclassification recommended before ICS submission.',
+    detectedAt: '2026-03-30T08:00:00Z',
   },
   {
-    id: "sig-004",
-    title: "Contract Period Expiring",
-    severity: "medium",
+    id: 'sig-004',
+    title: 'Contract Period Expiring',
+    severity: 'medium',
     confidence: 0.88,
-    category: "Contract Management",
+    category: 'Contract Management',
     description:
-      "Contract N00024-23-C-1234 period of performance ends May 31, 2026. Final invoice and closeout documentation should be initiated within 60 days.",
-    detectedAt: "2026-03-27T16:40:00Z",
+      'Contract N00024-23-C-1234 period of performance ends May 31, 2026. Final invoice and closeout documentation should be initiated within 60 days.',
+    detectedAt: '2026-03-27T16:40:00Z',
   },
 ];
 
@@ -58,8 +66,7 @@ function SeverityBadge({ severity }) {
 
 function ConfidenceBadge({ confidence }) {
   const percentage = Math.round(confidence * 100);
-  const level =
-    confidence >= 0.8 ? "high" : confidence >= 0.6 ? "medium" : "low";
+  const level = confidence >= 0.8 ? 'high' : confidence >= 0.6 ? 'medium' : 'low';
   return (
     <span className={`gi-confidence-badge ${level}`}>
       {percentage}% confidence
@@ -146,9 +153,7 @@ export default function GovConIntelligence() {
             <Brain size={22} />
             <h1>GovCon Intelligence</h1>
           </div>
-          <p className="gi-header-subtitle">
-            AI-powered DCAA readiness and compliance signals
-          </p>
+          <p className="gi-header-subtitle">AI-powered DCAA readiness and compliance signals</p>
         </div>
         <div className="gi-header-right">
           <button
@@ -156,7 +161,7 @@ export default function GovConIntelligence() {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw size={16} className={isRefreshing ? "spinning" : ""} />
+            <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
             Refresh
           </button>
         </div>
@@ -166,26 +171,24 @@ export default function GovConIntelligence() {
       <div className="gi-signals-summary">
         <div className="gi-summary-left">
           <Zap size={14} />
-          <span>
-            {signals.length} signal{signals.length !== 1 ? "s" : ""} detected
-          </span>
+          <span>{signals.length} signal{signals.length !== 1 ? 's' : ''} detected</span>
         </div>
         <div className="gi-summary-right">
           <span className="gi-summary-count high">
-            {signals.filter((s) => s.severity === "high").length} High
+            {signals.filter(s => s.severity === 'high').length} High
           </span>
           <span className="gi-summary-count medium">
-            {signals.filter((s) => s.severity === "medium").length} Medium
+            {signals.filter(s => s.severity === 'medium').length} Medium
           </span>
           <span className="gi-summary-count low">
-            {signals.filter((s) => s.severity === "low").length} Low
+            {signals.filter(s => s.severity === 'low').length} Low
           </span>
         </div>
       </div>
 
       {/* Signal Cards */}
       <div className="gi-signals-grid">
-        {signals.map((signal) => (
+        {signals.map(signal => (
           <SignalCard key={signal.id} signal={signal} />
         ))}
       </div>
@@ -196,9 +199,9 @@ export default function GovConIntelligence() {
         <div>
           <strong>AI-Generated Government Contracting Intelligence</strong>
           <p>
-            These signals are generated from timekeeping, cost accounting, and
-            contract data. They are intended to support compliance review and do
-            not replace professional audit guidance.
+            These signals are generated from timekeeping, cost accounting, and contract data.
+            They are intended to support compliance review and do not replace professional audit
+            guidance.
           </p>
         </div>
       </div>

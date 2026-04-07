@@ -1,50 +1,58 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/payroll/PayrollIntelligence.css";
-import { Brain, Clock, Eye, RefreshCw, Shield, Tag, Zap } from "lucide-react";
-import { useState } from "react";
+import {
+  Brain,
+  Clock,
+  Eye,
+  RefreshCw,
+  Shield,
+  Tag,
+  Zap
+} from 'lucide-react';
+import { useState } from 'react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/payroll/PayrollIntelligence.css';
 
 const SIGNALS = [
   {
-    id: "sig-001",
-    title: "Overtime Threshold Alert",
-    severity: "high",
+    id: 'sig-001',
+    title: 'Overtime Threshold Alert',
+    severity: 'high',
     confidence: 0.87,
-    category: "Labor Compliance",
+    category: 'Labor Compliance',
     description:
-      "3 employees have exceeded a 45-hour/week average over the past 4 weeks. Continued overtime may trigger additional labor compliance obligations and increased premium pay exposure.",
-    detectedAt: "2026-03-29T14:22:00Z",
+      '3 employees have exceeded a 45-hour/week average over the past 4 weeks. Continued overtime may trigger additional labor compliance obligations and increased premium pay exposure.',
+    detectedAt: '2026-03-29T14:22:00Z',
   },
   {
-    id: "sig-002",
-    title: "Compensation Below Market",
-    severity: "medium",
+    id: 'sig-002',
+    title: 'Compensation Below Market',
+    severity: 'medium',
     confidence: 0.72,
-    category: "Retention Risk",
+    category: 'Retention Risk',
     description:
-      "2 engineering roles are compensated below the 10th percentile for their market and experience band. This may increase attrition risk in the next quarter.",
-    detectedAt: "2026-03-28T09:15:00Z",
+      '2 engineering roles are compensated below the 10th percentile for their market and experience band. This may increase attrition risk in the next quarter.',
+    detectedAt: '2026-03-28T09:15:00Z',
   },
   {
-    id: "sig-003",
-    title: "Tax Withholding Variance",
-    severity: "low",
+    id: 'sig-003',
+    title: 'Tax Withholding Variance',
+    severity: 'low',
     confidence: 0.91,
-    category: "Tax Compliance",
+    category: 'Tax Compliance',
     description:
-      "Q1 federal tax withholding is running 3.2% above projected amounts. This may result in over-withholding and could affect employee take-home expectations.",
-    detectedAt: "2026-03-30T08:00:00Z",
+      'Q1 federal tax withholding is running 3.2% above projected amounts. This may result in over-withholding and could affect employee take-home expectations.',
+    detectedAt: '2026-03-30T08:00:00Z',
   },
   {
-    id: "sig-004",
-    title: "Benefits Enrollment Gap",
-    severity: "medium",
+    id: 'sig-004',
+    title: 'Benefits Enrollment Gap',
+    severity: 'medium',
     confidence: 0.78,
-    category: "Benefits",
+    category: 'Benefits',
     description:
-      "4 eligible employees have not enrolled in the company 401(k) plan despite meeting the eligibility threshold. Consider targeted outreach during the next enrollment window.",
-    detectedAt: "2026-03-27T16:40:00Z",
+      '4 eligible employees have not enrolled in the company 401(k) plan despite meeting the eligibility threshold. Consider targeted outreach during the next enrollment window.',
+    detectedAt: '2026-03-27T16:40:00Z',
   },
 ];
 
@@ -58,8 +66,7 @@ function SeverityBadge({ severity }) {
 
 function ConfidenceBadge({ confidence }) {
   const percentage = Math.round(confidence * 100);
-  const level =
-    confidence >= 0.8 ? "high" : confidence >= 0.6 ? "medium" : "low";
+  const level = confidence >= 0.8 ? 'high' : confidence >= 0.6 ? 'medium' : 'low';
   return (
     <span className={`pi-confidence-badge ${level}`}>
       {percentage}% confidence
@@ -146,9 +153,7 @@ export default function PayrollIntelligence() {
             <Brain size={22} />
             <h1>Payroll Intelligence</h1>
           </div>
-          <p className="pi-header-subtitle">
-            AI-powered workforce and compensation insights
-          </p>
+          <p className="pi-header-subtitle">AI-powered workforce and compensation insights</p>
         </div>
         <div className="pi-header-right">
           <button
@@ -156,7 +161,7 @@ export default function PayrollIntelligence() {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw size={16} className={isRefreshing ? "spinning" : ""} />
+            <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
             Refresh
           </button>
         </div>
@@ -166,26 +171,24 @@ export default function PayrollIntelligence() {
       <div className="pi-signals-summary">
         <div className="pi-summary-left">
           <Zap size={14} />
-          <span>
-            {signals.length} signal{signals.length !== 1 ? "s" : ""} detected
-          </span>
+          <span>{signals.length} signal{signals.length !== 1 ? 's' : ''} detected</span>
         </div>
         <div className="pi-summary-right">
           <span className="pi-summary-count high">
-            {signals.filter((s) => s.severity === "high").length} High
+            {signals.filter(s => s.severity === 'high').length} High
           </span>
           <span className="pi-summary-count medium">
-            {signals.filter((s) => s.severity === "medium").length} Medium
+            {signals.filter(s => s.severity === 'medium').length} Medium
           </span>
           <span className="pi-summary-count low">
-            {signals.filter((s) => s.severity === "low").length} Low
+            {signals.filter(s => s.severity === 'low').length} Low
           </span>
         </div>
       </div>
 
       {/* Signal Cards */}
       <div className="pi-signals-grid">
-        {signals.map((signal) => (
+        {signals.map(signal => (
           <SignalCard key={signal.id} signal={signal} />
         ))}
       </div>
@@ -196,9 +199,9 @@ export default function PayrollIntelligence() {
         <div>
           <strong>AI-Generated Workforce Intelligence</strong>
           <p>
-            These signals are generated from payroll, time-tracking, and
-            compensation data. They are intended as inputs for HR and management
-            review and do not constitute employment, legal, or tax advice.
+            These signals are generated from payroll, time-tracking, and compensation data.
+            They are intended as inputs for HR and management review and do not constitute
+            employment, legal, or tax advice.
           </p>
         </div>
       </div>

@@ -1,7 +1,5 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/payroll/PayrollTimeLabor.css";
 import {
   AlertCircle,
   BarChart3,
@@ -13,88 +11,41 @@ import {
   Palmtree,
   Timer,
   Users,
-} from "lucide-react";
+} from 'lucide-react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/payroll/PayrollTimeLabor.css';
 
 const timeSummary = [
-  { label: "Total Hours This Period", value: "3,848", icon: Clock },
-  { label: "Overtime Hours", value: "124", icon: Timer },
-  { label: "PTO Hours Used", value: "186", icon: Palmtree },
-  { label: "Avg Hours/Employee", value: "38.5", icon: Users },
+  { label: 'Total Hours This Period', value: '3,848', icon: Clock },
+  { label: 'Overtime Hours', value: '124', icon: Timer },
+  { label: 'PTO Hours Used', value: '186', icon: Palmtree },
+  { label: 'Avg Hours/Employee', value: '38.5', icon: Users },
 ];
 
 const departmentAllocation = [
-  { department: "Engineering", hours: 1540, percentage: 40 },
-  { department: "Sales", hours: 770, percentage: 20 },
-  { department: "Marketing", hours: 578, percentage: 15 },
-  { department: "Design", hours: 462, percentage: 12 },
-  { department: "Operations", hours: 308, percentage: 8 },
-  { department: "HR & Admin", hours: 190, percentage: 5 },
+  { department: 'Engineering', hours: 1540, percentage: 40 },
+  { department: 'Sales', hours: 770, percentage: 20 },
+  { department: 'Marketing', hours: 578, percentage: 15 },
+  { department: 'Design', hours: 462, percentage: 12 },
+  { department: 'Operations', hours: 308, percentage: 8 },
+  { department: 'HR & Admin', hours: 190, percentage: 5 },
 ];
 
 const recentTimeEntries = [
-  {
-    id: 1,
-    employee: "Sarah Chen",
-    date: "Mar 28, 2026",
-    hours: 8.5,
-    type: "Regular",
-    status: "approved",
-  },
-  {
-    id: 2,
-    employee: "Marcus Johnson",
-    date: "Mar 28, 2026",
-    hours: 10.0,
-    type: "Overtime",
-    status: "approved",
-  },
-  {
-    id: 3,
-    employee: "Priya Patel",
-    date: "Mar 27, 2026",
-    hours: 8.0,
-    type: "Regular",
-    status: "approved",
-  },
-  {
-    id: 4,
-    employee: "James Wilson",
-    date: "Mar 27, 2026",
-    hours: 8.0,
-    type: "PTO",
-    status: "approved",
-  },
-  {
-    id: 5,
-    employee: "Ana Rodriguez",
-    date: "Mar 27, 2026",
-    hours: 9.5,
-    type: "Overtime",
-    status: "pending",
-  },
-  {
-    id: 6,
-    employee: "David Kim",
-    date: "Mar 26, 2026",
-    hours: 8.0,
-    type: "Regular",
-    status: "approved",
-  },
-  {
-    id: 7,
-    employee: "Lisa Thompson",
-    date: "Mar 26, 2026",
-    hours: 8.0,
-    type: "PTO",
-    status: "pending",
-  },
+  { id: 1, employee: 'Sarah Chen', date: 'Mar 28, 2026', hours: 8.5, type: 'Regular', status: 'approved' },
+  { id: 2, employee: 'Marcus Johnson', date: 'Mar 28, 2026', hours: 10.0, type: 'Overtime', status: 'approved' },
+  { id: 3, employee: 'Priya Patel', date: 'Mar 27, 2026', hours: 8.0, type: 'Regular', status: 'approved' },
+  { id: 4, employee: 'James Wilson', date: 'Mar 27, 2026', hours: 8.0, type: 'PTO', status: 'approved' },
+  { id: 5, employee: 'Ana Rodriguez', date: 'Mar 27, 2026', hours: 9.5, type: 'Overtime', status: 'pending' },
+  { id: 6, employee: 'David Kim', date: 'Mar 26, 2026', hours: 8.0, type: 'Regular', status: 'approved' },
+  { id: 7, employee: 'Lisa Thompson', date: 'Mar 26, 2026', hours: 8.0, type: 'PTO', status: 'pending' },
 ];
 
 const policySummary = [
-  { label: "Standard Work Week", value: "40 hours" },
-  { label: "Overtime Rate", value: "1.5x base pay" },
-  { label: "PTO Accrual", value: "15 days/year" },
-  { label: "Pay Period", value: "Semi-monthly" },
+  { label: 'Standard Work Week', value: '40 hours' },
+  { label: 'Overtime Rate', value: '1.5x base pay' },
+  { label: 'PTO Accrual', value: '15 days/year' },
+  { label: 'Pay Period', value: 'Semi-monthly' },
 ];
 
 export default function PayrollTimeLabor() {
@@ -145,9 +96,7 @@ export default function PayrollTimeLabor() {
                 <div key={dept.department} className="allocation-row">
                   <div className="allocation-info">
                     <span className="allocation-dept">{dept.department}</span>
-                    <span className="allocation-hours">
-                      {dept.hours.toLocaleString()} hrs
-                    </span>
+                    <span className="allocation-hours">{dept.hours.toLocaleString()} hrs</span>
                   </div>
                   <div className="allocation-bar-track">
                     <div
@@ -180,15 +129,9 @@ export default function PayrollTimeLabor() {
                   <span className="entry-name">{entry.employee}</span>
                   <span>{entry.date}</span>
                   <span className="entry-hours">{entry.hours}</span>
-                  <span className={`entry-type ${entry.type.toLowerCase()}`}>
-                    {entry.type}
-                  </span>
+                  <span className={`entry-type ${entry.type.toLowerCase()}`}>{entry.type}</span>
                   <span className={`entry-status ${entry.status}`}>
-                    {entry.status === "approved" ? (
-                      <CheckCircle size={12} />
-                    ) : (
-                      <AlertCircle size={12} />
-                    )}
+                    {entry.status === 'approved' ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
                     {entry.status}
                   </span>
                 </div>

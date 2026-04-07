@@ -1,7 +1,5 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/payroll/PayrollConnections.css";
 import {
   Building2,
   CheckCircle,
@@ -13,38 +11,37 @@ import {
   Receipt,
   RefreshCw,
   Shield,
-} from "lucide-react";
+} from 'lucide-react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/payroll/PayrollConnections.css';
 
 // Supported payroll institution types
 const institutionTypes = [
   {
-    id: "payroll-bank",
-    name: "Payroll Bank Account",
+    id: 'payroll-bank',
+    name: 'Payroll Bank Account',
     icon: Landmark,
-    description:
-      "Connect the bank account used for payroll disbursements and direct deposits.",
+    description: 'Connect the bank account used for payroll disbursements and direct deposits.',
   },
   {
-    id: "tax-payment",
-    name: "Tax Payment Account",
+    id: 'tax-payment',
+    name: 'Tax Payment Account',
     icon: Receipt,
-    description:
-      "Link accounts used for federal, state, and local payroll tax remittances.",
+    description: 'Link accounts used for federal, state, and local payroll tax remittances.',
   },
   {
-    id: "benefits-provider",
-    name: "Benefits Provider",
+    id: 'benefits-provider',
+    name: 'Benefits Provider',
     icon: HeartPulse,
-    description:
-      "Connect health insurance, 401(k), and other benefits provider accounts.",
+    description: 'Connect health insurance, 401(k), and other benefits provider accounts.',
   },
 ];
 
 // Security features
 const securityFeatures = [
-  { icon: Lock, text: "Bank-level 256-bit encryption" },
-  { icon: Shield, text: "Read-only access - no transactions" },
-  { icon: CheckCircle, text: "SOC 2 Type II compliant" },
+  { icon: Lock, text: 'Bank-level 256-bit encryption' },
+  { icon: Shield, text: 'Read-only access - no transactions' },
+  { icon: CheckCircle, text: 'SOC 2 Type II compliant' },
 ];
 
 export default function PayrollConnections() {
@@ -82,25 +79,18 @@ export default function PayrollConnections() {
               <Building2 size={40} />
             </div>
             <h2>No payroll accounts connected</h2>
-            <p>
-              Connect your payroll bank accounts to enable automated pay runs,
-              tax filing reconciliation, and benefits payment tracking.
-            </p>
+            <p>Connect your payroll bank accounts to enable automated pay runs, tax filing reconciliation, and benefits payment tracking.</p>
 
             {/* Institution Types - 3 column grid */}
             <div className="payroll-institution-types">
-              {institutionTypes.map((type) => (
+              {institutionTypes.map(type => (
                 <div key={type.id} className="payroll-institution-card">
                   <div className="payroll-institution-icon">
                     <type.icon size={24} />
                   </div>
                   <div className="payroll-institution-info">
-                    <span className="payroll-institution-name">
-                      {type.name}
-                    </span>
-                    <span className="payroll-institution-desc">
-                      {type.description}
-                    </span>
+                    <span className="payroll-institution-name">{type.name}</span>
+                    <span className="payroll-institution-desc">{type.description}</span>
                   </div>
                   <div className="payroll-institution-status">
                     <span className="payroll-not-connected">Not connected</span>
@@ -141,23 +131,16 @@ export default function PayrollConnections() {
             </div>
             <div className="payroll-about-content">
               <p>
-                <strong>Separate from Core & CFO</strong>
-                <br />
-                Payroll connections are fully isolated from Core banking and CFO
-                connections for security and regulatory compliance.
+                <strong>Separate from Core & CFO</strong><br />
+                Payroll connections are fully isolated from Core banking and CFO connections for security and regulatory compliance.
               </p>
               <p>
-                <strong>Payroll Processing</strong>
-                <br />
-                Data from these connections powers payroll-specific features:
-                pay run reconciliation, tax remittance tracking, and benefits
-                payment verification.
+                <strong>Payroll Processing</strong><br />
+                Data from these connections powers payroll-specific features: pay run reconciliation, tax remittance tracking, and benefits payment verification.
               </p>
               <p>
-                <strong>Read-Only Access</strong>
-                <br />
-                We only read transaction data. No transfers, payments, or
-                account modifications are possible.
+                <strong>Read-Only Access</strong><br />
+                We only read transaction data. No transfers, payments, or account modifications are possible.
               </p>
             </div>
           </div>
@@ -171,21 +154,15 @@ export default function PayrollConnections() {
             <div className="payroll-connection-status">
               <div className="payroll-status-row">
                 <span className="payroll-status-label">Payroll Bank</span>
-                <span className="payroll-status-value muted">
-                  Not connected
-                </span>
+                <span className="payroll-status-value muted">Not connected</span>
               </div>
               <div className="payroll-status-row">
                 <span className="payroll-status-label">Tax Payment</span>
-                <span className="payroll-status-value muted">
-                  Not connected
-                </span>
+                <span className="payroll-status-value muted">Not connected</span>
               </div>
               <div className="payroll-status-row">
                 <span className="payroll-status-label">Benefits</span>
-                <span className="payroll-status-value muted">
-                  Not connected
-                </span>
+                <span className="payroll-status-value muted">Not connected</span>
               </div>
               <div className="payroll-status-row">
                 <span className="payroll-status-label">Last sync</span>

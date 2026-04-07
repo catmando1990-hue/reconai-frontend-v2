@@ -76,12 +76,8 @@
 }
 
 @keyframes ini-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Signals Summary Bar */
@@ -293,11 +289,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(245, 158, 11, 0.08) 0%,
-    rgba(245, 158, 11, 0.02) 100%
-  );
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%);
   border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: 10px;
 }

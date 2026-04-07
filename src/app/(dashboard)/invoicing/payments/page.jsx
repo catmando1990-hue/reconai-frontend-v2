@@ -1,115 +1,64 @@
 "use client";
 
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-} from "lucide-react";
-import { useState } from "react";
+import { ArrowDownLeft, ArrowUpRight, Calendar, DollarSign, TrendingUp } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/invoicing/InvoicingPayments.css";
-
-const mockPayments = [
-  {
-    id: 1,
-    date: "Mar 28, 2026",
-    type: "Received",
-    reference: "PMT-042",
-    party: "Summit LLC",
-    amount: 4200.0,
-    method: "ACH",
-    status: "Cleared",
-  },
-  {
-    id: 2,
-    date: "Mar 25, 2026",
-    type: "Sent",
-    reference: "PMT-041",
-    party: "Metro Supplies",
-    amount: 1350.0,
-    method: "Check",
-    status: "Cleared",
-  },
-  {
-    id: 3,
-    date: "Mar 22, 2026",
-    type: "Received",
-    reference: "PMT-040",
-    party: "RedOak Partners",
-    amount: 3200.0,
-    method: "Wire",
-    status: "Cleared",
-  },
-  {
-    id: 4,
-    date: "Mar 20, 2026",
-    type: "Received",
-    reference: "PMT-039",
-    party: "CloudBridge Inc",
-    amount: 2100.0,
-    method: "ACH",
-    status: "Cleared",
-  },
-  {
-    id: 5,
-    date: "Mar 18, 2026",
-    type: "Sent",
-    reference: "PMT-038",
-    party: "GreenLeaf Services",
-    amount: 890.0,
-    method: "ACH",
-    status: "Cleared",
-  },
-  {
-    id: 6,
-    date: "Mar 15, 2026",
-    type: "Sent",
-    reference: "PMT-037",
-    party: "CloudHost Pro",
-    amount: 2850.0,
-    method: "ACH",
-    status: "Pending",
-  },
-  {
-    id: 7,
-    date: "Mar 12, 2026",
-    type: "Received",
-    reference: "PMT-036",
-    party: "Pinnacle Systems",
-    amount: 9750.0,
-    method: "Wire",
-    status: "Cleared",
-  },
-  {
-    id: 8,
-    date: "Mar 10, 2026",
-    type: "Received",
-    reference: "PMT-035",
-    party: "Atlas Group",
-    amount: 15000.0,
-    method: "ACH",
-    status: "Cleared",
-  },
-];
+import { invoicingApi } from '@/api';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/invoicing/InvoicingPayments.css';
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
 
-export default function InvoicingPayments() {
-  const [typeFilter, setTypeFilter] = useState("All");
-  const [dateRange, setDateRange] = useState("This Month");
+function formatDateStr(dateStr) {
+  if (!dateStr) return '--';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
-  const filteredPayments = mockPayments.filter((payment) => {
-    const matchesType = typeFilter === "All" || payment.type === typeFilter;
+export default function InvoicingPayments() {
+  const [typeFilter, setTypeFilter] = useState('All');
+  const [dateRange, setDateRange] = useState('This Month');
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPayments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const raw = await invoicingApi.listPayments();
+      const list = Array.isArray(raw) ? raw : [];
+      setPayments(
+        list.map((p) => ({
+          id: p.id,
+          date: formatDateStr(p.date || p.payment_date || p.created_at),
+          type: p.type ? p.type.charAt(0).toUpperCase() + p.type.slice(1).toLowerCase() : 'Received',
+          reference: p.reference || p.payment_number || `PMT-${p.id}`,
+          party: p.party_name || p.customer_name || p.vendor_name || p.party || 'Unknown',
+          amount: p.amount || 0,
+          method: p.method || p.payment_method || 'ACH',
+          status: p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1).toLowerCase() : 'Cleared',
+        }))
+      );
+    } catch (err) {
+      console.warn('[InvoicingPayments] Failed to fetch payments:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  const filteredPayments = payments.filter((payment) => {
+    const matchesType =
+      typeFilter === 'All' || payment.type === typeFilter;
     return matchesType;
   });
 
@@ -133,10 +82,10 @@ export default function InvoicingPayments() {
       {/* Filter Controls */}
       <div className="ip-controls">
         <div className="ip-type-tabs">
-          {["All", "Received", "Sent"].map((tab) => (
+          {['All', 'Received', 'Sent'].map((tab) => (
             <button
               key={tab}
-              className={`ip-tab-btn ${typeFilter === tab ? "ip-tab-active" : ""}`}
+              className={`ip-tab-btn ${typeFilter === tab ? 'ip-tab-active' : ''}`}
               onClick={() => setTypeFilter(tab)}
             >
               {tab}
@@ -158,37 +107,48 @@ export default function InvoicingPayments() {
       </div>
 
       {/* KPI Cards */}
-      <div className="ip-kpi-grid">
-        <div className="ip-kpi-card ip-kpi-received">
-          <div className="ip-kpi-icon-wrapper ip-kpi-icon-green">
-            <ArrowDownLeft size={20} />
+      {(() => {
+        const received = payments.filter((p) => p.type === 'Received');
+        const sent = payments.filter((p) => p.type === 'Sent');
+        const receivedTotal = received.reduce((s, p) => s + p.amount, 0);
+        const sentTotal = sent.reduce((s, p) => s + p.amount, 0);
+        const net = receivedTotal - sentTotal;
+        return (
+          <div className="ip-kpi-grid">
+            <div className="ip-kpi-card ip-kpi-received">
+              <div className="ip-kpi-icon-wrapper ip-kpi-icon-green">
+                <ArrowDownLeft size={20} />
+              </div>
+              <div className="ip-kpi-content">
+                <div className="ip-kpi-label">Received This Month</div>
+                <div className="ip-kpi-value">{formatCurrency(receivedTotal)}</div>
+                <div className="ip-kpi-count">{received.length} payment{received.length !== 1 ? 's' : ''}</div>
+              </div>
+            </div>
+            <div className="ip-kpi-card ip-kpi-sent">
+              <div className="ip-kpi-icon-wrapper ip-kpi-icon-orange">
+                <ArrowUpRight size={20} />
+              </div>
+              <div className="ip-kpi-content">
+                <div className="ip-kpi-label">Sent This Month</div>
+                <div className="ip-kpi-value">{formatCurrency(sentTotal)}</div>
+                <div className="ip-kpi-count">{sent.length} payment{sent.length !== 1 ? 's' : ''}</div>
+              </div>
+            </div>
+            <div className="ip-kpi-card ip-kpi-net">
+              <div className="ip-kpi-icon-wrapper ip-kpi-icon-teal">
+                <TrendingUp size={20} />
+              </div>
+              <div className="ip-kpi-content">
+                <div className="ip-kpi-label">Net Cash Flow</div>
+                <div className={`ip-kpi-value ${net >= 0 ? 'ip-kpi-positive' : ''}`}>
+                  {net >= 0 ? '+' : '-'}{formatCurrency(Math.abs(net))}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="ip-kpi-content">
-            <div className="ip-kpi-label">Received This Month</div>
-            <div className="ip-kpi-value">$68,200.00</div>
-            <div className="ip-kpi-count">15 payments</div>
-          </div>
-        </div>
-        <div className="ip-kpi-card ip-kpi-sent">
-          <div className="ip-kpi-icon-wrapper ip-kpi-icon-orange">
-            <ArrowUpRight size={20} />
-          </div>
-          <div className="ip-kpi-content">
-            <div className="ip-kpi-label">Sent This Month</div>
-            <div className="ip-kpi-value">$9,290.00</div>
-            <div className="ip-kpi-count">4 payments</div>
-          </div>
-        </div>
-        <div className="ip-kpi-card ip-kpi-net">
-          <div className="ip-kpi-icon-wrapper ip-kpi-icon-teal">
-            <TrendingUp size={20} />
-          </div>
-          <div className="ip-kpi-content">
-            <div className="ip-kpi-label">Net Cash Flow</div>
-            <div className="ip-kpi-value ip-kpi-positive">+$58,910.00</div>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Payments Table */}
       <div className="ip-table-card">
@@ -212,12 +172,12 @@ export default function InvoicingPayments() {
                   <td>
                     <span
                       className={`ip-type-badge ${
-                        payment.type === "Received"
-                          ? "ip-type-received"
-                          : "ip-type-sent"
+                        payment.type === 'Received'
+                          ? 'ip-type-received'
+                          : 'ip-type-sent'
                       }`}
                     >
-                      {payment.type === "Received" ? (
+                      {payment.type === 'Received' ? (
                         <ArrowDownLeft size={12} />
                       ) : (
                         <ArrowUpRight size={12} />
@@ -229,12 +189,12 @@ export default function InvoicingPayments() {
                   <td className="ip-party-name">{payment.party}</td>
                   <td
                     className={`ip-amount ${
-                      payment.type === "Received"
-                        ? "ip-amount-received"
-                        : "ip-amount-sent"
+                      payment.type === 'Received'
+                        ? 'ip-amount-received'
+                        : 'ip-amount-sent'
                     }`}
                   >
-                    {payment.type === "Received" ? "+" : "-"}
+                    {payment.type === 'Received' ? '+' : '-'}
                     {formatCurrency(payment.amount)}
                   </td>
                   <td>
@@ -243,9 +203,9 @@ export default function InvoicingPayments() {
                   <td>
                     <span
                       className={`ip-status-badge ${
-                        payment.status === "Cleared"
-                          ? "ip-status-cleared"
-                          : "ip-status-pending"
+                        payment.status === 'Cleared'
+                          ? 'ip-status-cleared'
+                          : 'ip-status-pending'
                       }`}
                     >
                       {payment.status}

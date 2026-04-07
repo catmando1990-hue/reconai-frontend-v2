@@ -1,131 +1,20 @@
 "use client";
 
-import "@/styles/core/Accounts.css";
+import { useState, useEffect, useCallback } from 'react';
 import {
-  AlertCircle,
   Building2,
   Link2,
-  Loader2,
   RefreshCw,
   Trash2,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+  Loader2,
+  AlertCircle,
+} from 'lucide-react';
+import { plaidApi } from '@/api';
+import '@/styles/core/Accounts.css';
 
-// Simulated account data from backend (grouped by institution)
-const mockAccountData = [
-  {
-    institution_id: "ins_chase",
-    institution_name: "Chase",
-    item_id: "item_001",
-    accounts: [
-      {
-        id: "acc_001",
-        name: "Business Checking",
-        type: "depository",
-        subtype: "checking",
-        current: 45230.5,
-        available: 44850.0,
-        mask: "4521",
-        currency: "USD",
-      },
-      {
-        id: "acc_002",
-        name: "Business Savings",
-        type: "depository",
-        subtype: "savings",
-        current: 28750.0,
-        available: 28750.0,
-        mask: "8834",
-        currency: "USD",
-      },
-    ],
-  },
-  {
-    institution_id: "ins_bofa",
-    institution_name: "Bank of America",
-    item_id: "item_002",
-    accounts: [
-      {
-        id: "acc_003",
-        name: "Advantage Checking",
-        type: "depository",
-        subtype: "checking",
-        current: 12540.25,
-        available: 12000.0,
-        mask: "9912",
-        currency: "USD",
-      },
-    ],
-  },
-  {
-    institution_id: "ins_amex",
-    institution_name: "American Express",
-    item_id: "item_003",
-    accounts: [
-      {
-        id: "acc_004",
-        name: "Business Platinum Card",
-        type: "credit",
-        subtype: "credit card",
-        current: -2340.0,
-        available: 22660.0,
-        mask: "1004",
-        currency: "USD",
-      },
-      {
-        id: "acc_005",
-        name: "Business Gold Card",
-        type: "credit",
-        subtype: "credit card",
-        current: -875.5,
-        available: 14124.5,
-        mask: "2008",
-        currency: "USD",
-      },
-    ],
-  },
-  {
-    institution_id: "ins_wells",
-    institution_name: "Wells Fargo",
-    item_id: "item_004",
-    accounts: [
-      {
-        id: "acc_006",
-        name: "Platinum Business Checking",
-        type: "depository",
-        subtype: "checking",
-        current: 67890.0,
-        available: 67890.0,
-        mask: "3345",
-        currency: "USD",
-      },
-      {
-        id: "acc_007",
-        name: "Business Market Rate Savings",
-        type: "depository",
-        subtype: "savings",
-        current: 125000.0,
-        available: 125000.0,
-        mask: "7721",
-        currency: "USD",
-      },
-      {
-        id: "acc_008",
-        name: "Business Line of Credit",
-        type: "credit",
-        subtype: "line of credit",
-        current: -15000.0,
-        available: 35000.0,
-        mask: "5567",
-        currency: "USD",
-      },
-    ],
-  },
-];
-
-function formatCurrency(amount, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+function formatCurrency(amount, currency = 'USD') {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency: currency,
     minimumFractionDigits: 2,
   }).format(amount);
@@ -166,9 +55,7 @@ function EmptyState({ hasConnections }) {
           <Building2 size={32} />
         </div>
         <h3>No bank connected yet</h3>
-        <p>
-          Connect your first bank account to start syncing your financial data.
-        </p>
+        <p>Connect your first bank account to start syncing your financial data.</p>
         <a href="/core/bank-connections" className="connect-btn">
           <Link2 size={16} />
           Connect Bank Account
@@ -205,7 +92,7 @@ function InstitutionPanel({ institution, onRemove, onRefresh, isRefreshing }) {
           <div>
             <h3 className="institution-name">{institution.institution_name}</h3>
             <span className="account-count">
-              {accountCount} {accountCount === 1 ? "account" : "accounts"}
+              {accountCount} {accountCount === 1 ? 'account' : 'accounts'}
             </span>
           </div>
         </div>
@@ -216,7 +103,7 @@ function InstitutionPanel({ institution, onRemove, onRefresh, isRefreshing }) {
             disabled={isRefreshing}
             title="Refresh accounts"
           >
-            <RefreshCw size={16} className={isRefreshing ? "spinning" : ""} />
+            <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
           </button>
           <button
             className="action-btn remove"
@@ -242,18 +129,12 @@ function InstitutionPanel({ institution, onRemove, onRefresh, isRefreshing }) {
           {institution.accounts.map((account) => (
             <tr key={account.id}>
               <td className="account-name-col">{account.name}</td>
-              <td className="type-col">
-                {formatAccountType(account.type, account.subtype)}
-              </td>
-              <td
-                className={`balance-col ${account.current < 0 ? "negative" : ""}`}
-              >
+              <td className="type-col">{formatAccountType(account.type, account.subtype)}</td>
+              <td className={`balance-col ${account.current < 0 ? 'negative' : ''}`}>
                 {formatCurrency(account.current, account.currency)}
               </td>
               <td className="balance-col available">
-                {account.available !== null
-                  ? formatCurrency(account.available, account.currency)
-                  : "—"}
+                {account.available !== null ? formatCurrency(account.available, account.currency) : '—'}
               </td>
               <td className="mask-col">••••{account.mask}</td>
             </tr>
@@ -271,57 +152,83 @@ export default function Accounts() {
   const [hasConnections, setHasConnections] = useState(true);
   const [refreshingItems, setRefreshingItems] = useState(new Set());
 
-  // Simulate fetching accounts
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      setLoading(true);
-      try {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
+  // Fetch accounts from backend.
+  // Items: /api/plaid/items → { items: [{ item_id, institution_name, ... }] }
+  // Accounts: /api/plaid/stored-accounts → { accounts: [{ item_id, name, ... }] }
+  // Join by item_id.
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [itemsRes, accountsRes] = await Promise.all([
+        plaidApi.listItems(),
+        plaidApi.getStoredAccounts(),
+      ]);
 
-        // Simulate success
-        setInstitutions(mockAccountData);
+      const items = itemsRes?.items || (Array.isArray(itemsRes) ? itemsRes : []);
+      const accounts = accountsRes?.accounts || [];
+
+      if (items.length === 0) {
+        setHasConnections(false);
+        setInstitutions([]);
+      } else {
+        const grouped = items.map(item => ({
+          institution_id: item.institution_id,
+          institution_name: item.institution_name || 'Unknown Bank',
+          item_id: item.item_id,
+          accounts: accounts
+            .filter(acc => acc.item_id === item.item_id)
+            .map(acc => ({
+              id: acc.account_id || acc.id,
+              name: acc.name || acc.official_name || 'Account',
+              type: acc.type || 'depository',
+              subtype: acc.subtype || null,
+              current: Number(acc.current_balance ?? 0),
+              available: acc.available_balance != null ? Number(acc.available_balance) : null,
+              mask: acc.mask || '****',
+              currency: acc.iso_currency_code || 'USD',
+            })),
+        }));
+        setInstitutions(grouped);
         setHasConnections(true);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch accounts. Please try again.");
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchAccounts();
+      setError(null);
+    } catch (err) {
+      console.error('[Accounts] Failed to fetch:', err);
+      setError('Failed to fetch accounts. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
 
   const handleRemoveConnection = (itemId) => {
     // In real app, this would call API to remove the Plaid item
-    if (
-      window.confirm(
-        "Are you sure you want to remove this bank connection? All associated accounts will be unlinked.",
-      )
-    ) {
-      setInstitutions((prev) => prev.filter((inst) => inst.item_id !== itemId));
+    if (window.confirm('Are you sure you want to remove this bank connection? All associated accounts will be unlinked.')) {
+      setInstitutions(prev => prev.filter(inst => inst.item_id !== itemId));
     }
   };
 
   const handleRefreshConnection = async (itemId) => {
-    setRefreshingItems((prev) => new Set([...prev, itemId]));
-
-    // Simulate refresh delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setRefreshingItems((prev) => {
-      const next = new Set(prev);
-      next.delete(itemId);
-      return next;
-    });
+    setRefreshingItems(prev => new Set([...prev, itemId]));
+    try {
+      await plaidApi.syncTransactions({ itemId });
+      await fetchAccounts(); // Refresh all account data
+    } catch (err) {
+      console.error('[Accounts] Refresh failed:', err);
+    } finally {
+      setRefreshingItems(prev => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
+    }
   };
 
   // Calculate total accounts
-  const totalAccounts = institutions.reduce(
-    (sum, inst) => sum + inst.accounts.length,
-    0,
-  );
+  const totalAccounts = institutions.reduce((sum, inst) => sum + inst.accounts.length, 0);
 
   // Render states
   if (loading) {
@@ -370,10 +277,7 @@ export default function Accounts() {
         </div>
         <div className="header-meta">
           <span className="total-badge">
-            {institutions.length}{" "}
-            {institutions.length === 1 ? "institution" : "institutions"}{" "}
-            &middot; {totalAccounts}{" "}
-            {totalAccounts === 1 ? "account" : "accounts"}
+            {institutions.length} {institutions.length === 1 ? 'institution' : 'institutions'} &middot; {totalAccounts} {totalAccounts === 1 ? 'account' : 'accounts'}
           </span>
         </div>
       </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import "@/styles/invoicing/InvoicingInvoices.css";
 import {
   Eye,
   FileText,
@@ -9,110 +8,86 @@ import {
   Plus,
   Search,
   Send,
-} from "lucide-react";
-import { useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { invoicingApi } from '@/api';
+import '@/styles/invoicing/InvoicingInvoices.css';
 
-const invoicesData = [
-  {
-    number: "INV-2026-042",
-    customer: "Acme Corp",
-    amount: 8500.0,
-    status: "sent",
-    issueDate: "Mar 20",
-    dueDate: "Apr 15",
-    actions: ["view", "edit"],
-  },
-  {
-    number: "INV-2026-041",
-    customer: "Global Tech Solutions",
-    amount: 12350.0,
-    status: "overdue",
-    issueDate: "Feb 12",
-    dueDate: "Mar 15",
-    actions: ["view", "edit"],
-  },
-  {
-    number: "INV-2026-040",
-    customer: "Summit LLC",
-    amount: 4200.0,
-    status: "paid",
-    issueDate: "Mar 1",
-    dueDate: "Mar 28",
-    actions: ["view"],
-  },
-  {
-    number: "INV-2026-039",
-    customer: "Vertex Inc",
-    amount: 6800.0,
-    status: "draft",
-    issueDate: "Mar 28",
-    dueDate: "--",
-    actions: ["edit", "send"],
-  },
-  {
-    number: "INV-2026-038",
-    customer: "Atlas Group",
-    amount: 15000.0,
-    status: "sent",
-    issueDate: "Mar 10",
-    dueDate: "Apr 5",
-    actions: ["view", "edit"],
-  },
-  {
-    number: "INV-2026-037",
-    customer: "RedOak Partners",
-    amount: 3200.0,
-    status: "paid",
-    issueDate: "Feb 20",
-    dueDate: "Mar 18",
-    actions: ["view"],
-  },
-  {
-    number: "INV-2026-036",
-    customer: "Pinnacle Systems",
-    amount: 9750.0,
-    status: "sent",
-    issueDate: "Mar 15",
-    dueDate: "Apr 12",
-    actions: ["view", "edit"],
-  },
-  {
-    number: "INV-2026-035",
-    customer: "CloudBridge Inc",
-    amount: 2100.0,
-    status: "paid",
-    issueDate: "Feb 28",
-    dueDate: "Mar 25",
-    actions: ["view"],
-  },
-];
-
-const statusOptions = ["All", "Draft", "Sent", "Paid", "Overdue"];
+const statusOptions = ['All', 'Draft', 'Sent', 'Paid', 'Overdue'];
 
 function formatCurrency(val) {
-  return val.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
+  return val.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
   });
 }
 
 const actionIcons = {
-  view: { icon: Eye, label: "View" },
-  edit: { icon: Pencil, label: "Edit" },
-  send: { icon: Send, label: "Send" },
+  view: { icon: Eye, label: 'View' },
+  edit: { icon: Pencil, label: 'Edit' },
+  send: { icon: Send, label: 'Send' },
 };
 
+function deriveActions(status) {
+  switch (status) {
+    case 'draft':
+      return ['edit', 'send'];
+    case 'paid':
+      return ['view'];
+    default:
+      return ['view', 'edit'];
+  }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '--';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export default function InvoicingInvoices() {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [invoicesData, setInvoicesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchInvoices = useCallback(async () => {
+    setLoading(true);
+    try {
+      const raw = await invoicingApi.listInvoices();
+      const list = Array.isArray(raw) ? raw : [];
+      setInvoicesData(
+        list.map((inv) => {
+          const status = (inv.status || 'draft').toLowerCase();
+          return {
+            number: inv.invoice_number || inv.number || `INV-${inv.id}`,
+            customer: inv.customer_name || inv.customer || 'Unknown',
+            amount: inv.total || inv.amount || 0,
+            status,
+            issueDate: formatDate(inv.issue_date || inv.created_at),
+            dueDate: inv.due_date ? formatDate(inv.due_date) : '--',
+            actions: deriveActions(status),
+          };
+        })
+      );
+    } catch (err) {
+      console.warn('[InvoicingInvoices] Failed to fetch invoices:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
 
   const filtered = invoicesData.filter((inv) => {
     const matchesSearch =
       inv.number.toLowerCase().includes(search.toLowerCase()) ||
       inv.customer.toLowerCase().includes(search.toLowerCase());
     const matchesStatus =
-      statusFilter === "All" ||
+      statusFilter === 'All' ||
       inv.status.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });

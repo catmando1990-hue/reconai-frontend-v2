@@ -50,7 +50,7 @@
   font-size: 22px;
   font-weight: 700;
   color: #1e293b;
-  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
 }
 
 .ib-summary-count {
@@ -95,9 +95,7 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    opacity 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ib-record-bill-btn:hover {
@@ -226,7 +224,7 @@
 }
 
 .ib-bill-number {
-  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
   font-weight: 600;
   color: #d97706;
   font-size: 12.5px;
@@ -239,7 +237,7 @@
 
 .ib-amount {
   font-weight: 600;
-  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
   font-size: 12.5px;
 }
 
@@ -291,9 +289,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    opacity 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ib-pay-btn:hover {
@@ -313,9 +309,7 @@
   cursor: pointer;
   padding: 5px 12px;
   border-radius: 6px;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .ib-view-btn:hover {

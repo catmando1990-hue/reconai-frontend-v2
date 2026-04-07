@@ -1,7 +1,5 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/invoicing/InvoicingOverview.css";
 import {
   AlertTriangle,
   CheckCircle,
@@ -10,89 +8,152 @@ import {
   History,
   List,
   Plus,
-  Users,
-} from "lucide-react";
-
-const kpiData = [
-  {
-    label: "Outstanding Invoices",
-    amount: "$42,850",
-    detail: "8 invoices",
-    icon: FileText,
-  },
-  {
-    label: "Overdue",
-    amount: "$12,400",
-    detail: "3 invoices",
-    icon: AlertTriangle,
-  },
-  {
-    label: "Paid This Month",
-    amount: "$68,200",
-    detail: "15 invoices",
-    icon: CheckCircle,
-  },
-  {
-    label: "Bills Due",
-    amount: "$18,750",
-    detail: "5 bills",
-    icon: Clock,
-  },
-];
-
-const recentInvoices = [
-  {
-    number: "INV-2026-042",
-    customer: "Acme Corp",
-    amount: "$8,500",
-    status: "sent",
-    due: "Due Apr 15",
-  },
-  {
-    number: "INV-2026-041",
-    customer: "Global Tech",
-    amount: "$12,350",
-    status: "overdue",
-    due: "Due Mar 15",
-  },
-  {
-    number: "INV-2026-040",
-    customer: "Summit LLC",
-    amount: "$4,200",
-    status: "paid",
-    due: "Paid Mar 28",
-  },
-  {
-    number: "INV-2026-039",
-    customer: "Vertex Inc",
-    amount: "$6,800",
-    status: "draft",
-    due: "--",
-  },
-  {
-    number: "INV-2026-038",
-    customer: "Atlas Group",
-    amount: "$15,000",
-    status: "sent",
-    due: "Due Apr 5",
-  },
-];
-
-const agingData = [
-  { range: "0-30 days", amount: "$22,300", value: 22300 },
-  { range: "31-60 days", amount: "$8,150", value: 8150 },
-  { range: "61-90 days", amount: "$12,400", value: 12400 },
-  { range: "90+ days", amount: "$0", value: 0 },
-];
+  Users
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { billsApi, invoicingApi } from '@/api';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/invoicing/InvoicingOverview.css';
 
 const quickLinks = [
-  { label: "New Invoice", icon: Plus },
-  { label: "View All Invoices", icon: List },
-  { label: "Manage Customers", icon: Users },
-  { label: "Payment History", icon: History },
+  { label: 'New Invoice', icon: Plus },
+  { label: 'View All Invoices', icon: List },
+  { label: 'Manage Customers', icon: Users },
+  { label: 'Payment History', icon: History },
 ];
 
+function formatCurrency(value) {
+  return value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '--';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export default function InvoicingOverview() {
+  const [kpiData, setKpiData] = useState([
+    { label: 'Outstanding Invoices', amount: '--', detail: '--', icon: FileText },
+    { label: 'Overdue', amount: '--', detail: '--', icon: AlertTriangle },
+    { label: 'Paid This Month', amount: '--', detail: '--', icon: CheckCircle },
+    { label: 'Bills Due', amount: '--', detail: '--', icon: Clock },
+  ]);
+  const [recentInvoices, setRecentInvoices] = useState([]);
+  const [agingData, setAgingData] = useState([
+    { range: '0-30 days', amount: '$0', value: 0 },
+    { range: '31-60 days', amount: '$0', value: 0 },
+    { range: '61-90 days', amount: '$0', value: 0 },
+    { range: '90+ days', amount: '$0', value: 0 },
+  ]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [invoicesRaw, billsRaw, agingRaw] = await Promise.all([
+        invoicingApi.listInvoices(),
+        billsApi.listBills(),
+        invoicingApi.getArAging().catch(() => null),
+      ]);
+
+      const invoices = Array.isArray(invoicesRaw) ? invoicesRaw : [];
+      const bills = Array.isArray(billsRaw) ? billsRaw : [];
+
+      // Normalize invoices
+      const normalizedInvoices = invoices.map((inv) => ({
+        id: inv.id,
+        number: inv.invoice_number || inv.number || `INV-${inv.id}`,
+        customer: inv.customer_name || inv.customer || 'Unknown',
+        amount: inv.total || inv.amount || 0,
+        status: (inv.status || 'draft').toLowerCase(),
+        issueDate: inv.issue_date || inv.created_at,
+        dueDate: inv.due_date,
+      }));
+
+      // Compute KPI data
+      const outstanding = normalizedInvoices.filter((i) => i.status === 'sent' || i.status === 'overdue');
+      const overdue = normalizedInvoices.filter((i) => i.status === 'overdue');
+      const paid = normalizedInvoices.filter((i) => i.status === 'paid');
+      const pendingBills = bills.filter(
+        (b) => (b.status || '').toLowerCase() === 'pending' || (b.status || '').toLowerCase() === 'overdue'
+      );
+
+      setKpiData([
+        {
+          label: 'Outstanding Invoices',
+          amount: formatCurrency(outstanding.reduce((s, i) => s + i.amount, 0)),
+          detail: `${outstanding.length} invoice${outstanding.length !== 1 ? 's' : ''}`,
+          icon: FileText,
+        },
+        {
+          label: 'Overdue',
+          amount: formatCurrency(overdue.reduce((s, i) => s + i.amount, 0)),
+          detail: `${overdue.length} invoice${overdue.length !== 1 ? 's' : ''}`,
+          icon: AlertTriangle,
+        },
+        {
+          label: 'Paid This Month',
+          amount: formatCurrency(paid.reduce((s, i) => s + i.amount, 0)),
+          detail: `${paid.length} invoice${paid.length !== 1 ? 's' : ''}`,
+          icon: CheckCircle,
+        },
+        {
+          label: 'Bills Due',
+          amount: formatCurrency(pendingBills.reduce((s, b) => s + (b.total || b.amount || 0), 0)),
+          detail: `${pendingBills.length} bill${pendingBills.length !== 1 ? 's' : ''}`,
+          icon: Clock,
+        },
+      ]);
+
+      // Recent invoices (latest 5)
+      const sorted = [...normalizedInvoices].sort(
+        (a, b) => new Date(b.issueDate || 0) - new Date(a.issueDate || 0)
+      );
+      setRecentInvoices(
+        sorted.slice(0, 5).map((inv) => ({
+          number: inv.number,
+          customer: inv.customer,
+          amount: formatCurrency(inv.amount),
+          status: inv.status,
+          due:
+            inv.status === 'paid'
+              ? `Paid ${formatDate(inv.dueDate)}`
+              : inv.dueDate
+                ? `Due ${formatDate(inv.dueDate)}`
+                : '--',
+        }))
+      );
+
+      // AR Aging
+      if (agingRaw) {
+        const buckets = Array.isArray(agingRaw) ? agingRaw : agingRaw.buckets || [];
+        if (buckets.length > 0) {
+          setAgingData(
+            buckets.map((b) => ({
+              range: b.range || b.label || '',
+              amount: formatCurrency(b.amount || b.value || 0),
+              value: b.amount || b.value || 0,
+            }))
+          );
+        }
+      }
+    } catch (err) {
+      console.warn('[InvoicingOverview] Failed to fetch data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const maxAging = Math.max(...agingData.map((d) => d.value), 1);
 
   return (
@@ -144,11 +205,8 @@ export default function InvoicingOverview() {
                       <td>{inv.customer}</td>
                       <td className="inv-amount">{inv.amount}</td>
                       <td>
-                        <span
-                          className={`inv-status-badge inv-status-${inv.status}`}
-                        >
-                          {inv.status.charAt(0).toUpperCase() +
-                            inv.status.slice(1)}
+                        <span className={`inv-status-badge inv-status-${inv.status}`}>
+                          {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                         </span>
                       </td>
                       <td className="inv-due-date">{inv.due}</td>

@@ -1,277 +1,29 @@
 "use client";
 
-import "@/styles/core/Transactions.css";
+import { useState, useEffect, useCallback } from 'react';
 import {
-  AlertCircle,
-  Building2,
   ChevronLeft,
   ChevronRight,
-  Filter,
-  Link2,
   Loader2,
+  AlertCircle,
+  Building2,
+  Link2,
   Search,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-
-// Simulated transaction data from backend
-const mockTransactions = [
-  {
-    id: 1,
-    date: "2024-03-25",
-    merchant: "Starbucks",
-    description: "STARBUCKS STORE #12345",
-    amount: 5.75,
-    status: "posted",
-  },
-  {
-    id: 2,
-    date: "2024-03-25",
-    merchant: "Amazon",
-    description: "AMAZON.COM*1A2B3C4D5",
-    amount: 127.43,
-    status: "posted",
-  },
-  {
-    id: 3,
-    date: "2024-03-25",
-    merchant: null,
-    description: "ACH DEPOSIT - PAYROLL",
-    amount: -3250.0,
-    status: "posted",
-  },
-  {
-    id: 4,
-    date: "2024-03-24",
-    merchant: "Uber",
-    description: "UBER *TRIP",
-    amount: 24.5,
-    status: "posted",
-  },
-  {
-    id: 5,
-    date: "2024-03-24",
-    merchant: "Target",
-    description: "TARGET 00012345",
-    amount: 89.32,
-    status: "posted",
-  },
-  {
-    id: 6,
-    date: "2024-03-24",
-    merchant: null,
-    description: "WIRE TRANSFER IN",
-    amount: -5000.0,
-    status: "posted",
-  },
-  {
-    id: 7,
-    date: "2024-03-24",
-    merchant: "Shell",
-    description: "SHELL OIL 57442345233",
-    amount: 48.72,
-    status: "posted",
-  },
-  {
-    id: 8,
-    date: "2024-03-23",
-    merchant: "Whole Foods",
-    description: "WHOLE FOODS MKT #10234",
-    amount: 156.89,
-    status: "posted",
-  },
-  {
-    id: 9,
-    date: "2024-03-23",
-    merchant: null,
-    description: null,
-    amount: 75.0,
-    status: "pending",
-  },
-  {
-    id: 10,
-    date: "2024-03-23",
-    merchant: "Netflix",
-    description: "NETFLIX.COM",
-    amount: 15.99,
-    status: "posted",
-  },
-  {
-    id: 11,
-    date: "2024-03-23",
-    merchant: "Spotify",
-    description: "SPOTIFY USA",
-    amount: 9.99,
-    status: "posted",
-  },
-  {
-    id: 12,
-    date: "2024-03-22",
-    merchant: null,
-    description: "CHECK DEPOSIT",
-    amount: -1200.0,
-    status: "posted",
-  },
-  {
-    id: 13,
-    date: "2024-03-22",
-    merchant: "Home Depot",
-    description: "THE HOME DEPOT #4521",
-    amount: 234.56,
-    status: "posted",
-  },
-  {
-    id: 14,
-    date: "2024-03-22",
-    merchant: "Costco",
-    description: "COSTCO WHSE #1234",
-    amount: 312.47,
-    status: "posted",
-  },
-  {
-    id: 15,
-    date: "2024-03-22",
-    merchant: "Apple",
-    description: "APPLE.COM/BILL",
-    amount: 0.99,
-    status: "posted",
-  },
-  {
-    id: 16,
-    date: "2024-03-21",
-    merchant: "Walgreens",
-    description: "WALGREENS #12345",
-    amount: 23.45,
-    status: "posted",
-  },
-  {
-    id: 17,
-    date: "2024-03-21",
-    merchant: null,
-    description: "VENMO PAYMENT",
-    amount: -150.0,
-    status: "posted",
-  },
-  {
-    id: 18,
-    date: "2024-03-21",
-    merchant: "CVS",
-    description: "CVS/PHARMACY #04567",
-    amount: 34.21,
-    status: "pending",
-  },
-  {
-    id: 19,
-    date: "2024-03-21",
-    merchant: "Chipotle",
-    description: "CHIPOTLE 1234",
-    amount: 12.85,
-    status: "posted",
-  },
-  {
-    id: 20,
-    date: "2024-03-20",
-    merchant: null,
-    description: "DIRECT DEPOSIT - EMPLOYER",
-    amount: -3250.0,
-    status: "posted",
-  },
-  {
-    id: 21,
-    date: "2024-03-20",
-    merchant: "AT&T",
-    description: "ATT*BILL PAYMENT",
-    amount: 85.0,
-    status: "posted",
-  },
-  {
-    id: 22,
-    date: "2024-03-20",
-    merchant: "Comcast",
-    description: "COMCAST CABLE COMM",
-    amount: 125.0,
-    status: "posted",
-  },
-  {
-    id: 23,
-    date: "2024-03-19",
-    merchant: "Delta",
-    description: "DELTA AIR 0062345678",
-    amount: 425.0,
-    status: "posted",
-  },
-  {
-    id: 24,
-    date: "2024-03-19",
-    merchant: "Marriott",
-    description: "MARRIOTT HOTELS",
-    amount: 189.0,
-    status: "posted",
-  },
-  {
-    id: 25,
-    date: "2024-03-19",
-    merchant: null,
-    description: "ZELLE TRANSFER FROM JOHN",
-    amount: -200.0,
-    status: "posted",
-  },
-  {
-    id: 26,
-    date: "2024-03-18",
-    merchant: "Trader Joes",
-    description: "TRADER JOE'S #123",
-    amount: 67.89,
-    status: "posted",
-  },
-  {
-    id: 27,
-    date: "2024-03-18",
-    merchant: "Petco",
-    description: "PETCO ANIMAL SUPPLIES",
-    amount: 45.32,
-    status: "posted",
-  },
-  {
-    id: 28,
-    date: "2024-03-18",
-    merchant: null,
-    description: "ATM WITHDRAWAL",
-    amount: 200.0,
-    status: "posted",
-  },
-  {
-    id: 29,
-    date: "2024-03-17",
-    merchant: "Lyft",
-    description: "LYFT *RIDE",
-    amount: 18.75,
-    status: "posted",
-  },
-  {
-    id: 30,
-    date: "2024-03-17",
-    merchant: "DoorDash",
-    description: "DOORDASH*ORDER",
-    amount: 32.45,
-    status: "posted",
-  },
-];
+  Filter,
+} from 'lucide-react';
+import { transactionsApi } from '@/api';
+import '@/styles/core/Transactions.css';
 
 const PAGE_SIZE = 15;
 
-const accountOptions = [
-  "All Accounts",
-  "Chase Business Checking",
-  "Bank of America Savings",
-  "American Express",
-];
-const statusOptions = ["All Statuses", "Posted", "Pending"];
+const accountOptions = ['All Accounts', 'Chase Business Checking', 'Bank of America Savings', 'American Express'];
+const statusOptions = ['All Statuses', 'Posted', 'Pending'];
 
 function formatCurrency(amount) {
   const absAmount = Math.abs(amount);
-  const formatted = absAmount.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
+  const formatted = absAmount.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
   });
 
   // Positive amounts are outflows (money going out) - show with minus
@@ -286,17 +38,16 @@ function formatCurrency(amount) {
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
 function getMerchantDisplay(merchant, description) {
-  const primary = merchant || description || "Unknown";
-  const secondary =
-    merchant && description && merchant !== description ? description : null;
+  const primary = merchant || description || 'Unknown';
+  const secondary = merchant && description && merchant !== description ? description : null;
   return { primary, secondary };
 }
 
@@ -341,35 +92,45 @@ export default function Transactions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasConnectedAccounts] = useState(true); // Simulated
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAccount, setSelectedAccount] = useState("All Accounts");
-  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [hasConnectedAccounts, setHasConnectedAccounts] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState('All Accounts');
+  const [selectedStatus, setSelectedStatus] = useState('All Statuses');
 
-  // Simulate fetching transactions
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
-
-        // Simulate success
-        setTransactions(mockTransactions);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch transactions. Please try again.");
-      } finally {
-        setLoading(false);
+  // Fetch transactions from backend.
+  // Backend response shape: { ok, transactions, total, limit, offset }
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await transactionsApi.getTransactions({ limit: 200 });
+      const txns = Array.isArray(data) ? data : (data?.transactions || []);
+      // Normalize backend fields to match component expectations
+      const normalized = txns.map(t => ({
+        id: t.transaction_id || t.id,
+        date: t.date || t.authorized_date,
+        merchant: t.merchant_name || t.merchant || null,
+        description: t.name || t.description || null,
+        amount: t.amount,
+        status: t.pending ? 'pending' : (t.status || 'posted'),
+      }));
+      setTransactions(normalized);
+      setHasConnectedAccounts(normalized.length > 0 || (data && data.ok));
+      setError(null);
+    } catch (err) {
+      console.error('[Transactions] Failed to fetch:', err);
+      if (err.status === 404 || err.code === 'NOT_FOUND') {
+        setHasConnectedAccounts(false);
+      } else {
+        setError('Failed to fetch transactions. Please try again.');
       }
-    };
-
-    if (hasConnectedAccounts) {
-      fetchTransactions();
-    } else {
+    } finally {
       setLoading(false);
     }
-  }, [hasConnectedAccounts]);
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   // Filter transactions
   const filteredTransactions = transactions.filter((t) => {
@@ -378,10 +139,10 @@ export default function Transactions() {
       (t.merchant && t.merchant.toLowerCase().includes(searchLower)) ||
       (t.description && t.description.toLowerCase().includes(searchLower));
     const matchesStatus =
-      selectedStatus === "All Statuses" ||
+      selectedStatus === 'All Statuses' ||
       t.status.toLowerCase() === selectedStatus.toLowerCase();
 
-    return (searchTerm === "" || matchesSearch) && matchesStatus;
+    return (searchTerm === '' || matchesSearch) && matchesStatus;
   });
 
   // Pagination calculations
@@ -397,11 +158,11 @@ export default function Transactions() {
   }, [searchTerm, selectedAccount, selectedStatus]);
 
   const goToPrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+    setCurrentPage(prev => Math.max(prev - 1, 1));
   };
 
   const goToNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
   };
 
   // Render states
@@ -468,9 +229,7 @@ export default function Transactions() {
             onChange={(e) => setSelectedAccount(e.target.value)}
           >
             {accountOptions.map((acc) => (
-              <option key={acc} value={acc}>
-                {acc}
-              </option>
+              <option key={acc} value={acc}>{acc}</option>
             ))}
           </select>
           <select
@@ -478,9 +237,7 @@ export default function Transactions() {
             onChange={(e) => setSelectedStatus(e.target.value)}
           >
             {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
+              <option key={status} value={status}>{status}</option>
             ))}
           </select>
           <button className="filter-btn" title="More Filters">
@@ -504,7 +261,7 @@ export default function Transactions() {
             {currentTransactions.map((transaction) => {
               const { primary, secondary } = getMerchantDisplay(
                 transaction.merchant,
-                transaction.description,
+                transaction.description
               );
               const isInflow = transaction.amount < 0;
 
@@ -519,14 +276,12 @@ export default function Transactions() {
                       </span>
                     )}
                   </td>
-                  <td
-                    className={`amount-col ${isInflow ? "inflow" : "outflow"}`}
-                  >
+                  <td className={`amount-col ${isInflow ? 'inflow' : 'outflow'}`}>
                     {formatCurrency(transaction.amount)}
                   </td>
                   <td className="status-col">
                     <span className={`status-badge ${transaction.status}`}>
-                      {transaction.status === "pending" ? "Pending" : "Posted"}
+                      {transaction.status === 'pending' ? 'Pending' : 'Posted'}
                     </span>
                   </td>
                 </tr>

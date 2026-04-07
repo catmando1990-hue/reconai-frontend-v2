@@ -1,6 +1,6 @@
 "use client";
 
-import PayrollChat from "@/components/PayrollChat";
+import PayrollChat from "@/components/recon/PayrollChat";
 import "@/styles/payroll/PayrollLayout.css";
 import {
   Brain,

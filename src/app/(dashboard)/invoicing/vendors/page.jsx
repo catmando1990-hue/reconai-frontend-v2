@@ -1,77 +1,48 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/invoicing/InvoicingVendors.css";
-import {
-  DollarSign,
-  FileText,
-  Mail,
-  Phone,
-  Search,
-  UserPlus,
-} from "lucide-react";
-import { useState } from "react";
-
-const mockVendors = [
-  {
-    id: 1,
-    name: "Office Solutions Co",
-    contactName: "Tom Wilson",
-    email: "tom@officesolutions.com",
-    phone: "(555) 111-2222",
-    outstanding: 4200,
-    billCount: 8,
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "CloudHost Pro",
-    contactName: "Emily Davis",
-    email: "emily@cloudhost.pro",
-    phone: "(555) 222-3333",
-    outstanding: 2850,
-    billCount: 12,
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Metro Supplies",
-    contactName: "Robert Brown",
-    email: "robert@metrosupplies.com",
-    phone: "(555) 333-4444",
-    outstanding: 0,
-    billCount: 6,
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "SecureIT Solutions",
-    contactName: "Karen White",
-    email: "karen@secureit.com",
-    phone: "(555) 444-5555",
-    outstanding: 11700,
-    billCount: 4,
-    status: "Active",
-  },
-  {
-    id: 5,
-    name: "GreenLeaf Services",
-    contactName: "James Taylor",
-    email: "james@greenleaf.co",
-    phone: "(555) 555-6666",
-    outstanding: 0,
-    billCount: 3,
-    status: "Inactive",
-  },
-];
+import { DollarSign, FileText, Mail, Phone, Search, UserPlus } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { vendorsApi } from '@/api';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/invoicing/InvoicingVendors.css';
 
 export default function InvoicingVendors() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredVendors = mockVendors.filter(
+  const fetchVendors = useCallback(async () => {
+    setLoading(true);
+    try {
+      const raw = await vendorsApi.listVendors();
+      const list = Array.isArray(raw) ? raw : [];
+      setVendors(
+        list.map((v) => ({
+          id: v.id,
+          name: v.name || v.company_name || 'Unknown',
+          contactName: v.contact_name || v.contact || '',
+          email: v.email || '',
+          phone: v.phone || '',
+          outstanding: v.outstanding_balance || v.outstanding || 0,
+          billCount: v.bill_count || v.bills_count || 0,
+          status: v.status ? v.status.charAt(0).toUpperCase() + v.status.slice(1).toLowerCase() : 'Active',
+        }))
+      );
+    } catch (err) {
+      console.warn('[InvoicingVendors] Failed to fetch vendors:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
+
+  const filteredVendors = vendors.filter(
     (vendor) =>
       vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      vendor.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -107,12 +78,12 @@ export default function InvoicingVendors() {
         {filteredVendors.map((vendor) => (
           <div key={vendor.id} className="iv-card">
             <div className="iv-card-header">
-              <div className="iv-avatar">{vendor.name.charAt(0)}</div>
+              <div className="iv-avatar">
+                {vendor.name.charAt(0)}
+              </div>
               <div className="iv-card-title-group">
                 <h3 className="iv-card-name">{vendor.name}</h3>
-                <span
-                  className={`iv-status-badge ${vendor.status === "Active" ? "iv-status-active" : "iv-status-inactive"}`}
-                >
+                <span className={`iv-status-badge ${vendor.status === 'Active' ? 'iv-status-active' : 'iv-status-inactive'}`}>
                   {vendor.status}
                 </span>
               </div>
@@ -133,9 +104,7 @@ export default function InvoicingVendors() {
             <div className="iv-card-footer">
               <div className="iv-stat">
                 <DollarSign size={14} className="iv-stat-icon" />
-                <span
-                  className={`iv-stat-value ${vendor.outstanding > 0 ? "iv-outstanding-highlight" : ""}`}
-                >
+                <span className={`iv-stat-value ${vendor.outstanding > 0 ? 'iv-outstanding-highlight' : ''}`}>
                   Bills Outstanding: ${vendor.outstanding.toLocaleString()}
                 </span>
               </div>

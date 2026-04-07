@@ -63,11 +63,7 @@
 }
 
 .report-nav-item.active {
-  background: linear-gradient(
-    135deg,
-    rgba(26, 188, 156, 0.1),
-    rgba(26, 188, 156, 0.05)
-  );
+  background: linear-gradient(135deg, rgba(26, 188, 156, 0.1), rgba(26, 188, 156, 0.05));
   color: #1abc9c;
 }
 
@@ -961,12 +957,8 @@
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Data Integrity */
@@ -979,11 +971,7 @@
 .integrity-score {
   text-align: center;
   padding: 24px 48px;
-  background: linear-gradient(
-    135deg,
-    rgba(26, 188, 156, 0.1),
-    rgba(26, 188, 156, 0.05)
-  );
+  background: linear-gradient(135deg, rgba(26, 188, 156, 0.1), rgba(26, 188, 156, 0.05));
   border-radius: 12px;
 }
 

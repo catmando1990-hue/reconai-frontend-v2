@@ -1,47 +1,49 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/cfo/CFOConnections.css";
 import {
   Building2,
-  CheckCircle,
-  CreditCard,
-  Info,
-  Landmark,
-  Lock,
   Plus,
-  RefreshCw,
   Shield,
+  Lock,
+  CheckCircle,
+  AlertCircle,
+  ExternalLink,
+  Info,
   Wallet,
-} from "lucide-react";
+  CreditCard,
+  Landmark,
+  RefreshCw,
+} from 'lucide-react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/cfo/CFOConnections.css';
 
 // Supported institution types
 const institutionTypes = [
   {
-    id: "bank",
-    name: "Bank Accounts",
+    id: 'bank',
+    name: 'Bank Accounts',
     icon: Landmark,
-    description: "Connect checking, savings, and money market accounts.",
+    description: 'Connect checking, savings, and money market accounts.',
   },
   {
-    id: "credit",
-    name: "Credit Cards",
+    id: 'credit',
+    name: 'Credit Cards',
     icon: CreditCard,
-    description: "Track credit card transactions and balances.",
+    description: 'Track credit card transactions and balances.',
   },
   {
-    id: "accounting",
-    name: "Accounting Software",
+    id: 'accounting',
+    name: 'Accounting Software',
     icon: Wallet,
-    description: "Sync with QuickBooks, Xero, or other accounting platforms.",
+    description: 'Sync with QuickBooks, Xero, or other accounting platforms.',
   },
 ];
 
 // Security features
 const securityFeatures = [
-  { icon: Lock, text: "Bank-level 256-bit encryption" },
-  { icon: Shield, text: "Read-only access - no transactions" },
-  { icon: CheckCircle, text: "SOC 2 Type II compliant" },
+  { icon: Lock, text: 'Bank-level 256-bit encryption' },
+  { icon: Shield, text: 'Read-only access - no transactions' },
+  { icon: CheckCircle, text: 'SOC 2 Type II compliant' },
 ];
 
 export default function CFOConnections() {
@@ -62,10 +64,7 @@ export default function CFOConnections() {
           <header className="connections-header">
             <div className="header-content">
               <h1>CFO Connections</h1>
-              <p>
-                Connect financial accounts for executive-level insights, cash
-                flow analysis, and forecasting.
-              </p>
+              <p>Connect financial accounts for executive-level insights, cash flow analysis, and forecasting.</p>
             </div>
             <button className="connect-btn primary">
               <Plus size={16} />
@@ -79,15 +78,11 @@ export default function CFOConnections() {
               <Building2 size={40} />
             </div>
             <h2>No accounts connected</h2>
-            <p>
-              Connect your business accounts to unlock CFO intelligence features
-              including cash flow analysis, runway calculations, and financial
-              projections.
-            </p>
+            <p>Connect your business accounts to unlock CFO intelligence features including cash flow analysis, runway calculations, and financial projections.</p>
 
             {/* Institution Types */}
             <div className="institution-types">
-              {institutionTypes.map((type) => (
+              {institutionTypes.map(type => (
                 <button key={type.id} className="institution-card">
                   <type.icon size={24} />
                   <div className="institution-info">
@@ -138,22 +133,16 @@ export default function CFOConnections() {
             </div>
             <div className="about-content">
               <p>
-                <strong>Separate from Core</strong>
-                <br />
-                CFO connections are isolated from Core banking connections for
-                security and organizational separation.
+                <strong>Separate from Core</strong><br />
+                CFO connections are isolated from Core banking connections for security and organizational separation.
               </p>
               <p>
-                <strong>Executive Insights</strong>
-                <br />
-                Data from these connections powers CFO-specific features:
-                runway, burn rate, cash flow, and board reporting.
+                <strong>Executive Insights</strong><br />
+                Data from these connections powers CFO-specific features: runway, burn rate, cash flow, and board reporting.
               </p>
               <p>
-                <strong>Read-Only Access</strong>
-                <br />
-                We only read transaction data. No transfers, payments, or
-                account modifications are possible.
+                <strong>Read-Only Access</strong><br />
+                We only read transaction data. No transfers, payments, or account modifications are possible.
               </p>
             </div>
           </div>

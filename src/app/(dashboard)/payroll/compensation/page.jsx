@@ -1,7 +1,5 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/payroll/PayrollCompensation.css";
 import {
   Award,
   BarChart3,
@@ -10,60 +8,62 @@ import {
   DollarSign,
   TrendingDown,
   TrendingUp,
-  Users,
-} from "lucide-react";
+  Users
+} from 'lucide-react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/payroll/PayrollCompensation.css';
 
 const salaryBands = [
   {
-    department: "Engineering",
+    department: 'Engineering',
     headcount: 18,
     min: 120000,
     max: 180000,
     avg: 155000,
-    change: "+3.2%",
-    trend: "up",
+    change: '+3.2%',
+    trend: 'up',
   },
   {
-    department: "Design",
+    department: 'Design',
     headcount: 10,
     min: 95000,
     max: 140000,
     avg: 118000,
-    change: "+2.8%",
-    trend: "up",
+    change: '+2.8%',
+    trend: 'up',
   },
   {
-    department: "Marketing",
+    department: 'Marketing',
     headcount: 11,
     min: 85000,
     max: 130000,
     avg: 108000,
-    change: "+1.5%",
-    trend: "up",
+    change: '+1.5%',
+    trend: 'up',
   },
   {
-    department: "Operations",
+    department: 'Operations',
     headcount: 8,
     min: 75000,
     max: 115000,
     avg: 95000,
-    change: "-0.4%",
-    trend: "down",
+    change: '-0.4%',
+    trend: 'down',
   },
 ];
 
 const payrollCalendar = [
-  { label: "Next Pay Date", value: "Apr 15, 2026" },
-  { label: "Review Cycle", value: "Jul 2026" },
-  { label: "Bonus Payout", value: "Dec 2026" },
-  { label: "Open Enrollment", value: "Nov 2026" },
+  { label: 'Next Pay Date', value: 'Apr 15, 2026' },
+  { label: 'Review Cycle', value: 'Jul 2026' },
+  { label: 'Bonus Payout', value: 'Dec 2026' },
+  { label: 'Open Enrollment', value: 'Nov 2026' },
 ];
 
 const compensationSummary = [
-  { label: "Base Salary", value: "$3,840,000" },
-  { label: "Bonuses", value: "$384,000" },
-  { label: "Benefits", value: "$312,400" },
-  { label: "Equity/Stock", value: "$86,000" },
+  { label: 'Base Salary', value: '$3,840,000' },
+  { label: 'Bonuses', value: '$384,000' },
+  { label: 'Benefits', value: '$312,400' },
+  { label: 'Equity/Stock', value: '$86,000' },
 ];
 
 function formatCurrency(amount) {
@@ -98,9 +98,7 @@ export default function PayrollCompensation() {
             <DollarSign size={22} />
             <h1>Compensation</h1>
           </div>
-          <p className="header-subtitle">
-            Salary bands and compensation management
-          </p>
+          <p className="header-subtitle">Salary bands and compensation management</p>
         </div>
       </header>
 
@@ -175,12 +173,7 @@ export default function PayrollCompensation() {
                 <span>Change</span>
               </div>
               {salaryBands.map((band) => {
-                const pct = bandPercent(
-                  band.min,
-                  band.max,
-                  band.avg,
-                  globalMax,
-                );
+                const pct = bandPercent(band.min, band.max, band.avg, globalMax);
                 return (
                   <div key={band.department} className="band-table-row">
                     <span className="band-dept">
@@ -189,18 +182,14 @@ export default function PayrollCompensation() {
                     </span>
                     <span className="band-headcount">{band.headcount}</span>
                     <span className="band-range">
-                      {formatCurrency(band.min)} &ndash;{" "}
-                      {formatCurrency(band.max)}
+                      {formatCurrency(band.min)} &ndash; {formatCurrency(band.max)}
                     </span>
                     <span className="band-avg">{formatCurrency(band.avg)}</span>
                     <span className="band-visual">
                       <div className="band-bar-track">
                         <div
                           className="band-bar-fill"
-                          style={{
-                            left: `${pct.left}%`,
-                            width: `${pct.width}%`,
-                          }}
+                          style={{ left: `${pct.left}%`, width: `${pct.width}%` }}
                         >
                           <div
                             className="band-bar-marker"
@@ -211,8 +200,8 @@ export default function PayrollCompensation() {
                       </div>
                     </span>
                     <span className={`band-change ${band.trend}`}>
-                      {band.trend === "up" && <TrendingUp size={12} />}
-                      {band.trend === "down" && <TrendingDown size={12} />}
+                      {band.trend === 'up' && <TrendingUp size={12} />}
+                      {band.trend === 'down' && <TrendingDown size={12} />}
                       {band.change}
                     </span>
                   </div>
@@ -233,28 +222,20 @@ export default function PayrollCompensation() {
                   <div className="dept-card-header">
                     <Briefcase size={14} />
                     <span className="dept-card-name">{band.department}</span>
-                    <span className="dept-card-count">
-                      {band.headcount} people
-                    </span>
+                    <span className="dept-card-count">{band.headcount} people</span>
                   </div>
                   <div className="dept-card-body">
                     <div className="dept-stat">
                       <span className="dept-stat-label">Min</span>
-                      <span className="dept-stat-value">
-                        {formatCurrency(band.min)}
-                      </span>
+                      <span className="dept-stat-value">{formatCurrency(band.min)}</span>
                     </div>
                     <div className="dept-stat">
                       <span className="dept-stat-label">Avg</span>
-                      <span className="dept-stat-value highlight">
-                        {formatCurrency(band.avg)}
-                      </span>
+                      <span className="dept-stat-value highlight">{formatCurrency(band.avg)}</span>
                     </div>
                     <div className="dept-stat">
                       <span className="dept-stat-label">Max</span>
-                      <span className="dept-stat-value">
-                        {formatCurrency(band.max)}
-                      </span>
+                      <span className="dept-stat-value">{formatCurrency(band.max)}</span>
                     </div>
                   </div>
                 </div>

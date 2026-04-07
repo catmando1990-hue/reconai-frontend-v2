@@ -59,12 +59,8 @@
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .accounts-state.loading p {
@@ -318,7 +314,7 @@
 .mask-col {
   font-size: 13px;
   color: #95a5a6;
-  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
   letter-spacing: 1px;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import InvoicingChat from "@/components/InvoicingChat";
+import InvoicingChat from "@/components/recon/InvoicingChat";
 import "@/styles/invoicing/InvoicingLayout.css";
 import {
   Brain,

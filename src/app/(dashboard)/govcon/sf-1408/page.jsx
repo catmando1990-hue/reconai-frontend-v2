@@ -1,143 +1,103 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/govcon/GovConSF1408.css";
-import {
-  AlertTriangle,
-  CheckCircle,
-  ClipboardCheck,
-  List,
-  XCircle,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle, ClipboardCheck, List, XCircle } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
-const sections = [
-  {
-    title: "Section A: General Accounting System",
-    items: [
-      {
-        description: "Segregation of direct & indirect costs",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Consistent allocation methods",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Adequate general ledger",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Chart of accounts mapped to FAR",
-        status: "Needs Review",
-        statusKey: "needs-review",
-      },
-    ],
-  },
-  {
-    title: "Section B: Cost Accounting",
-    items: [
-      {
-        description: "CAS-compliant cost accounting",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Job cost tracking system",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Accumulation of costs by contract",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Proper cost transfer controls",
-        status: "Documented",
-        statusKey: "documented",
-      },
-    ],
-  },
-  {
-    title: "Section C: Timekeeping",
-    items: [
-      {
-        description: "Daily time recording",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Supervisor approval process",
-        status: "Partial",
-        statusKey: "partial",
-      },
-      {
-        description: "Floor checks documented",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Correction procedures",
-        status: "Documented",
-        statusKey: "documented",
-      },
-    ],
-  },
-  {
-    title: "Section D: Billing & Indirect",
-    items: [
-      {
-        description: "Progress billing procedures",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Indirect rate computation",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Provisional billing rates",
-        status: "Documented",
-        statusKey: "documented",
-      },
-      {
-        description: "Unallowable cost exclusion",
-        status: "Documented",
-        statusKey: "documented",
-      },
-    ],
-  },
-];
+import { govconApi } from '@/api';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/govcon/GovConSF1408.css';
 
 const statusIcons = {
   documented: CheckCircle,
-  "needs-review": AlertTriangle,
+  'needs-review': AlertTriangle,
   partial: AlertTriangle,
-  "not-addressed": XCircle,
+  'not-addressed': XCircle,
 };
 
-const summaryData = [
-  { label: "Documented", count: 14, statusKey: "documented" },
-  { label: "Needs Review", count: 1, statusKey: "needs-review" },
-  { label: "Partial", count: 1, statusKey: "partial" },
-  { label: "Not Addressed", count: 0, statusKey: "not-addressed" },
-];
-
-const nextSteps = [
-  "Complete chart of accounts mapping",
-  "Formalize supervisor approval workflow",
-  "Schedule internal review",
-  "Prepare for DCAA walkthrough",
-];
-
 export default function GovConSF1408() {
-  const totalItems = 16;
-  const documented = 14;
-  const percentage = ((documented / totalItems) * 100).toFixed(1);
+  const [sections, setSections] = useState([]);
+  const [summaryData, setSummaryData] = useState([]);
+  const [nextSteps, setNextSteps] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [documented, setDocumented] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [complianceRes, mappingsRes] = await Promise.all([
+        govconApi.getSF1408Compliance(),
+        govconApi.getSF1408Mappings(),
+      ]);
+
+      const compliance = complianceRes.data ?? complianceRes;
+      const mappings = mappingsRes.data ?? mappingsRes;
+
+      // Normalize sections from compliance data
+      const rawSections = compliance.sections ?? mappings.sections ?? [];
+      const normalizedSections = rawSections.map((section) => ({
+        title: section.title ?? section.name ?? '',
+        items: (section.items ?? []).map((item) => ({
+          description: item.description ?? item.name ?? '',
+          status: item.status ?? 'Documented',
+          statusKey: item.status_key ?? item.statusKey ?? (item.status ?? 'documented').toLowerCase().replace(/\s+/g, '-'),
+        })),
+      }));
+      setSections(normalizedSections);
+
+      // Compute summary from sections
+      const allItems = normalizedSections.flatMap((s) => s.items);
+      const total = allItems.length;
+      const docCount = allItems.filter((i) => i.statusKey === 'documented').length;
+      const needsReviewCount = allItems.filter((i) => i.statusKey === 'needs-review').length;
+      const partialCount = allItems.filter((i) => i.statusKey === 'partial').length;
+      const notAddressedCount = allItems.filter((i) => i.statusKey === 'not-addressed').length;
+
+      setTotalItems(total);
+      setDocumented(docCount);
+
+      // Use backend summary if provided, otherwise compute
+      const backendSummary = compliance.summary ?? mappings.summary ?? null;
+      if (Array.isArray(backendSummary) && backendSummary.length > 0) {
+        setSummaryData(
+          backendSummary.map((s) => ({
+            label: s.label ?? s.name ?? '',
+            count: s.count ?? 0,
+            statusKey: s.status_key ?? s.statusKey ?? (s.label ?? '').toLowerCase().replace(/\s+/g, '-'),
+          }))
+        );
+      } else {
+        setSummaryData([
+          { label: 'Documented', count: docCount, statusKey: 'documented' },
+          { label: 'Needs Review', count: needsReviewCount, statusKey: 'needs-review' },
+          { label: 'Partial', count: partialCount, statusKey: 'partial' },
+          { label: 'Not Addressed', count: notAddressedCount, statusKey: 'not-addressed' },
+        ]);
+      }
+
+      // Next steps
+      const steps = compliance.next_steps ?? compliance.nextSteps ?? mappings.next_steps ?? mappings.nextSteps ?? [];
+      setNextSteps(steps.map((s) => (typeof s === 'string' ? s : s.description ?? s.text ?? '')));
+    } catch (err) {
+      console.warn('GovConSF1408: failed to fetch data', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const percentage = totalItems > 0 ? ((documented / totalItems) * 100).toFixed(1) : '0.0';
+
+  if (loading) {
+    return (
+      <div className="govcon-sf1408">
+        <p style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="govcon-sf1408">
@@ -166,10 +126,7 @@ export default function GovConSF1408() {
           <span className="gcs-score-pct">{percentage}%</span>
         </div>
         <div className="gcs-progress-bar">
-          <div
-            className="gcs-progress-fill"
-            style={{ width: `${percentage}%` }}
-          />
+          <div className="gcs-progress-fill" style={{ width: `${percentage}%` }} />
         </div>
       </div>
 
@@ -180,25 +137,21 @@ export default function GovConSF1408() {
               <h2 className="gcs-section-heading">{section.title}</h2>
               <div className="gcs-items-list">
                 {section.items.map((item, idx) => {
-                  const Icon = statusIcons[item.statusKey];
+                  const Icon = statusIcons[item.statusKey] ?? AlertTriangle;
                   return (
                     <div className="gcs-item" key={idx}>
-                      <Icon
-                        size={18}
-                        className={`gcs-item-icon gcs-status-${item.statusKey}`}
-                      />
+                      <Icon size={18} className={`gcs-item-icon gcs-status-${item.statusKey}`} />
                       <span className="gcs-item-desc">{item.description}</span>
-                      <span
-                        className={`gcs-item-status gcs-status-${item.statusKey}`}
-                      >
-                        {item.status}
-                      </span>
+                      <span className={`gcs-item-status gcs-status-${item.statusKey}`}>{item.status}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
           ))}
+          {sections.length === 0 && (
+            <p style={{ color: '#888', padding: '1rem', textAlign: 'center' }}>No SF-1408 section data available.</p>
+          )}
         </div>
 
         <div className="gcs-sidebar">
@@ -210,11 +163,7 @@ export default function GovConSF1408() {
             <div className="gcs-summary-grid">
               {summaryData.map((item) => (
                 <div className="gcs-summary-item" key={item.label}>
-                  <span
-                    className={`gcs-summary-count gcs-status-${item.statusKey}`}
-                  >
-                    {item.count}
-                  </span>
+                  <span className={`gcs-summary-count gcs-status-${item.statusKey}`}>{item.count}</span>
                   <span className="gcs-summary-label">{item.label}</span>
                 </div>
               ))}
@@ -233,6 +182,9 @@ export default function GovConSF1408() {
                   {step}
                 </li>
               ))}
+              {nextSteps.length === 0 && (
+                <li style={{ color: '#888' }}>No next steps defined.</li>
+              )}
             </ul>
           </div>
         </div>

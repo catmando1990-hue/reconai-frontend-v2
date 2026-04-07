@@ -1,31 +1,31 @@
 "use client";
 
-import "@/styles/core/Overview.css";
+import { useState, useEffect, useCallback } from 'react';
 import {
-  AlertTriangle,
-  ArrowLeftRight,
-  CheckCircle,
-  Copy,
-  Eye,
-  Info,
-  RefreshCw,
   Shield,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
+  ArrowLeftRight,
+  Copy,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  Info,
   X,
-} from "lucide-react";
-import { useState } from "react";
+  Eye,
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Loader2,
+} from 'lucide-react';
+import { reportsApi, intelligenceApi } from '@/api';
+import '@/styles/core/Overview.css';
 
-// Simulated backend data
-const telemetryData = {
-  auditEvents: 1247,
-  transactions: 3842,
-  duplicates: 3,
-  lastPlaidSync: new Date(Date.now() - 12 * 60 * 1000), // 12 minutes ago
-  // Net worth data
-  totalAssets: 279410.75,
-  totalLiabilities: 18215.5,
+const defaultTelemetry = {
+  auditEvents: 0,
+  transactions: 0,
+  duplicates: 0,
+  lastPlaidSync: null,
+  totalAssets: 0,
+  totalLiabilities: 0,
 };
 
 function getRelativeTime(date) {
@@ -36,7 +36,7 @@ function getRelativeTime(date) {
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);
 
-  if (diffSec < 60) return "just now";
+  if (diffSec < 60) return 'just now';
   if (diffMin < 60) return `${diffMin}m ago`;
   if (diffHour < 24) return `${diffHour}h ago`;
   return `${diffDay}d ago`;
@@ -50,31 +50,16 @@ function PolicyBanner({ onDismiss }) {
       </div>
       <div className="policy-content">
         <strong>ReconAI is a bookkeeping support surface</strong>
-        <p>
-          Records must be verified. Users should consult a qualified
-          professional for official reporting.
-        </p>
+        <p>Records must be verified. Users should consult a qualified professional for official reporting.</p>
       </div>
-      <button
-        className="policy-dismiss"
-        onClick={onDismiss}
-        aria-label="Dismiss"
-      >
+      <button className="policy-dismiss" onClick={onDismiss} aria-label="Dismiss">
         <X size={18} />
       </button>
     </div>
   );
 }
 
-function TelemetryTile({
-  icon: Icon,
-  title,
-  value,
-  subtitle,
-  chip,
-  chipType,
-  readOnly,
-}) {
+function TelemetryTile({ icon: Icon, title, value, subtitle, chip, chipType, readOnly }) {
   return (
     <div className="telemetry-tile">
       <div className="tile-header">
@@ -95,8 +80,8 @@ function TelemetryTile({
       </div>
       {chip && (
         <div className={`tile-chip ${chipType}`}>
-          {chipType === "warning" && <AlertTriangle size={14} />}
-          {chipType === "success" && <CheckCircle size={14} />}
+          {chipType === 'warning' && <AlertTriangle size={14} />}
+          {chipType === 'success' && <CheckCircle size={14} />}
           <span>{chip}</span>
         </div>
       )}
@@ -128,9 +113,9 @@ function SyncTile({ lastSync }) {
 }
 
 function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
   }).format(amount);
 }
@@ -147,15 +132,11 @@ function NetWorthTile({ assets, liabilities }) {
         </div>
         <div className="net-worth-title-section">
           <h3>Net Worth</h3>
-          <span className="net-worth-subtitle">
-            Total assets minus liabilities
-          </span>
+          <span className="net-worth-subtitle">Total assets minus liabilities</span>
         </div>
       </div>
       <div className="net-worth-value-section">
-        <span
-          className={`net-worth-value ${isPositive ? "positive" : "negative"}`}
-        >
+        <span className={`net-worth-value ${isPositive ? 'positive' : 'negative'}`}>
           {formatCurrency(netWorth)}
         </span>
       </div>
@@ -176,9 +157,7 @@ function NetWorthTile({ assets, liabilities }) {
           </div>
           <div className="breakdown-info">
             <span className="breakdown-label">Total Liabilities</span>
-            <span className="breakdown-value">
-              {formatCurrency(liabilities)}
-            </span>
+            <span className="breakdown-value">{formatCurrency(liabilities)}</span>
           </div>
         </div>
       </div>
@@ -187,18 +166,43 @@ function NetWorthTile({ assets, liabilities }) {
 }
 
 export default function Overview() {
-  // Initialize banner state from sessionStorage (lazy initializer avoids effect)
-  const [showBanner, setShowBanner] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !sessionStorage.getItem("policyBannerDismissed");
+  const [showBanner, setShowBanner] = useState(true);
+  const [data, setData] = useState(defaultTelemetry);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch overview data from backend
+  const fetchOverview = useCallback(async () => {
+    setLoading(true);
+    try {
+      const summary = await reportsApi.getDashboardSummary();
+      setData({
+        auditEvents: summary.audit_events ?? summary.auditEvents ?? 0,
+        transactions: summary.transaction_count ?? summary.transactions ?? 0,
+        duplicates: summary.duplicate_count ?? summary.duplicates ?? 0,
+        lastPlaidSync: summary.last_plaid_sync ? new Date(summary.last_plaid_sync) : null,
+        totalAssets: summary.total_assets ?? summary.totalAssets ?? 0,
+        totalLiabilities: summary.total_liabilities ?? summary.totalLiabilities ?? 0,
+      });
+    } catch (err) {
+      console.warn('[Overview] Failed to fetch dashboard summary:', err.message);
+      // Keep defaults — page still renders
+    } finally {
+      setLoading(false);
     }
-    return true;
-  });
-  const [data] = useState(telemetryData);
+  }, []);
+
+  // Check if banner was dismissed this session
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem('policyBannerDismissed');
+    if (dismissed) {
+      setShowBanner(false);
+    }
+    fetchOverview();
+  }, [fetchOverview]);
 
   const handleDismissBanner = () => {
     setShowBanner(false);
-    sessionStorage.setItem("policyBannerDismissed", "true");
+    sessionStorage.setItem('policyBannerDismissed', 'true');
   };
 
   return (
@@ -215,10 +219,7 @@ export default function Overview() {
       </div>
 
       {/* Net Worth Tile */}
-      <NetWorthTile
-        assets={data.totalAssets}
-        liabilities={data.totalLiabilities}
-      />
+      <NetWorthTile assets={data.totalAssets} liabilities={data.totalLiabilities} />
 
       {/* Telemetry Tiles */}
       <div className="telemetry-grid">
@@ -242,8 +243,8 @@ export default function Overview() {
           title="Duplicates"
           value={data.duplicates}
           subtitle="Potential duplicate entries"
-          chip={data.duplicates > 0 ? "Investigate" : "Clear"}
-          chipType={data.duplicates > 0 ? "warning" : "success"}
+          chip={data.duplicates > 0 ? 'Investigate' : 'Clear'}
+          chipType={data.duplicates > 0 ? 'warning' : 'success'}
         />
 
         <SyncTile lastSync={data.lastPlaidSync} />

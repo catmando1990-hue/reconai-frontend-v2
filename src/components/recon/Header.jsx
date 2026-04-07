@@ -1,9 +1,24 @@
 "use client";
 
 import "@/styles/recon-header.css";
-import { Bell, ChevronDown, Mail, Maximize2, Search } from "lucide-react";
+import { UserButton, useUser } from "@clerk/nextjs";
+import { Bell, ChevronDown, LogIn, Mail, Maximize2, Search } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
+  const { user, isAuthenticated } = useAuth();
+  const { user: clerkUser } = useUser();
+
+  const fullName =
+    [user?.given_name || user?.first_name || clerkUser?.firstName,
+     user?.family_name || user?.last_name || clerkUser?.lastName]
+      .filter(Boolean)
+      .join(" ") ||
+    user?.email ||
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    "User";
+
   return (
     <header className="recon-header">
       <div className="header-left">
@@ -30,15 +45,18 @@ export default function Header() {
           <span className="badge blue">3</span>
         </button>
 
-        <div className="user-profile">
-          <img
-            src="https://randomuser.me/api/portraits/men/32.jpg"
-            alt="John Doe"
-            className="user-avatar"
-          />
-          <span className="user-name">John Doe</span>
-          <ChevronDown size={16} className="user-dropdown-icon" />
-        </div>
+        {isAuthenticated ? (
+          <div className="user-profile" title={fullName}>
+            <UserButton afterSignOutUrl="/sign-in" />
+            <span className="user-name">{fullName}</span>
+            <ChevronDown size={16} className="user-dropdown-icon" />
+          </div>
+        ) : (
+          <Link href="/sign-in" className="user-profile signin-link">
+            <LogIn size={18} />
+            <span className="user-name">Sign In</span>
+          </Link>
+        )}
       </div>
     </header>
   );

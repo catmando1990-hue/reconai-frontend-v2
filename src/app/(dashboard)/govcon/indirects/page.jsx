@@ -1,7 +1,5 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/govcon/GovConIndirects.css";
 import {
   AlertTriangle,
   BarChart3,
@@ -15,149 +13,49 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
-} from "lucide-react";
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
-const kpiData = [
-  {
-    label: "Fringe Rate",
-    value: "32.5%",
-    icon: Users,
-    change: "+0.7%",
-    direction: "up",
-  },
-  {
-    label: "Overhead Rate",
-    value: "45.2%",
-    icon: Layers,
-    change: "+2.1%",
-    direction: "up",
-  },
-  {
-    label: "G&A Rate",
-    value: "12.8%",
-    icon: DollarSign,
-    change: "-0.4%",
-    direction: "down",
-  },
-  {
-    label: "Total Indirect Rate",
-    value: "90.5%",
-    icon: Percent,
-    change: "+2.4%",
-    direction: "up",
-  },
-];
+import { govconApi } from '@/api';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/govcon/GovConIndirects.css';
 
-const costPools = [
-  {
-    name: "Fringe Benefits",
-    farRef: "FAR 31.205-6",
-    baseType: "Direct Labor",
-    currentRate: "32.5%",
-    priorRate: "31.8%",
-    variance: "+0.7%",
-    varianceDir: "positive",
-    allowability: "Allowable",
-  },
-  {
-    name: "Overhead",
-    farRef: "FAR 31.203",
-    baseType: "Direct Labor",
-    currentRate: "45.2%",
-    priorRate: "43.1%",
-    variance: "+2.1%",
-    varianceDir: "positive",
-    allowability: "Allowable",
-  },
-  {
-    name: "G&A",
-    farRef: "FAR 31.203",
-    baseType: "Total Cost Input",
-    currentRate: "12.8%",
-    priorRate: "13.2%",
-    variance: "-0.4%",
-    varianceDir: "negative",
-    allowability: "Allowable",
-  },
-  {
-    name: "Material Handling",
-    farRef: "FAR 31.203",
-    baseType: "Direct Material",
-    currentRate: "3.5%",
-    priorRate: "3.2%",
-    variance: "+0.3%",
-    varianceDir: "positive",
-    allowability: "Allowable",
-  },
-  {
-    name: "Facilities",
-    farRef: "FAR 31.205-36",
-    baseType: "Direct Labor",
-    currentRate: "8.4%",
-    priorRate: "8.1%",
-    variance: "+0.3%",
-    varianceDir: "positive",
-    allowability: "Under Review",
-  },
-];
+const kpiIconMap = {
+  fringe: Users,
+  overhead: Layers,
+  'g&a': DollarSign,
+  ga: DollarSign,
+  total: Percent,
+};
 
-const rateComparisonData = [
-  { pool: "Fringe", current: 32.5, prior: 31.8 },
-  { pool: "Overhead", current: 45.2, prior: 43.1 },
-  { pool: "G&A", current: 12.8, prior: 13.2 },
-  { pool: "Mat. Handling", current: 3.5, prior: 3.2 },
-  { pool: "Facilities", current: 8.4, prior: 8.1 },
-];
-
-const casItems = [
-  {
-    standard: "CAS 401",
-    title: "Consistency in Estimating",
-    status: "documented",
-  },
-  {
-    standard: "CAS 402",
-    title: "Consistency in Allocating",
-    status: "documented",
-  },
-  {
-    standard: "CAS 405",
-    title: "Accounting for Unallowable Costs",
-    status: "documented",
-  },
-  { standard: "CAS 406", title: "Cost Accounting Period", status: "pending" },
-  {
-    standard: "CAS 410",
-    title: "G&A Expense Allocation",
-    status: "documented",
-  },
-  {
-    standard: "CAS 418",
-    title: "Direct & Indirect Cost Allocation",
-    status: "documented",
-  },
-];
+function pickKpiIcon(label) {
+  const lower = (label || '').toLowerCase();
+  for (const [key, icon] of Object.entries(kpiIconMap)) {
+    if (lower.includes(key)) return icon;
+  }
+  return Percent;
+}
 
 function getAllowabilityClass(status) {
   switch (status) {
-    case "Allowable":
-      return "gci-badge-allowable";
-    case "Under Review":
-      return "gci-badge-under-review";
-    case "Unallowable":
-      return "gci-badge-unallowable";
+    case 'Allowable':
+      return 'gci-badge-allowable';
+    case 'Under Review':
+      return 'gci-badge-under-review';
+    case 'Unallowable':
+      return 'gci-badge-unallowable';
     default:
-      return "";
+      return '';
   }
 }
 
 function getAllowabilityIcon(status) {
   switch (status) {
-    case "Allowable":
+    case 'Allowable':
       return <CheckCircle2 size={12} />;
-    case "Under Review":
+    case 'Under Review':
       return <Clock size={12} />;
-    case "Unallowable":
+    case 'Unallowable':
       return <AlertTriangle size={12} />;
     default:
       return null;
@@ -165,9 +63,96 @@ function getAllowabilityIcon(status) {
 }
 
 export default function GovConIndirects() {
-  const maxRate = Math.max(
-    ...rateComparisonData.map((d) => Math.max(d.current, d.prior)),
-  );
+  const [kpiData, setKpiData] = useState([]);
+  const [costPools, setCostPools] = useState([]);
+  const [rateComparisonData, setRateComparisonData] = useState([]);
+  const [casItems, setCasItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [poolsRes, ratesRes] = await Promise.all([
+        govconApi.listIndirectPools(),
+        govconApi.getAllocationRates(),
+      ]);
+
+      const pools = poolsRes.data ?? poolsRes;
+      const rates = ratesRes.data ?? ratesRes;
+
+      const poolList = Array.isArray(pools) ? pools : pools.pools ?? [];
+      const rateList = rates.rates ?? rates.allocation_rates ?? (Array.isArray(rates) ? rates : []);
+
+      // Build KPIs from rates
+      const kpis = rateList.map((r) => {
+        const label = r.label ?? r.name ?? r.pool ?? '';
+        const value = r.current_rate ?? r.currentRate ?? r.value ?? 0;
+        const change = r.change ?? r.variance ?? '';
+        const direction = r.direction ?? (String(change).startsWith('-') ? 'down' : 'up');
+        return {
+          label: label.includes('Rate') ? label : `${label} Rate`,
+          value: typeof value === 'number' ? `${value}%` : value,
+          icon: pickKpiIcon(label),
+          change: typeof change === 'number' ? `${change > 0 ? '+' : ''}${change}%` : change,
+          direction,
+        };
+      });
+      setKpiData(kpis);
+
+      // Build cost pools table
+      setCostPools(
+        poolList.map((p) => ({
+          name: p.name ?? '',
+          farRef: p.far_ref ?? p.farRef ?? p.far_reference ?? '',
+          baseType: p.base_type ?? p.baseType ?? '',
+          currentRate: p.current_rate ?? p.currentRate ?? '',
+          priorRate: p.prior_rate ?? p.priorRate ?? p.prior_year_rate ?? '',
+          variance: p.variance ?? '',
+          varianceDir: p.variance_dir ?? p.varianceDir ?? (String(p.variance ?? '').startsWith('-') ? 'negative' : 'positive'),
+          allowability: p.allowability ?? p.status ?? 'Allowable',
+        }))
+      );
+
+      // Build rate comparison data for bar chart
+      setRateComparisonData(
+        poolList.map((p) => ({
+          pool: p.short_name ?? p.name ?? '',
+          current: parseFloat(p.current_rate ?? p.currentRate ?? 0),
+          prior: parseFloat(p.prior_rate ?? p.priorRate ?? p.prior_year_rate ?? 0),
+        }))
+      );
+
+      // Build CAS items
+      const cas = rates.cas_items ?? rates.casItems ?? rates.cas ?? [];
+      setCasItems(
+        cas.map((item) => ({
+          standard: item.standard ?? item.code ?? '',
+          title: item.title ?? item.name ?? '',
+          status: item.status ?? 'pending',
+        }))
+      );
+    } catch (err) {
+      console.warn('GovConIndirects: failed to fetch data', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const maxRate = rateComparisonData.length > 0
+    ? Math.max(...rateComparisonData.map((d) => Math.max(d.current, d.prior)))
+    : 1;
+
+  if (loading) {
+    return (
+      <div className="govcon-indirects">
+        <p style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="govcon-indirects">
@@ -194,14 +179,8 @@ export default function GovConIndirects() {
               <div className="gci-kpi-content">
                 <span className="gci-kpi-label">{kpi.label}</span>
                 <span className="gci-kpi-value">{kpi.value}</span>
-                <span
-                  className={`gci-kpi-change ${kpi.direction === "up" ? "gci-change-up" : "gci-change-down"}`}
-                >
-                  {kpi.direction === "up" ? (
-                    <TrendingUp size={12} />
-                  ) : (
-                    <TrendingDown size={12} />
-                  )}
+                <span className={`gci-kpi-change ${kpi.direction === 'up' ? 'gci-change-up' : 'gci-change-down'}`}>
+                  {kpi.direction === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                   {kpi.change} vs prior year
                 </span>
               </div>
@@ -237,27 +216,24 @@ export default function GovConIndirects() {
                   <td className="gci-rate-current">{pool.currentRate}</td>
                   <td className="gci-rate-prior">{pool.priorRate}</td>
                   <td>
-                    <span
-                      className={`gci-variance ${pool.varianceDir === "positive" ? "gci-variance-positive" : "gci-variance-negative"}`}
-                    >
-                      {pool.varianceDir === "positive" ? (
-                        <TrendingUp size={12} />
-                      ) : (
-                        <TrendingDown size={12} />
-                      )}
+                    <span className={`gci-variance ${pool.varianceDir === 'positive' ? 'gci-variance-positive' : 'gci-variance-negative'}`}>
+                      {pool.varianceDir === 'positive' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                       {pool.variance}
                     </span>
                   </td>
                   <td>
-                    <span
-                      className={`gci-badge ${getAllowabilityClass(pool.allowability)}`}
-                    >
+                    <span className={`gci-badge ${getAllowabilityClass(pool.allowability)}`}>
                       {getAllowabilityIcon(pool.allowability)}
                       {pool.allowability}
                     </span>
                   </td>
                 </tr>
               ))}
+              {costPools.length === 0 && (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', color: '#888' }}>No cost pool data available.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -296,6 +272,9 @@ export default function GovConIndirects() {
                   </div>
                 </div>
               ))}
+              {rateComparisonData.length === 0 && (
+                <p style={{ color: '#888', padding: '0.5rem 0' }}>No rate data available.</p>
+              )}
             </div>
           </div>
 
@@ -308,25 +287,20 @@ export default function GovConIndirects() {
             <ul className="gci-cas-list">
               {casItems.map((item) => (
                 <li className="gci-cas-item" key={item.standard}>
-                  <span
-                    className={`gci-cas-dot ${item.status === "documented" ? "gci-cas-documented" : "gci-cas-pending"}`}
-                  />
+                  <span className={`gci-cas-dot ${item.status === 'documented' ? 'gci-cas-documented' : 'gci-cas-pending'}`} />
                   <div className="gci-cas-info">
                     <span className="gci-cas-standard">{item.standard}</span>
                     <span className="gci-cas-title">{item.title}</span>
                   </div>
-                  <span
-                    className={`gci-cas-status ${item.status === "documented" ? "gci-cas-status-documented" : "gci-cas-status-pending"}`}
-                  >
-                    {item.status === "documented" ? (
-                      <FileCheck size={12} />
-                    ) : (
-                      <Clock size={12} />
-                    )}
-                    {item.status === "documented" ? "Documented" : "Pending"}
+                  <span className={`gci-cas-status ${item.status === 'documented' ? 'gci-cas-status-documented' : 'gci-cas-status-pending'}`}>
+                    {item.status === 'documented' ? <FileCheck size={12} /> : <Clock size={12} />}
+                    {item.status === 'documented' ? 'Documented' : 'Pending'}
                   </span>
                 </li>
               ))}
+              {casItems.length === 0 && (
+                <li style={{ color: '#888', padding: '0.5rem 0' }}>No CAS data available.</li>
+              )}
             </ul>
           </div>
         </div>

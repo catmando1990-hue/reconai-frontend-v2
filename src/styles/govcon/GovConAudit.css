@@ -35,9 +35,7 @@
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition:
-    background-color 0.15s,
-    box-shadow 0.15s;
+  transition: background-color 0.15s, box-shadow 0.15s;
 }
 
 .gca-btn-primary {
@@ -210,7 +208,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: 0.75rem;
   color: #94a3b8;
   background: #f8fafc;

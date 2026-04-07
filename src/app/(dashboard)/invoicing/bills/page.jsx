@@ -1,111 +1,73 @@
 "use client";
 
-import {
-  ChevronDown,
-  CreditCard,
-  Eye,
-  FileText,
-  Filter,
-  Plus,
-  Search,
-} from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, CreditCard, Eye, FileText, Filter, Plus, Search } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
-import PolicyBanner from "@/components/PolicyBanner";
-import "@/styles/invoicing/InvoicingBills.css";
-
-const mockBills = [
-  {
-    id: 1,
-    billNumber: "BILL-2026-018",
-    vendor: "Office Solutions Co",
-    amount: 4200.0,
-    status: "Pending",
-    received: "Mar 20, 2026",
-    dueDate: "Apr 10, 2026",
-  },
-  {
-    id: 2,
-    billNumber: "BILL-2026-017",
-    vendor: "CloudHost Pro",
-    amount: 2850.0,
-    status: "Pending",
-    received: "Mar 15, 2026",
-    dueDate: "Apr 1, 2026",
-  },
-  {
-    id: 3,
-    billNumber: "BILL-2026-016",
-    vendor: "SecureIT Solutions",
-    amount: 11700.0,
-    status: "Overdue",
-    received: "Feb 10, 2026",
-    dueDate: "Mar 10, 2026",
-  },
-  {
-    id: 4,
-    billNumber: "BILL-2026-015",
-    vendor: "Metro Supplies",
-    amount: 1350.0,
-    status: "Paid",
-    received: "Mar 1, 2026",
-    dueDate: "Mar 25, 2026",
-  },
-  {
-    id: 5,
-    billNumber: "BILL-2026-014",
-    vendor: "GreenLeaf Services",
-    amount: 890.0,
-    status: "Paid",
-    received: "Feb 20, 2026",
-    dueDate: "Mar 15, 2026",
-  },
-  {
-    id: 6,
-    billNumber: "BILL-2026-013",
-    vendor: "CloudHost Pro",
-    amount: 2850.0,
-    status: "Paid",
-    received: "Feb 15, 2026",
-    dueDate: "Mar 1, 2026",
-  },
-  {
-    id: 7,
-    billNumber: "BILL-2026-012",
-    vendor: "Office Solutions Co",
-    amount: 3100.0,
-    status: "Scheduled",
-    received: "Mar 25, 2026",
-    dueDate: "Apr 5, 2026",
-  },
-];
+import { billsApi } from '@/api';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import '@/styles/invoicing/InvoicingBills.css';
 
 const statusClasses = {
-  Pending: "ib-status-pending",
-  Paid: "ib-status-paid",
-  Overdue: "ib-status-overdue",
-  Scheduled: "ib-status-scheduled",
+  Pending: 'ib-status-pending',
+  Paid: 'ib-status-paid',
+  Overdue: 'ib-status-overdue',
+  Scheduled: 'ib-status-scheduled',
 };
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
 
-export default function InvoicingBills() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+function formatDate(dateStr) {
+  if (!dateStr) return '--';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
-  const filteredBills = mockBills.filter((bill) => {
+export default function InvoicingBills() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBills = useCallback(async () => {
+    setLoading(true);
+    try {
+      const raw = await billsApi.listBills();
+      const list = Array.isArray(raw) ? raw : [];
+      setBills(
+        list.map((b) => ({
+          id: b.id,
+          billNumber: b.bill_number || b.number || `BILL-${b.id}`,
+          vendor: b.vendor_name || b.vendor || 'Unknown',
+          amount: b.total || b.amount || 0,
+          status: b.status ? b.status.charAt(0).toUpperCase() + b.status.slice(1).toLowerCase() : 'Pending',
+          received: formatDate(b.received_date || b.created_at),
+          dueDate: formatDate(b.due_date),
+        }))
+      );
+    } catch (err) {
+      console.warn('[InvoicingBills] Failed to fetch bills:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBills();
+  }, [fetchBills]);
+
+  const filteredBills = bills.filter((bill) => {
     const matchesSearch =
       bill.billNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bill.vendor.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
-      statusFilter === "All" || bill.status === statusFilter;
+      statusFilter === 'All' || bill.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -120,26 +82,36 @@ export default function InvoicingBills() {
 
       {/* Summary Cards */}
       <div className="ib-summary-grid">
-        <div className="ib-summary-card ib-summary-pending">
-          <div className="ib-summary-label">Total Pending</div>
-          <div className="ib-summary-value">$7,050.00</div>
-          <div className="ib-summary-count">2 bills</div>
-        </div>
-        <div className="ib-summary-card ib-summary-overdue">
-          <div className="ib-summary-label">Overdue</div>
-          <div className="ib-summary-value">$11,700.00</div>
-          <div className="ib-summary-count">1 bill</div>
-        </div>
-        <div className="ib-summary-card ib-summary-paid">
-          <div className="ib-summary-label">Paid This Month</div>
-          <div className="ib-summary-value">$5,090.00</div>
-          <div className="ib-summary-count">3 bills</div>
-        </div>
-        <div className="ib-summary-card ib-summary-scheduled">
-          <div className="ib-summary-label">Scheduled</div>
-          <div className="ib-summary-value">$3,100.00</div>
-          <div className="ib-summary-count">1 bill</div>
-        </div>
+        {(() => {
+          const pending = bills.filter((b) => b.status === 'Pending');
+          const overdue = bills.filter((b) => b.status === 'Overdue');
+          const paid = bills.filter((b) => b.status === 'Paid');
+          const scheduled = bills.filter((b) => b.status === 'Scheduled');
+          return (
+            <>
+              <div className="ib-summary-card ib-summary-pending">
+                <div className="ib-summary-label">Total Pending</div>
+                <div className="ib-summary-value">{formatCurrency(pending.reduce((s, b) => s + b.amount, 0))}</div>
+                <div className="ib-summary-count">{pending.length} bill{pending.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div className="ib-summary-card ib-summary-overdue">
+                <div className="ib-summary-label">Overdue</div>
+                <div className="ib-summary-value">{formatCurrency(overdue.reduce((s, b) => s + b.amount, 0))}</div>
+                <div className="ib-summary-count">{overdue.length} bill{overdue.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div className="ib-summary-card ib-summary-paid">
+                <div className="ib-summary-label">Paid This Month</div>
+                <div className="ib-summary-value">{formatCurrency(paid.reduce((s, b) => s + b.amount, 0))}</div>
+                <div className="ib-summary-count">{paid.length} bill{paid.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div className="ib-summary-card ib-summary-scheduled">
+                <div className="ib-summary-label">Scheduled</div>
+                <div className="ib-summary-value">{formatCurrency(scheduled.reduce((s, b) => s + b.amount, 0))}</div>
+                <div className="ib-summary-count">{scheduled.length} bill{scheduled.length !== 1 ? 's' : ''}</div>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* Header */}
@@ -205,17 +177,14 @@ export default function InvoicingBills() {
                   <td className="ib-vendor-name">{bill.vendor}</td>
                   <td className="ib-amount">{formatCurrency(bill.amount)}</td>
                   <td>
-                    <span
-                      className={`ib-status-badge ${statusClasses[bill.status]}`}
-                    >
+                    <span className={`ib-status-badge ${statusClasses[bill.status]}`}>
                       {bill.status}
                     </span>
                   </td>
                   <td>{bill.received}</td>
                   <td>{bill.dueDate}</td>
                   <td className="ib-actions">
-                    {(bill.status === "Pending" ||
-                      bill.status === "Overdue") && (
+                    {(bill.status === 'Pending' || bill.status === 'Overdue') && (
                       <button className="ib-pay-btn">
                         <CreditCard size={14} />
                         Pay

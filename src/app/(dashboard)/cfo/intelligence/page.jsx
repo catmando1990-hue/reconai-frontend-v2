@@ -1,75 +1,60 @@
 "use client";
 
-import PolicyBanner from "@/components/PolicyBanner";
+import { useState } from 'react';
 import {
-  DEFAULT_CONFIDENCE_THRESHOLD,
-  SEVERITY,
-  SIGNAL_CATEGORIES,
-  useCFOIntelligence,
-} from "@/hooks/useCFOIntelligence";
-import "@/styles/cfo/CFOIntelligence.css";
-import {
-  Activity,
-  AlertCircle,
-  AlertTriangle,
   Brain,
+  RefreshCw,
+  AlertTriangle,
+  AlertCircle,
+  Info,
   CheckCircle,
   Clock,
-  Eye,
-  FileWarning,
-  PlayCircle,
-  RefreshCw,
   Shield,
+  Eye,
+  X,
   TrendingDown,
   TrendingUp,
   Wallet,
-  X,
+  FileWarning,
+  Activity,
   Zap,
-} from "lucide-react";
-import { useState } from "react";
+  PlayCircle,
+} from 'lucide-react';
+import PolicyBanner from '@/components/recon/PolicyBanner';
+import { useCFOIntelligence, SIGNAL_CATEGORIES, SEVERITY, DEFAULT_CONFIDENCE_THRESHOLD } from '@/hooks/useCFOIntelligence';
+import '@/styles/cfo/CFOIntelligence.css';
 
 // Category display config
 const CATEGORY_CONFIG = {
-  [SIGNAL_CATEGORIES.RUNWAY_RISK]: { label: "Runway Risk", icon: TrendingDown },
-  [SIGNAL_CATEGORIES.BURN_ANOMALY]: { label: "Burn Anomaly", icon: Activity },
-  [SIGNAL_CATEGORIES.FORECAST_DEVIATION]: {
-    label: "Forecast Deviation",
-    icon: TrendingUp,
-  },
-  [SIGNAL_CATEGORIES.CASH_FLOW_VOLATILITY]: {
-    label: "Cash Flow Volatility",
-    icon: Wallet,
-  },
-  [SIGNAL_CATEGORIES.RECEIVABLES_RISK]: {
-    label: "Receivables Risk",
-    icon: FileWarning,
-  },
-  [SIGNAL_CATEGORIES.PAYABLES_RISK]: {
-    label: "Payables Risk",
-    icon: FileWarning,
-  },
+  [SIGNAL_CATEGORIES.RUNWAY_RISK]: { label: 'Runway Risk', icon: TrendingDown },
+  [SIGNAL_CATEGORIES.BURN_ANOMALY]: { label: 'Burn Anomaly', icon: Activity },
+  [SIGNAL_CATEGORIES.FORECAST_DEVIATION]: { label: 'Forecast Deviation', icon: TrendingUp },
+  [SIGNAL_CATEGORIES.CASH_FLOW_VOLATILITY]: { label: 'Cash Flow Volatility', icon: Wallet },
+  [SIGNAL_CATEGORIES.RECEIVABLES_RISK]: { label: 'Receivables Risk', icon: FileWarning },
+  [SIGNAL_CATEGORIES.PAYABLES_RISK]: { label: 'Payables Risk', icon: FileWarning },
 };
 
 // Severity display config
 const SEVERITY_CONFIG = {
-  [SEVERITY.CRITICAL]: { label: "Critical", className: "critical" },
-  [SEVERITY.HIGH]: { label: "High", className: "high" },
-  [SEVERITY.MEDIUM]: { label: "Medium", className: "medium" },
-  [SEVERITY.LOW]: { label: "Low", className: "low" },
-  [SEVERITY.INFO]: { label: "Info", className: "info" },
+  [SEVERITY.CRITICAL]: { label: 'Critical', className: 'critical' },
+  [SEVERITY.HIGH]: { label: 'High', className: 'high' },
+  [SEVERITY.MEDIUM]: { label: 'Medium', className: 'medium' },
+  [SEVERITY.LOW]: { label: 'Low', className: 'low' },
+  [SEVERITY.INFO]: { label: 'Info', className: 'info' },
 };
 
 function SeverityBadge({ severity }) {
   const config = SEVERITY_CONFIG[severity] || SEVERITY_CONFIG[SEVERITY.INFO];
   return (
-    <span className={`severity-badge ${config.className}`}>{config.label}</span>
+    <span className={`severity-badge ${config.className}`}>
+      {config.label}
+    </span>
   );
 }
 
 function ConfidenceBadge({ confidence }) {
   const percentage = Math.round(confidence * 100);
-  const level =
-    confidence >= 0.85 ? "high" : confidence >= 0.7 ? "medium" : "low";
+  const level = confidence >= 0.85 ? 'high' : confidence >= 0.7 ? 'medium' : 'low';
   return (
     <span className={`confidence-badge ${level}`}>
       {percentage}% confidence
@@ -92,7 +77,7 @@ function CategoryBadge({ category }) {
 function LoadingPlaceholder() {
   return (
     <div className="signals-loading">
-      {[1, 2, 3].map((i) => (
+      {[1, 2, 3].map(i => (
         <div key={i} className="signal-card-skeleton">
           <div className="skeleton-header">
             <div className="skeleton-badge" />
@@ -113,10 +98,7 @@ function ErrorState({ error, onRetry }) {
       <div className="error-card">
         <AlertCircle size={24} />
         <h3>Unable to load signals</h3>
-        <p>
-          {error?.message ||
-            "An error occurred while fetching CFO Intelligence signals."}
-        </p>
+        <p>{error?.message || 'An error occurred while fetching CFO Intelligence signals.'}</p>
         <button className="retry-btn" onClick={onRetry}>
           <RefreshCw size={14} />
           Retry
@@ -135,8 +117,9 @@ function EmptyState({ isLowConfidenceMode, onRunIntelligence }) {
       <h3>No signals detected</h3>
       <p>
         {isLowConfidenceMode
-          ? "No intelligence signals are available at this time. Your financial posture appears healthy."
-          : `No high-confidence signals detected. Toggle "Show low confidence" to see additional signals below ${Math.round(DEFAULT_CONFIDENCE_THRESHOLD * 100)}% confidence.`}
+          ? 'No intelligence signals are available at this time. Your financial posture appears healthy.'
+          : `No high-confidence signals detected. Toggle "Show low confidence" to see additional signals below ${Math.round(DEFAULT_CONFIDENCE_THRESHOLD * 100)}% confidence.`
+        }
       </p>
       <button className="run-btn" onClick={onRunIntelligence}>
         <PlayCircle size={16} />
@@ -150,9 +133,7 @@ function SignalCard({ signal, onViewEvidence }) {
   const timeAgo = formatTimeAgo(signal.created_at);
 
   return (
-    <div
-      className={`signal-card ${SEVERITY_CONFIG[signal.severity]?.className || ""}`}
-    >
+    <div className={`signal-card ${SEVERITY_CONFIG[signal.severity]?.className || ''}`}>
       <div className="signal-header">
         <div className="signal-badges">
           <SeverityBadge severity={signal.severity} />
@@ -182,18 +163,14 @@ function EvidenceRenderer({ evidence, depth = 0 }) {
   }
 
   // Primitive values
-  if (typeof evidence !== "object") {
+  if (typeof evidence !== 'object') {
     return <span className="evidence-value">{String(evidence)}</span>;
   }
 
   // Arrays
   if (Array.isArray(evidence)) {
     // Array of objects
-    if (
-      evidence.length > 0 &&
-      typeof evidence[0] === "object" &&
-      evidence[0] !== null
-    ) {
+    if (evidence.length > 0 && typeof evidence[0] === 'object' && evidence[0] !== null) {
       return (
         <div className="evidence-array-objects">
           {evidence.map((item, index) => (
@@ -208,9 +185,7 @@ function EvidenceRenderer({ evidence, depth = 0 }) {
     return (
       <ul className="evidence-list">
         {evidence.map((item, index) => (
-          <li key={index}>
-            <EvidenceRenderer evidence={item} depth={depth + 1} />
-          </li>
+          <li key={index}><EvidenceRenderer evidence={item} depth={depth + 1} /></li>
         ))}
       </ul>
     );
@@ -218,7 +193,7 @@ function EvidenceRenderer({ evidence, depth = 0 }) {
 
   // Objects
   return (
-    <div className={`evidence-object ${depth > 0 ? "nested" : ""}`}>
+    <div className={`evidence-object ${depth > 0 ? 'nested' : ''}`}>
       {Object.entries(evidence).map(([key, value]) => (
         <div key={key} className="evidence-row">
           <span className="evidence-key">{formatKey(key)}</span>
@@ -236,7 +211,7 @@ function EvidenceModal({ signal, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="evidence-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="evidence-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Signal Evidence</h2>
           <button className="modal-close" onClick={onClose}>
@@ -277,9 +252,8 @@ function EvidenceModal({ signal, onClose }) {
             <div>
               <strong>AI-Generated Executive Oversight Signal</strong>
               <p>
-                This signal relates to runway, forecast deviation, and cash flow
-                analysis. These insights are inputs for finance-team review
-                before strategic decisions.
+                This signal relates to runway, forecast deviation, and cash flow analysis.
+                These insights are inputs for finance-team review before strategic decisions.
               </p>
             </div>
           </div>
@@ -304,9 +278,9 @@ function formatTimeAgo(dateString) {
 
 function formatKey(key) {
   return key
-    .replace(/_/g, " ")
-    .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (str) => str.toUpperCase())
+    .replace(/_/g, ' ')
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase())
     .trim();
 }
 
@@ -340,9 +314,7 @@ export default function CFOIntelligence() {
     setSelectedSignal(null);
   };
 
-  const lowConfidenceCount =
-    totalSignalCount -
-    signals.filter((s) => s.confidence >= DEFAULT_CONFIDENCE_THRESHOLD).length;
+  const lowConfidenceCount = totalSignalCount - signals.filter(s => s.confidence >= DEFAULT_CONFIDENCE_THRESHOLD).length;
 
   return (
     <div className="cfo-intelligence">
@@ -361,9 +333,7 @@ export default function CFOIntelligence() {
             <Brain size={22} />
             <h1>CFO Intelligence</h1>
           </div>
-          <p className="header-subtitle">
-            AI-powered executive finance signals
-          </p>
+          <p className="header-subtitle">AI-powered executive finance signals</p>
         </div>
         <div className="header-right">
           <button
@@ -371,7 +341,7 @@ export default function CFOIntelligence() {
             onClick={handleRefresh}
             disabled={isLoading}
           >
-            <RefreshCw size={16} className={isLoading ? "spinning" : ""} />
+            <RefreshCw size={16} className={isLoading ? 'spinning' : ''} />
             Refresh
           </button>
         </div>
@@ -392,9 +362,7 @@ export default function CFOIntelligence() {
           {showLowConfidence && (
             <span className="low-confidence-warning">
               <AlertTriangle size={12} />
-              Showing {lowConfidenceCount} signal
-              {lowConfidenceCount !== 1 ? "s" : ""} below{" "}
-              {Math.round(DEFAULT_CONFIDENCE_THRESHOLD * 100)}% confidence
+              Showing {lowConfidenceCount} signal{lowConfidenceCount !== 1 ? 's' : ''} below {Math.round(DEFAULT_CONFIDENCE_THRESHOLD * 100)}% confidence
             </span>
           )}
         </div>
@@ -402,11 +370,7 @@ export default function CFOIntelligence() {
           {lastUpdated && (
             <span className="last-updated">
               <Clock size={12} />
-              Updated{" "}
-              {lastUpdated.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
@@ -416,7 +380,7 @@ export default function CFOIntelligence() {
       <div className="intelligence-content">
         {isLoading ? (
           <LoadingPlaceholder />
-        ) : error || lifecycle === "failed" ? (
+        ) : error || lifecycle === 'failed' ? (
           <ErrorState error={error} onRetry={handleRefresh} />
         ) : signalCount === 0 ? (
           <EmptyState
@@ -427,12 +391,10 @@ export default function CFOIntelligence() {
           <div className="signals-list">
             <div className="signals-header">
               <Zap size={14} />
-              <span>
-                {signalCount} signal{signalCount !== 1 ? "s" : ""} detected
-              </span>
+              <span>{signalCount} signal{signalCount !== 1 ? 's' : ''} detected</span>
             </div>
             <div className="signals-grid">
-              {signals.map((signal) => (
+              {signals.map(signal => (
                 <SignalCard
                   key={signal.id}
                   signal={signal}

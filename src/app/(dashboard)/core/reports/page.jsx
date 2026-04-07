@@ -1,112 +1,105 @@
 "use client";
 
-import "@/styles/core/Reports.css";
+import { useState } from 'react';
 import {
-  AlertTriangle,
-  ArrowLeftRight,
-  Calendar,
-  CheckCircle,
-  Download,
   FileText,
-  Filter,
-  GitCompare,
-  Link2,
-  MessageSquare,
-  PieChart,
-  RefreshCw,
-  Repeat,
-  Shield,
-  TrendingUp,
-  Upload,
-  Users,
+  ArrowLeftRight,
   Wallet,
+  PieChart,
+  Repeat,
+  TrendingUp,
+  GitCompare,
+  Users,
+  AlertTriangle,
+  Shield,
+  Download,
+  Filter,
+  Calendar,
+  RefreshCw,
+  Upload,
+  Link2,
+  CheckCircle,
+  MessageSquare,
   X,
-} from "lucide-react";
-import { useState } from "react";
+} from 'lucide-react';
+import '@/styles/core/Reports.css';
 
 // Report definitions
 const reportRegistry = [
   {
-    id: "transaction-ledger",
-    name: "Transaction Ledger",
-    description: "Complete immutable list of all transactions",
+    id: 'transaction-ledger',
+    name: 'Transaction Ledger',
+    description: 'Complete immutable list of all transactions',
     icon: FileText,
     available: true,
   },
   {
-    id: "cash-flow",
-    name: "Cash Flow Statement",
-    description: "Direct method - actual money in vs out",
+    id: 'cash-flow',
+    name: 'Cash Flow Statement',
+    description: 'Direct method - actual money in vs out',
     icon: ArrowLeftRight,
     available: true,
   },
   {
-    id: "account-activity",
-    name: "Account Activity",
-    description: "Per-account transaction summaries",
+    id: 'account-activity',
+    name: 'Account Activity',
+    description: 'Per-account transaction summaries',
     icon: Wallet,
     available: true,
   },
   {
-    id: "category-spend",
-    name: "Category Spend",
-    description: "Aggregated spending by category",
+    id: 'category-spend',
+    name: 'Category Spend',
+    description: 'Aggregated spending by category',
     icon: PieChart,
     available: true,
   },
   {
-    id: "recurring-activity",
-    name: "Recurring Activity",
-    description: "Detected repeating inflows and outflows",
+    id: 'recurring-activity',
+    name: 'Recurring Activity',
+    description: 'Detected repeating inflows and outflows',
     icon: Repeat,
     available: true,
   },
   {
-    id: "balance-history",
-    name: "Balance History",
-    description: "Historical balance changes over time",
+    id: 'balance-history',
+    name: 'Balance History',
+    description: 'Historical balance changes over time',
     icon: TrendingUp,
     available: true,
   },
   {
-    id: "statement-reconciliation",
-    name: "Statement Reconciliation",
-    description: "Compare uploaded statements vs ingested data",
+    id: 'statement-reconciliation',
+    name: 'Statement Reconciliation',
+    description: 'Compare uploaded statements vs ingested data',
     icon: GitCompare,
     available: true,
   },
   {
-    id: "counterparties",
-    name: "Counterparties",
-    description: "Who money flows to and from",
+    id: 'counterparties',
+    name: 'Counterparties',
+    description: 'Who money flows to and from',
     icon: Users,
     available: true,
   },
   {
-    id: "exceptions",
-    name: "Exceptions",
-    description: "Transactions that violate normal patterns",
+    id: 'exceptions',
+    name: 'Exceptions',
+    description: 'Transactions that violate normal patterns',
     icon: AlertTriangle,
     available: true,
   },
   {
-    id: "data-integrity",
-    name: "Data Integrity",
-    description: "Source lineage and trust report",
+    id: 'data-integrity',
+    name: 'Data Integrity',
+    description: 'Source lineage and trust report',
     icon: Shield,
     available: true,
   },
 ];
 
 // Empty state component
-function ReportEmptyState({
-  icon: Icon,
-  title,
-  description,
-  actionLabel,
-  actionIcon: ActionIcon,
-  onAction,
-}) {
+function ReportEmptyState({ icon: Icon, title, description, actionLabel, actionIcon: ActionIcon, onAction }) {
   return (
     <div className="report-empty-state">
       <div className="empty-icon">
@@ -162,9 +155,7 @@ function TransactionLedgerReport({ hasData = true }) {
       <div className="report-body">
         <div className="immutable-notice">
           <Shield size={14} />
-          <span>
-            Immutable ledger - transactions cannot be modified after import
-          </span>
+          <span>Immutable ledger - transactions cannot be modified after import</span>
         </div>
         <table className="report-table">
           <thead>
@@ -272,33 +263,15 @@ function CashFlowReport({ hasData = true }) {
         </div>
         <div className="cf-section">
           <h4>Operating Activities</h4>
-          <div className="cf-line">
-            <span>Cash received from customers</span>
-            <span className="inflow">$10,500.00</span>
-          </div>
-          <div className="cf-line">
-            <span>Other cash receipts</span>
-            <span className="inflow">$1,950.00</span>
-          </div>
-          <div className="cf-line">
-            <span>Cash paid for operating expenses</span>
-            <span className="outflow">-$6,234.56</span>
-          </div>
-          <div className="cf-line total">
-            <span>Net Cash from Operations</span>
-            <span>$6,215.44</span>
-          </div>
+          <div className="cf-line"><span>Cash received from customers</span><span className="inflow">$10,500.00</span></div>
+          <div className="cf-line"><span>Other cash receipts</span><span className="inflow">$1,950.00</span></div>
+          <div className="cf-line"><span>Cash paid for operating expenses</span><span className="outflow">-$6,234.56</span></div>
+          <div className="cf-line total"><span>Net Cash from Operations</span><span>$6,215.44</span></div>
         </div>
         <div className="cf-section">
           <h4>Financing Activities</h4>
-          <div className="cf-line">
-            <span>Loan principal payments</span>
-            <span className="outflow">-$2,000.00</span>
-          </div>
-          <div className="cf-line total">
-            <span>Net Cash from Financing</span>
-            <span>-$2,000.00</span>
-          </div>
+          <div className="cf-line"><span>Loan principal payments</span><span className="outflow">-$2,000.00</span></div>
+          <div className="cf-line total"><span>Net Cash from Financing</span><span>-$2,000.00</span></div>
         </div>
       </div>
     </div>
@@ -348,22 +321,10 @@ function AccountActivityReport({ hasData = true }) {
           <div className="account-summary-card">
             <h4>Chase Checking (...4521)</h4>
             <div className="account-stats">
-              <div className="stat">
-                <span className="label">Opening Balance</span>
-                <span className="value">$42,150.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">Total Deposits</span>
-                <span className="value inflow">+$8,500.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">Total Withdrawals</span>
-                <span className="value outflow">-$5,419.50</span>
-              </div>
-              <div className="stat">
-                <span className="label">Closing Balance</span>
-                <span className="value">$45,230.50</span>
-              </div>
+              <div className="stat"><span className="label">Opening Balance</span><span className="value">$42,150.00</span></div>
+              <div className="stat"><span className="label">Total Deposits</span><span className="value inflow">+$8,500.00</span></div>
+              <div className="stat"><span className="label">Total Withdrawals</span><span className="value outflow">-$5,419.50</span></div>
+              <div className="stat"><span className="label">Closing Balance</span><span className="value">$45,230.50</span></div>
             </div>
             <div className="account-txn-summary">
               <span>156 transactions this period</span>
@@ -372,22 +333,10 @@ function AccountActivityReport({ hasData = true }) {
           <div className="account-summary-card">
             <h4>Bank of America Savings (...8834)</h4>
             <div className="account-stats">
-              <div className="stat">
-                <span className="label">Opening Balance</span>
-                <span className="value">$28,500.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">Total Deposits</span>
-                <span className="value inflow">+$250.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">Total Withdrawals</span>
-                <span className="value outflow">-$0.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">Closing Balance</span>
-                <span className="value">$28,750.00</span>
-              </div>
+              <div className="stat"><span className="label">Opening Balance</span><span className="value">$28,500.00</span></div>
+              <div className="stat"><span className="label">Total Deposits</span><span className="value inflow">+$250.00</span></div>
+              <div className="stat"><span className="label">Total Withdrawals</span><span className="value outflow">-$0.00</span></div>
+              <div className="stat"><span className="label">Closing Balance</span><span className="value">$28,750.00</span></div>
             </div>
             <div className="account-txn-summary">
               <span>3 transactions this period</span>
@@ -396,22 +345,10 @@ function AccountActivityReport({ hasData = true }) {
           <div className="account-summary-card">
             <h4>American Express Platinum (...1004)</h4>
             <div className="account-stats">
-              <div className="stat">
-                <span className="label">Opening Balance</span>
-                <span className="value outflow">-$1,890.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">Payments</span>
-                <span className="value inflow">+$1,890.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">New Charges</span>
-                <span className="value outflow">-$2,340.00</span>
-              </div>
-              <div className="stat">
-                <span className="label">Current Balance</span>
-                <span className="value outflow">-$2,340.00</span>
-              </div>
+              <div className="stat"><span className="label">Opening Balance</span><span className="value outflow">-$1,890.00</span></div>
+              <div className="stat"><span className="label">Payments</span><span className="value inflow">+$1,890.00</span></div>
+              <div className="stat"><span className="label">New Charges</span><span className="value outflow">-$2,340.00</span></div>
+              <div className="stat"><span className="label">Current Balance</span><span className="value outflow">-$2,340.00</span></div>
             </div>
             <div className="account-txn-summary">
               <span>42 transactions this period</span>
@@ -463,85 +400,55 @@ function CategorySpendReport({ hasData = true }) {
         <div className="category-list">
           <div className="category-row">
             <div className="category-info">
-              <span
-                className="category-color"
-                style={{ background: "#4680ff" }}
-              ></span>
+              <span className="category-color" style={{ background: '#4680ff' }}></span>
               <span className="category-name">Shopping</span>
             </div>
             <div className="category-bar">
-              <div
-                className="bar-fill"
-                style={{ width: "47%", background: "#4680ff" }}
-              ></div>
+              <div className="bar-fill" style={{ width: '47%', background: '#4680ff' }}></div>
             </div>
             <span className="category-amount">$2,456.78</span>
             <span className="category-percent">47%</span>
           </div>
           <div className="category-row">
             <div className="category-info">
-              <span
-                className="category-color"
-                style={{ background: "#1abc9c" }}
-              ></span>
+              <span className="category-color" style={{ background: '#1abc9c' }}></span>
               <span className="category-name">Food & Drink</span>
             </div>
             <div className="category-bar">
-              <div
-                className="bar-fill"
-                style={{ width: "24%", background: "#1abc9c" }}
-              ></div>
+              <div className="bar-fill" style={{ width: '24%', background: '#1abc9c' }}></div>
             </div>
             <span className="category-amount">$1,234.56</span>
             <span className="category-percent">24%</span>
           </div>
           <div className="category-row">
             <div className="category-info">
-              <span
-                className="category-color"
-                style={{ background: "#f39c12" }}
-              ></span>
+              <span className="category-color" style={{ background: '#f39c12' }}></span>
               <span className="category-name">Transportation</span>
             </div>
             <div className="category-bar">
-              <div
-                className="bar-fill"
-                style={{ width: "17%", background: "#f39c12" }}
-              ></div>
+              <div className="bar-fill" style={{ width: '17%', background: '#f39c12' }}></div>
             </div>
             <span className="category-amount">$892.30</span>
             <span className="category-percent">17%</span>
           </div>
           <div className="category-row">
             <div className="category-info">
-              <span
-                className="category-color"
-                style={{ background: "#9b59b6" }}
-              ></span>
+              <span className="category-color" style={{ background: '#9b59b6' }}></span>
               <span className="category-name">Utilities</span>
             </div>
             <div className="category-bar">
-              <div
-                className="bar-fill"
-                style={{ width: "8%", background: "#9b59b6" }}
-              ></div>
+              <div className="bar-fill" style={{ width: '8%', background: '#9b59b6' }}></div>
             </div>
             <span className="category-amount">$425.00</span>
             <span className="category-percent">8%</span>
           </div>
           <div className="category-row">
             <div className="category-info">
-              <span
-                className="category-color"
-                style={{ background: "#e74c3c" }}
-              ></span>
+              <span className="category-color" style={{ background: '#e74c3c' }}></span>
               <span className="category-name">Entertainment</span>
             </div>
             <div className="category-bar">
-              <div
-                className="bar-fill"
-                style={{ width: "4%", background: "#e74c3c" }}
-              ></div>
+              <div className="bar-fill" style={{ width: '4%', background: '#e74c3c' }}></div>
             </div>
             <span className="category-amount">$189.99</span>
             <span className="category-percent">4%</span>
@@ -572,9 +479,7 @@ function RecurringActivityReport({ hasData = true }) {
     <div className="report-content">
       <div className="report-toolbar">
         <div className="toolbar-left">
-          <span className="toolbar-label">
-            Detected subscriptions, payroll, and recurring payments
-          </span>
+          <span className="toolbar-label">Detected subscriptions, payroll, and recurring payments</span>
         </div>
         <div className="toolbar-right">
           <button className="toolbar-btn icon-only primary" title="Export">
@@ -607,45 +512,35 @@ function RecurringActivityReport({ hasData = true }) {
             <tr>
               <td>PAYROLL DEPOSIT</td>
               <td>Bi-weekly</td>
-              <td>
-                <span className="type-badge inflow">Inflow</span>
-              </td>
+              <td><span className="type-badge inflow">Inflow</span></td>
               <td className="amount inflow">+$3,250.00</td>
               <td>Apr 5, 2024</td>
             </tr>
             <tr>
               <td>RENT PAYMENT</td>
               <td>Monthly</td>
-              <td>
-                <span className="type-badge outflow">Outflow</span>
-              </td>
+              <td><span className="type-badge outflow">Outflow</span></td>
               <td className="amount outflow">-$2,100.00</td>
               <td>Apr 1, 2024</td>
             </tr>
             <tr>
               <td>NETFLIX.COM</td>
               <td>Monthly</td>
-              <td>
-                <span className="type-badge outflow">Outflow</span>
-              </td>
+              <td><span className="type-badge outflow">Outflow</span></td>
               <td className="amount outflow">-$15.99</td>
               <td>Apr 1, 2024</td>
             </tr>
             <tr>
               <td>SPOTIFY USA</td>
               <td>Monthly</td>
-              <td>
-                <span className="type-badge outflow">Outflow</span>
-              </td>
+              <td><span className="type-badge outflow">Outflow</span></td>
               <td className="amount outflow">-$9.99</td>
               <td>Apr 3, 2024</td>
             </tr>
             <tr>
               <td>AT&T WIRELESS</td>
               <td>Monthly</td>
-              <td>
-                <span className="type-badge outflow">Outflow</span>
-              </td>
+              <td><span className="type-badge outflow">Outflow</span></td>
               <td className="amount outflow">-$120.00</td>
               <td>Apr 15, 2024</td>
             </tr>
@@ -697,9 +592,7 @@ function BalanceHistoryReport({ hasData = true }) {
         <div className="balance-chart-placeholder">
           <TrendingUp size={48} />
           <p>Historical balance trend</p>
-          <span className="placeholder-note">
-            Daily closing balances over selected period
-          </span>
+          <span className="placeholder-note">Daily closing balances over selected period</span>
         </div>
         <table className="report-table compact">
           <thead>
@@ -808,26 +701,18 @@ function StatementReconciliationReport({ hasStatements = true }) {
             </thead>
             <tbody>
               <tr>
-                <td>
-                  <span className="source-badge statement">Statement</span>
-                </td>
+                <td><span className="source-badge statement">Statement</span></td>
                 <td>Mar 15</td>
                 <td>CHECK #1234</td>
                 <td>-$500.00</td>
-                <td>
-                  <button className="table-action-btn">Match</button>
-                </td>
+                <td><button className="table-action-btn">Match</button></td>
               </tr>
               <tr>
-                <td>
-                  <span className="source-badge plaid">Ingested</span>
-                </td>
+                <td><span className="source-badge plaid">Ingested</span></td>
                 <td>Mar 18</td>
                 <td>PENDING CHARGE</td>
                 <td>-$12.45</td>
-                <td>
-                  <button className="table-action-btn">Investigate</button>
-                </td>
+                <td><button className="table-action-btn">Investigate</button></td>
               </tr>
             </tbody>
           </table>
@@ -929,22 +814,22 @@ function CounterpartiesReport({ hasData = true }) {
 // Exceptions Report - Manual refresh, no polling, resolution notes
 function ExceptionsReport({ hasExceptions = true }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState("2 minutes ago");
+  const [lastRefresh, setLastRefresh] = useState('2 minutes ago');
   const [expandedNote, setExpandedNote] = useState(null);
-  const [noteText, setNoteText] = useState("");
+  const [noteText, setNoteText] = useState('');
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     // Simulate refresh
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     setIsRefreshing(false);
-    setLastRefresh("just now");
+    setLastRefresh('just now');
   };
 
   const handleAddNote = (exceptionId) => {
     // In real app, would save note to backend
     setExpandedNote(null);
-    setNoteText("");
+    setNoteText('');
   };
 
   if (!hasExceptions) {
@@ -961,7 +846,7 @@ function ExceptionsReport({ hasExceptions = true }) {
               disabled={isRefreshing}
               title="Check for Exceptions"
             >
-              <RefreshCw size={16} className={isRefreshing ? "spinning" : ""} />
+              <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
             </button>
           </div>
         </div>
@@ -990,7 +875,7 @@ function ExceptionsReport({ hasExceptions = true }) {
             disabled={isRefreshing}
             title="Refresh"
           >
-            <RefreshCw size={16} className={isRefreshing ? "spinning" : ""} />
+            <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
           </button>
           <button className="toolbar-btn icon-only primary" title="Export">
             <Download size={16} />
@@ -1005,13 +890,8 @@ function ExceptionsReport({ hasExceptions = true }) {
             </div>
             <div className="exception-info">
               <h4>Unusual Large Transaction</h4>
-              <p>
-                $4,500.00 payment to UNKNOWN VENDOR on Mar 22 is 340% above your
-                typical spending pattern.
-              </p>
-              <span className="exception-meta">
-                Mar 22, 2024 · Chase Checking
-              </span>
+              <p>$4,500.00 payment to UNKNOWN VENDOR on Mar 22 is 340% above your typical spending pattern.</p>
+              <span className="exception-meta">Mar 22, 2024 · Chase Checking</span>
               {expandedNote === 1 ? (
                 <div className="resolution-note-input">
                   <textarea
@@ -1020,26 +900,17 @@ function ExceptionsReport({ hasExceptions = true }) {
                     onChange={(e) => setNoteText(e.target.value)}
                   />
                   <div className="note-actions">
-                    <button
-                      className="note-btn cancel"
-                      onClick={() => setExpandedNote(null)}
-                    >
+                    <button className="note-btn cancel" onClick={() => setExpandedNote(null)}>
                       <X size={14} />
                     </button>
-                    <button
-                      className="note-btn save"
-                      onClick={() => handleAddNote(1)}
-                    >
+                    <button className="note-btn save" onClick={() => handleAddNote(1)}>
                       <CheckCircle size={14} />
                       Save
                     </button>
                   </div>
                 </div>
               ) : (
-                <button
-                  className="add-note-btn"
-                  onClick={() => setExpandedNote(1)}
-                >
+                <button className="add-note-btn" onClick={() => setExpandedNote(1)}>
                   <MessageSquare size={14} />
                   Add Resolution Note
                 </button>
@@ -1053,13 +924,8 @@ function ExceptionsReport({ hasExceptions = true }) {
             </div>
             <div className="exception-info">
               <h4>Duplicate Transaction Detected</h4>
-              <p>
-                Two identical charges of $89.32 to TARGET found within 2
-                minutes.
-              </p>
-              <span className="exception-meta">
-                Mar 24, 2024 · Chase Checking
-              </span>
+              <p>Two identical charges of $89.32 to TARGET found within 2 minutes.</p>
+              <span className="exception-meta">Mar 24, 2024 · Chase Checking</span>
               {expandedNote === 2 ? (
                 <div className="resolution-note-input">
                   <textarea
@@ -1068,26 +934,17 @@ function ExceptionsReport({ hasExceptions = true }) {
                     onChange={(e) => setNoteText(e.target.value)}
                   />
                   <div className="note-actions">
-                    <button
-                      className="note-btn cancel"
-                      onClick={() => setExpandedNote(null)}
-                    >
+                    <button className="note-btn cancel" onClick={() => setExpandedNote(null)}>
                       <X size={14} />
                     </button>
-                    <button
-                      className="note-btn save"
-                      onClick={() => handleAddNote(2)}
-                    >
+                    <button className="note-btn save" onClick={() => handleAddNote(2)}>
                       <CheckCircle size={14} />
                       Save
                     </button>
                   </div>
                 </div>
               ) : (
-                <button
-                  className="add-note-btn"
-                  onClick={() => setExpandedNote(2)}
-                >
+                <button className="add-note-btn" onClick={() => setExpandedNote(2)}>
                   <MessageSquare size={14} />
                   Add Resolution Note
                 </button>
@@ -1101,9 +958,7 @@ function ExceptionsReport({ hasExceptions = true }) {
             </div>
             <div className="exception-info">
               <h4>Recurring Payment Missed</h4>
-              <p>
-                Expected Netflix charge of $15.99 was not detected this month.
-              </p>
+              <p>Expected Netflix charge of $15.99 was not detected this month.</p>
               <span className="exception-meta">Expected: Mar 1, 2024</span>
               <div className="resolution-note">
                 <MessageSquare size={12} />
@@ -1212,25 +1067,25 @@ function DataIntegrityReport({ hasDataSources = true }) {
 // Report content renderer
 function ReportContent({ reportId }) {
   switch (reportId) {
-    case "transaction-ledger":
+    case 'transaction-ledger':
       return <TransactionLedgerReport hasData={true} />;
-    case "cash-flow":
+    case 'cash-flow':
       return <CashFlowReport hasData={true} />;
-    case "account-activity":
+    case 'account-activity':
       return <AccountActivityReport hasData={true} />;
-    case "category-spend":
+    case 'category-spend':
       return <CategorySpendReport hasData={true} />;
-    case "recurring-activity":
+    case 'recurring-activity':
       return <RecurringActivityReport hasData={true} />;
-    case "balance-history":
+    case 'balance-history':
       return <BalanceHistoryReport hasData={true} />;
-    case "statement-reconciliation":
+    case 'statement-reconciliation':
       return <StatementReconciliationReport hasStatements={true} />;
-    case "counterparties":
+    case 'counterparties':
       return <CounterpartiesReport hasData={true} />;
-    case "exceptions":
+    case 'exceptions':
       return <ExceptionsReport hasExceptions={true} />;
-    case "data-integrity":
+    case 'data-integrity':
       return <DataIntegrityReport hasDataSources={true} />;
     default:
       return null;
@@ -1238,9 +1093,9 @@ function ReportContent({ reportId }) {
 }
 
 export default function Reports() {
-  const [activeReport, setActiveReport] = useState("transaction-ledger");
+  const [activeReport, setActiveReport] = useState('transaction-ledger');
 
-  const activeReportData = reportRegistry.find((r) => r.id === activeReport);
+  const activeReportData = reportRegistry.find(r => r.id === activeReport);
 
   return (
     <div className="reports-page">
@@ -1263,7 +1118,7 @@ export default function Reports() {
             return (
               <button
                 key={report.id}
-                className={`report-nav-item ${isActive ? "active" : ""} ${!report.available ? "disabled" : ""}`}
+                className={`report-nav-item ${isActive ? 'active' : ''} ${!report.available ? 'disabled' : ''}`}
                 onClick={() => report.available && setActiveReport(report.id)}
                 disabled={!report.available}
               >

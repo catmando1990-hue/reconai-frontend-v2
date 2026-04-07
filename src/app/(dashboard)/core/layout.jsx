@@ -1,6 +1,6 @@
 "use client";
 
-import AIChat from "@/components/AIChat";
+import AIChat from "@/components/recon/AIChat";
 import "@/styles/core/CoreLayout.css";
 import {
   ArrowLeftRight,

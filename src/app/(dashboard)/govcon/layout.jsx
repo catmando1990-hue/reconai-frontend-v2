@@ -1,6 +1,6 @@
 "use client";
 
-import GovConChat from "@/components/GovConChat";
+import GovConChat from "@/components/recon/GovConChat";
 import "@/styles/govcon/GovConLayout.css";
 import {
   Brain,

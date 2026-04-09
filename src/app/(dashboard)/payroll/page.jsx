@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-
 import {
   AlertCircle,
   ArrowRight,
-  Calendar,
   CheckCircle,
   Clock,
   CreditCard,
@@ -15,83 +13,69 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
-} from 'lucide-react';
+} from "lucide-react";
 
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/payroll/PayrollOverview.css';
+import "@/styles/payroll/PayrollOverview.css";
 
 const kpis = [
-  { label: 'Total Headcount', value: '47', change: '+3', trend: 'up', icon: Users },
-  { label: 'Monthly Payroll', value: '$385,200', change: '+4.2%', trend: 'up', icon: DollarSign },
-  { label: 'Avg. Hours/Week', value: '38.5', change: '-0.3', trend: 'down', icon: Clock },
-  { label: 'Next Pay Run', value: 'Apr 15', change: '16 days', trend: 'neutral', icon: CreditCard },
+  { label: "Total Headcount", value: "47", change: "+3", trend: "up", icon: Users },
+  { label: "Monthly Payroll", value: "$385,200", change: "+4.2%", trend: "up", icon: DollarSign },
+  { label: "Avg. Hours/Week", value: "38.5", change: "-0.3", trend: "down", icon: Clock },
+  { label: "Next Pay Run", value: "Apr 15", change: "16 days", trend: "neutral", icon: CreditCard },
 ];
 
 const recentPayRuns = [
-  {
-    id: 'PR-2026-06',
-    date: 'Mar 15, 2026',
-    amount: '$385,200',
-    employees: 47,
-    status: 'completed',
-  },
-  { id: 'PR-2026-05', date: 'Mar 1, 2026', amount: '$382,100', employees: 46, status: 'completed' },
-  {
-    id: 'PR-2026-04',
-    date: 'Feb 15, 2026',
-    amount: '$378,500',
-    employees: 45,
-    status: 'completed',
-  },
+  { id: "PR-2026-06", date: "Mar 15, 2026", amount: "$385,200", employees: 47, status: "completed" },
+  { id: "PR-2026-05", date: "Mar 1, 2026", amount: "$382,100", employees: 46, status: "completed" },
+  { id: "PR-2026-04", date: "Feb 15, 2026", amount: "$378,500", employees: 45, status: "completed" },
 ];
 
 const complianceItems = [
-  { label: 'Tax Filings', status: 'current', detail: 'Q1 2026 filed' },
-  { label: 'W-2 Distribution', status: 'current', detail: 'All issued' },
-  { label: '1099 Filing', status: 'current', detail: '12 contractors' },
-  { label: 'State Registrations', status: 'attention', detail: '1 pending renewal' },
+  { label: "Tax Filings", status: "current", detail: "Q1 2026 filed" },
+  { label: "W-2 Distribution", status: "current", detail: "All issued" },
+  { label: "1099 Filing", status: "current", detail: "12 contractors" },
+  { label: "State Registrations", status: "attention", detail: "1 pending renewal" },
 ];
 
 const quickLinks = [
-  { label: 'Run Payroll', path: '/payroll/pay-runs', icon: CreditCard },
-  { label: 'Add Employee', path: '/payroll/people', icon: Users },
-  { label: 'View Reports', path: '/payroll/compliance', icon: FileText },
-  { label: 'Tax Summary', path: '/payroll/taxes', icon: Receipt },
+  { label: "Run Payroll", path: "/payroll/pay-runs", icon: CreditCard },
+  { label: "Add Employee", path: "/payroll/people", icon: Users },
+  { label: "View Reports", path: "/payroll/compliance", icon: FileText },
+  { label: "Tax Summary", path: "/payroll/taxes", icon: Receipt },
 ];
+
+function TrendIcon({ trend }) {
+  if (trend === "up") return <TrendingUp size={12} />;
+  if (trend === "down") return <TrendingDown size={12} />;
+  return null;
+}
 
 export default function PayrollOverview() {
   return (
     <div className="payroll-overview">
-      <PolicyBanner
-        policy="general"
-        context="payroll-advisory"
-        message="Payroll data shown is for planning purposes. Always verify with your payroll provider before processing."
-        dismissible
-      />
-
       <div className="payroll-overview-layout">
         <main className="payroll-overview-main">
-          {/* KPI Cards */}
           <section className="payroll-kpi-grid">
-            {kpis.map((kpi) => (
-              <div key={kpi.label} className="payroll-kpi-card">
-                <div className="kpi-icon-wrap">
-                  <kpi.icon size={18} />
+            {kpis.map((kpi) => {
+              const Icon = kpi.icon;
+              return (
+                <div key={kpi.label} className="payroll-kpi-card">
+                  <div className="kpi-icon-wrap">
+                    <Icon size={18} />
+                  </div>
+                  <div className="kpi-content">
+                    <span className="kpi-label">{kpi.label}</span>
+                    <span className="kpi-value">{kpi.value}</span>
+                    <span className={`kpi-change ${kpi.trend}`}>
+                      <TrendIcon trend={kpi.trend} />
+                      {kpi.change}
+                    </span>
+                  </div>
                 </div>
-                <div className="kpi-content">
-                  <span className="kpi-label">{kpi.label}</span>
-                  <span className="kpi-value">{kpi.value}</span>
-                  <span className={`kpi-change ${kpi.trend}`}>
-                    {kpi.trend === 'up' && <TrendingUp size={12} />}
-                    {kpi.trend === 'down' && <TrendingDown size={12} />}
-                    {kpi.change}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </section>
 
-          {/* Recent Pay Runs */}
           <section className="payroll-panel">
             <div className="panel-header">
               <CreditCard size={16} />
@@ -123,7 +107,6 @@ export default function PayrollOverview() {
             </Link>
           </section>
 
-          {/* Compliance Status */}
           <section className="payroll-panel">
             <div className="panel-header">
               <FileText size={16} />
@@ -133,7 +116,7 @@ export default function PayrollOverview() {
               {complianceItems.map((item) => (
                 <div key={item.label} className={`compliance-item ${item.status}`}>
                   <div className="compliance-icon">
-                    {item.status === 'current' ? (
+                    {item.status === "current" ? (
                       <CheckCircle size={16} />
                     ) : (
                       <AlertCircle size={16} />
@@ -149,21 +132,23 @@ export default function PayrollOverview() {
           </section>
         </main>
 
-        {/* Sidebar */}
         <aside className="payroll-overview-sidebar">
           <div className="sidebar-panel">
             <div className="panel-header">
-              <Calendar size={14} />
+              <ArrowRight size={14} />
               <h3>Quick Links</h3>
             </div>
             <div className="quick-links">
-              {quickLinks.map((link) => (
-                <Link key={link.label} href={link.path} className="quick-link">
-                  <link.icon size={14} />
-                  <span>{link.label}</span>
-                  <ArrowRight size={12} />
-                </Link>
-              ))}
+              {quickLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link key={link.label} href={link.path} className="quick-link">
+                    <Icon size={14} />
+                    <span>{link.label}</span>
+                    <ArrowRight size={12} />
+                  </Link>
+                );
+              })}
             </div>
           </div>
 

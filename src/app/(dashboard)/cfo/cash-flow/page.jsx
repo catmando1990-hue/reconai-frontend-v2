@@ -252,7 +252,7 @@ export default function CFOCashFlow() {
                   </div>
                   <h3>No cash flow data available</h3>
                   <p>Connect your bank accounts to see cash flow analysis, track inflows and outflows, and generate projections.</p>
-                  <Link to="/cfo/connections" className="empty-action">
+                  <Link href="/cfo/connections" className="empty-action">
                     Connect Bank Accounts
                     <ChevronRight size={14} />
                   </Link>
@@ -307,7 +307,7 @@ export default function CFOCashFlow() {
             </div>
             <div className="quick-links">
               {quickLinks.map((link, index) => (
-                <Link key={index} to={link.path} className="quick-link">
+                <Link key={index} href={link.path} className="quick-link">
                   <link.icon size={14} />
                   <span>{link.label}</span>
                   <ChevronRight size={12} />

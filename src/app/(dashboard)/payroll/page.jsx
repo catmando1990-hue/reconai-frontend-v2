@@ -118,7 +118,7 @@ export default function PayrollOverview() {
                 </div>
               ))}
             </div>
-            <Link to="/payroll/pay-runs" className="panel-view-all">
+            <Link href="/payroll/pay-runs" className="panel-view-all">
               View all pay runs <ArrowRight size={14} />
             </Link>
           </section>
@@ -158,7 +158,7 @@ export default function PayrollOverview() {
             </div>
             <div className="quick-links">
               {quickLinks.map((link) => (
-                <Link key={link.label} to={link.path} className="quick-link">
+                <Link key={link.label} href={link.path} className="quick-link">
                   <link.icon size={14} />
                   <span>{link.label}</span>
                   <ArrowRight size={12} />

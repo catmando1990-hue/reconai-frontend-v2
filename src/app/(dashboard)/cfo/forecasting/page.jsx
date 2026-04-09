@@ -288,7 +288,7 @@ export default function CFOForecasting() {
             </div>
             <div className="quick-links">
               {quickLinks.map((link, index) => (
-                <Link key={index} to={link.path} className="quick-link">
+                <Link key={index} href={link.path} className="quick-link">
                   <link.icon size={14} />
                   <span>{link.label}</span>
                   <ChevronRight size={12} />

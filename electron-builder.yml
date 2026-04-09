@@ -1,0 +1,47 @@
+appId: com.reconai.desktop
+productName: ReconAI
+copyright: Copyright © 2026 ReconAI Technology
+
+directories:
+  output: dist-electron
+  buildResources: electron/build
+
+files:
+  - electron/**/*
+  - package.json
+
+protocols:
+  - name: ReconAI
+    schemes:
+      - reconai
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ReconAI-Setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+
+mac:
+  category: public.app-category.finance
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  hardenedRuntime: true
+  artifactName: ReconAI-${version}-${arch}.${ext}
+
+linux:
+  category: Office
+  target:
+    - AppImage
+    - deb
+  artifactName: ReconAI-${version}-${arch}.${ext}

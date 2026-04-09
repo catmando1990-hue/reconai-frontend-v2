@@ -3,6 +3,9 @@
 # dependencies
 /node_modules
 /.pnp
+
+# electron build output
+/dist-electron
 .pnp.*
 .yarn/*
 !.yarn/patches

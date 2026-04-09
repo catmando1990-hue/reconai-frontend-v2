@@ -1,7 +1,17 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useAuth as useClerkAuth, useUser as useClerkUser } from "@clerk/nextjs";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  useAuth as useClerkAuth,
+  useUser as useClerkUser,
+} from "@clerk/nextjs";
 import { authApi } from "../api";
 
 const AuthContext = createContext(null);
@@ -72,7 +82,18 @@ export function AuthProvider({ children }) {
       logout,
       refreshUser: fetchUser,
     }),
-    [user, clerkUser, org, permissions, tier, loading, error, clerkAuth, logout, fetchUser],
+    [
+      user,
+      clerkUser,
+      org,
+      permissions,
+      tier,
+      loading,
+      error,
+      clerkAuth,
+      logout,
+      fetchUser,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

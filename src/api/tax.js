@@ -1,6 +1,6 @@
-import api from './client';
+import api from "./client";
 
-const BASE = '/api/tax-intelligence';
+const BASE = "/api/tax-intelligence";
 
 /** GET /api/tax-intelligence/deductions — tax deduction analysis */
 export function getDeductions(params) {

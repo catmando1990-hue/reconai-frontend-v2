@@ -63,7 +63,10 @@ function inferModule(filePath) {
 
 function ensureUseClient(src) {
   const trimmed = src.trimStart();
-  if (trimmed.startsWith('"use client"') || trimmed.startsWith("'use client'")) {
+  if (
+    trimmed.startsWith('"use client"') ||
+    trimmed.startsWith("'use client'")
+  ) {
     return src;
   }
   return `"use client";\n\n${src}`;
@@ -75,7 +78,8 @@ function rewriteCssImports(src, mod) {
   // import './X.css'  OR  import "./X.css"
   return src.replace(
     /import\s+(['"])\.\/([\w-]+)\.css\1\s*;?/g,
-    (_m, quote, name) => `import ${quote}@/styles/${styleDir}/${name}.css${quote};`,
+    (_m, quote, name) =>
+      `import ${quote}@/styles/${styleDir}/${name}.css${quote};`,
   );
 }
 
@@ -87,7 +91,10 @@ function rewriteSiblingComponentImports(src) {
       `import\\s+(\\w+)\\s+from\\s+(['"])\\.\\/${name}(\\.jsx)?\\2\\s*;?`,
       "g",
     );
-    out = out.replace(re, (_m, local, quote) => `import ${local} from ${quote}${target}${quote};`);
+    out = out.replace(
+      re,
+      (_m, local, quote) => `import ${local} from ${quote}${target}${quote};`,
+    );
   }
   // Strip the legacy `import "./AIChat.css"` etc that the components themselves used
   // (those are handled inside @/components/recon/* now)
@@ -119,10 +126,14 @@ function rewriteRouterImports(src) {
   if (!/from\s+['"]react-router-dom['"]/.test(src)) return src;
 
   // Strip the original react-router-dom import line, keeping its named imports
-  const importLineRe = /import\s+\{([^}]+)\}\s+from\s+['"]react-router-dom['"]\s*;?/g;
+  const importLineRe =
+    /import\s+\{([^}]+)\}\s+from\s+['"]react-router-dom['"]\s*;?/g;
   let importedNames = new Set();
   src = src.replace(importLineRe, (_m, names) => {
-    for (const n of names.split(",").map((s) => s.trim()).filter(Boolean)) {
+    for (const n of names
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)) {
       importedNames.add(n);
     }
     return "";

@@ -1,17 +1,23 @@
 "use client";
 
-import { AlertTriangle, CheckCircle, ClipboardCheck, List, XCircle } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  ClipboardCheck,
+  List,
+  XCircle,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
-import { govconApi } from '@/api';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/govcon/GovConSF1408.css';
+import { govconApi } from "@/api";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/govcon/GovConSF1408.css";
 
 const statusIcons = {
   documented: CheckCircle,
-  'needs-review': AlertTriangle,
+  "needs-review": AlertTriangle,
   partial: AlertTriangle,
-  'not-addressed': XCircle,
+  "not-addressed": XCircle,
 };
 
 export default function GovConSF1408() {
@@ -36,11 +42,14 @@ export default function GovConSF1408() {
       // Normalize sections from compliance data
       const rawSections = compliance.sections ?? mappings.sections ?? [];
       const normalizedSections = rawSections.map((section) => ({
-        title: section.title ?? section.name ?? '',
+        title: section.title ?? section.name ?? "",
         items: (section.items ?? []).map((item) => ({
-          description: item.description ?? item.name ?? '',
-          status: item.status ?? 'Documented',
-          statusKey: item.status_key ?? item.statusKey ?? (item.status ?? 'documented').toLowerCase().replace(/\s+/g, '-'),
+          description: item.description ?? item.name ?? "",
+          status: item.status ?? "Documented",
+          statusKey:
+            item.status_key ??
+            item.statusKey ??
+            (item.status ?? "documented").toLowerCase().replace(/\s+/g, "-"),
         })),
       }));
       setSections(normalizedSections);
@@ -48,10 +57,18 @@ export default function GovConSF1408() {
       // Compute summary from sections
       const allItems = normalizedSections.flatMap((s) => s.items);
       const total = allItems.length;
-      const docCount = allItems.filter((i) => i.statusKey === 'documented').length;
-      const needsReviewCount = allItems.filter((i) => i.statusKey === 'needs-review').length;
-      const partialCount = allItems.filter((i) => i.statusKey === 'partial').length;
-      const notAddressedCount = allItems.filter((i) => i.statusKey === 'not-addressed').length;
+      const docCount = allItems.filter(
+        (i) => i.statusKey === "documented",
+      ).length;
+      const needsReviewCount = allItems.filter(
+        (i) => i.statusKey === "needs-review",
+      ).length;
+      const partialCount = allItems.filter(
+        (i) => i.statusKey === "partial",
+      ).length;
+      const notAddressedCount = allItems.filter(
+        (i) => i.statusKey === "not-addressed",
+      ).length;
 
       setTotalItems(total);
       setDocumented(docCount);
@@ -61,25 +78,45 @@ export default function GovConSF1408() {
       if (Array.isArray(backendSummary) && backendSummary.length > 0) {
         setSummaryData(
           backendSummary.map((s) => ({
-            label: s.label ?? s.name ?? '',
+            label: s.label ?? s.name ?? "",
             count: s.count ?? 0,
-            statusKey: s.status_key ?? s.statusKey ?? (s.label ?? '').toLowerCase().replace(/\s+/g, '-'),
-          }))
+            statusKey:
+              s.status_key ??
+              s.statusKey ??
+              (s.label ?? "").toLowerCase().replace(/\s+/g, "-"),
+          })),
         );
       } else {
         setSummaryData([
-          { label: 'Documented', count: docCount, statusKey: 'documented' },
-          { label: 'Needs Review', count: needsReviewCount, statusKey: 'needs-review' },
-          { label: 'Partial', count: partialCount, statusKey: 'partial' },
-          { label: 'Not Addressed', count: notAddressedCount, statusKey: 'not-addressed' },
+          { label: "Documented", count: docCount, statusKey: "documented" },
+          {
+            label: "Needs Review",
+            count: needsReviewCount,
+            statusKey: "needs-review",
+          },
+          { label: "Partial", count: partialCount, statusKey: "partial" },
+          {
+            label: "Not Addressed",
+            count: notAddressedCount,
+            statusKey: "not-addressed",
+          },
         ]);
       }
 
       // Next steps
-      const steps = compliance.next_steps ?? compliance.nextSteps ?? mappings.next_steps ?? mappings.nextSteps ?? [];
-      setNextSteps(steps.map((s) => (typeof s === 'string' ? s : s.description ?? s.text ?? '')));
+      const steps =
+        compliance.next_steps ??
+        compliance.nextSteps ??
+        mappings.next_steps ??
+        mappings.nextSteps ??
+        [];
+      setNextSteps(
+        steps.map((s) =>
+          typeof s === "string" ? s : (s.description ?? s.text ?? ""),
+        ),
+      );
     } catch (err) {
-      console.warn('GovConSF1408: failed to fetch data', err);
+      console.warn("GovConSF1408: failed to fetch data", err);
     } finally {
       setLoading(false);
     }
@@ -89,12 +126,15 @@ export default function GovConSF1408() {
     fetchData();
   }, [fetchData]);
 
-  const percentage = totalItems > 0 ? ((documented / totalItems) * 100).toFixed(1) : '0.0';
+  const percentage =
+    totalItems > 0 ? ((documented / totalItems) * 100).toFixed(1) : "0.0";
 
   if (loading) {
     return (
       <div className="govcon-sf1408">
-        <p style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>Loading...</p>
+        <p style={{ padding: "2rem", textAlign: "center", color: "#888" }}>
+          Loading...
+        </p>
       </div>
     );
   }
@@ -126,7 +166,10 @@ export default function GovConSF1408() {
           <span className="gcs-score-pct">{percentage}%</span>
         </div>
         <div className="gcs-progress-bar">
-          <div className="gcs-progress-fill" style={{ width: `${percentage}%` }} />
+          <div
+            className="gcs-progress-fill"
+            style={{ width: `${percentage}%` }}
+          />
         </div>
       </div>
 
@@ -140,9 +183,16 @@ export default function GovConSF1408() {
                   const Icon = statusIcons[item.statusKey] ?? AlertTriangle;
                   return (
                     <div className="gcs-item" key={idx}>
-                      <Icon size={18} className={`gcs-item-icon gcs-status-${item.statusKey}`} />
+                      <Icon
+                        size={18}
+                        className={`gcs-item-icon gcs-status-${item.statusKey}`}
+                      />
                       <span className="gcs-item-desc">{item.description}</span>
-                      <span className={`gcs-item-status gcs-status-${item.statusKey}`}>{item.status}</span>
+                      <span
+                        className={`gcs-item-status gcs-status-${item.statusKey}`}
+                      >
+                        {item.status}
+                      </span>
                     </div>
                   );
                 })}
@@ -150,7 +200,9 @@ export default function GovConSF1408() {
             </div>
           ))}
           {sections.length === 0 && (
-            <p style={{ color: '#888', padding: '1rem', textAlign: 'center' }}>No SF-1408 section data available.</p>
+            <p style={{ color: "#888", padding: "1rem", textAlign: "center" }}>
+              No SF-1408 section data available.
+            </p>
           )}
         </div>
 
@@ -163,7 +215,11 @@ export default function GovConSF1408() {
             <div className="gcs-summary-grid">
               {summaryData.map((item) => (
                 <div className="gcs-summary-item" key={item.label}>
-                  <span className={`gcs-summary-count gcs-status-${item.statusKey}`}>{item.count}</span>
+                  <span
+                    className={`gcs-summary-count gcs-status-${item.statusKey}`}
+                  >
+                    {item.count}
+                  </span>
                   <span className="gcs-summary-label">{item.label}</span>
                 </div>
               ))}
@@ -183,7 +239,7 @@ export default function GovConSF1408() {
                 </li>
               ))}
               {nextSteps.length === 0 && (
-                <li style={{ color: '#888' }}>No next steps defined.</li>
+                <li style={{ color: "#888" }}>No next steps defined.</li>
               )}
             </ul>
           </div>

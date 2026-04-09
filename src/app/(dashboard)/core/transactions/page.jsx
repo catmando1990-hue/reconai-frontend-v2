@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,20 +10,25 @@ import {
   Link2,
   Search,
   Filter,
-} from 'lucide-react';
-import { transactionsApi } from '@/api';
-import '@/styles/core/Transactions.css';
+} from "lucide-react";
+import { transactionsApi } from "@/api";
+import "@/styles/core/Transactions.css";
 
 const PAGE_SIZE = 15;
 
-const accountOptions = ['All Accounts', 'Chase Business Checking', 'Bank of America Savings', 'American Express'];
-const statusOptions = ['All Statuses', 'Posted', 'Pending'];
+const accountOptions = [
+  "All Accounts",
+  "Chase Business Checking",
+  "Bank of America Savings",
+  "American Express",
+];
+const statusOptions = ["All Statuses", "Posted", "Pending"];
 
 function formatCurrency(amount) {
   const absAmount = Math.abs(amount);
-  const formatted = absAmount.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formatted = absAmount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
   });
 
   // Positive amounts are outflows (money going out) - show with minus
@@ -38,16 +43,17 @@ function formatCurrency(amount) {
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
 function getMerchantDisplay(merchant, description) {
-  const primary = merchant || description || 'Unknown';
-  const secondary = merchant && description && merchant !== description ? description : null;
+  const primary = merchant || description || "Unknown";
+  const secondary =
+    merchant && description && merchant !== description ? description : null;
   return { primary, secondary };
 }
 
@@ -93,9 +99,9 @@ export default function Transactions() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasConnectedAccounts, setHasConnectedAccounts] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAccount, setSelectedAccount] = useState('All Accounts');
-  const [selectedStatus, setSelectedStatus] = useState('All Statuses');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState("All Accounts");
+  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
 
   // Fetch transactions from backend.
   // Backend response shape: { ok, transactions, total, limit, offset }
@@ -103,25 +109,25 @@ export default function Transactions() {
     setLoading(true);
     try {
       const data = await transactionsApi.getTransactions({ limit: 200 });
-      const txns = Array.isArray(data) ? data : (data?.transactions || []);
+      const txns = Array.isArray(data) ? data : data?.transactions || [];
       // Normalize backend fields to match component expectations
-      const normalized = txns.map(t => ({
+      const normalized = txns.map((t) => ({
         id: t.transaction_id || t.id,
         date: t.date || t.authorized_date,
         merchant: t.merchant_name || t.merchant || null,
         description: t.name || t.description || null,
         amount: t.amount,
-        status: t.pending ? 'pending' : (t.status || 'posted'),
+        status: t.pending ? "pending" : t.status || "posted",
       }));
       setTransactions(normalized);
       setHasConnectedAccounts(normalized.length > 0 || (data && data.ok));
       setError(null);
     } catch (err) {
-      console.error('[Transactions] Failed to fetch:', err);
-      if (err.status === 404 || err.code === 'NOT_FOUND') {
+      console.error("[Transactions] Failed to fetch:", err);
+      if (err.status === 404 || err.code === "NOT_FOUND") {
         setHasConnectedAccounts(false);
       } else {
-        setError('Failed to fetch transactions. Please try again.');
+        setError("Failed to fetch transactions. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -139,10 +145,10 @@ export default function Transactions() {
       (t.merchant && t.merchant.toLowerCase().includes(searchLower)) ||
       (t.description && t.description.toLowerCase().includes(searchLower));
     const matchesStatus =
-      selectedStatus === 'All Statuses' ||
+      selectedStatus === "All Statuses" ||
       t.status.toLowerCase() === selectedStatus.toLowerCase();
 
-    return (searchTerm === '' || matchesSearch) && matchesStatus;
+    return (searchTerm === "" || matchesSearch) && matchesStatus;
   });
 
   // Pagination calculations
@@ -158,11 +164,11 @@ export default function Transactions() {
   }, [searchTerm, selectedAccount, selectedStatus]);
 
   const goToPrevious = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1));
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
   const goToNext = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   // Render states
@@ -229,7 +235,9 @@ export default function Transactions() {
             onChange={(e) => setSelectedAccount(e.target.value)}
           >
             {accountOptions.map((acc) => (
-              <option key={acc} value={acc}>{acc}</option>
+              <option key={acc} value={acc}>
+                {acc}
+              </option>
             ))}
           </select>
           <select
@@ -237,7 +245,9 @@ export default function Transactions() {
             onChange={(e) => setSelectedStatus(e.target.value)}
           >
             {statusOptions.map((status) => (
-              <option key={status} value={status}>{status}</option>
+              <option key={status} value={status}>
+                {status}
+              </option>
             ))}
           </select>
           <button className="filter-btn" title="More Filters">
@@ -261,7 +271,7 @@ export default function Transactions() {
             {currentTransactions.map((transaction) => {
               const { primary, secondary } = getMerchantDisplay(
                 transaction.merchant,
-                transaction.description
+                transaction.description,
               );
               const isInflow = transaction.amount < 0;
 
@@ -276,12 +286,14 @@ export default function Transactions() {
                       </span>
                     )}
                   </td>
-                  <td className={`amount-col ${isInflow ? 'inflow' : 'outflow'}`}>
+                  <td
+                    className={`amount-col ${isInflow ? "inflow" : "outflow"}`}
+                  >
                     {formatCurrency(transaction.amount)}
                   </td>
                   <td className="status-col">
                     <span className={`status-badge ${transaction.status}`}>
-                      {transaction.status === 'pending' ? 'Pending' : 'Posted'}
+                      {transaction.status === "pending" ? "Pending" : "Posted"}
                     </span>
                   </td>
                 </tr>

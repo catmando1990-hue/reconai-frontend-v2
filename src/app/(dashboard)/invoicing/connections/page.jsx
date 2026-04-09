@@ -1,42 +1,49 @@
 "use client";
 
-import { CheckCircle, CreditCard, ExternalLink, Landmark, Plus, RefreshCw } from 'lucide-react';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/invoicing/InvoicingConnections.css';
+import {
+  CheckCircle,
+  CreditCard,
+  ExternalLink,
+  Landmark,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/invoicing/InvoicingConnections.css";
 
 const connectedAccounts = [
   {
-    id: 'icn-001',
-    name: 'Invoicing Operating Account',
-    institution: 'First National Bank',
-    accountMask: '****6789',
-    entryMethod: 'Automated',
-    connectedDate: 'Jan 2025',
-    status: 'Active',
-    lastSynced: 'Mar 30, 2026',
-    usedFor: 'Payment Processing',
+    id: "icn-001",
+    name: "Invoicing Operating Account",
+    institution: "First National Bank",
+    accountMask: "****6789",
+    entryMethod: "Automated",
+    connectedDate: "Jan 2025",
+    status: "Active",
+    lastSynced: "Mar 30, 2026",
+    usedFor: "Payment Processing",
   },
   {
-    id: 'icn-002',
-    name: 'Payment Processing',
-    institution: 'Stripe',
+    id: "icn-002",
+    name: "Payment Processing",
+    institution: "Stripe",
     accountMask: null,
-    entryMethod: 'Connected',
-    connectedDate: 'Feb 2025',
-    status: 'Active',
+    entryMethod: "Connected",
+    connectedDate: "Feb 2025",
+    status: "Active",
     lastSynced: null,
-    usedFor: 'Online Payments',
+    usedFor: "Online Payments",
   },
   {
-    id: 'icn-003',
-    name: 'Receivables Account',
-    institution: 'Business Credit Union',
-    accountMask: '****3456',
-    entryMethod: 'Automated',
-    connectedDate: 'Mar 2025',
-    status: 'Active',
-    lastSynced: 'Mar 29, 2026',
-    usedFor: 'Invoice Reconciliation',
+    id: "icn-003",
+    name: "Receivables Account",
+    institution: "Business Credit Union",
+    accountMask: "****3456",
+    entryMethod: "Automated",
+    connectedDate: "Mar 2025",
+    status: "Active",
+    lastSynced: "Mar 29, 2026",
+    usedFor: "Invoice Reconciliation",
   },
 ];
 
@@ -72,11 +79,17 @@ export default function InvoicingConnections() {
           <div key={account.id} className="icn-account-card">
             <div className="icn-card-top">
               <div className="icn-institution-icon">
-                {account.accountMask ? <Landmark size={20} /> : <CreditCard size={20} />}
+                {account.accountMask ? (
+                  <Landmark size={20} />
+                ) : (
+                  <CreditCard size={20} />
+                )}
               </div>
               <div className="icn-card-header-info">
                 <h3 className="icn-account-name">{account.name}</h3>
-                <span className="icn-institution-name">{account.institution}</span>
+                <span className="icn-institution-name">
+                  {account.institution}
+                </span>
               </div>
               <div className="icn-status-indicator">
                 <CheckCircle size={14} />
@@ -88,7 +101,9 @@ export default function InvoicingConnections() {
               {account.accountMask && (
                 <div className="icn-detail-row">
                   <span className="icn-detail-label">Account</span>
-                  <span className="icn-detail-value">{account.accountMask}</span>
+                  <span className="icn-detail-value">
+                    {account.accountMask}
+                  </span>
                 </div>
               )}
               <div className="icn-detail-row">
@@ -97,7 +112,9 @@ export default function InvoicingConnections() {
               </div>
               <div className="icn-detail-row">
                 <span className="icn-detail-label">Connected</span>
-                <span className="icn-detail-value">{account.connectedDate}</span>
+                <span className="icn-detail-value">
+                  {account.connectedDate}
+                </span>
               </div>
               {account.lastSynced && (
                 <div className="icn-detail-row">

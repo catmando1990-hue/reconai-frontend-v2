@@ -1,6 +1,6 @@
-import api from './client';
+import api from "./client";
 
-const BASE = '/api/vendors';
+const BASE = "/api/vendors";
 
 export function listVendors() {
   return api.get(`${BASE}/`);

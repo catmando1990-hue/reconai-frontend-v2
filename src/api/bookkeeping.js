@@ -1,6 +1,6 @@
-import api from './client';
+import api from "./client";
 
-const BASE = '/api/bookkeeping';
+const BASE = "/api/bookkeeping";
 
 // ── Chart of Accounts ──
 

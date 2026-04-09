@@ -8,47 +8,47 @@ import {
   Plus,
   Search,
   Send,
-} from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import { invoicingApi } from '@/api';
-import '@/styles/invoicing/InvoicingInvoices.css';
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { invoicingApi } from "@/api";
+import "@/styles/invoicing/InvoicingInvoices.css";
 
-const statusOptions = ['All', 'Draft', 'Sent', 'Paid', 'Overdue'];
+const statusOptions = ["All", "Draft", "Sent", "Paid", "Overdue"];
 
 function formatCurrency(val) {
-  return val.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return val.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 2,
   });
 }
 
 const actionIcons = {
-  view: { icon: Eye, label: 'View' },
-  edit: { icon: Pencil, label: 'Edit' },
-  send: { icon: Send, label: 'Send' },
+  view: { icon: Eye, label: "View" },
+  edit: { icon: Pencil, label: "Edit" },
+  send: { icon: Send, label: "Send" },
 };
 
 function deriveActions(status) {
   switch (status) {
-    case 'draft':
-      return ['edit', 'send'];
-    case 'paid':
-      return ['view'];
+    case "draft":
+      return ["edit", "send"];
+    case "paid":
+      return ["view"];
     default:
-      return ['view', 'edit'];
+      return ["view", "edit"];
   }
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '--';
+  if (!dateStr) return "--";
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function InvoicingInvoices() {
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [invoicesData, setInvoicesData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,20 +59,20 @@ export default function InvoicingInvoices() {
       const list = Array.isArray(raw) ? raw : [];
       setInvoicesData(
         list.map((inv) => {
-          const status = (inv.status || 'draft').toLowerCase();
+          const status = (inv.status || "draft").toLowerCase();
           return {
             number: inv.invoice_number || inv.number || `INV-${inv.id}`,
-            customer: inv.customer_name || inv.customer || 'Unknown',
+            customer: inv.customer_name || inv.customer || "Unknown",
             amount: inv.total || inv.amount || 0,
             status,
             issueDate: formatDate(inv.issue_date || inv.created_at),
-            dueDate: inv.due_date ? formatDate(inv.due_date) : '--',
+            dueDate: inv.due_date ? formatDate(inv.due_date) : "--",
             actions: deriveActions(status),
           };
-        })
+        }),
       );
     } catch (err) {
-      console.warn('[InvoicingInvoices] Failed to fetch invoices:', err);
+      console.warn("[InvoicingInvoices] Failed to fetch invoices:", err);
     } finally {
       setLoading(false);
     }
@@ -87,7 +87,7 @@ export default function InvoicingInvoices() {
       inv.number.toLowerCase().includes(search.toLowerCase()) ||
       inv.customer.toLowerCase().includes(search.toLowerCase());
     const matchesStatus =
-      statusFilter === 'All' ||
+      statusFilter === "All" ||
       inv.status.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });

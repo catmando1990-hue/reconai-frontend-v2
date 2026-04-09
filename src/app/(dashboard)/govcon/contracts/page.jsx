@@ -1,24 +1,24 @@
 "use client";
 
-import { ChevronDown, FileText, Filter, Plus, Search } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { ChevronDown, FileText, Filter, Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
-import { govconApi } from '@/api';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/govcon/GovConContracts.css';
+import { govconApi } from "@/api";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/govcon/GovConContracts.css";
 
 const typeColors = {
-  FFP: 'gcc-type-ffp',
-  'T&M': 'gcc-type-tm',
-  CPFF: 'gcc-type-cpff',
-  IDIQ: 'gcc-type-idiq',
-  CPAF: 'gcc-type-cpaf',
+  FFP: "gcc-type-ffp",
+  "T&M": "gcc-type-tm",
+  CPFF: "gcc-type-cpff",
+  IDIQ: "gcc-type-idiq",
+  CPAF: "gcc-type-cpaf",
 };
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
@@ -27,8 +27,8 @@ function formatCurrency(value) {
 export default function GovConContracts() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const fetchContracts = useCallback(async () => {
     try {
@@ -38,18 +38,18 @@ export default function GovConContracts() {
       setContracts(
         (Array.isArray(list) ? list : []).map((c) => ({
           id: c.id,
-          contractNumber: c.contract_number ?? c.contractNumber ?? '',
-          name: c.name ?? c.contract_name ?? '',
-          agency: c.agency ?? '',
-          type: c.type ?? c.contract_type ?? '',
+          contractNumber: c.contract_number ?? c.contractNumber ?? "",
+          name: c.name ?? c.contract_name ?? "",
+          agency: c.agency ?? "",
+          type: c.type ?? c.contract_type ?? "",
           totalValue: c.total_value ?? c.totalValue ?? 0,
-          periodStart: c.period_start ?? c.periodStart ?? '',
-          periodEnd: c.period_end ?? c.periodEnd ?? '',
-          status: c.status ?? 'Active',
-        }))
+          periodStart: c.period_start ?? c.periodStart ?? "",
+          periodEnd: c.period_end ?? c.periodEnd ?? "",
+          status: c.status ?? "Active",
+        })),
       );
     } catch (err) {
-      console.warn('GovConContracts: failed to fetch contracts', err);
+      console.warn("GovConContracts: failed to fetch contracts", err);
     } finally {
       setLoading(false);
     }
@@ -61,11 +61,13 @@ export default function GovConContracts() {
 
   const filteredContracts = contracts.filter((contract) => {
     const matchesSearch =
-      contract.contractNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contract.contractNumber
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       contract.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contract.agency.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
-      statusFilter === 'All' || contract.status === statusFilter;
+      statusFilter === "All" || contract.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -117,7 +119,9 @@ export default function GovConContracts() {
 
       <div className="gcc-table-card">
         {loading ? (
-          <p style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>Loading contracts...</p>
+          <p style={{ padding: "2rem", textAlign: "center", color: "#888" }}>
+            Loading contracts...
+          </p>
         ) : (
           <div className="gcc-table-wrapper">
             <table className="gcc-table">
@@ -136,29 +140,39 @@ export default function GovConContracts() {
               <tbody>
                 {filteredContracts.map((contract) => (
                   <tr key={contract.id}>
-                    <td className="gcc-contract-number">{contract.contractNumber}</td>
+                    <td className="gcc-contract-number">
+                      {contract.contractNumber}
+                    </td>
                     <td className="gcc-contract-name">{contract.name}</td>
                     <td>{contract.agency}</td>
                     <td>
-                      <span className={`gcc-type-badge ${typeColors[contract.type]}`}>
+                      <span
+                        className={`gcc-type-badge ${typeColors[contract.type]}`}
+                      >
                         {contract.type}
                       </span>
                     </td>
-                    <td className="gcc-value">{formatCurrency(contract.totalValue)}</td>
-                    <td>{contract.periodStart} &ndash; {contract.periodEnd}</td>
+                    <td className="gcc-value">
+                      {formatCurrency(contract.totalValue)}
+                    </td>
+                    <td>
+                      {contract.periodStart} &ndash; {contract.periodEnd}
+                    </td>
                     <td>
                       <span
                         className={`gcc-status-badge ${
-                          contract.status === 'Active'
-                            ? 'gcc-status-active'
-                            : 'gcc-status-completed'
+                          contract.status === "Active"
+                            ? "gcc-status-active"
+                            : "gcc-status-completed"
                         }`}
                       >
                         {contract.status}
                       </span>
                     </td>
                     <td>
-                      <button className="gcc-view-details-btn">View Details</button>
+                      <button className="gcc-view-details-btn">
+                        View Details
+                      </button>
                     </td>
                   </tr>
                 ))}

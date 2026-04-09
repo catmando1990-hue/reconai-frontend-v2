@@ -1,16 +1,21 @@
-import api from './client';
+import api from "./client";
 
 /** POST /api/plaid/create-link-token */
 export function createLinkToken({ redirectUri, entityId } = {}) {
-  return api.post('/api/plaid/create-link-token', {
+  return api.post("/api/plaid/create-link-token", {
     redirect_uri: redirectUri,
     entity_id: entityId,
   });
 }
 
 /** POST /api/plaid/exchange-public-token */
-export function exchangePublicToken({ publicToken, institutionId, institutionName, entityId }) {
-  return api.post('/api/plaid/exchange-public-token', {
+export function exchangePublicToken({
+  publicToken,
+  institutionId,
+  institutionName,
+  entityId,
+}) {
+  return api.post("/api/plaid/exchange-public-token", {
     public_token: publicToken,
     institution_id: institutionId,
     institution_name: institutionName,
@@ -20,7 +25,7 @@ export function exchangePublicToken({ publicToken, institutionId, institutionNam
 
 /** POST /api/plaid/transactions/sync */
 export function syncTransactions({ itemId, count = 100 }) {
-  return api.post('/api/plaid/transactions/sync', {
+  return api.post("/api/plaid/transactions/sync", {
     item_id: itemId,
     count,
   });
@@ -31,7 +36,7 @@ export function syncTransactions({ itemId, count = 100 }) {
  *           lifecycle, user_message, last_synced_at, created_at }] }
  */
 export function listItems({ entityId } = {}) {
-  return api.get('/api/plaid/items', { params: { entity_id: entityId } });
+  return api.get("/api/plaid/items", { params: { entity_id: entityId } });
 }
 
 /** GET /api/plaid/items/:itemId — get bank item details */
@@ -45,5 +50,5 @@ export function getItem(itemId) {
  *           iso_currency_code, created_at, updated_at }], count }
  */
 export function getStoredAccounts({ itemId } = {}) {
-  return api.get('/api/plaid/stored-accounts', { params: { item_id: itemId } });
+  return api.get("/api/plaid/stored-accounts", { params: { item_id: itemId } });
 }

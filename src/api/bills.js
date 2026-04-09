@@ -1,6 +1,6 @@
-import api from './client';
+import api from "./client";
 
-const BASE = '/api/bills';
+const BASE = "/api/bills";
 
 export function listBills({ status } = {}) {
   return api.get(`${BASE}/`, { params: { status } });

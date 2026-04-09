@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   Building2,
   Link2,
@@ -8,13 +8,13 @@ import {
   Trash2,
   Loader2,
   AlertCircle,
-} from 'lucide-react';
-import { plaidApi } from '@/api';
-import '@/styles/core/Accounts.css';
+} from "lucide-react";
+import { plaidApi } from "@/api";
+import "@/styles/core/Accounts.css";
 
-function formatCurrency(amount, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
+function formatCurrency(amount, currency = "USD") {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
     currency: currency,
     minimumFractionDigits: 2,
   }).format(amount);
@@ -55,7 +55,9 @@ function EmptyState({ hasConnections }) {
           <Building2 size={32} />
         </div>
         <h3>No bank connected yet</h3>
-        <p>Connect your first bank account to start syncing your financial data.</p>
+        <p>
+          Connect your first bank account to start syncing your financial data.
+        </p>
         <a href="/core/bank-connections" className="connect-btn">
           <Link2 size={16} />
           Connect Bank Account
@@ -92,7 +94,7 @@ function InstitutionPanel({ institution, onRemove, onRefresh, isRefreshing }) {
           <div>
             <h3 className="institution-name">{institution.institution_name}</h3>
             <span className="account-count">
-              {accountCount} {accountCount === 1 ? 'account' : 'accounts'}
+              {accountCount} {accountCount === 1 ? "account" : "accounts"}
             </span>
           </div>
         </div>
@@ -103,7 +105,7 @@ function InstitutionPanel({ institution, onRemove, onRefresh, isRefreshing }) {
             disabled={isRefreshing}
             title="Refresh accounts"
           >
-            <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
+            <RefreshCw size={16} className={isRefreshing ? "spinning" : ""} />
           </button>
           <button
             className="action-btn remove"
@@ -129,12 +131,18 @@ function InstitutionPanel({ institution, onRemove, onRefresh, isRefreshing }) {
           {institution.accounts.map((account) => (
             <tr key={account.id}>
               <td className="account-name-col">{account.name}</td>
-              <td className="type-col">{formatAccountType(account.type, account.subtype)}</td>
-              <td className={`balance-col ${account.current < 0 ? 'negative' : ''}`}>
+              <td className="type-col">
+                {formatAccountType(account.type, account.subtype)}
+              </td>
+              <td
+                className={`balance-col ${account.current < 0 ? "negative" : ""}`}
+              >
                 {formatCurrency(account.current, account.currency)}
               </td>
               <td className="balance-col available">
-                {account.available !== null ? formatCurrency(account.available, account.currency) : '—'}
+                {account.available !== null
+                  ? formatCurrency(account.available, account.currency)
+                  : "—"}
               </td>
               <td className="mask-col">••••{account.mask}</td>
             </tr>
@@ -164,28 +172,32 @@ export default function Accounts() {
         plaidApi.getStoredAccounts(),
       ]);
 
-      const items = itemsRes?.items || (Array.isArray(itemsRes) ? itemsRes : []);
+      const items =
+        itemsRes?.items || (Array.isArray(itemsRes) ? itemsRes : []);
       const accounts = accountsRes?.accounts || [];
 
       if (items.length === 0) {
         setHasConnections(false);
         setInstitutions([]);
       } else {
-        const grouped = items.map(item => ({
+        const grouped = items.map((item) => ({
           institution_id: item.institution_id,
-          institution_name: item.institution_name || 'Unknown Bank',
+          institution_name: item.institution_name || "Unknown Bank",
           item_id: item.item_id,
           accounts: accounts
-            .filter(acc => acc.item_id === item.item_id)
-            .map(acc => ({
+            .filter((acc) => acc.item_id === item.item_id)
+            .map((acc) => ({
               id: acc.account_id || acc.id,
-              name: acc.name || acc.official_name || 'Account',
-              type: acc.type || 'depository',
+              name: acc.name || acc.official_name || "Account",
+              type: acc.type || "depository",
               subtype: acc.subtype || null,
               current: Number(acc.current_balance ?? 0),
-              available: acc.available_balance != null ? Number(acc.available_balance) : null,
-              mask: acc.mask || '****',
-              currency: acc.iso_currency_code || 'USD',
+              available:
+                acc.available_balance != null
+                  ? Number(acc.available_balance)
+                  : null,
+              mask: acc.mask || "****",
+              currency: acc.iso_currency_code || "USD",
             })),
         }));
         setInstitutions(grouped);
@@ -193,8 +205,8 @@ export default function Accounts() {
       }
       setError(null);
     } catch (err) {
-      console.error('[Accounts] Failed to fetch:', err);
-      setError('Failed to fetch accounts. Please try again.');
+      console.error("[Accounts] Failed to fetch:", err);
+      setError("Failed to fetch accounts. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -206,20 +218,24 @@ export default function Accounts() {
 
   const handleRemoveConnection = (itemId) => {
     // In real app, this would call API to remove the Plaid item
-    if (window.confirm('Are you sure you want to remove this bank connection? All associated accounts will be unlinked.')) {
-      setInstitutions(prev => prev.filter(inst => inst.item_id !== itemId));
+    if (
+      window.confirm(
+        "Are you sure you want to remove this bank connection? All associated accounts will be unlinked.",
+      )
+    ) {
+      setInstitutions((prev) => prev.filter((inst) => inst.item_id !== itemId));
     }
   };
 
   const handleRefreshConnection = async (itemId) => {
-    setRefreshingItems(prev => new Set([...prev, itemId]));
+    setRefreshingItems((prev) => new Set([...prev, itemId]));
     try {
       await plaidApi.syncTransactions({ itemId });
       await fetchAccounts(); // Refresh all account data
     } catch (err) {
-      console.error('[Accounts] Refresh failed:', err);
+      console.error("[Accounts] Refresh failed:", err);
     } finally {
-      setRefreshingItems(prev => {
+      setRefreshingItems((prev) => {
         const next = new Set(prev);
         next.delete(itemId);
         return next;
@@ -228,7 +244,10 @@ export default function Accounts() {
   };
 
   // Calculate total accounts
-  const totalAccounts = institutions.reduce((sum, inst) => sum + inst.accounts.length, 0);
+  const totalAccounts = institutions.reduce(
+    (sum, inst) => sum + inst.accounts.length,
+    0,
+  );
 
   // Render states
   if (loading) {
@@ -277,7 +296,10 @@ export default function Accounts() {
         </div>
         <div className="header-meta">
           <span className="total-badge">
-            {institutions.length} {institutions.length === 1 ? 'institution' : 'institutions'} &middot; {totalAccounts} {totalAccounts === 1 ? 'account' : 'accounts'}
+            {institutions.length}{" "}
+            {institutions.length === 1 ? "institution" : "institutions"}{" "}
+            &middot; {totalAccounts}{" "}
+            {totalAccounts === 1 ? "account" : "accounts"}
           </span>
         </div>
       </div>

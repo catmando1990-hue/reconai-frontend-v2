@@ -32,7 +32,9 @@ for (const file of walk(ROOT)) {
     const target = COMPONENT_REWRITES[name];
     // Match: from '../../components/Name' or "../../components/Name.jsx" with any depth of ../
     const re = new RegExp(
-      String.raw`from\s+(['"])(?:\.\.\/)+components\/` + name + String.raw`(?:\.jsx)?\1`,
+      String.raw`from\s+(['"])(?:\.\.\/)+components\/` +
+        name +
+        String.raw`(?:\.jsx)?\1`,
       "g",
     );
     src = src.replace(re, `from $1${target}$1`);

@@ -1,58 +1,50 @@
 "use client";
 
-import {
-  Brain,
-  Clock,
-  Eye,
-  RefreshCw,
-  Shield,
-  Tag,
-  Zap
-} from 'lucide-react';
-import { useState } from 'react';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/invoicing/InvoicingIntelligence.css';
+import { Brain, Clock, Eye, RefreshCw, Shield, Tag, Zap } from "lucide-react";
+import { useState } from "react";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/invoicing/InvoicingIntelligence.css";
 
 const SIGNALS = [
   {
-    id: 'sig-001',
-    title: 'Overdue Invoice Concentration',
-    severity: 'high',
+    id: "sig-001",
+    title: "Overdue Invoice Concentration",
+    severity: "high",
     confidence: 0.89,
-    category: 'Accounts Receivable',
+    category: "Accounts Receivable",
     description:
-      'One customer (Global Tech Solutions) accounts for 100% of overdue receivables ($12,350). Consider proactive outreach and review of credit terms for concentrated exposure.',
-    detectedAt: '2026-03-29T14:22:00Z',
+      "One customer (Global Tech Solutions) accounts for 100% of overdue receivables ($12,350). Consider proactive outreach and review of credit terms for concentrated exposure.",
+    detectedAt: "2026-03-29T14:22:00Z",
   },
   {
-    id: 'sig-002',
-    title: 'Payment Terms Mismatch',
-    severity: 'medium',
+    id: "sig-002",
+    title: "Payment Terms Mismatch",
+    severity: "medium",
     confidence: 0.76,
-    category: 'Cash Flow',
+    category: "Cash Flow",
     description:
-      'Average customer payment cycle (34 days) exceeds vendor payment terms (Net 25). This timing gap may create periodic cash flow pressure.',
-    detectedAt: '2026-03-28T09:15:00Z',
+      "Average customer payment cycle (34 days) exceeds vendor payment terms (Net 25). This timing gap may create periodic cash flow pressure.",
+    detectedAt: "2026-03-28T09:15:00Z",
   },
   {
-    id: 'sig-003',
-    title: 'Invoice Aging Trend',
-    severity: 'low',
+    id: "sig-003",
+    title: "Invoice Aging Trend",
+    severity: "low",
     confidence: 0.92,
-    category: 'Accounts Receivable',
+    category: "Accounts Receivable",
     description:
-      'Average days sales outstanding (DSO) has improved from 38 to 32 days over the past quarter. Collection processes are trending positively.',
-    detectedAt: '2026-03-30T08:00:00Z',
+      "Average days sales outstanding (DSO) has improved from 38 to 32 days over the past quarter. Collection processes are trending positively.",
+    detectedAt: "2026-03-30T08:00:00Z",
   },
   {
-    id: 'sig-004',
-    title: 'Vendor Payment Optimization',
-    severity: 'medium',
+    id: "sig-004",
+    title: "Vendor Payment Optimization",
+    severity: "medium",
     confidence: 0.81,
-    category: 'Accounts Payable',
+    category: "Accounts Payable",
     description:
-      '2 vendors offer early payment discounts (2/10 Net 30) that are not being utilized. Potential annual savings of $1,240 if discounts are captured.',
-    detectedAt: '2026-03-27T16:40:00Z',
+      "2 vendors offer early payment discounts (2/10 Net 30) that are not being utilized. Potential annual savings of $1,240 if discounts are captured.",
+    detectedAt: "2026-03-27T16:40:00Z",
   },
 ];
 
@@ -66,7 +58,8 @@ function SeverityBadge({ severity }) {
 
 function ConfidenceBadge({ confidence }) {
   const percentage = Math.round(confidence * 100);
-  const level = confidence >= 0.8 ? 'high' : confidence >= 0.6 ? 'medium' : 'low';
+  const level =
+    confidence >= 0.8 ? "high" : confidence >= 0.6 ? "medium" : "low";
   return (
     <span className={`ini-confidence-badge ${level}`}>
       {percentage}% confidence
@@ -153,7 +146,9 @@ export default function InvoicingIntelligence() {
             <Brain size={22} />
             <h1>Invoicing Intelligence</h1>
           </div>
-          <p className="ini-header-subtitle">AI-powered receivables, payables, and payment insights</p>
+          <p className="ini-header-subtitle">
+            AI-powered receivables, payables, and payment insights
+          </p>
         </div>
         <div className="ini-header-right">
           <button
@@ -161,7 +156,7 @@ export default function InvoicingIntelligence() {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
+            <RefreshCw size={16} className={isRefreshing ? "spinning" : ""} />
             Refresh
           </button>
         </div>
@@ -171,24 +166,26 @@ export default function InvoicingIntelligence() {
       <div className="ini-signals-summary">
         <div className="ini-summary-left">
           <Zap size={14} />
-          <span>{signals.length} signal{signals.length !== 1 ? 's' : ''} detected</span>
+          <span>
+            {signals.length} signal{signals.length !== 1 ? "s" : ""} detected
+          </span>
         </div>
         <div className="ini-summary-right">
           <span className="ini-summary-count high">
-            {signals.filter(s => s.severity === 'high').length} High
+            {signals.filter((s) => s.severity === "high").length} High
           </span>
           <span className="ini-summary-count medium">
-            {signals.filter(s => s.severity === 'medium').length} Medium
+            {signals.filter((s) => s.severity === "medium").length} Medium
           </span>
           <span className="ini-summary-count low">
-            {signals.filter(s => s.severity === 'low').length} Low
+            {signals.filter((s) => s.severity === "low").length} Low
           </span>
         </div>
       </div>
 
       {/* Signal Cards */}
       <div className="ini-signals-grid">
-        {signals.map(signal => (
+        {signals.map((signal) => (
           <SignalCard key={signal.id} signal={signal} />
         ))}
       </div>
@@ -200,8 +197,8 @@ export default function InvoicingIntelligence() {
           <strong>AI-Generated Invoicing Intelligence</strong>
           <p>
             These signals are generated from invoice, payment, and billing data.
-            They are intended to support collections and payment management and do not constitute
-            financial advice.
+            They are intended to support collections and payment management and
+            do not constitute financial advice.
           </p>
         </div>
       </div>

@@ -1,6 +1,6 @@
-import api from './client';
+import api from "./client";
 
-const BASE = '/api/financial-reports';
+const BASE = "/api/financial-reports";
 
 /** GET /api/financial-reports/profit-loss */
 export function getProfitLoss({ startDate, endDate }) {
@@ -31,9 +31,16 @@ export function getFinancialRatios({ asOfDate, periodStart }) {
 }
 
 /** GET /api/financial-reports/trends/:metricName */
-export function getTrend(metricName, { startDate, endDate, periodType = 'monthly' }) {
+export function getTrend(
+  metricName,
+  { startDate, endDate, periodType = "monthly" },
+) {
   return api.get(`${BASE}/trends/${metricName}`, {
-    params: { start_date: startDate, end_date: endDate, period_type: periodType },
+    params: {
+      start_date: startDate,
+      end_date: endDate,
+      period_type: periodType,
+    },
   });
 }
 

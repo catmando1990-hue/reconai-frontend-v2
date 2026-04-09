@@ -1,30 +1,40 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, Calendar, DollarSign, TrendingUp } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
-import { invoicingApi } from '@/api';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/invoicing/InvoicingPayments.css';
+import { invoicingApi } from "@/api";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/invoicing/InvoicingPayments.css";
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
 
 function formatDateStr(dateStr) {
-  if (!dateStr) return '--';
+  if (!dateStr) return "--";
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export default function InvoicingPayments() {
-  const [typeFilter, setTypeFilter] = useState('All');
-  const [dateRange, setDateRange] = useState('This Month');
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [dateRange, setDateRange] = useState("This Month");
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,16 +47,25 @@ export default function InvoicingPayments() {
         list.map((p) => ({
           id: p.id,
           date: formatDateStr(p.date || p.payment_date || p.created_at),
-          type: p.type ? p.type.charAt(0).toUpperCase() + p.type.slice(1).toLowerCase() : 'Received',
+          type: p.type
+            ? p.type.charAt(0).toUpperCase() + p.type.slice(1).toLowerCase()
+            : "Received",
           reference: p.reference || p.payment_number || `PMT-${p.id}`,
-          party: p.party_name || p.customer_name || p.vendor_name || p.party || 'Unknown',
+          party:
+            p.party_name ||
+            p.customer_name ||
+            p.vendor_name ||
+            p.party ||
+            "Unknown",
           amount: p.amount || 0,
-          method: p.method || p.payment_method || 'ACH',
-          status: p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1).toLowerCase() : 'Cleared',
-        }))
+          method: p.method || p.payment_method || "ACH",
+          status: p.status
+            ? p.status.charAt(0).toUpperCase() + p.status.slice(1).toLowerCase()
+            : "Cleared",
+        })),
       );
     } catch (err) {
-      console.warn('[InvoicingPayments] Failed to fetch payments:', err);
+      console.warn("[InvoicingPayments] Failed to fetch payments:", err);
     } finally {
       setLoading(false);
     }
@@ -57,8 +76,7 @@ export default function InvoicingPayments() {
   }, [fetchPayments]);
 
   const filteredPayments = payments.filter((payment) => {
-    const matchesType =
-      typeFilter === 'All' || payment.type === typeFilter;
+    const matchesType = typeFilter === "All" || payment.type === typeFilter;
     return matchesType;
   });
 
@@ -82,10 +100,10 @@ export default function InvoicingPayments() {
       {/* Filter Controls */}
       <div className="ip-controls">
         <div className="ip-type-tabs">
-          {['All', 'Received', 'Sent'].map((tab) => (
+          {["All", "Received", "Sent"].map((tab) => (
             <button
               key={tab}
-              className={`ip-tab-btn ${typeFilter === tab ? 'ip-tab-active' : ''}`}
+              className={`ip-tab-btn ${typeFilter === tab ? "ip-tab-active" : ""}`}
               onClick={() => setTypeFilter(tab)}
             >
               {tab}
@@ -108,8 +126,8 @@ export default function InvoicingPayments() {
 
       {/* KPI Cards */}
       {(() => {
-        const received = payments.filter((p) => p.type === 'Received');
-        const sent = payments.filter((p) => p.type === 'Sent');
+        const received = payments.filter((p) => p.type === "Received");
+        const sent = payments.filter((p) => p.type === "Sent");
         const receivedTotal = received.reduce((s, p) => s + p.amount, 0);
         const sentTotal = sent.reduce((s, p) => s + p.amount, 0);
         const net = receivedTotal - sentTotal;
@@ -121,8 +139,12 @@ export default function InvoicingPayments() {
               </div>
               <div className="ip-kpi-content">
                 <div className="ip-kpi-label">Received This Month</div>
-                <div className="ip-kpi-value">{formatCurrency(receivedTotal)}</div>
-                <div className="ip-kpi-count">{received.length} payment{received.length !== 1 ? 's' : ''}</div>
+                <div className="ip-kpi-value">
+                  {formatCurrency(receivedTotal)}
+                </div>
+                <div className="ip-kpi-count">
+                  {received.length} payment{received.length !== 1 ? "s" : ""}
+                </div>
               </div>
             </div>
             <div className="ip-kpi-card ip-kpi-sent">
@@ -132,7 +154,9 @@ export default function InvoicingPayments() {
               <div className="ip-kpi-content">
                 <div className="ip-kpi-label">Sent This Month</div>
                 <div className="ip-kpi-value">{formatCurrency(sentTotal)}</div>
-                <div className="ip-kpi-count">{sent.length} payment{sent.length !== 1 ? 's' : ''}</div>
+                <div className="ip-kpi-count">
+                  {sent.length} payment{sent.length !== 1 ? "s" : ""}
+                </div>
               </div>
             </div>
             <div className="ip-kpi-card ip-kpi-net">
@@ -141,8 +165,11 @@ export default function InvoicingPayments() {
               </div>
               <div className="ip-kpi-content">
                 <div className="ip-kpi-label">Net Cash Flow</div>
-                <div className={`ip-kpi-value ${net >= 0 ? 'ip-kpi-positive' : ''}`}>
-                  {net >= 0 ? '+' : '-'}{formatCurrency(Math.abs(net))}
+                <div
+                  className={`ip-kpi-value ${net >= 0 ? "ip-kpi-positive" : ""}`}
+                >
+                  {net >= 0 ? "+" : "-"}
+                  {formatCurrency(Math.abs(net))}
                 </div>
               </div>
             </div>
@@ -172,12 +199,12 @@ export default function InvoicingPayments() {
                   <td>
                     <span
                       className={`ip-type-badge ${
-                        payment.type === 'Received'
-                          ? 'ip-type-received'
-                          : 'ip-type-sent'
+                        payment.type === "Received"
+                          ? "ip-type-received"
+                          : "ip-type-sent"
                       }`}
                     >
-                      {payment.type === 'Received' ? (
+                      {payment.type === "Received" ? (
                         <ArrowDownLeft size={12} />
                       ) : (
                         <ArrowUpRight size={12} />
@@ -189,12 +216,12 @@ export default function InvoicingPayments() {
                   <td className="ip-party-name">{payment.party}</td>
                   <td
                     className={`ip-amount ${
-                      payment.type === 'Received'
-                        ? 'ip-amount-received'
-                        : 'ip-amount-sent'
+                      payment.type === "Received"
+                        ? "ip-amount-received"
+                        : "ip-amount-sent"
                     }`}
                   >
-                    {payment.type === 'Received' ? '+' : '-'}
+                    {payment.type === "Received" ? "+" : "-"}
                     {formatCurrency(payment.amount)}
                   </td>
                   <td>
@@ -203,9 +230,9 @@ export default function InvoicingPayments() {
                   <td>
                     <span
                       className={`ip-status-badge ${
-                        payment.status === 'Cleared'
-                          ? 'ip-status-cleared'
-                          : 'ip-status-pending'
+                        payment.status === "Cleared"
+                          ? "ip-status-cleared"
+                          : "ip-status-pending"
                       }`}
                     >
                       {payment.status}

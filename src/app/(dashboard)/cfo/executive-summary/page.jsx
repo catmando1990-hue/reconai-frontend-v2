@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   Loader2,
   RefreshCw,
@@ -21,86 +21,114 @@ import {
   FileText,
   Scale,
   Bot,
-} from 'lucide-react';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/cfo/CFOExecutiveSummary.css';
+} from "lucide-react";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/cfo/CFOExecutiveSummary.css";
 
 // Lifecycle states
 const LIFECYCLE = {
-  IDLE: 'idle',
-  LOADING: 'loading',
-  PENDING: 'pending',
-  STALE: 'stale',
-  FAILED: 'failed',
-  READY: 'ready',
-  REFRESHING: 'refreshing',
+  IDLE: "idle",
+  LOADING: "loading",
+  PENDING: "pending",
+  STALE: "stale",
+  FAILED: "failed",
+  READY: "ready",
+  REFRESHING: "refreshing",
 };
 
 // Mock API response
 const mockApiResponse = {
-  cfo_version: '2.1.0',
+  cfo_version: "2.1.0",
   snapshot: {
-    status: 'on-track',
-    period: 'Q1 2026',
+    status: "on-track",
+    period: "Q1 2026",
     generatedAt: new Date().toISOString(),
-    boardDate: '2026-04-15',
+    boardDate: "2026-04-15",
   },
   metrics: {
     runway: {
       value: 18.5,
-      unit: 'months',
-      sentiment: 'positive',
-      trend: 'up',
+      unit: "months",
+      sentiment: "positive",
+      trend: "up",
       previous: 16.2,
       isAvailable: true,
     },
     cashOnHand: {
       value: 2400000,
-      unit: 'currency',
-      sentiment: 'positive',
-      trend: 'up',
+      unit: "currency",
+      sentiment: "positive",
+      trend: "up",
       previous: 2150000,
       isAvailable: true,
     },
     monthlyBurn: {
       value: 129700,
-      unit: 'currency',
-      sentiment: 'neutral',
-      trend: 'down',
+      unit: "currency",
+      sentiment: "neutral",
+      trend: "down",
       previous: 132800,
       isAvailable: true,
     },
   },
   risks: [
-    { id: 1, title: 'AR aging exceeds 45 days', severity: 'medium', impact: 'Cash flow timing' },
-    { id: 2, title: 'Q2 pipeline below forecast', severity: 'high', impact: 'Revenue at risk' },
+    {
+      id: 1,
+      title: "AR aging exceeds 45 days",
+      severity: "medium",
+      impact: "Cash flow timing",
+    },
+    {
+      id: 2,
+      title: "Q2 pipeline below forecast",
+      severity: "high",
+      impact: "Revenue at risk",
+    },
   ],
   nextActions: [
-    { id: 1, title: 'Review Q1 board materials', dueDate: '2026-04-10', owner: 'CFO' },
-    { id: 2, title: 'Finalize investor update', dueDate: '2026-04-12', owner: 'Finance' },
-    { id: 3, title: 'Submit tax filing', dueDate: '2026-04-15', owner: 'Tax' },
+    {
+      id: 1,
+      title: "Review Q1 board materials",
+      dueDate: "2026-04-10",
+      owner: "CFO",
+    },
+    {
+      id: 2,
+      title: "Finalize investor update",
+      dueDate: "2026-04-12",
+      owner: "Finance",
+    },
+    { id: 3, title: "Submit tax filing", dueDate: "2026-04-15", owner: "Tax" },
   ],
 };
 
 // Null state copy for metrics
 const NULL_STATE_COPY = {
-  runway: 'Insufficient data to calculate',
-  cashOnHand: 'Awaiting bank data',
-  monthlyBurn: 'Requires 30+ days of data',
+  runway: "Insufficient data to calculate",
+  cashOnHand: "Awaiting bank data",
+  monthlyBurn: "Requires 30+ days of data",
 };
 
 function formatCurrency(amount) {
   if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
   if (amount >= 1000) return `$${(amount / 1000).toFixed(0)}K`;
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+  }).format(amount);
 }
 
 function formatMetricValue(value, unit) {
   switch (unit) {
-    case 'currency': return formatCurrency(value);
-    case 'months': return `${value.toFixed(1)} months`;
-    case 'percentage': return `${value.toFixed(1)}%`;
-    default: return value;
+    case "currency":
+      return formatCurrency(value);
+    case "months":
+      return `${value.toFixed(1)} months`;
+    case "percentage":
+      return `${value.toFixed(1)}%`;
+    default:
+      return value;
   }
 }
 
@@ -112,20 +140,20 @@ function LifecycleStatusBanner({ lifecycle, onRetry, message }) {
   const config = {
     [LIFECYCLE.PENDING]: {
       icon: Loader2,
-      title: 'Computing',
-      className: 'pending',
+      title: "Computing",
+      className: "pending",
       spinning: true,
     },
     [LIFECYCLE.STALE]: {
       icon: Clock,
-      title: 'Data may be outdated',
-      className: 'stale',
+      title: "Data may be outdated",
+      className: "stale",
       showRefresh: true,
     },
     [LIFECYCLE.FAILED]: {
       icon: XCircle,
-      title: 'Unable to load',
-      className: 'failed',
+      title: "Unable to load",
+      className: "failed",
       showRetry: true,
     },
   };
@@ -137,7 +165,7 @@ function LifecycleStatusBanner({ lifecycle, onRetry, message }) {
 
   return (
     <div className={`lifecycle-banner ${currentConfig.className}`}>
-      <Icon size={18} className={currentConfig.spinning ? 'spinning' : ''} />
+      <Icon size={18} className={currentConfig.spinning ? "spinning" : ""} />
       <div className="lifecycle-content">
         <span className="lifecycle-title">{currentConfig.title}</span>
         <span className="lifecycle-message">{message}</span>
@@ -158,9 +186,9 @@ function LifecycleStatusBanner({ lifecycle, onRetry, message }) {
 
 function ExecutiveMetricCard({ metricKey, metric, nullCopy }) {
   const labels = {
-    runway: 'Runway',
-    cashOnHand: 'Cash on Hand',
-    monthlyBurn: 'Monthly Burn',
+    runway: "Runway",
+    cashOnHand: "Cash on Hand",
+    monthlyBurn: "Monthly Burn",
   };
 
   const icons = {
@@ -189,20 +217,28 @@ function ExecutiveMetricCard({ metricKey, metric, nullCopy }) {
 
   const change = calculateChange(metric.value, metric.previous);
   const isPositive = change >= 0;
-  const sentimentClass = metric.sentiment === 'positive' ? 'emerald' :
-                         metric.sentiment === 'negative' ? 'destructive' : 'neutral';
+  const sentimentClass =
+    metric.sentiment === "positive"
+      ? "emerald"
+      : metric.sentiment === "negative"
+        ? "destructive"
+        : "neutral";
 
   return (
     <div className={`executive-metric ${sentimentClass}`}>
       <div className="metric-header">
         <Icon size={16} />
         <span className="metric-label">{label}</span>
-        <span className={`metric-change ${isPositive ? 'positive' : 'negative'}`}>
+        <span
+          className={`metric-change ${isPositive ? "positive" : "negative"}`}
+        >
           {isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
           {Math.abs(change).toFixed(1)}%
         </span>
       </div>
-      <div className="metric-value">{formatMetricValue(metric.value, metric.unit)}</div>
+      <div className="metric-value">
+        {formatMetricValue(metric.value, metric.unit)}
+      </div>
       <div className="metric-previous">
         vs. {formatMetricValue(metric.previous, metric.unit)} prior
       </div>
@@ -212,9 +248,9 @@ function ExecutiveMetricCard({ metricKey, metric, nullCopy }) {
 
 function RiskCard({ risk }) {
   const severityConfig = {
-    high: { className: 'high', icon: AlertCircle },
-    medium: { className: 'medium', icon: AlertTriangle },
-    low: { className: 'low', icon: Info },
+    high: { className: "high", icon: AlertCircle },
+    medium: { className: "medium", icon: AlertTriangle },
+    low: { className: "low", icon: Info },
   };
 
   const config = severityConfig[risk.severity];
@@ -234,25 +270,30 @@ function RiskCard({ risk }) {
 function ActionRow({ action }) {
   const dueDate = new Date(action.dueDate);
   const isOverdue = dueDate < new Date();
-  const formattedDate = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const formattedDate = dueDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 
   return (
-    <div className={`action-row ${isOverdue ? 'overdue' : ''}`}>
+    <div className={`action-row ${isOverdue ? "overdue" : ""}`}>
       <CheckCircle2 size={12} />
       <span className="action-title">{action.title}</span>
       <span className="action-owner">{action.owner}</span>
-      <span className={`action-due ${isOverdue ? 'overdue' : ''}`}>{formattedDate}</span>
+      <span className={`action-due ${isOverdue ? "overdue" : ""}`}>
+        {formattedDate}
+      </span>
     </div>
   );
 }
 
 function StatusBadge({ status }) {
   const config = {
-    'on-track': { label: 'On Track', className: 'success' },
-    'at-risk': { label: 'At Risk', className: 'warning' },
-    'off-track': { label: 'Off Track', className: 'danger' },
+    "on-track": { label: "On Track", className: "success" },
+    "at-risk": { label: "At Risk", className: "warning" },
+    "off-track": { label: "Off Track", className: "danger" },
   };
-  const { label, className } = config[status] || config['on-track'];
+  const { label, className } = config[status] || config["on-track"];
   return <span className={`exec-status-badge ${className}`}>{label}</span>;
 }
 
@@ -264,7 +305,7 @@ export default function CFOExecutiveSummary() {
     setLifecycle(LIFECYCLE.LOADING);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
       // Simulate different lifecycle states for demo (normally would come from API)
       // For now, default to READY
@@ -276,6 +317,7 @@ export default function CFOExecutiveSummary() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount fetch; tracked for page migration
     fetchSummary();
   }, [fetchSummary]);
 
@@ -392,7 +434,11 @@ export default function CFOExecutiveSummary() {
         <div className="exec-header-right">
           <span className="board-date-tag">
             <Briefcase size={12} />
-            Board: {new Date(snapshot.boardDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            Board:{" "}
+            {new Date(snapshot.boardDate).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}
           </span>
           <button className="exec-btn">
             <Download size={14} />
@@ -407,7 +453,11 @@ export default function CFOExecutiveSummary() {
           <h2>Financial Posture</h2>
           <span className="generated-at">
             <Clock size={11} />
-            Generated {new Date(snapshot.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            Generated{" "}
+            {new Date(snapshot.generatedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </span>
         </div>
 
@@ -439,7 +489,7 @@ export default function CFOExecutiveSummary() {
             <h3>Top Risks</h3>
           </div>
           <div className="risks-list">
-            {risks.map(risk => (
+            {risks.map((risk) => (
               <RiskCard key={risk.id} risk={risk} />
             ))}
           </div>
@@ -452,7 +502,7 @@ export default function CFOExecutiveSummary() {
             <h3>Next Actions</h3>
           </div>
           <div className="actions-list">
-            {nextActions.map(action => (
+            {nextActions.map((action) => (
               <ActionRow key={action.id} action={action} />
             ))}
           </div>

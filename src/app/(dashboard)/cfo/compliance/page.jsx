@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   Shield,
   Download,
@@ -19,8 +19,8 @@ import {
   ExternalLink,
   XCircle,
   Loader2,
-} from 'lucide-react';
-import '@/styles/cfo/CFOCompliance.css';
+} from "lucide-react";
+import "@/styles/cfo/CFOCompliance.css";
 
 // Generate request ID for error tracking
 function generateRequestId() {
@@ -29,15 +29,15 @@ function generateRequestId() {
 
 // Mock data fetchers
 async function fetchRBAC() {
-  await new Promise(resolve => setTimeout(resolve, 600));
+  await new Promise((resolve) => setTimeout(resolve, 600));
   return {
-    retention_read: 'granted',
-    export_request: 'granted',
+    retention_read: "granted",
+    export_request: "granted",
   };
 }
 
 async function fetchRetentionPolicy() {
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 500));
   return {
     retention_days: 90,
     configured: true,
@@ -45,13 +45,37 @@ async function fetchRetentionPolicy() {
 }
 
 async function fetchAuditLog() {
-  await new Promise(resolve => setTimeout(resolve, 700));
+  await new Promise((resolve) => setTimeout(resolve, 700));
   return {
     entries: [
-      { id: 1, action: 'export_requested', user: 'admin@company.com', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), details: 'Q1 2026 Export Pack' },
-      { id: 2, action: 'retention_updated', user: 'cfo@company.com', timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), details: 'Changed from 60 to 90 days' },
-      { id: 3, action: 'rbac_modified', user: 'admin@company.com', timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), details: 'Granted export access to finance team' },
-      { id: 4, action: 'export_completed', user: 'system', timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(), details: 'Pack ID: exp_abc123' },
+      {
+        id: 1,
+        action: "export_requested",
+        user: "admin@company.com",
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        details: "Q1 2026 Export Pack",
+      },
+      {
+        id: 2,
+        action: "retention_updated",
+        user: "cfo@company.com",
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        details: "Changed from 60 to 90 days",
+      },
+      {
+        id: 3,
+        action: "rbac_modified",
+        user: "admin@company.com",
+        timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+        details: "Granted export access to finance team",
+      },
+      {
+        id: 4,
+        action: "export_completed",
+        user: "system",
+        timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+        details: "Pack ID: exp_abc123",
+      },
     ],
     total: 4,
   };
@@ -60,11 +84,11 @@ async function fetchAuditLog() {
 // Status Chip component
 function StatusChip({ status, children }) {
   const config = {
-    success: { icon: CheckCircle, className: 'success' },
-    error: { icon: XCircle, className: 'error' },
-    warning: { icon: AlertTriangle, className: 'warning' },
-    pending: { icon: Clock, className: 'pending' },
-    info: { icon: Info, className: 'info' },
+    success: { icon: CheckCircle, className: "success" },
+    error: { icon: XCircle, className: "error" },
+    warning: { icon: AlertTriangle, className: "warning" },
+    pending: { icon: Clock, className: "pending" },
+    info: { icon: Info, className: "info" },
   };
   const { icon: Icon, className } = config[status] || config.info;
 
@@ -108,7 +132,7 @@ function AuditPanel({ entries, isLoading, error }) {
 
   return (
     <div className="audit-list">
-      {entries.map(entry => (
+      {entries.map((entry) => (
         <div key={entry.id} className="audit-entry">
           <div className="audit-icon">
             <FileText size={14} />
@@ -116,7 +140,9 @@ function AuditPanel({ entries, isLoading, error }) {
           <div className="audit-content">
             <div className="audit-header">
               <span className="audit-action">{formatAction(entry.action)}</span>
-              <span className="audit-time">{formatTimeAgo(entry.timestamp)}</span>
+              <span className="audit-time">
+                {formatTimeAgo(entry.timestamp)}
+              </span>
             </div>
             <p className="audit-details">{entry.details}</p>
             <span className="audit-user">
@@ -150,7 +176,7 @@ function RetentionPanel({ rbac, policy, isLoading, error }) {
     );
   }
 
-  const canRead = rbac?.retention_read === 'granted';
+  const canRead = rbac?.retention_read === "granted";
 
   if (!canRead) {
     return (
@@ -167,7 +193,9 @@ function RetentionPanel({ rbac, policy, isLoading, error }) {
       <div className="retention-row">
         <span className="retention-label">Retention Period</span>
         <span className="retention-value">
-          {policy?.configured ? `${policy.retention_days} days` : 'Not configured'}
+          {policy?.configured
+            ? `${policy.retention_days} days`
+            : "Not configured"}
         </span>
       </div>
       <div className="retention-row">
@@ -176,10 +204,13 @@ function RetentionPanel({ rbac, policy, isLoading, error }) {
       </div>
       <div className="retention-row">
         <span className="retention-label">Auto-Purge</span>
-        <span className="retention-value">{policy?.configured ? 'Enabled' : 'Disabled'}</span>
+        <span className="retention-value">
+          {policy?.configured ? "Enabled" : "Disabled"}
+        </span>
       </div>
       <p className="retention-note">
-        Evidence older than the retention period is automatically purged in compliance with data retention policies.
+        Evidence older than the retention period is automatically purged in
+        compliance with data retention policies.
       </p>
     </div>
   );
@@ -187,8 +218,8 @@ function RetentionPanel({ rbac, policy, isLoading, error }) {
 
 // Export Pack Request Panel
 function ExportPackRequestPanel({ rbac, onRequest, submitting }) {
-  const [period, setPeriod] = useState('Q1 2026');
-  const canRequest = rbac?.export_request === 'granted';
+  const [period, setPeriod] = useState("Q1 2026");
+  const canRequest = rbac?.export_request === "granted";
 
   if (!canRequest) {
     return (
@@ -243,7 +274,8 @@ function ExportPackRequestPanel({ rbac, onRequest, submitting }) {
         )}
       </button>
       <p className="export-note">
-        Export packs are generated asynchronously. You will be notified when ready.
+        Export packs are generated asynchronously. You will be notified when
+        ready.
       </p>
     </div>
   );
@@ -251,10 +283,10 @@ function ExportPackRequestPanel({ rbac, onRequest, submitting }) {
 
 function formatAction(action) {
   const labels = {
-    export_requested: 'Export Requested',
-    export_completed: 'Export Completed',
-    retention_updated: 'Retention Updated',
-    rbac_modified: 'Access Modified',
+    export_requested: "Export Requested",
+    export_completed: "Export Completed",
+    retention_updated: "Retention Updated",
+    rbac_modified: "Access Modified",
   };
   return labels[action] || action;
 }
@@ -276,8 +308,16 @@ export default function CFOCompliance() {
   const [rbac, setRbac] = useState(null);
   const [policy, setPolicy] = useState(null);
   const [auditLog, setAuditLog] = useState(null);
-  const [loading, setLoading] = useState({ rbac: true, policy: true, audit: true });
-  const [errors, setErrors] = useState({ rbac: null, policy: null, audit: null });
+  const [loading, setLoading] = useState({
+    rbac: true,
+    policy: true,
+    audit: true,
+  });
+  const [errors, setErrors] = useState({
+    rbac: null,
+    policy: null,
+    audit: null,
+  });
   const [exportSubmitting, setExportSubmitting] = useState(false);
   const [notification, setNotification] = useState(null);
 
@@ -288,30 +328,39 @@ export default function CFOCompliance() {
       try {
         const rbacData = await fetchRBAC();
         setRbac(rbacData);
-        setLoading(prev => ({ ...prev, rbac: false }));
+        setLoading((prev) => ({ ...prev, rbac: false }));
       } catch (err) {
-        setErrors(prev => ({ ...prev, rbac: { message: err.message, request_id: generateRequestId() } }));
-        setLoading(prev => ({ ...prev, rbac: false }));
+        setErrors((prev) => ({
+          ...prev,
+          rbac: { message: err.message, request_id: generateRequestId() },
+        }));
+        setLoading((prev) => ({ ...prev, rbac: false }));
       }
 
       // Fetch Retention Policy
       try {
         const policyData = await fetchRetentionPolicy();
         setPolicy(policyData);
-        setLoading(prev => ({ ...prev, policy: false }));
+        setLoading((prev) => ({ ...prev, policy: false }));
       } catch (err) {
-        setErrors(prev => ({ ...prev, policy: { message: err.message, request_id: generateRequestId() } }));
-        setLoading(prev => ({ ...prev, policy: false }));
+        setErrors((prev) => ({
+          ...prev,
+          policy: { message: err.message, request_id: generateRequestId() },
+        }));
+        setLoading((prev) => ({ ...prev, policy: false }));
       }
 
       // Fetch Audit Log
       try {
         const auditData = await fetchAuditLog();
         setAuditLog(auditData);
-        setLoading(prev => ({ ...prev, audit: false }));
+        setLoading((prev) => ({ ...prev, audit: false }));
       } catch (err) {
-        setErrors(prev => ({ ...prev, audit: { message: err.message, request_id: generateRequestId() } }));
-        setLoading(prev => ({ ...prev, audit: false }));
+        setErrors((prev) => ({
+          ...prev,
+          audit: { message: err.message, request_id: generateRequestId() },
+        }));
+        setLoading((prev) => ({ ...prev, audit: false }));
       }
     };
 
@@ -324,18 +373,18 @@ export default function CFOCompliance() {
 
     try {
       // Mock POST /api/export-pack
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       const requestId = generateRequestId();
 
       setNotification({
-        status: 'success',
+        status: "success",
         message: `Export pack requested for ${period}`,
         request_id: requestId,
       });
     } catch (err) {
       setNotification({
-        status: 'error',
-        message: 'Failed to request export pack',
+        status: "error",
+        message: "Failed to request export pack",
         request_id: generateRequestId(),
       });
     } finally {
@@ -348,34 +397,35 @@ export default function CFOCompliance() {
 
     try {
       // Mock POST /api/cfo/export
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Simulate CSV download
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const filename = `compliance_export_${timestamp}.csv`;
 
       // Create mock CSV content
-      const csvContent = 'date,action,user,details\n' +
-        auditLog?.entries.map(e =>
-          `${e.timestamp},${e.action},${e.user},"${e.details}"`
-        ).join('\n') || '';
+      const csvContent =
+        "date,action,user,details\n" +
+          auditLog?.entries
+            .map((e) => `${e.timestamp},${e.action},${e.user},"${e.details}"`)
+            .join("\n") || "";
 
-      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const blob = new Blob([csvContent], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
 
       setNotification({
-        status: 'success',
+        status: "success",
         message: `Downloaded ${filename}`,
       });
     } catch (err) {
       setNotification({
-        status: 'error',
-        message: 'Failed to export compliance data',
+        status: "error",
+        message: "Failed to export compliance data",
         request_id: generateRequestId(),
       });
     }
@@ -396,7 +446,10 @@ export default function CFOCompliance() {
               Request ID: {notification.request_id}
             </span>
           )}
-          <button className="notification-close" onClick={() => setNotification(null)}>
+          <button
+            className="notification-close"
+            onClick={() => setNotification(null)}
+          >
             <XCircle size={14} />
           </button>
         </div>
@@ -409,7 +462,9 @@ export default function CFOCompliance() {
             <Shield size={22} />
             <h1>CFO Compliance</h1>
           </div>
-          <p className="header-subtitle">Audit, retention, and export governance</p>
+          <p className="header-subtitle">
+            Audit, retention, and export governance
+          </p>
         </div>
         <div className="header-right">
           <button className="export-all-btn" onClick={handleExportAll}>
@@ -505,17 +560,25 @@ export default function CFOCompliance() {
               <div className="status-row">
                 <span className="status-label">Audit Entries</span>
                 <span className="status-value">
-                  {loading.audit ? 'Loading...' :
-                    errors.audit ? 'Error' :
-                      auditLog?.total > 0 ? `${auditLog.total} entries` : 'Requires setup'}
+                  {loading.audit
+                    ? "Loading..."
+                    : errors.audit
+                      ? "Error"
+                      : auditLog?.total > 0
+                        ? `${auditLog.total} entries`
+                        : "Requires setup"}
                 </span>
               </div>
               <div className="status-row">
                 <span className="status-label">Retention Period</span>
                 <span className="status-value">
-                  {loading.policy ? 'Loading...' :
-                    errors.policy ? 'Error' :
-                      policy?.configured ? `${policy.retention_days} days` : 'Not configured'}
+                  {loading.policy
+                    ? "Loading..."
+                    : errors.policy
+                      ? "Error"
+                      : policy?.configured
+                        ? `${policy.retention_days} days`
+                        : "Not configured"}
                 </span>
               </div>
               <div className="status-row">
@@ -534,26 +597,46 @@ export default function CFOCompliance() {
             <div className="access-list">
               <div className="access-row">
                 <span className="access-label">Retention Read</span>
-                <StatusChip status={
-                  loading.rbac ? 'pending' :
-                    errors.rbac ? 'error' :
-                      rbac?.retention_read === 'granted' ? 'success' : 'warning'
-                }>
-                  {loading.rbac ? 'Pending' :
-                    errors.rbac ? 'Error' :
-                      rbac?.retention_read === 'granted' ? 'Granted' : 'Pending setup'}
+                <StatusChip
+                  status={
+                    loading.rbac
+                      ? "pending"
+                      : errors.rbac
+                        ? "error"
+                        : rbac?.retention_read === "granted"
+                          ? "success"
+                          : "warning"
+                  }
+                >
+                  {loading.rbac
+                    ? "Pending"
+                    : errors.rbac
+                      ? "Error"
+                      : rbac?.retention_read === "granted"
+                        ? "Granted"
+                        : "Pending setup"}
                 </StatusChip>
               </div>
               <div className="access-row">
                 <span className="access-label">Export Request</span>
-                <StatusChip status={
-                  loading.rbac ? 'pending' :
-                    errors.rbac ? 'error' :
-                      rbac?.export_request === 'granted' ? 'success' : 'warning'
-                }>
-                  {loading.rbac ? 'Pending' :
-                    errors.rbac ? 'Error' :
-                      rbac?.export_request === 'granted' ? 'Granted' : 'Pending setup'}
+                <StatusChip
+                  status={
+                    loading.rbac
+                      ? "pending"
+                      : errors.rbac
+                        ? "error"
+                        : rbac?.export_request === "granted"
+                          ? "success"
+                          : "warning"
+                  }
+                >
+                  {loading.rbac
+                    ? "Pending"
+                    : errors.rbac
+                      ? "Error"
+                      : rbac?.export_request === "granted"
+                        ? "Granted"
+                        : "Pending setup"}
                 </StatusChip>
               </div>
             </div>
@@ -567,16 +650,22 @@ export default function CFOCompliance() {
             </div>
             <div className="about-content">
               <p>
-                <strong>Audit Logging</strong><br />
-                All compliance-related actions are logged with timestamp and user attribution.
+                <strong>Audit Logging</strong>
+                <br />
+                All compliance-related actions are logged with timestamp and
+                user attribution.
               </p>
               <p>
-                <strong>Evidence Retention</strong><br />
-                Manage how long evidence and audit data is retained before automatic purge.
+                <strong>Evidence Retention</strong>
+                <br />
+                Manage how long evidence and audit data is retained before
+                automatic purge.
               </p>
               <p>
-                <strong>Export Packs</strong><br />
-                Generate comprehensive export packages for auditors and regulators.
+                <strong>Export Packs</strong>
+                <br />
+                Generate comprehensive export packages for auditors and
+                regulators.
               </p>
             </div>
           </div>

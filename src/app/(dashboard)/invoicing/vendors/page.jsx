@@ -1,13 +1,20 @@
 "use client";
 
-import { DollarSign, FileText, Mail, Phone, Search, UserPlus } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import { vendorsApi } from '@/api';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/invoicing/InvoicingVendors.css';
+import {
+  DollarSign,
+  FileText,
+  Mail,
+  Phone,
+  Search,
+  UserPlus,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { vendorsApi } from "@/api";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/invoicing/InvoicingVendors.css";
 
 export default function InvoicingVendors() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,17 +26,19 @@ export default function InvoicingVendors() {
       setVendors(
         list.map((v) => ({
           id: v.id,
-          name: v.name || v.company_name || 'Unknown',
-          contactName: v.contact_name || v.contact || '',
-          email: v.email || '',
-          phone: v.phone || '',
+          name: v.name || v.company_name || "Unknown",
+          contactName: v.contact_name || v.contact || "",
+          email: v.email || "",
+          phone: v.phone || "",
           outstanding: v.outstanding_balance || v.outstanding || 0,
           billCount: v.bill_count || v.bills_count || 0,
-          status: v.status ? v.status.charAt(0).toUpperCase() + v.status.slice(1).toLowerCase() : 'Active',
-        }))
+          status: v.status
+            ? v.status.charAt(0).toUpperCase() + v.status.slice(1).toLowerCase()
+            : "Active",
+        })),
       );
     } catch (err) {
-      console.warn('[InvoicingVendors] Failed to fetch vendors:', err);
+      console.warn("[InvoicingVendors] Failed to fetch vendors:", err);
     } finally {
       setLoading(false);
     }
@@ -42,7 +51,7 @@ export default function InvoicingVendors() {
   const filteredVendors = vendors.filter(
     (vendor) =>
       vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.email.toLowerCase().includes(searchTerm.toLowerCase())
+      vendor.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -78,12 +87,12 @@ export default function InvoicingVendors() {
         {filteredVendors.map((vendor) => (
           <div key={vendor.id} className="iv-card">
             <div className="iv-card-header">
-              <div className="iv-avatar">
-                {vendor.name.charAt(0)}
-              </div>
+              <div className="iv-avatar">{vendor.name.charAt(0)}</div>
               <div className="iv-card-title-group">
                 <h3 className="iv-card-name">{vendor.name}</h3>
-                <span className={`iv-status-badge ${vendor.status === 'Active' ? 'iv-status-active' : 'iv-status-inactive'}`}>
+                <span
+                  className={`iv-status-badge ${vendor.status === "Active" ? "iv-status-active" : "iv-status-inactive"}`}
+                >
                   {vendor.status}
                 </span>
               </div>
@@ -104,7 +113,9 @@ export default function InvoicingVendors() {
             <div className="iv-card-footer">
               <div className="iv-stat">
                 <DollarSign size={14} className="iv-stat-icon" />
-                <span className={`iv-stat-value ${vendor.outstanding > 0 ? 'iv-outstanding-highlight' : ''}`}>
+                <span
+                  className={`iv-stat-value ${vendor.outstanding > 0 ? "iv-outstanding-highlight" : ""}`}
+                >
                   Bills Outstanding: ${vendor.outstanding.toLocaleString()}
                 </span>
               </div>

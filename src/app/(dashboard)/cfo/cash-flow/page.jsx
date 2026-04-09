@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   DollarSign,
   TrendingUp,
@@ -23,58 +23,66 @@ import {
   FileBarChart,
   CheckSquare,
   AlertTriangle,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { cfoApi, reportsApi } from '@/api';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/cfo/CFOCashFlow.css';
+import { cfoApi, reportsApi } from "@/api";
+import PolicyBanner from "@/components/recon/PolicyBanner";
+import "@/styles/cfo/CFOCashFlow.css";
 
 // Cash flow sections configuration
 const cashFlowSections = [
   {
-    id: 'position',
-    title: 'Cash Position',
+    id: "position",
+    title: "Cash Position",
     icon: Wallet,
-    description: 'Current cash balances across all connected accounts, updated in real-time.',
-    status: 'awaiting',
+    description:
+      "Current cash balances across all connected accounts, updated in real-time.",
+    status: "awaiting",
   },
   {
-    id: 'inflows',
-    title: 'Inflows',
+    id: "inflows",
+    title: "Inflows",
     icon: ArrowDownLeft,
-    description: 'Incoming cash from revenue, receivables, investments, and other sources.',
-    status: 'awaiting',
+    description:
+      "Incoming cash from revenue, receivables, investments, and other sources.",
+    status: "awaiting",
   },
   {
-    id: 'outflows',
-    title: 'Outflows',
+    id: "outflows",
+    title: "Outflows",
     icon: ArrowUpRight,
-    description: 'Outgoing cash for expenses, payables, payroll, and operational costs.',
-    status: 'awaiting',
+    description:
+      "Outgoing cash for expenses, payables, payroll, and operational costs.",
+    status: "awaiting",
   },
   {
-    id: 'projections',
-    title: 'Projections',
+    id: "projections",
+    title: "Projections",
     icon: LineChart,
-    description: 'Forward-looking cash flow forecasts based on historical patterns and scheduled transactions.',
-    status: 'awaiting',
+    description:
+      "Forward-looking cash flow forecasts based on historical patterns and scheduled transactions.",
+    status: "awaiting",
   },
 ];
 
 // Cash summary rows
 const cashSummaryRows = [
-  { label: 'Current Balance', icon: DollarSign },
-  { label: '30-Day Inflows', icon: TrendingUp },
-  { label: '30-Day Outflows', icon: TrendingDown },
-  { label: 'Net Cash Flow', icon: BarChart3 },
+  { label: "Current Balance", icon: DollarSign },
+  { label: "30-Day Inflows", icon: TrendingUp },
+  { label: "30-Day Outflows", icon: TrendingDown },
+  { label: "Net Cash Flow", icon: BarChart3 },
 ];
 
 // Quick links
 const quickLinks = [
-  { label: 'Executive Summary', path: '/cfo/executive-summary', icon: FileText },
-  { label: 'CFO Overview', path: '/cfo', icon: LayoutDashboard },
-  { label: 'Financial Reports', path: '/core/reports', icon: FileBarChart },
-  { label: 'Compliance', path: '/cfo', icon: CheckSquare },
+  {
+    label: "Executive Summary",
+    path: "/cfo/executive-summary",
+    icon: FileText,
+  },
+  { label: "CFO Overview", path: "/cfo", icon: LayoutDashboard },
+  { label: "Financial Reports", path: "/core/reports", icon: FileBarChart },
+  { label: "Compliance", path: "/cfo", icon: CheckSquare },
 ];
 
 function SectionCard({ section, hasData }) {
@@ -108,12 +116,17 @@ function formatCurrency(amount) {
   if (amount === null || amount === undefined) return null;
   if (Math.abs(amount) >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
   if (Math.abs(amount) >= 1000) return `$${(amount / 1000).toFixed(0)}K`;
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+  }).format(amount);
 }
 
 function CashSummaryRow({ row, value }) {
   const Icon = row.icon;
-  const displayValue = value !== null && value !== undefined ? formatCurrency(value) : null;
+  const displayValue =
+    value !== null && value !== undefined ? formatCurrency(value) : null;
 
   return (
     <div className="summary-row">
@@ -144,17 +157,27 @@ export default function CFOCashFlow() {
     try {
       // Fetch from both cash-flow endpoints in parallel
       const [cfInsights, cfReport] = await Promise.all([
-        cfoApi.getCashflowInsights().catch(err => {
-          console.warn('[CFOCashFlow] Failed to fetch cashflow insights:', err.message);
+        cfoApi.getCashflowInsights().catch((err) => {
+          console.warn(
+            "[CFOCashFlow] Failed to fetch cashflow insights:",
+            err.message,
+          );
           return null;
         }),
-        reportsApi.getCashFlow({
-          startDate: new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10),
-          endDate: new Date().toISOString().slice(0, 10),
-        }).catch(err => {
-          console.warn('[CFOCashFlow] Failed to fetch cash flow report:', err.message);
-          return null;
-        }),
+        reportsApi
+          .getCashFlow({
+            startDate: new Date(Date.now() - 30 * 86400000)
+              .toISOString()
+              .slice(0, 10),
+            endDate: new Date().toISOString().slice(0, 10),
+          })
+          .catch((err) => {
+            console.warn(
+              "[CFOCashFlow] Failed to fetch cash flow report:",
+              err.message,
+            );
+            return null;
+          }),
       ]);
 
       // Normalize whichever source(s) responded
@@ -162,17 +185,59 @@ export default function CFOCashFlow() {
       const report = cfReport || {};
 
       setCashData({
-        currentBalance: insights.current_balance ?? insights.currentBalance ?? report.current_balance ?? report.currentBalance ?? null,
-        inflows30d: insights.inflows_30d ?? insights.inflows30d ?? report.total_inflows ?? report.totalInflows ?? null,
-        outflows30d: insights.outflows_30d ?? insights.outflows30d ?? report.total_outflows ?? report.totalOutflows ?? null,
-        netCashFlow: insights.net_cash_flow ?? insights.netCashFlow ?? report.net_cash_flow ?? report.netCashFlow ?? null,
-        hasPosition: !!(insights.current_balance ?? insights.currentBalance ?? report.current_balance ?? report.currentBalance),
-        hasInflows: !!(insights.inflows_30d ?? insights.inflows30d ?? report.total_inflows ?? report.totalInflows),
-        hasOutflows: !!(insights.outflows_30d ?? insights.outflows30d ?? report.total_outflows ?? report.totalOutflows),
-        hasProjections: !!(insights.projections ?? insights.forecast ?? report.projections),
+        currentBalance:
+          insights.current_balance ??
+          insights.currentBalance ??
+          report.current_balance ??
+          report.currentBalance ??
+          null,
+        inflows30d:
+          insights.inflows_30d ??
+          insights.inflows30d ??
+          report.total_inflows ??
+          report.totalInflows ??
+          null,
+        outflows30d:
+          insights.outflows_30d ??
+          insights.outflows30d ??
+          report.total_outflows ??
+          report.totalOutflows ??
+          null,
+        netCashFlow:
+          insights.net_cash_flow ??
+          insights.netCashFlow ??
+          report.net_cash_flow ??
+          report.netCashFlow ??
+          null,
+        hasPosition: !!(
+          insights.current_balance ??
+          insights.currentBalance ??
+          report.current_balance ??
+          report.currentBalance
+        ),
+        hasInflows: !!(
+          insights.inflows_30d ??
+          insights.inflows30d ??
+          report.total_inflows ??
+          report.totalInflows
+        ),
+        hasOutflows: !!(
+          insights.outflows_30d ??
+          insights.outflows30d ??
+          report.total_outflows ??
+          report.totalOutflows
+        ),
+        hasProjections: !!(
+          insights.projections ??
+          insights.forecast ??
+          report.projections
+        ),
       });
     } catch (err) {
-      console.warn('[CFOCashFlow] Failed to fetch cash flow data:', err.message);
+      console.warn(
+        "[CFOCashFlow] Failed to fetch cash flow data:",
+        err.message,
+      );
       // Keep null — page shows awaiting-data state
     } finally {
       setLoading(false);
@@ -184,22 +249,28 @@ export default function CFOCashFlow() {
   }, [fetchCashFlow]);
 
   // Map summary row labels to cashData fields
-  const summaryValues = cashData ? [
-    cashData.currentBalance,
-    cashData.inflows30d,
-    cashData.outflows30d,
-    cashData.netCashFlow,
-  ] : [null, null, null, null];
+  const summaryValues = cashData
+    ? [
+        cashData.currentBalance,
+        cashData.inflows30d,
+        cashData.outflows30d,
+        cashData.netCashFlow,
+      ]
+    : [null, null, null, null];
 
   // Determine which sections have data
-  const sectionHasData = cashData ? {
-    position: cashData.hasPosition,
-    inflows: cashData.hasInflows,
-    outflows: cashData.hasOutflows,
-    projections: cashData.hasProjections,
-  } : {};
+  const sectionHasData = cashData
+    ? {
+        position: cashData.hasPosition,
+        inflows: cashData.hasInflows,
+        outflows: cashData.hasOutflows,
+        projections: cashData.hasProjections,
+      }
+    : {};
 
-  const hasAnyData = cashData && (cashData.hasPosition || cashData.hasInflows || cashData.hasOutflows);
+  const hasAnyData =
+    cashData &&
+    (cashData.hasPosition || cashData.hasInflows || cashData.hasOutflows);
 
   return (
     <div className="cfo-cashflow">
@@ -221,7 +292,8 @@ export default function CFOCashFlow() {
               <span className="header-badge">Analysis</span>
             </div>
             <p className="header-subtitle">
-              Track cash movement, monitor liquidity, and forecast short-term cash needs.
+              Track cash movement, monitor liquidity, and forecast short-term
+              cash needs.
             </p>
           </header>
 
@@ -238,8 +310,12 @@ export default function CFOCashFlow() {
                   <h2>Cash Flow Analysis</h2>
                 </div>
                 <div className="sections-grid">
-                  {cashFlowSections.map(section => (
-                    <SectionCard key={section.id} section={section} hasData={!!sectionHasData[section.id]} />
+                  {cashFlowSections.map((section) => (
+                    <SectionCard
+                      key={section.id}
+                      section={section}
+                      hasData={!!sectionHasData[section.id]}
+                    />
                   ))}
                 </div>
               </section>
@@ -251,7 +327,10 @@ export default function CFOCashFlow() {
                     <Building2 size={32} />
                   </div>
                   <h3>No cash flow data available</h3>
-                  <p>Connect your bank accounts to see cash flow analysis, track inflows and outflows, and generate projections.</p>
+                  <p>
+                    Connect your bank accounts to see cash flow analysis, track
+                    inflows and outflows, and generate projections.
+                  </p>
                   <Link to="/cfo/connections" className="empty-action">
                     Connect Bank Accounts
                     <ChevronRight size={14} />
@@ -272,7 +351,11 @@ export default function CFOCashFlow() {
             </div>
             <div className="summary-list">
               {cashSummaryRows.map((row, index) => (
-                <CashSummaryRow key={index} row={row} value={summaryValues[index]} />
+                <CashSummaryRow
+                  key={index}
+                  row={row}
+                  value={summaryValues[index]}
+                />
               ))}
             </div>
           </div>
@@ -285,16 +368,22 @@ export default function CFOCashFlow() {
             </div>
             <div className="about-content">
               <p>
-                <strong>Cash Movement Visibility</strong><br />
-                Track all cash inflows and outflows across your connected accounts in real-time.
+                <strong>Cash Movement Visibility</strong>
+                <br />
+                Track all cash inflows and outflows across your connected
+                accounts in real-time.
               </p>
               <p>
-                <strong>Short-Horizon Projections</strong><br />
-                Forecast cash positions for the next 30, 60, or 90 days based on historical patterns and scheduled transactions.
+                <strong>Short-Horizon Projections</strong>
+                <br />
+                Forecast cash positions for the next 30, 60, or 90 days based on
+                historical patterns and scheduled transactions.
               </p>
               <p>
-                <strong>Advisory Use Only</strong><br />
-                All insights and projections are for informational purposes. Consult your financial advisor for decisions.
+                <strong>Advisory Use Only</strong>
+                <br />
+                All insights and projections are for informational purposes.
+                Consult your financial advisor for decisions.
               </p>
             </div>
           </div>

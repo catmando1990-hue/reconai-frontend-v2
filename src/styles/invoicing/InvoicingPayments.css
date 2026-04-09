@@ -155,7 +155,7 @@
   font-size: 22px;
   font-weight: 700;
   color: #1e293b;
-  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
 }
 
 .ip-kpi-positive {
@@ -240,7 +240,7 @@
 
 /* Reference */
 .ip-reference {
-  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
   font-weight: 600;
   color: #d97706;
   font-size: 12.5px;
@@ -255,7 +255,7 @@
 /* Amount */
 .ip-amount {
   font-weight: 600;
-  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
   font-size: 12.5px;
 }
 

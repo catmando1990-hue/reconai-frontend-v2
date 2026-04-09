@@ -1,4 +1,4 @@
-import api from './client';
+import api from "./client";
 
 /**
  * Plaid Transactions endpoints — verified against
@@ -17,7 +17,7 @@ export function getTransactions({
   limit = 100,
   offset = 0,
 } = {}) {
-  return api.get('/api/plaid/transactions', {
+  return api.get("/api/plaid/transactions", {
     params: {
       start_date: startDate,
       end_date: endDate,
@@ -31,21 +31,21 @@ export function getTransactions({
 
 /** GET /api/plaid/stored-accounts — list stored Plaid accounts */
 export function getStoredAccounts({ itemId } = {}) {
-  return api.get('/api/plaid/stored-accounts', {
+  return api.get("/api/plaid/stored-accounts", {
     params: { item_id: itemId },
   });
 }
 
 /** POST /api/plaid/sync-and-store — sync and persist transactions for an item */
 export function syncAndStore({ itemId, count = 500 }) {
-  return api.post('/api/plaid/sync-and-store', null, {
+  return api.post("/api/plaid/sync-and-store", null, {
     params: { item_id: itemId, count },
   });
 }
 
 /** POST /api/plaid/backfill — fetch and persist N months of historical transactions */
 export function backfill({ itemId, months = 24 }) {
-  return api.post('/api/plaid/backfill', null, {
+  return api.post("/api/plaid/backfill", null, {
     params: { item_id: itemId, months },
   });
 }

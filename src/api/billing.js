@@ -1,6 +1,6 @@
-import api from './client';
+import api from "./client";
 
-const BASE = '/api/billing';
+const BASE = "/api/billing";
 
 /** POST /api/billing/create-checkout-session — Stripe checkout */
 export function createCheckoutSession({ tier, interval }) {
@@ -29,10 +29,10 @@ export function downgradeSubscription({ tier }) {
 
 /** GET /api/capabilities — tier features and limits */
 export function getCapabilities() {
-  return api.get('/api/capabilities');
+  return api.get("/api/capabilities");
 }
 
 /** GET /api/entitlements — current entitlements */
 export function getEntitlements() {
-  return api.get('/api/entitlements');
+  return api.get("/api/entitlements");
 }

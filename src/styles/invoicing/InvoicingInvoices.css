@@ -121,7 +121,9 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
   white-space: nowrap;
 }
 

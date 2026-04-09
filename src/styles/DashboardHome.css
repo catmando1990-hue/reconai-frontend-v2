@@ -95,8 +95,12 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Home Grid */
@@ -142,19 +146,73 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.module-item.teal { background: linear-gradient(135deg, rgba(26, 188, 156, 0.1), rgba(26, 188, 156, 0.05)); border-color: rgba(26, 188, 156, 0.3); }
-.module-item.blue { background: linear-gradient(135deg, rgba(70, 128, 255, 0.1), rgba(70, 128, 255, 0.05)); border-color: rgba(70, 128, 255, 0.3); }
-.module-item.purple { background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(155, 89, 182, 0.05)); border-color: rgba(155, 89, 182, 0.3); }
-.module-item.orange { background: linear-gradient(135deg, rgba(255, 186, 87, 0.1), rgba(255, 186, 87, 0.05)); border-color: rgba(255, 186, 87, 0.3); }
+.module-item.teal {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 188, 156, 0.1),
+    rgba(26, 188, 156, 0.05)
+  );
+  border-color: rgba(26, 188, 156, 0.3);
+}
+.module-item.blue {
+  background: linear-gradient(
+    135deg,
+    rgba(70, 128, 255, 0.1),
+    rgba(70, 128, 255, 0.05)
+  );
+  border-color: rgba(70, 128, 255, 0.3);
+}
+.module-item.purple {
+  background: linear-gradient(
+    135deg,
+    rgba(155, 89, 182, 0.1),
+    rgba(155, 89, 182, 0.05)
+  );
+  border-color: rgba(155, 89, 182, 0.3);
+}
+.module-item.orange {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 186, 87, 0.1),
+    rgba(255, 186, 87, 0.05)
+  );
+  border-color: rgba(255, 186, 87, 0.3);
+}
 
-.module-item.teal .module-icon { color: #1abc9c; }
-.module-item.blue .module-icon { color: #4680ff; }
-.module-item.purple .module-icon { color: #9b59b6; }
-.module-item.orange .module-icon { color: #f5a623; }
-.module-item.green { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-color: rgba(16, 185, 129, 0.3); }
-.module-item.green .module-icon { color: #10b981; }
-.module-item.slate { background: linear-gradient(135deg, rgba(100, 116, 139, 0.1), rgba(100, 116, 139, 0.05)); border-color: rgba(100, 116, 139, 0.3); }
-.module-item.slate .module-icon { color: #64748b; }
+.module-item.teal .module-icon {
+  color: #1abc9c;
+}
+.module-item.blue .module-icon {
+  color: #4680ff;
+}
+.module-item.purple .module-icon {
+  color: #9b59b6;
+}
+.module-item.orange .module-icon {
+  color: #f5a623;
+}
+.module-item.green {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1),
+    rgba(16, 185, 129, 0.05)
+  );
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.module-item.green .module-icon {
+  color: #10b981;
+}
+.module-item.slate {
+  background: linear-gradient(
+    135deg,
+    rgba(100, 116, 139, 0.1),
+    rgba(100, 116, 139, 0.05)
+  );
+  border-color: rgba(100, 116, 139, 0.3);
+}
+.module-item.slate .module-icon {
+  color: #64748b;
+}
 
 .module-icon {
   width: 48px;

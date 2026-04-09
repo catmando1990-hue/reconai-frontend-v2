@@ -3,11 +3,13 @@
 import "@/styles/recon-sidebar.css";
 import {
   Box,
+  Building,
   CheckSquare,
   ChevronDown,
   ChevronRight,
   Database,
   Edit3,
+  FileText,
   FormInput,
   Grid3X3,
   Hash,
@@ -15,12 +17,14 @@ import {
   LayoutDashboard,
   List,
   Navigation,
+  Shield,
   Sparkles,
   Square,
   StickyNote,
   Table,
   TableProperties,
   ToggleLeft,
+  Wallet,
   Wand2,
   Zap,
 } from "lucide-react";
@@ -42,6 +46,43 @@ const menuItems = [
           { name: "Payroll", path: "/payroll", badge: "NEW" },
           { name: "GovCon", path: "/govcon", badge: "NEW" },
           { name: "Invoicing", path: "/invoicing", badge: "NEW" },
+        ],
+      },
+      {
+        name: "Accounts Receivable",
+        icon: Wallet,
+        submenu: [
+          { name: "AR Overview", path: "/ar" },
+          { name: "Bills", path: "/bills" },
+          { name: "Invoices", path: "/invoices" },
+        ],
+      },
+      {
+        name: "Documents",
+        icon: FileText,
+        submenu: [
+          { name: "All Documents", path: "/documents" },
+          { name: "Receipts", path: "/receipts" },
+          { name: "Upload", path: "/upload" },
+        ],
+      },
+      {
+        name: "Compliance",
+        icon: Shield,
+        submenu: [
+          { name: "Certifications", path: "/certifications" },
+          { name: "DCAA", path: "/dcaa" },
+        ],
+      },
+      {
+        name: "Real Estate",
+        icon: Building,
+        submenu: [
+          { name: "Properties", path: "/properties" },
+          { name: "Units", path: "/units" },
+          { name: "Leases", path: "/leases" },
+          { name: "Tenants", path: "/tenants" },
+          { name: "Rent Collection", path: "/rent-collection" },
         ],
       },
       { name: "Navigation", icon: Navigation },

@@ -1,5 +1,5 @@
-import { Clock } from 'lucide-react';
-import './StatCard.css';
+import { Clock } from "lucide-react";
+import "./StatCard.css";
 
 export default function StatCard({ title, value, color, data }) {
   const maxValue = Math.max(...data);

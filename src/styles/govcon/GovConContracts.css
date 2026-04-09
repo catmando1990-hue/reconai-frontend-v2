@@ -42,7 +42,9 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .gcc-new-contract-btn:hover {
@@ -171,7 +173,7 @@
 }
 
 .gcc-contract-number {
-  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
   font-weight: 600;
   color: #8b5cf6;
   font-size: 12.5px;
@@ -184,7 +186,7 @@
 
 .gcc-value {
   font-weight: 600;
-  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
   font-size: 12.5px;
 }
 

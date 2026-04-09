@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import {
   Building2,
   Plus,
@@ -14,21 +14,21 @@ import {
   AlertOctagon,
   HelpCircle,
   ExternalLink,
-} from 'lucide-react';
-import { plaidApi } from '@/api';
-import { useAuth } from '@/context/AuthContext';
-import '@/styles/core/BankConnections.css';
+} from "lucide-react";
+import { plaidApi } from "@/api";
+import { useAuth } from "@/context/AuthContext";
+import "@/styles/core/BankConnections.css";
 
 // Connection status types
 const CONNECTION_STATUS = {
-  ACTIVE: 'active',
-  NEEDS_REAUTH: 'needs_reauth',
-  ERROR: 'error',
-  UNKNOWN: 'unknown',
+  ACTIVE: "active",
+  NEEDS_REAUTH: "needs_reauth",
+  ERROR: "error",
+  UNKNOWN: "unknown",
 };
 
 function getRelativeTime(date) {
-  if (!date) return 'never';
+  if (!date) return "never";
   const now = new Date();
   const diffMs = now - date;
   const diffSec = Math.floor(diffMs / 1000);
@@ -36,30 +36,34 @@ function getRelativeTime(date) {
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);
 
-  if (diffSec < 60) return 'just now';
+  if (diffSec < 60) return "just now";
   if (diffMin < 60) return `${diffMin}m ago`;
   if (diffHour < 24) return `${diffHour}h ago`;
   return `${diffDay}d ago`;
 }
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
 function getStatusConfig(status) {
   switch (status) {
     case CONNECTION_STATUS.ACTIVE:
-      return { label: 'Active', icon: CheckCircle, className: 'active' };
+      return { label: "Active", icon: CheckCircle, className: "active" };
     case CONNECTION_STATUS.NEEDS_REAUTH:
-      return { label: 'Needs Re-auth', icon: AlertTriangle, className: 'reauth' };
+      return {
+        label: "Needs Re-auth",
+        icon: AlertTriangle,
+        className: "reauth",
+      };
     case CONNECTION_STATUS.ERROR:
-      return { label: 'Error', icon: XCircle, className: 'error' };
+      return { label: "Error", icon: XCircle, className: "error" };
     default:
-      return { label: 'Unknown', icon: HelpCircle, className: 'unknown' };
+      return { label: "Unknown", icon: HelpCircle, className: "unknown" };
   }
 }
 
@@ -89,7 +93,7 @@ function ConnectingState({ institutionName }) {
   return (
     <div className="connections-state connecting">
       <Loader2 size={40} className="spinner" />
-      <h3>Connecting{institutionName ? ` to ${institutionName}` : '...'}</h3>
+      <h3>Connecting{institutionName ? ` to ${institutionName}` : "..."}</h3>
       <p>Please complete the authentication in the popup window</p>
     </div>
   );
@@ -115,7 +119,7 @@ function ErrorState({ message, onRetry }) {
     <div className="connections-state error">
       <AlertOctagon size={40} />
       <h3>Connection Failed</h3>
-      <p>{message || 'An error occurred while connecting to your bank.'}</p>
+      <p>{message || "An error occurred while connecting to your bank."}</p>
       <button className="retry-btn" onClick={onRetry}>
         Try Again
       </button>
@@ -131,7 +135,9 @@ function EmptyState({ canConnect, onConnect }) {
         <Building2 size={32} />
       </div>
       <h3>No bank connections yet</h3>
-      <p>Connect your bank accounts to start syncing transactions and balances.</p>
+      <p>
+        Connect your bank accounts to start syncing transactions and balances.
+      </p>
       <button
         className="connect-btn"
         onClick={onConnect}
@@ -155,7 +161,8 @@ function OrgGate() {
         <h3>Organization Required</h3>
         <p>Please select an organization before connecting bank accounts.</p>
         <p className="org-gate-hint">
-          Bank connections are managed at the organization level for security and compliance.
+          Bank connections are managed at the organization level for security
+          and compliance.
         </p>
       </div>
       <button className="org-select-btn" disabled>
@@ -180,7 +187,8 @@ function ConnectionCard({ connection, onSync, onReauth, onDelete, isSyncing }) {
         <div className="connection-info">
           <h3>{connection.institution_name}</h3>
           <span className="account-count">
-            {connection.account_count} {connection.account_count === 1 ? 'account' : 'accounts'}
+            {connection.account_count}{" "}
+            {connection.account_count === 1 ? "account" : "accounts"}
           </span>
         </div>
         <div className={`status-badge ${statusConfig.className}`}>
@@ -194,7 +202,10 @@ function ConnectionCard({ connection, onSync, onReauth, onDelete, isSyncing }) {
           <AlertTriangle size={14} />
           <span>{connection.error_message}</span>
           {connection.status === CONNECTION_STATUS.NEEDS_REAUTH && (
-            <button className="reauth-btn" onClick={() => onReauth(connection.item_id)}>
+            <button
+              className="reauth-btn"
+              onClick={() => onReauth(connection.item_id)}
+            >
               <ExternalLink size={12} />
               Re-authenticate
             </button>
@@ -211,10 +222,12 @@ function ConnectionCard({ connection, onSync, onReauth, onDelete, isSyncing }) {
           <button
             className="action-btn sync"
             onClick={() => onSync(connection.item_id)}
-            disabled={isSyncing || connection.status === CONNECTION_STATUS.NEEDS_REAUTH}
+            disabled={
+              isSyncing || connection.status === CONNECTION_STATUS.NEEDS_REAUTH
+            }
             title="Sync now"
           >
-            <RefreshCw size={16} className={isSyncing ? 'spinning' : ''} />
+            <RefreshCw size={16} className={isSyncing ? "spinning" : ""} />
           </button>
           <button
             className="action-btn delete"
@@ -235,7 +248,7 @@ export default function BankConnections() {
   // State
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pageState, setPageState] = useState('idle'); // idle, preparing, connecting, success, error
+  const [pageState, setPageState] = useState("idle"); // idle, preparing, connecting, success, error
   const [connectingInstitution, setConnectingInstitution] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successInstitution, setSuccessInstitution] = useState(null);
@@ -245,17 +258,17 @@ export default function BankConnections() {
 
   // Map backend lifecycle string → UI status
   const lifecycleToStatus = (lifecycle) => {
-    switch ((lifecycle || '').toLowerCase()) {
-      case 'login_required':
-      case 'reauth_required':
+    switch ((lifecycle || "").toLowerCase()) {
+      case "login_required":
+      case "reauth_required":
         return CONNECTION_STATUS.NEEDS_REAUTH;
-      case 'error':
-      case 'failed':
+      case "error":
+      case "failed":
         return CONNECTION_STATUS.ERROR;
-      case 'ready':
-      case 'created':
-      case 'pending':
-      case 'processing':
+      case "ready":
+      case "created":
+      case "pending":
+      case "processing":
         return CONNECTION_STATUS.ACTIVE;
       default:
         return CONNECTION_STATUS.UNKNOWN;
@@ -282,24 +295,30 @@ export default function BankConnections() {
           return acc;
         }, {});
       } catch (err) {
-        console.warn('[BankConnections] Could not fetch stored accounts:', err.message);
+        console.warn(
+          "[BankConnections] Could not fetch stored accounts:",
+          err.message,
+        );
       }
 
-      const normalized = items.map(item => ({
+      const normalized = items.map((item) => ({
         item_id: item.item_id,
         institution_id: item.institution_id,
-        institution_name: item.institution_name || 'Unknown Bank',
+        institution_name: item.institution_name || "Unknown Bank",
         account_count: accountsByItem[item.item_id] || 0,
         status: lifecycleToStatus(item.lifecycle),
         last_sync: item.last_synced_at ? new Date(item.last_synced_at) : null,
         connected_at: item.created_at,
-        error_message: item.user_message && item.lifecycle !== 'ready' ? item.user_message : undefined,
+        error_message:
+          item.user_message && item.lifecycle !== "ready"
+            ? item.user_message
+            : undefined,
       }));
       setConnections(normalized);
     } catch (err) {
-      console.error('[BankConnections] Failed to fetch items:', err);
-      setPageState('error');
-      setErrorMessage('Failed to load connections. Please try again.');
+      console.error("[BankConnections] Failed to fetch items:", err);
+      setPageState("error");
+      setErrorMessage("Failed to load connections. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -315,52 +334,50 @@ export default function BankConnections() {
 
   // Handle starting a new connection via Plaid Link
   const handleStartConnection = async () => {
-    setPageState('preparing');
+    setPageState("preparing");
     try {
       const linkData = await plaidApi.createLinkToken();
       // linkData contains link_token — in full integration, pass to Plaid Link SDK
       // For now, show connecting state (Plaid Link UI would open here)
-      setPageState('connecting');
-      setConnectingInstitution('New Bank');
-      console.log('[BankConnections] Link token created:', linkData);
+      setPageState("connecting");
+      setConnectingInstitution("New Bank");
+      console.log("[BankConnections] Link token created:", linkData);
       // TODO: Initialize Plaid Link with linkData.link_token
       // After Plaid Link onSuccess, call plaidApi.exchangePublicToken(...)
     } catch (err) {
-      console.error('[BankConnections] Failed to create link token:', err);
-      setPageState('error');
-      setErrorMessage(err.message || 'Failed to start bank connection.');
+      console.error("[BankConnections] Failed to create link token:", err);
+      setPageState("error");
+      setErrorMessage(err.message || "Failed to start bank connection.");
     }
   };
 
   // Handle dismissing success state
   const handleDismissSuccess = () => {
-    setPageState('idle');
+    setPageState("idle");
     setSuccessInstitution(null);
     fetchConnections(); // Refresh the list
   };
 
   // Handle retry after error
   const handleRetry = () => {
-    setPageState('idle');
+    setPageState("idle");
     setErrorMessage(null);
   };
 
   // Handle sync via backend
   const handleSync = async (itemId) => {
-    setSyncingItems(prev => new Set([...prev, itemId]));
+    setSyncingItems((prev) => new Set([...prev, itemId]));
     try {
       await plaidApi.syncTransactions({ itemId });
-      setConnections(prev =>
-        prev.map(conn =>
-          conn.item_id === itemId
-            ? { ...conn, last_sync: new Date() }
-            : conn
-        )
+      setConnections((prev) =>
+        prev.map((conn) =>
+          conn.item_id === itemId ? { ...conn, last_sync: new Date() } : conn,
+        ),
       );
     } catch (err) {
-      console.error('[BankConnections] Sync failed:', err);
+      console.error("[BankConnections] Sync failed:", err);
     } finally {
-      setSyncingItems(prev => {
+      setSyncingItems((prev) => {
         const next = new Set(prev);
         next.delete(itemId);
         return next;
@@ -370,68 +387,78 @@ export default function BankConnections() {
 
   // Handle re-auth
   const handleReauth = async (itemId) => {
-    setPageState('preparing');
+    setPageState("preparing");
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const connection = connections.find(c => c.item_id === itemId);
-    setConnectingInstitution(connection?.institution_name || 'Bank');
-    setPageState('connecting');
+    const connection = connections.find((c) => c.item_id === itemId);
+    setConnectingInstitution(connection?.institution_name || "Bank");
+    setPageState("connecting");
 
     // Simulate reauth
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     // Update connection status
-    setConnections(prev =>
-      prev.map(conn =>
+    setConnections((prev) =>
+      prev.map((conn) =>
         conn.item_id === itemId
           ? {
               ...conn,
               status: CONNECTION_STATUS.ACTIVE,
               last_sync: new Date(),
-              error_message: undefined
+              error_message: undefined,
             }
-          : conn
-      )
+          : conn,
+      ),
     );
 
-    setPageState('success');
-    setSuccessInstitution(connection?.institution_name || 'Bank');
+    setPageState("success");
+    setSuccessInstitution(connection?.institution_name || "Bank");
     setConnectingInstitution(null);
   };
 
   // Handle delete
   const handleDelete = (itemId) => {
-    const connection = connections.find(c => c.item_id === itemId);
-    if (window.confirm(`Are you sure you want to disconnect ${connection?.institution_name}? This will remove all linked accounts.`)) {
-      setConnections(prev => prev.filter(conn => conn.item_id !== itemId));
+    const connection = connections.find((c) => c.item_id === itemId);
+    if (
+      window.confirm(
+        `Are you sure you want to disconnect ${connection?.institution_name}? This will remove all linked accounts.`,
+      )
+    ) {
+      setConnections((prev) => prev.filter((conn) => conn.item_id !== itemId));
     }
   };
 
   // Handle sync all
   const handleSyncAll = async () => {
-    const activeConnections = connections.filter(c => c.status === CONNECTION_STATUS.ACTIVE);
-    const itemIds = activeConnections.map(c => c.item_id);
+    const activeConnections = connections.filter(
+      (c) => c.status === CONNECTION_STATUS.ACTIVE,
+    );
+    const itemIds = activeConnections.map((c) => c.item_id);
 
     setSyncingItems(new Set(itemIds));
 
-    await new Promise(resolve => setTimeout(resolve, 2500));
+    await new Promise((resolve) => setTimeout(resolve, 2500));
 
-    setConnections(prev =>
-      prev.map(conn =>
+    setConnections((prev) =>
+      prev.map((conn) =>
         itemIds.includes(conn.item_id)
           ? { ...conn, last_sync: new Date() }
-          : conn
-      )
+          : conn,
+      ),
     );
 
     setSyncingItems(new Set());
   };
 
   // Calculate stats
-  const activeCount = connections.filter(c => c.status === CONNECTION_STATUS.ACTIVE).length;
+  const activeCount = connections.filter(
+    (c) => c.status === CONNECTION_STATUS.ACTIVE,
+  ).length;
   const needsAttentionCount = connections.filter(
-    c => c.status === CONNECTION_STATUS.NEEDS_REAUTH || c.status === CONNECTION_STATUS.ERROR
+    (c) =>
+      c.status === CONNECTION_STATUS.NEEDS_REAUTH ||
+      c.status === CONNECTION_STATUS.ERROR,
   ).length;
 
   // Show org gate if no organization selected
@@ -450,7 +477,7 @@ export default function BankConnections() {
   }
 
   // Show page states
-  if (pageState === 'preparing') {
+  if (pageState === "preparing") {
     return (
       <div className="bank-connections-page">
         <div className="page-header">
@@ -464,7 +491,7 @@ export default function BankConnections() {
     );
   }
 
-  if (pageState === 'connecting') {
+  if (pageState === "connecting") {
     return (
       <div className="bank-connections-page">
         <div className="page-header">
@@ -478,7 +505,7 @@ export default function BankConnections() {
     );
   }
 
-  if (pageState === 'success') {
+  if (pageState === "success") {
     return (
       <div className="bank-connections-page">
         <div className="page-header">
@@ -495,7 +522,7 @@ export default function BankConnections() {
     );
   }
 
-  if (pageState === 'error') {
+  if (pageState === "error") {
     return (
       <div className="bank-connections-page">
         <div className="page-header">
@@ -555,7 +582,10 @@ export default function BankConnections() {
             disabled={syncingItems.size > 0 || activeCount === 0}
             title="Sync All"
           >
-            <RefreshCw size={18} className={syncingItems.size > 0 ? 'spinning' : ''} />
+            <RefreshCw
+              size={18}
+              className={syncingItems.size > 0 ? "spinning" : ""}
+            />
           </button>
           <button
             className="icon-btn primary"
@@ -577,7 +607,9 @@ export default function BankConnections() {
           <span className="stat-value">{activeCount}</span>
           <span className="stat-label">Active</span>
         </div>
-        <div className={`stat-item ${needsAttentionCount > 0 ? 'warning' : ''}`}>
+        <div
+          className={`stat-item ${needsAttentionCount > 0 ? "warning" : ""}`}
+        >
           <span className="stat-value">{needsAttentionCount}</span>
           <span className="stat-label">Needs Attention</span>
         </div>

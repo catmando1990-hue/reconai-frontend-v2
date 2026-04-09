@@ -41,7 +41,11 @@ async function getClerkJwt() {
   }
 }
 
-async function request(method, path, { body, params, headers: extraHeaders } = {}) {
+async function request(
+  method,
+  path,
+  { body, params, headers: extraHeaders } = {},
+) {
   // If path is already absolute, use as-is. Otherwise prepend BASE_URL.
   const isAbsolute = /^https?:\/\//i.test(path);
   const url = new URL(isAbsolute ? path : `${BASE_URL}${path}`);

@@ -2,7 +2,14 @@
 
 import "@/styles/recon-header.css";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Bell, ChevronDown, LogIn, Mail, Maximize2, Search } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  LogIn,
+  Mail,
+  Maximize2,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
@@ -11,8 +18,10 @@ export default function Header() {
   const { user: clerkUser } = useUser();
 
   const fullName =
-    [user?.given_name || user?.first_name || clerkUser?.firstName,
-     user?.family_name || user?.last_name || clerkUser?.lastName]
+    [
+      user?.given_name || user?.first_name || clerkUser?.firstName,
+      user?.family_name || user?.last_name || clerkUser?.lastName,
+    ]
       .filter(Boolean)
       .join(" ") ||
     user?.email ||

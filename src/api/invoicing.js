@@ -1,6 +1,6 @@
-import api from './client';
+import api from "./client";
 
-const BASE = '/api/invoicing';
+const BASE = "/api/invoicing";
 
 // ── Customers ──
 

@@ -1,32 +1,35 @@
-import { AlertTriangle, Info, Shield, X } from 'lucide-react';
-import { useState } from 'react';
-import './PolicyBanner.css';
+import { AlertTriangle, Info, Shield, X } from "lucide-react";
+import { useState } from "react";
+import "./PolicyBanner.css";
 
 const POLICY_CONFIG = {
   accounting: {
     icon: AlertTriangle,
-    variant: 'warning',
-    defaultMessage: 'Financial reports are informational only. Please consult a licensed accountant for professional advice.',
+    variant: "warning",
+    defaultMessage:
+      "Financial reports are informational only. Please consult a licensed accountant for professional advice.",
   },
   legal: {
     icon: Shield,
-    variant: 'info',
-    defaultMessage: 'This information is for reference only and does not constitute legal advice.',
+    variant: "info",
+    defaultMessage:
+      "This information is for reference only and does not constitute legal advice.",
   },
   tax: {
     icon: AlertTriangle,
-    variant: 'warning',
-    defaultMessage: 'Tax calculations are estimates. Consult a tax professional for accurate filings.',
+    variant: "warning",
+    defaultMessage:
+      "Tax calculations are estimates. Consult a tax professional for accurate filings.",
   },
   general: {
     icon: Info,
-    variant: 'neutral',
-    defaultMessage: 'This information is provided for general guidance only.',
+    variant: "neutral",
+    defaultMessage: "This information is provided for general guidance only.",
   },
 };
 
 export default function PolicyBanner({
-  policy = 'general',
+  policy = "general",
   context,
   message,
   dismissible = false,

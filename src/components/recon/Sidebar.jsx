@@ -3,26 +3,10 @@
 import "@/styles/recon-sidebar.css";
 import {
   Box,
-  CheckSquare,
   ChevronDown,
   ChevronRight,
-  Database,
-  Edit3,
-  FormInput,
-  Grid3X3,
-  Hash,
-  Layers,
   LayoutDashboard,
-  List,
   Navigation,
-  Sparkles,
-  Square,
-  StickyNote,
-  Table,
-  TableProperties,
-  ToggleLeft,
-  Wand2,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -46,49 +30,6 @@ const menuItems = [
       },
       { name: "Navigation", icon: Navigation },
       { name: "Widget", icon: Box, badge: "100+" },
-    ],
-  },
-  {
-    title: "UI Element",
-    items: [
-      { name: "Basic Components", icon: Square },
-      { name: "Advance Components", icon: Layers },
-      { name: "Extra Components", icon: Sparkles },
-      { name: "Animations", icon: Zap },
-      {
-        name: "Sticky Notes",
-        icon: StickyNote,
-        badge: "HOT",
-        badgeColor: "coral",
-      },
-      { name: "Icons", icon: Grid3X3 },
-    ],
-  },
-  {
-    title: "Forms",
-    items: [
-      { name: "Form Components", icon: FormInput },
-      { name: "Form Picker", icon: ToggleLeft, badge: "NEW" },
-      { name: "Form Select", icon: List },
-      { name: "Form Masking", icon: Wand2 },
-      { name: "Form Wizard", icon: CheckSquare },
-      {
-        name: "Ready To Use",
-        icon: CheckSquare,
-        badge: "HOT",
-        badgeColor: "coral",
-      },
-    ],
-  },
-  {
-    title: "Tables",
-    items: [
-      { name: "Bootstrap Table", icon: Table },
-      { name: "Data Table", icon: Database },
-      { name: "Data Table Extensions", icon: TableProperties },
-      { name: "FooTable", icon: Hash },
-      { name: "Handson Table", icon: Edit3 },
-      { name: "Editable Table", icon: Edit3 },
     ],
   },
 ];

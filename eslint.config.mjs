@@ -20,6 +20,35 @@ const eslintConfig = defineConfig([
       "react-hooks/rules-of-hooks": "off",
     },
   },
+  // MODULE ISOLATION: each dashboard module may only call its own /api/{module}/* endpoints.
+  // Flags string literals or template parts like "/api/cfo/..." appearing in another module's tree.
+  ...["core", "cfo", "payroll", "govcon", "invoicing"].map((module) => {
+    const others = ["core", "cfo", "payroll", "govcon", "invoicing"].filter((m) => m !== module);
+    const pattern = `^\\/api\\/(${others.join("|")})\\/`;
+    return {
+      files: [
+        `src/app/(dashboard)/${module}/**/*.{js,jsx,ts,tsx}`,
+        `src/components/${module}/**/*.{js,jsx,ts,tsx}`,
+      ],
+      // GovCon's audit panels are a sanctioned exception — see
+      // src/components/govcon/audit/README.md for the rationale.
+      ignores: module === "govcon" ? ["src/components/govcon/audit/**"] : [],
+      rules: {
+        "no-restricted-syntax": [
+          "error",
+          {
+            selector: `Literal[value=/${pattern}/]`,
+            message: `Module isolation: ${module} code may only call /api/${module}/* endpoints.`,
+          },
+          {
+            selector: `TemplateElement[value.cooked=/${pattern}/]`,
+            message: `Module isolation: ${module} code may only call /api/${module}/* endpoints.`,
+          },
+        ],
+      },
+    };
+  }),
+
   // AUDIT COMPLIANCE: Ban direct fetch() usage
   // All API calls MUST use auditedFetch for request_id provenance enforcement
   {

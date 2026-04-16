@@ -1,131 +1,327 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+import { usePlaidLink } from "react-plaid-link";
 import {
-  Building2,
-  Plus,
-  Shield,
-  Lock,
-  CheckCircle,
   AlertCircle,
-  ExternalLink,
+  Building2,
+  CheckCircle,
   Info,
-  Wallet,
-  CreditCard,
   Landmark,
+  Loader2,
+  Lock,
+  Plus,
   RefreshCw,
-} from 'lucide-react';
-import PolicyBanner from '@/components/recon/PolicyBanner';
-import '@/styles/cfo/CFOConnections.css';
+  Shield,
+  Trash2,
+  X,
+} from "lucide-react";
 
-// Supported institution types
-const institutionTypes = [
-  {
-    id: 'bank',
-    name: 'Bank Accounts',
-    icon: Landmark,
-    description: 'Connect checking, savings, and money market accounts.',
-  },
-  {
-    id: 'credit',
-    name: 'Credit Cards',
-    icon: CreditCard,
-    description: 'Track credit card transactions and balances.',
-  },
-  {
-    id: 'accounting',
-    name: 'Accounting Software',
-    icon: Wallet,
-    description: 'Sync with QuickBooks, Xero, or other accounting platforms.',
-  },
+import { cfoConnectionsApi, plaidApi } from "@/api";
+import "@/styles/cfo/CFOConnections.css";
+
+const ACCOUNT_TYPES = [
+  { value: "checking", label: "Checking" },
+  { value: "savings", label: "Savings" },
+  { value: "credit", label: "Credit Card" },
+  { value: "investment", label: "Investment" },
+  { value: "other", label: "Other" },
 ];
 
-// Security features
 const securityFeatures = [
-  { icon: Lock, text: 'Bank-level 256-bit encryption' },
-  { icon: Shield, text: 'Read-only access - no transactions' },
-  { icon: CheckCircle, text: 'SOC 2 Type II compliant' },
+  { icon: Lock, text: "Bank-level 256-bit encryption" },
+  { icon: Shield, text: "Read-only access — no transactions" },
+  { icon: CheckCircle, text: "SOC 2 Type II compliant" },
 ];
+
+function ConnectionRow({ conn, onDelete, deleting }) {
+  return (
+    <div className="connection-row">
+      <div className="connection-info">
+        <span className="connection-name">{conn.account_name || conn.institution_name || "Account"}</span>
+        <span className="connection-meta">
+          {conn.institution_name}
+          {conn.account_type ? ` · ${conn.account_type}` : ""}
+          {conn.connection_type === "manual" ? " · Manual" : " · Plaid"}
+        </span>
+      </div>
+      <span className={`connection-status ${conn.status}`}>{conn.status}</span>
+      <button
+        type="button"
+        className="connection-delete"
+        onClick={() => onDelete(conn.id)}
+        disabled={deleting}
+        aria-label={`Remove ${conn.account_name || conn.institution_name}`}
+      >
+        {deleting ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+      </button>
+    </div>
+  );
+}
+
+function ManualEntryModal({ open, onClose, onSubmit, submitting }) {
+  const [institutionName, setInstitutionName] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [accountType, setAccountType] = useState("checking");
+  const [accountMask, setAccountMask] = useState("");
+
+  if (!open) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit({ institutionName, accountName, accountType, accountMask: accountMask || undefined });
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <header className="modal-header">
+          <h2>Add account manually</h2>
+          <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
+            <X size={18} />
+          </button>
+        </header>
+        <form className="modal-form" onSubmit={handleSubmit}>
+          <label>
+            Institution name
+            <input
+              type="text"
+              value={institutionName}
+              onChange={(e) => setInstitutionName(e.target.value)}
+              maxLength={100}
+              required
+            />
+          </label>
+          <label>
+            Account name
+            <input
+              type="text"
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              maxLength={100}
+              required
+            />
+          </label>
+          <label>
+            Account type
+            <select value={accountType} onChange={(e) => setAccountType(e.target.value)}>
+              {ACCOUNT_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Last 4 digits (optional)
+            <input
+              type="text"
+              value={accountMask}
+              onChange={(e) => setAccountMask(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              maxLength={4}
+              inputMode="numeric"
+            />
+          </label>
+          <div className="modal-actions">
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? <Loader2 size={14} className="spin" /> : "Add account"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 export default function CFOConnections() {
+  const [connections, setConnections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [linkToken, setLinkToken] = useState(null);
+  const [linkPreparing, setLinkPreparing] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const refresh = useCallback(async () => {
+    setError(null);
+    try {
+      const data = await cfoConnectionsApi.list();
+      setConnections(data?.connections || data?.items || []);
+    } catch (err) {
+      setError(err?.message || "Failed to load connections.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const onPlaidSuccess = useCallback(
+    async (publicToken, metadata) => {
+      setSubmitting(true);
+      try {
+        await cfoConnectionsApi.createPlaid({
+          publicToken,
+          institutionId: metadata?.institution?.institution_id,
+          institutionName: metadata?.institution?.name,
+        });
+        await refresh();
+      } catch (err) {
+        setError(err?.message || "Failed to save connection.");
+      } finally {
+        setSubmitting(false);
+        setLinkToken(null);
+      }
+    },
+    [refresh],
+  );
+
+  const { open: openPlaid, ready: plaidReady } = usePlaidLink({
+    token: linkToken,
+    onSuccess: onPlaidSuccess,
+    onExit: () => setLinkToken(null),
+  });
+
+  useEffect(() => {
+    if (linkToken && plaidReady) openPlaid();
+  }, [linkToken, plaidReady, openPlaid]);
+
+  const handleConnectPlaid = async () => {
+    setLinkPreparing(true);
+    setError(null);
+    try {
+      const data = await plaidApi.createLinkToken();
+      setLinkToken(data?.link_token);
+    } catch (err) {
+      setError(err?.message || "Failed to start bank connection.");
+    } finally {
+      setLinkPreparing(false);
+    }
+  };
+
+  const handleManualSubmit = async (payload) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await cfoConnectionsApi.createManual(payload);
+      setManualOpen(false);
+      await refresh();
+    } catch (err) {
+      setError(err?.message || "Failed to add account.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Remove this connection?")) return;
+    setDeletingId(id);
+    try {
+      await cfoConnectionsApi.remove(id);
+      await refresh();
+    } catch (err) {
+      setError(err?.message || "Failed to remove connection.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const hasConnections = connections.length > 0;
+
   return (
     <div className="cfo-connections">
-      {/* Advisory Banner */}
-      <PolicyBanner
-        policy="general"
-        context="cfo-connections"
-        message="CFO connections are separate from Core banking connections. Data linked here is used exclusively for CFO intelligence and reporting."
-        dismissible
-      />
-
       <div className="connections-layout">
-        {/* Main Content */}
         <main className="connections-main">
-          {/* Header */}
           <header className="connections-header">
             <div className="header-content">
               <h1>CFO Connections</h1>
-              <p>Connect financial accounts for executive-level insights, cash flow analysis, and forecasting.</p>
+              <p>
+                Connect financial accounts for executive-level insights, cash flow analysis, and
+                forecasting. These connections are isolated from Core, Payroll, and other modules.
+              </p>
             </div>
-            <button className="connect-btn primary">
-              <Plus size={16} />
-              Add Connection
-            </button>
+            <div className="header-actions">
+              <button
+                type="button"
+                className="connect-btn secondary"
+                onClick={() => setManualOpen(true)}
+              >
+                <Plus size={16} />
+                Add manually
+              </button>
+              <button
+                type="button"
+                className="connect-btn primary"
+                onClick={handleConnectPlaid}
+                disabled={linkPreparing || submitting}
+              >
+                {linkPreparing ? <Loader2 size={16} className="spin" /> : <Landmark size={16} />}
+                Connect via Plaid
+              </button>
+            </div>
           </header>
 
-          {/* Empty State */}
-          <div className="connections-empty">
-            <div className="empty-icon">
-              <Building2 size={40} />
+          {error && (
+            <div className="connections-error" role="alert">
+              <AlertCircle size={16} />
+              <span>{error}</span>
             </div>
-            <h2>No accounts connected</h2>
-            <p>Connect your business accounts to unlock CFO intelligence features including cash flow analysis, runway calculations, and financial projections.</p>
+          )}
 
-            {/* Institution Types */}
-            <div className="institution-types">
-              {institutionTypes.map(type => (
-                <button key={type.id} className="institution-card">
-                  <type.icon size={24} />
-                  <div className="institution-info">
-                    <span className="institution-name">{type.name}</span>
-                    <span className="institution-desc">{type.description}</span>
-                  </div>
-                  <Plus size={16} className="add-icon" />
-                </button>
+          {loading ? (
+            <div className="connections-state loading">
+              <Loader2 size={32} className="spin" />
+              <p>Loading connections…</p>
+            </div>
+          ) : hasConnections ? (
+            <div className="connections-list">
+              {connections.map((conn) => (
+                <ConnectionRow
+                  key={conn.id}
+                  conn={conn}
+                  onDelete={handleDelete}
+                  deleting={deletingId === conn.id}
+                />
               ))}
             </div>
-          </div>
+          ) : (
+            <div className="connections-empty">
+              <div className="empty-icon">
+                <Building2 size={40} />
+              </div>
+              <h2>No accounts connected</h2>
+              <p>
+                Connect a bank account via Plaid or add one manually to start using CFO intelligence.
+              </p>
+            </div>
+          )}
 
-          {/* Security Notice */}
           <div className="security-notice">
             <div className="security-header">
               <Shield size={16} />
-              <h3>Security & Privacy</h3>
+              <h3>Security &amp; Privacy</h3>
             </div>
             <div className="security-features">
-              {securityFeatures.map((feature, index) => (
-                <div key={index} className="security-feature">
-                  <feature.icon size={14} />
-                  <span>{feature.text}</span>
-                </div>
-              ))}
+              {securityFeatures.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={index} className="security-feature">
+                    <Icon size={14} />
+                    <span>{feature.text}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </main>
 
-        {/* Sidebar */}
         <aside className="connections-sidebar">
-          {/* Connected Accounts Panel */}
-          <div className="sidebar-panel">
-            <div className="panel-header">
-              <Building2 size={14} />
-              <h3>Connected Accounts</h3>
-            </div>
-            <div className="panel-empty">
-              <p>No accounts connected yet.</p>
-            </div>
-          </div>
-
-          {/* About CFO Connections */}
           <div className="sidebar-panel">
             <div className="panel-header">
               <Info size={14} />
@@ -133,21 +329,19 @@ export default function CFOConnections() {
             </div>
             <div className="about-content">
               <p>
-                <strong>Separate from Core</strong><br />
-                CFO connections are isolated from Core banking connections for security and organizational separation.
+                <strong>Module-isolated</strong>
+                <br />
+                These accounts only feed CFO features. They will not appear in Core, Payroll,
+                GovCon, or Invoicing.
               </p>
               <p>
-                <strong>Executive Insights</strong><br />
-                Data from these connections powers CFO-specific features: runway, burn rate, cash flow, and board reporting.
-              </p>
-              <p>
-                <strong>Read-Only Access</strong><br />
-                We only read transaction data. No transfers, payments, or account modifications are possible.
+                <strong>Read-only</strong>
+                <br />
+                We only read transaction data. No transfers, payments, or modifications are possible.
               </p>
             </div>
           </div>
 
-          {/* Data Sync Status */}
           <div className="sidebar-panel">
             <div className="panel-header">
               <RefreshCw size={14} />
@@ -155,17 +349,20 @@ export default function CFOConnections() {
             </div>
             <div className="sync-status">
               <div className="sync-row">
-                <span className="sync-label">Last sync</span>
-                <span className="sync-value muted">No accounts</span>
-              </div>
-              <div className="sync-row">
-                <span className="sync-label">Next sync</span>
-                <span className="sync-value muted">--</span>
+                <span className="sync-label">Connected</span>
+                <span className="sync-value">{connections.length}</span>
               </div>
             </div>
           </div>
         </aside>
       </div>
+
+      <ManualEntryModal
+        open={manualOpen}
+        onClose={() => setManualOpen(false)}
+        onSubmit={handleManualSubmit}
+        submitting={submitting}
+      />
     </div>
   );
 }
